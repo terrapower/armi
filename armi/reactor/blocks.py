@@ -31,6 +31,7 @@ import numpy as np
 
 from armi import nuclideBases, runLog
 from armi.bookkeeping import report
+from armi.nucDirectory import nucDir
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import (
@@ -747,6 +748,10 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
+                if child.p.molesHmBOL:
+                    child.p.hmNuclidesBOL = [nuc for nuc in child.p.nuclides if nucDir.isHeavyMetal(nuc.decode())]
+                    child.p.hmNumberDensitiesBOL = child.getNuclideNumberDensities(child.p.hmNuclidesBOL)
+                    child.p.temperatureInCBOL = child.temperatureInC
 
         self.p.massHmBOL = massHmBOL
 
@@ -1609,6 +1614,18 @@ class Block(composites.Composite):
             return heights[myIndex]
 
         raise AttributeError(f"No ancestor of {self} has blueprints")
+
+    def sort(self):
+        """Sort the children on this block.
+
+        If there is a spatial grid, the previous pin indices on the components
+        is now invalid because the ordering of :meth:`getPinLocations` has maybe
+        changed since the ordering of components has changed. Reassign the pin
+        indices via :meth:`assignPinIndices` accordingly.
+        """
+        super().sort()
+        if self.spatialGrid is not None:
+            self.assignPinIndices()
 
 
 class HexBlock(Block):
