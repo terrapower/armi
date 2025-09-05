@@ -1289,7 +1289,6 @@ class Block_TestCase(unittest.TestCase):
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
-        print(cur)
 
         u3 = self.block.getNumberDensity("U233")
         u5 = self.block.getNumberDensity("U235")
