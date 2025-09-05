@@ -23,8 +23,10 @@ symmetry-aware operations are still responsible for testing the implemetation. T
 parameters that are expected to change with symmetry do indeed change.
 
 This might be obvious, but this test CANNOT detect errors where the parameter is not either:
+
     1) Labeled as a symmetry-aware parameter in the parameter definition.
     2) Labeled as a symmetry-aware parameter in the test.
+
 Failing to do at least one of the above will result in passing symmetry tests.
 
 The tests here use the `growToFullCore` since that should be one of the most mature symmetry-aware operations.
@@ -55,6 +57,9 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
     the `setUp` method of the subclass. The subclass must have `super.setUp()` in it's `setUp` method at some point
     after the necessary plugin attributes are assigned.
 
+    It should generally not be necessary for the plugin to implement any further unit tests, the parent class contains
+    a test method that should adequately verify the the expected symmetric parameters are indeed expanded.
+
     Attributes
     ----------
     coreParamsToTest : Iterable[str] | armi.reactor.parameters.parameterDefinitionCollection, optional
@@ -77,10 +82,8 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
         Dictionary of custom settings that is passed to the test reactor builder. Useful for disabling features that
         require additional input and are not useful for the symmetry audit.
 
-
     Example
     -------
-    ```python
     class MySymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
         def setUp():
             # Tests are configured using attributes. Attributes must be set prior to calling super.setUp()
@@ -100,10 +103,6 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
             # Finish setting up the tests by calling the parent's `setUp` method.
             super.setUp()
-    ```
-
-    It should generally not be necessary for the plugin to implement any further unit tests, the parent class contains
-    a test method that should adequately verify the the expected symmetric parameters are indeed expanded.
     """
 
     def __init__(self, methodName="runTest"):

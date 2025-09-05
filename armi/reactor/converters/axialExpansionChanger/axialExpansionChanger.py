@@ -494,7 +494,7 @@ class AxialExpansionChanger:
     def _checkComponentHeight(self, c):
         if c.zbottom > c.ztop:
             msg = f"""
-            {c} has a negative height! This is unphysical.
+            {c} has a negative height. This is unphysical.
                 Assembly: {self.linked.a}
                     Block: {c.parent}
                 Component: {c}
@@ -509,7 +509,7 @@ class AxialExpansionChanger:
             runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
 
         if b.getHeight() < 0.0:
-            raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
+            raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height. ({b.getHeight():.12e})")
 
         for c in iterSolidComponents(b):
             if c.height - b.getHeight() > self.COMP_BLOCK_HEIGHT_DIFF_THRESHOLD:

@@ -641,5 +641,5 @@ class TestExceptionForMultiPin(TestMultiPinConservationBase):
                 cList.append(c)
         pList = full(len(cList), 1.3)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
-        with self.assertRaisesRegex(ArithmeticError, expected_regex="has a negative height\! This is unphysical\."):
+        with self.assertRaisesRegex(ArithmeticError, expected_regex="has a negative height"):
             self.axialExpChngr.axiallyExpandAssembly()

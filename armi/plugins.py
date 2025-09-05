@@ -612,8 +612,6 @@ class ArmiPlugin:
         """
         To generate a report.
 
-        For more information, see :doc:`/developer/reports`.
-
         Parameters
         ----------
         r : Reactor

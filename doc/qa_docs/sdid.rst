@@ -59,7 +59,7 @@ Design and Implementation
 -------------------------
 
 To automate the process of tracking the implementation of all requirements in ARMI, we are using the
-`Implementation Traceability Matrix <#implementation-traceability-matrix>`_ below. This will connect
+:ref:`Implementation Traceability Matrix <armi_impl_matrix>` below. This will connect
 high-quality, in-code documentation with each requirement in a complete way. However, before giving
 a complete overview of the requirement implementations, this document will describe the design of
 two main features in the ARMI codebase: the plugin system and the reactor data model. These are the
