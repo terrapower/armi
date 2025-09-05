@@ -1565,15 +1565,11 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getUraniumNumEnrich(self):
         """Returns fissile uranium number fraction."""
-        U = elements.bySymbol["U"]
-        compNucs = set(self.getNuclides())
-        uraniumNucs = set(nuc.name for nuc in U.nuclides)
-        uraniumNucsPresent = compNucs & uraniumNucs
-        fissileNucsPresent = [nucName for nucName in uraniumNucsPresent if nuclideBases.byName[nucName].isFissile()]
-        totalU = sum(self.getNuclideNumberDensities(list(uraniumNucsPresent)))
+        uraniumNucs = self._getNuclidesFromSpecifier("U")
+        totalU = sum(self.getNuclideNumberDensities(uraniumNucs))
         if totalU < 1e-10:
             return 0.0
-        fissileU = sum(self.getNuclideNumberDensities(fissileNucsPresent))
+        fissileU = sum(self.getNuclideNumberDensities(["U233", "U235"]))
 
         return fissileU / totalU
 
