@@ -31,7 +31,7 @@ import numpy as np
 
 from armi import nuclideBases, runLog
 from armi.bookkeeping import report
-from armi.nucDirectory import elements, nucDir
+from armi.nucDirectory import nucDir
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import (
