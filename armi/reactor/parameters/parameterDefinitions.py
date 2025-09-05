@@ -97,6 +97,7 @@ class ParamLocation(enum.Flag):
     EDGES = 64
     VOLUME_INTEGRATED = 128
     CHILDREN = 256  # on some child of a composite, like a pin
+    NA = 512  # no location
 
 
 class NoDefault:
