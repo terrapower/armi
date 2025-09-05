@@ -775,30 +775,21 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
-        (
-            loadChains,
-            loopChains,
-            _,
-            _,
-            loadNames,
-            _,
-            rotations,
-            _,
-        ) = fh.processMoveList(moves[2])
-        self.assertIn("A0073", loadNames)
-        self.assertIn(None, loadNames)
-        self.assertNotIn("SFP", loadChains)
-        self.assertNotIn("LoadQueue", loadChains)
-        self.assertFalse(loopChains)
-        self.assertFalse(rotations)
+        result = fh.processMoveList(moves[2])
+        self.assertIn("A0073", result.loadNames)
+        self.assertIn(None, result.loadNames)
+        self.assertTrue(all("SFP" not in chain for chain in result.loadChains))
+        self.assertTrue(all("LoadQueue" not in chain for chain in result.loadChains))
+        self.assertFalse(result.loopChains)
+        self.assertFalse(result.rotations)
 
     def test_processMoveList_yaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
-        loadChains, loopChains, enriches, loadTypes, loadNames, _, rotations, _ = fh.processMoveList(moves[1])
-        self.assertEqual(len(loadChains), 2)
-        self.assertTrue(any(enriches))
-        self.assertTrue(rotations)
+        result = fh.processMoveList(moves[1])
+        self.assertEqual(len(result.loadChains), 2)
+        self.assertTrue(any(result.enriches))
+        self.assertTrue(result.rotations)
 
     def test_getFactorList(self):
         fh = fuelHandlers.FuelHandler(self.o)

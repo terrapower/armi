@@ -32,7 +32,7 @@ import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from ruamel.yaml import YAML
@@ -78,6 +78,20 @@ class AssemblyMove:
     assemType: Optional[str] = None
     nameAtDischarge: Optional[str] = None
     rotation: Optional[float] = None
+
+
+@dataclass
+class ProcessMoveListResult:
+    """Container for the results of :meth:`FuelHandler.processMoveList`."""
+
+    loadChains: List[List[str]]
+    loopChains: List[List[str]]
+    enriches: List[List[float]]
+    loadChargeTypes: List[Optional[str]]
+    loadNames: List[Optional[str]]
+    dischargeDests: List[str]
+    rotations: List[Tuple[str, float]]
+    alreadyDone: List[str]
 
 
 class FuelHandler:
@@ -1003,25 +1017,16 @@ class FuelHandler:
         # setup the load and loop chains to be run per cycle
         moveList = moves[cycle]
         swaps = misloadSwaps.get(cycle, [])
-        (
-            loadChains,
-            loopChains,
-            enriches,
-            loadChargeTypes,
-            loadNames,
-            dischargeDests,
-            rotations,
-            _alreadyDone,
-        ) = self.processMoveList(moveList)
+        moveData = self.processMoveList(moveList)
 
         # Now have the move locations
         moved = self.doRepeatShuffle(
-            loadChains,
-            loopChains,
-            enriches,
-            loadChargeTypes,
-            loadNames,
-            dischargeDests,
+            moveData.loadChains,
+            moveData.loopChains,
+            moveData.enriches,
+            moveData.loadChargeTypes,
+            moveData.loadNames,
+            moveData.dischargeDests,
         )
 
         # Apply any misload swaps after performing cascades
@@ -1033,7 +1038,7 @@ class FuelHandler:
                 continue
             self.swapAssemblies(a1, a2)
             moved.extend([a1, a2])
-        self.pendingRotations = rotations
+        self.pendingRotations = moveData.rotations
 
         return moved
 
@@ -1357,7 +1362,7 @@ class FuelHandler:
         runLog.warning("No chain found starting at {0}".format(startingAt))
         return [], enrich, assemType, loadName, destination
 
-    def processMoveList(self, moveList):
+    def processMoveList(self, moveList) -> ProcessMoveListResult:
         """
         Processes a move list and extracts fuel management loops and charges.
 
@@ -1369,24 +1374,26 @@ class FuelHandler:
 
         Returns
         -------
-        loadChains : list
-            list of lists of location labels for each load chain (with charge/discharge). These DO NOT include
-            special location labels like LoadQueue or discharge destinations
-        loopChains : list
-            list of lists of location labels for each loop chain (no charge/discharge)
-        enriches : list
-            The block enrichment distribution of each load assembly
-        loadChargeTypes :list
-            The types of assemblies that get charged.
-        loadNames : list
-            The assembly names of assemblies that get brought into the core from the SFP (useful for pulling out
-            of SFP for round 2, etc.). Will be None for anything else.
-        dischargeDests : list
-            Final destination for each load chain (e.g., ``SFP`` or ``ExCore``)
-        rotations : list
-            Tuples of (location, degrees) indicating manual rotations to perform after shuffling.
-        alreadyDone : list
-            All the locations that were read.
+        ProcessMoveListResult
+            Structured information describing the move chains, enrichment
+            distributions, and other shuffle data. Attributes include:
+
+            loadChains : list[list[str]]
+                Moves that include discharges.
+            loopChains : list[list[str]]
+                Moves without discharges.
+            enriches : list[list[float]]
+                Axial enrichment distribution for each load assembly.
+            loadChargeTypes : list[Optional[str]]
+                Assembly types for each load chain.
+            loadNames : list[Optional[str]]
+                Assembly names of loads (e.g., from SFP).
+            dischargeDests : list[str]
+                Final destinations for discharged assemblies.
+            rotations : list[tuple[str, float]]
+                Manual rotations to apply (location, degrees).
+            alreadyDone : list[str]
+                Locations already processed while tracking chains.
 
         Notes
         -----
@@ -1457,15 +1464,15 @@ class FuelHandler:
 
                 runLog.extra("Loop Chain: {0}".format(chain))
 
-        return (
-            loadChains,
-            loopChains,
-            enriches,
-            loadChargeTypes,
-            loadNames,
-            dischargeDests,
-            rotations,
-            alreadyDone,
+        return ProcessMoveListResult(
+            loadChains=loadChains,
+            loopChains=loopChains,
+            enriches=enriches,
+            loadChargeTypes=loadChargeTypes,
+            loadNames=loadNames,
+            dischargeDests=dischargeDests,
+            rotations=rotations,
+            alreadyDone=alreadyDone,
         )
 
     def doRepeatShuffle(self, loadChains, loopChains, enriches, loadChargeTypes, loadNames, dischargeDests):
