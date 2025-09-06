@@ -398,11 +398,11 @@ Extra rotations therefore:
 * rotate the assembly relative to its current orientation; and
 * execute after any algorithmic rotation routines.
 
-A cascade with no final destination defaults to discharging the assembly to
-the spent fuel pool ``SFP``. Assemblies can also be removed from the model
-entirely by ending with ``ExCore``. When an assembly is sent to the ``SFP`` it
-is only retained in memory if the ``trackAssems`` setting is True; ``ExCore`` always
-deletes the assembly.
+A cascade with no final destination defaults to deleting the assembly. 
+Assemblies can be retained in the model by ending the cascade with
+``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the
+spent fuel pool even if the ``trackAssems`` setting is ``False``; ``Delete``
+always removes the assembly from the model.
 For example
    
 ..  code:: yaml
@@ -414,7 +414,7 @@ For example
            - misloadSwap: ["009-045", "008-004"]
            - extraRotations: {"009-045": 60}
          2:
-           - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
+           - cascade: ["outer fuel", "010-046", "009-045", "Delete"]
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
