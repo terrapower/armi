@@ -744,10 +744,11 @@ class Block(composites.Composite):
             hmMass = child.getHMMass()
             massHmBOL += hmMass
             # Components have the following parameters but not every composite will massHmBOL,
-            # molesHmBOL, puFrac
+            # molesHmBOL, puFrac, enrichmentBOL
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
+                child.p.enrichmentBOL = child.getFissileMassEnrich()
                 if child.p.molesHmBOL:
                     child.p.hmNuclidesBOL = [nuc for nuc in child.p.nuclides if nucDir.isHeavyMetal(nuc.decode())]
                     child.p.hmNumberDensitiesBOL = child.getNuclideNumberDensities(child.p.hmNuclidesBOL)
