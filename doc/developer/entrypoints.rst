@@ -84,5 +84,5 @@ To add entry points, ``ArmiPlugin``s can subclass the ``defineEntryPoints`` meth
 has an extensive :py:class:`~armi.cli.EntryPointsPlugin` that comes with several CLI entry points. 
 It is important to note that if you are building your own ARMI ``Application``, the
 ``EntryPointsPlugin`` must be registered to access these entry points either by registration in the application or 
-subclassing :py:class:`~armi.apps.App`. If you do not want them or if only want
+subclassing :py:class:`~armi.apps.App`. If you do not want them or if you only want
 some of them you can build your own list in a custom ``defineEntryPoints`` method.
