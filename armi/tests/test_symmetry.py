@@ -41,6 +41,7 @@ class ArmiSymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
             "kgFis",
             "kgHM",
         ]
+        self.expectedSymmetricAssemblyParams = ["THmassFlowRate"]
         self.parameterOverrides = {"xsType": ["A"], "xsTypeNum": 65, "notes": ""}
         self.paramsToIgnore = ["maxAssemNum"]
 
