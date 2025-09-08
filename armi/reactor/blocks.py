@@ -1582,12 +1582,13 @@ class Block(composites.Composite):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
-        u5 = self.getMass("U235")
-        if u5 < 1e-10:
+        """Returns fissile mass fraction of uranium."""
+        totalU = self.getMass("U")
+        if totalU < 1e-10:
             return 0.0
-        u8 = self.getMass("U238")
-        return u5 / (u8 + u5)
+
+        fissileU = self.getMass(["U233", "U235"])
+        return fissileU / totalU
 
     def getInputHeight(self) -> float:
         """Determine the input height from blueprints.

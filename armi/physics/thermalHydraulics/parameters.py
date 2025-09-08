@@ -197,7 +197,7 @@ def _getBlockParams():
             "THmassFlowRate",
             units=f"{units.KG}/{units.SECONDS}",
             description="Mass flow rate",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(

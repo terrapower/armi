@@ -220,17 +220,23 @@ class Assembly(composites.Composite):
         if scalingFactor == 1:
             return
 
-        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
+        blockVolIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         for b in self:
-            for param in volIntegratedParamsToScale:
-                name = param.name
-                if b.p[name] is None or isinstance(b.p[name], str):
-                    continue
-                elif isinstance(b.p[name], Iterable):
-                    b.p[name] = [value * scalingFactor for value in b.p[name]]
-                else:
-                    # numpy array or other
-                    b.p[name] = b.p[name] * scalingFactor
+            self._scaleParams(b, blockVolIntegratedParamsToScale, scalingFactor)
+        assemblyVolIntegratedParamsToScale = self.p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
+        self._scaleParams(self, assemblyVolIntegratedParamsToScale, scalingFactor)
+
+    @staticmethod
+    def _scaleParams(obj, params, scalingFactor):
+        for param in params:
+            name = param.name
+            if obj.p[name] is None or isinstance(obj.p[name], str):
+                continue
+            elif isinstance(obj.p[name], Iterable):
+                obj.p[name] = [value * scalingFactor for value in obj.p[name]]
+            else:
+                # numpy array or other
+                obj.p[name] = obj.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
