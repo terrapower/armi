@@ -155,8 +155,13 @@ def defineSettings():
         setting.Setting(
             CONF_MCNP_LIB_BASE,
             default="ENDF/B-VII.1",
-            description="Library name for MCNP cross sections. ENDF/B-VII.1 is the default library.",
             label="ENDF data library version to use for MCNP Analysis",
+            description=(
+                "This setting controls the nuclides in the problem according to "
+                "the available nuclides in the selected library. For instance, "
+                "some MCNP libraries contain elemental nuclides while others do "
+                f"not. Only used when MCNP is selected as {CONF_NEUTRONICS_KERNEL}."
+            ),
             options=["ENDF/B-V.0", "ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
         ),
         setting.Setting(

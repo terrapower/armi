@@ -445,7 +445,7 @@ class ArmiPlugin:
 
         Parameters
         ----------
-        inspector : :py:class:`armi.operators.settingsValidation.Inspector` instance
+        inspector : :py:class:`armi.settings.settingsValidation.Inspector` instance
             The inspector to add queries to. See note below, this is not ideal.
 
         Notes
@@ -460,7 +460,7 @@ class ArmiPlugin:
 
         See Also
         --------
-        armi.operators.settingsValidation.Inspector : Runs the queries
+        armi.settings.settingsValidation.Inspector : Runs the queries
 
         Returns
         -------

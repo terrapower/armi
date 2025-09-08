@@ -183,7 +183,7 @@ class Core(composites.Composite):
             :py:class:`DomainType <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
             <armi.reactor.geometry.BoundaryType>` are valid. The validity of a user-specified
             geometry and symmetry is verified by a settings :py:class:`Inspector
-            <armi.operators.settingsValidation.Inspector`.
+            <armi.settings.settingsValidation.Inspector`.
         """
         if not self.spatialGrid:
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
@@ -1602,11 +1602,13 @@ class Core(composites.Composite):
 
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
-        data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
+        from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
+
+        data = AssemblyMove(oldLoc, newLoc, enrichList, assemblyType, assemName)
         if self.moves.get(cycle) is None:
             self.moves[cycle] = []
         if data in self.moves[cycle]:
-            # remove the old version and throw the new on at the end.
+            # remove the old version and throw the new one at the end.
             self.moves[cycle].remove(data)
         self.moves[cycle].append(data)
 

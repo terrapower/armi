@@ -175,7 +175,7 @@ runs.
 
 The following example boiler plate code defines three settings. We define two simple
 number settings (inlet and outlet temperatures), and we use :py:class:`Query 
-<armi.operators.settingsValidation .Query>` to define validation on those settings. Here,
+<armi.settings.settingsValidation .Query>` to define validation on those settings. Here,
 the validation isn't very exciting, we just make sure the temperatures are above zero.
 That's not particularly physically meaningful, but serves as a simple example. The next
 setting is a little more complicated, we define a setting ``myAppVersion`` that defines
