@@ -1455,18 +1455,14 @@ class Block_TestCase(unittest.TestCase):
                     sum(ndens for ndens in hmNDens.values()) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * c.getVolume(),
                     places=12,
                 )
-                self.assertAlmostEqual(
-                    c.p.enrichmentBOL, c.getFissileMassEnrich(), places=12
-                )
+                self.assertAlmostEqual(c.p.enrichmentBOL, c.getFissileMassEnrich(), places=12)
             else:
                 self.assertEqual(c.p.massHmBOL, 0.0)
                 self.assertEqual(c.p.molesHmBOL, 0.0)
                 self.assertEqual(c.p.enrichmentBOL, 0.0)
 
         self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
-        self.assertAlmostEqual(
-            self.block.p.enrichmentBOL, self.block.getFissileMassEnrich(), places=12
-        )
+        self.assertAlmostEqual(self.block.p.enrichmentBOL, self.block.getFissileMassEnrich(), places=12)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
