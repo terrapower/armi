@@ -4,8 +4,8 @@
 Tutorials
 #########
 
-You should have ARMI installed and operational by this point. The following tutorials
-demonstrate in more detail how to interact with ARMI.
+You should have ARMI installed and operational by this point. The following tutorials demonstrate in more detail how to
+interact with ARMI.
 
 --------------
 
@@ -15,10 +15,9 @@ demonstrate in more detail how to interact with ARMI.
 
     nuclide_demo.ipynb
     materials_demo.ipynb
-    walkthrough_inputs
-    walkthrough_lwr_inputs
+    walkthrough_inputs.rst
+    walkthrough_lwr_inputs.rst
     data_model.ipynb
     making_your_first_app.rst
     param_sweep.ipynb
     pin-rotations.ipynb
-
