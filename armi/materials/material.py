@@ -130,6 +130,8 @@ class Material:
     """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances
     with information about thermal scattering."""
 
+    dependsOnParent = False
+
     def __init__(self):
         self._parent = None
         self.massFrac = {}
@@ -180,7 +182,7 @@ class Material:
         """Setter for the private parent attribute of this Material."""
         self._parent = parentRef
 
-        if self.blueprintMaterialMods:
+        if self.blueprintMaterialMods and self.dependsOnParent:
             self.applyInputParams(**self.blueprintMaterialMods)
 
     def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
