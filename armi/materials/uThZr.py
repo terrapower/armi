@@ -32,7 +32,6 @@ class UThZr(FuelMaterial):
         self.parent.adjustMassEnrichment(U235_wt_frac)
         self.parent.adjustMassFrac("ZR", elementToHoldConstant="TH", val=ZR_wt_frac)
         self.parent.adjustMassFrac(elementToAdjust="TH", nuclideToHoldConstant="ZR")
-        self.zrFrac = ZR_wt_frac
 
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
@@ -43,13 +42,10 @@ class UThZr(FuelMaterial):
         self.setMassFrac("ZR", 0.09999)
         self.setMassFrac("TH232", 0.00001)
 
-        self.zrFrac = 0.09999  # custom param REM
-        self.thFrac = 0.00001
-
     def pseudoDensity(self, Tk=None, Tc=None):
         """Calculate the mass density in g/cc of U-Zr alloy with various percents."""
-        zrFrac = self.zrFrac
-        thFrac = self.thFrac
+        zrFrac = self.getMassFrac("ZR")
+        thFrac = self.getMassFrac("TH232")
         uFrac = 1 - zrFrac - thFrac
 
         if zrFrac is None:
@@ -62,10 +58,10 @@ class UThZr(FuelMaterial):
 
         Tk = getTk(Tc, Tk)
 
+        # use Vegard's law to mix densities by weight fraction at 50C
         u0 = 19.1
         zr0 = 6.52
         th0 = 11.68
-        # use vegard's law to mix densities by weight fraction at 50C
         uThZr0 = 1.0 / (zrFrac / zr0 + (uFrac) / u0 + thFrac / th0)
 
         dLL = self.linearExpansionPercent(Tk=Tk)

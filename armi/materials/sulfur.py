@@ -26,7 +26,7 @@ class Sulfur(material.Fluid):
         "volumetric expansion": ((334, 430), "K"),
     }
 
-    def applyInputParams(self, sulfur_density_frac=None, TD_frac=None):
+    def applyInputParams(self, sulfur_density_frac=None, TD_frac=None, **kwargs):
         if sulfur_density_frac is not None:
             runLog.warning(
                 "The 'sulfur_density_frac' material modification for Sulfur "
@@ -39,6 +39,7 @@ class Sulfur(material.Fluid):
                 )
             else:
                 self.updateTD(sulfur_density_frac)
+
         if TD_frac is not None:
             self.updateTD(TD_frac)
 
