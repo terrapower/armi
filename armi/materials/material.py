@@ -135,7 +135,6 @@ class Material:
         self.massFrac = {}
         self.refDens = 0.0
         self.theoreticalDensityFrac = 1.0
-        self.blueprintMaterialMods = {}
         self.cached = {}
         self._backupCache = None
         self._name = self.__class__.__name__

@@ -39,7 +39,6 @@ class Sulfur(material.Fluid):
                 )
             else:
                 self.updateTD(sulfur_density_frac)
-
         if TD_frac is not None:
             self.updateTD(TD_frac)
 
