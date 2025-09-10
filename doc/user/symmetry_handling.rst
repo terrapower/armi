@@ -20,12 +20,12 @@ A partial core may be specified in the blueprints file using the ``symmetry`` at
            F
           F F
            F
-          F F
+          C F
 
 Specifying a core this way is useful for saving computation time, so long as the core state being modeled is truly symmetric.
 
 Because of this, assemblies and blocks have a ``symmetryFactor`` attribute that is used to track how much of the object
-is present in the currently modeled core. For example, the central assembly in the core lattice definition above would 
+is present in the currently modeled core. For example, the central assembly (labeled "C") in the core lattice definition above would 
 have a symmetry factor of 3, representing that only 1/3rd of the assembly is in the core model. The blocks within that
 assembly would have the same symmetry factor.
 
