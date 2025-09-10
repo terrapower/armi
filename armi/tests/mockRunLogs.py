@@ -37,7 +37,6 @@ class BufferLog(runLog._RunLog):
         self._errStream = io.StringIO()
         self._deduplication = runLog.DeduplicationFilter()
         sys.stderr = self._errStream
-        self.setVerbosity(0)
 
     def __enter__(self):
         self.originalLog = runLog.LOG
@@ -54,6 +53,7 @@ class BufferLog(runLog._RunLog):
         This is a wrapper around logger.log() that does most of the work and is
         used by all message passers (e.g. info, warning, etc.).
         """
+        self.setVerbosity(0)
         # the message label is only used to determine unique for single-print warnings
         if label is None:
             label = msg
