@@ -348,7 +348,6 @@ class ComponentBlueprint(yamlize.Object):
             try:
                 # update material with updated input params from blueprints file.
                 mat.applyInputParams(**matMods)
-                mat.blueprintMaterialMods = matMods
             except TypeError as ee:
                 errorMessage = ee.args[0]
                 if "got an unexpected keyword argument" in errorMessage:

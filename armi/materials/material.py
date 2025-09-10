@@ -131,7 +131,7 @@ class Material:
     with information about thermal scattering."""
 
     def __init__(self):
-        self._parent = None
+        self.parent = None
         self.massFrac = {}
         self.refDens = 0.0
         self.theoreticalDensityFrac = 1.0
@@ -169,20 +169,6 @@ class Material:
     def getName(self):
         """Duplicate of name property, kept for backwards compatibility."""
         return self._name
-
-    @property
-    def parent(self):
-        """Getter for the private parent attribute of this Material."""
-        return self._parent
-
-    @parent.setter
-    def parent(self, parentRef):
-        """Setter for the private parent attribute of this Material."""
-        self._parent = parentRef
-
-        # TODO: JOHN
-        # if self.blueprintMaterialMods:
-        #    self.applyInputParams(**self.blueprintMaterialMods)
 
     def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
         """Return empty list, representing that materials have no children."""
@@ -330,7 +316,7 @@ class Material:
 
         self.massFrac[nucName] = massFrac
 
-    def applyInputParams(self, **kwargs):
+    def applyInputParams(self):
         """Apply material-specific material input parameters."""
         pass
 
@@ -855,7 +841,6 @@ class FuelMaterial(Material):
         class2_custom_isotopics=None,
         class1_wt_frac=None,
         customIsotopics=None,
-        **kwargs,
     ):
         """Apply optional class 1/class 2 custom enrichment input.
 
