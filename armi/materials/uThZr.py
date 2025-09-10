@@ -27,21 +27,26 @@ class UThZr(FuelMaterial):
     """
 
     enrichedNuclide = "U235"
-    dependsOnParent = True
+    th232FracDefault = 0.00001
+    u235FracDefault = 0.1
+    u238FracDefault = 0.8
+    zrFracDefault = 0.09999
 
     def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs):
-        self.parent.adjustMassEnrichment(U235_wt_frac)
-        self.parent.adjustMassFrac("ZR", elementToHoldConstant="TH", val=ZR_wt_frac)
-        self.parent.adjustMassFrac(elementToAdjust="TH", nuclideToHoldConstant="ZR")
+        ZR_wt_frac = self.zrFracDefault if ZR_wt_frac is None else ZR_wt_frac
+        U235_wt_frac = self.u238FracDefault if U235_wt_frac is None else U235_wt_frac
+
+        self.adjustMassFrac("U238", U235_wt_frac)
+        self.adjustMassFrac("ZR", ZR_wt_frac)
 
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
         """U-ZR mass fractions."""
-        self.setMassFrac("U238", 0.8)
-        self.setMassFrac("U235", 0.1)
-        self.setMassFrac("ZR", 0.09999)
-        self.setMassFrac("TH232", 0.00001)
+        self.setMassFrac("U238", self.u238FracDefault)
+        self.setMassFrac("U235", self.u235FracDefault)
+        self.setMassFrac("ZR", self.zrFracDefault)
+        self.setMassFrac("TH232", self.th232FracDefault)
 
     def pseudoDensity(self, Tk=None, Tc=None):
         """Calculate the mass density in g/cc of U-Zr alloy with various percents."""
