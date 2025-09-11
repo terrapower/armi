@@ -559,6 +559,36 @@ class TestCompositePattern(unittest.TestCase):
         for actualNew, expectedNew in zip(newChildren, self.container):
             self.assertIs(actualNew, expectedNew)
 
+    def test_add(self):
+        # get the size of the container at the start
+        lenContainer = len(self.container)
+
+        # add a dummy leaf to the container
+        leaf = DummyLeaf("duct 9", 99)
+        leaf.setType("duct")
+        self.container.add(leaf)
+
+        # verify the container's size has increased by one
+        self.assertEqual(len(self.container), lenContainer + 1)
+
+    def test_extend(self):
+        # generate a list of elements to add to this container
+        elements = []
+        lenElements = 5
+        for i in range(lenElements):
+            leaf = DummyLeaf(f"duct {i}", i + 100)
+            leaf.setType("duct")
+            elements.append(leaf)
+
+        # extend the container by the above list
+        lenContainer = len(self.container)
+        self.container.extend(elements)
+        self.assertEqual(len(self.container), lenContainer + lenElements)
+
+        # show all the composites in the block have the block as the parent
+        for c in self.container:
+            self.assertIs(c.parent, self.container)
+
 
 class TestCompositeTree(unittest.TestCase):
     blueprintYaml = """
