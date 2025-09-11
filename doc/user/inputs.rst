@@ -378,9 +378,9 @@ Users may also define a custom shuffle plan in a YAML file referenced by the
 the beginning-of-cycle step. The first available cycle where shuffling will occur 
 is cycle 1. Each cycle contains a list of high-level actions. An action is a 
 mapping containing one of the keys ``cascade``, ``misloadSwap``,
-or ``extraRotations``. ``cascade`` chains describe a sequence of assembly
-displacements beginning with a fresh fuel assembly and ending with the final
-location's assembly being discharged. Optional ``fuelEnrichment`` lists
+ ``extraRotations``, or ``settings``. ``cascade`` chains describe a sequence of 
+assembly displacements beginning with a fresh fuel assembly and ending with the 
+final location's assembly being discharged. Optional ``fuelEnrichment`` lists
 specify the U235 weight fraction enrichment for each axial block in the fresh
 assembly, from bottom to top, including zeroes for non-fuel blocks.
 ``misloadSwap`` swaps the assemblies at two locations after all cascades are
@@ -398,6 +398,12 @@ Extra rotations therefore:
 * rotate the assembly relative to its current orientation; and
 * execute after any algorithmic rotation routines.
 
+``settings`` maps contain case setting updates that are merged with the
+current settings before shuffling begins each cycle, with the updated keys
+reported to stdout. Nested mappings allow several fields (e.g., multiple
+``crossSectionControl`` options like ``fluxFileLocation`` and ``geometry``)
+to be adjusted at once.
+
 A cascade with no final destination defaults to deleting the assembly. 
 Assemblies can be retained in the model by ending the cascade with
 ``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the
@@ -409,6 +415,12 @@ For example
 
        sequence:
          1:
+           - settings:
+               Tin: 333.0
+               crossSectionControl:
+                 YA:
+                   fluxFileLocation: newFlux
+                   geometry: 0D
            - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]  # wt fraction U235 by block
            - misloadSwap: ["009-045", "008-004"]
@@ -420,12 +432,13 @@ For example
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 
 For cycle 1 above, the actions execute in the following order:
-
-   1. The assembly originally at ``008-004`` is discharged to the spent fuel pool ``SFP``.
-   2. The assembly originally at ``009-045`` moves to ``008-004``.
-   3. A fresh ``outer fuel`` assembly is created with the specified axial enrichment profile and inserted at ``009-045``.
-   4. The fresh assembly and the moved assembly at ``008-004`` are swapped, leaving the fresh assembly at ``008-004`` and the moved assembly back at ``009-045``.
-   5. The assembly now at ``009-045`` is rotated an additional 60 degrees counterclockwise.
+   1. Case settings ``Tin``, ``crossSectionControl.YA.fluxFileLocation``, and
+      ``crossSectionControl.YA.geometry`` are updated before any moves occur.
+   2. The assembly originally at ``008-004`` is discharged to the spent fuel pool ``SFP``..
+   3. The assembly originally at ``009-045`` moves to ``008-004``.
+   4. A fresh ``outer fuel`` assembly is created with the specified axial enrichment profile and inserted at ``009-045``.
+   5. The fresh assembly and the moved assembly at ``008-004`` are swapped, leaving the fresh assembly at ``008-004`` and the moved assembly back at ``009-045``.
+   6. The assembly now at ``009-045`` is rotated an additional 60 degrees counterclockwise.
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
 
