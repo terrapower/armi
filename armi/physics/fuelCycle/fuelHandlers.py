@@ -1012,7 +1012,7 @@ class FuelHandler:
                 # so we return an empty list
                 return []
             if cycle in settingsChanges:
-                self._applySettings(settingChanges[cycle])
+                self._applySettings(settingsChanges[cycle])
         else:
             moves = self.readMoves(shuffleFile)
             misloadSwaps = {}
@@ -1133,7 +1133,7 @@ class FuelHandler:
 
         runLog.info("Read {0} moves over {1} cycles".format(numMoves, len(moves.keys())))
         return moves
- 
+
     @staticmethod
     def _mergeSetting(base, updates):
         """Recursively merge ``updates`` into ``base``.
@@ -1184,9 +1184,7 @@ class FuelHandler:
             merged = self._mergeSetting(self.cs[key], val)
             self.cs[key] = merged
         if changed:
-            runLog.important(
-                f"Cycle {self.r.p.cycle} setting changes: {', '.join(changed)}"
-            )
+            runLog.important(f"Cycle {self.r.p.cycle} setting changes: {', '.join(changed)}")
 
     @staticmethod
     def readMovesYaml(fname):
@@ -1311,7 +1309,7 @@ class FuelHandler:
                     for loc, angle in action.get("extraRotations", {}).items():
                         FuelHandler.validateLoc(loc, cycle)
                         moves[cycle].append(AssemblyMove(loc, loc, rotation=float(angle)))
-                
+
                 elif "settings" in action:
                     change = action["settings"]
                     if not isinstance(change, dict):
