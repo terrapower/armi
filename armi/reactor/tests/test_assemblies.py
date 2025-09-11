@@ -300,6 +300,9 @@ class Assembly_TestCase(unittest.TestCase):
         ref = self.blockList
         self.assertEqual(cur, ref)
 
+        for c in self.assembly:
+            self.assertIs(c.parent, self.assembly)
+
     def test_add(self):
         a = makeTestAssembly(1, 1)
 

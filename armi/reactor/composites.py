@@ -2453,7 +2453,8 @@ class Composite(ArmiObject):
 
     def extend(self, seq):
         """Add a list of children to this object."""
-        self._children.extend(seq)
+        for item in seq:
+            self.add(item)
 
     def add(self, obj):
         """Add one new child."""

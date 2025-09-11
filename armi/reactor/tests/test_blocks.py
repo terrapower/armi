@@ -1473,6 +1473,27 @@ class Block_TestCase(unittest.TestCase):
         self.assertIn(newComp, self.block.getComponents())
         self.block.remove(newComp)
 
+    def test_extend(self):
+        # generate a list of composites to extend onto this block
+        comps = []
+        nunComps = 3
+        for i in range(nunComps):
+            fuelDims = {"Tinput": 25.0 * i, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+            comps.append(components.Circle("fuel", "UZr", **fuelDims))
+
+        # show the composites have no parents
+        for c in comps:
+            self.assertIsNone(c.parent)
+
+        # add the composites to the block
+        lenBlock = len(self.block)
+        self.block.extend(comps)
+        self.assertEqual(len(self.block), lenBlock + nunComps)
+
+        # show all the composites in the block have the block as the parent
+        for c in self.block:
+            self.assertIs(c.parent, self.block)
+
     def test_hasComponents(self):
         self.assertTrue(self.block.hasComponents([Flags.FUEL, Flags.CLAD]))
         self.assertTrue(self.block.hasComponents(Flags.FUEL))
