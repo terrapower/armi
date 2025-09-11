@@ -1483,7 +1483,7 @@ class Block_TestCase(unittest.TestCase):
 
         # show the composites have no parents
         for c in comps:
-            self.assertEqual(c.parent, None)
+            self.assertIsNone(c.parent)
 
         # add the composites to the block
         lenBlock = len(self.block)
@@ -1492,7 +1492,7 @@ class Block_TestCase(unittest.TestCase):
 
         # show all the composites in the block have the block as the parent
         for c in self.block:
-            self.assertEqual(c.parent, self.block)
+            self.assertIs(c.parent, self.block)
 
     def test_hasComponents(self):
         self.assertTrue(self.block.hasComponents([Flags.FUEL, Flags.CLAD]))

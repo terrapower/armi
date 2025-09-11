@@ -565,7 +565,7 @@ class TestCompositePattern(unittest.TestCase):
 
         # show all the composites in the block have the block as the parent
         for c in self.container:
-            self.assertEqual(c.parent, self.container)
+            self.assertIs(c.parent, self.container)
 
 
 class TestCompositeTree(unittest.TestCase):
