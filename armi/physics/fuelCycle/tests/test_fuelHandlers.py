@@ -146,8 +146,7 @@ class TestReadMovesYamlFeatures(unittest.TestCase):
             tf.write(text)
             fname = tf.name
         try:
-            moves, _ = fuelHandlers.FuelHandler.readMovesYaml(fname)
-            return moves
+            return fuelHandlers.FuelHandler.readMovesYaml(fname)[0]
         finally:
             os.remove(fname)
 
@@ -670,7 +669,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_readMovesYaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves, swaps = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        moves, swaps, settings = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
         self.maxDiff = None
         expected = {
             1: [
@@ -707,6 +706,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         }
         self.assertEqual(moves, expected)
         self.assertEqual(swaps, {3: [("009-045", "008-004"), ("007-001", "006-005")]})
+        self.assertEqual(settings, {})
 
     def test_performShuffleYamlIntegration(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -772,6 +772,43 @@ class TestFuelHandler(FuelHandlerTestHelper):
         finally:
             os.remove(fname)
 
+    def test_settingsAppliedFromYaml(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        yaml_text = (
+            "sequence:\n"
+            "  1:\n"
+            "    - settings:\n"
+            "        Tin: 333.0\n"
+            "        crossSectionControl:\n"
+            "          YA:\n"
+            "            fluxFileLocation: newFlux\n"
+            "            geometry: 0D\n"
+            "            externalDriver: true\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(yaml_text)
+            fname = tf.name
+        try:
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            oldTin = self.o.cs["Tin"]
+            oldDriver = self.o.cs["crossSectionControl"]["YA"].externalDriver
+            with mockRunLogs.BufferLog() as mock:
+                fh.outage()
+                out = mock.getStdout()
+            self.assertEqual(self.o.cs["Tin"], 333.0)
+            self.assertNotEqual(oldTin, self.o.cs["Tin"])
+            self.assertEqual(self.o.cs["crossSectionControl"]["YA"].fluxFileLocation, "newFlux")
+            self.assertTrue(self.o.cs["crossSectionControl"]["YA"].externalDriver)
+            if oldDriver is not None:
+                self.assertNotEqual(oldDriver, self.o.cs["crossSectionControl"]["YA"].externalDriver)
+            self.assertIn("Tin", out)
+            self.assertIn("crossSectionControl.YA.fluxFileLocation", out)
+            self.assertIn("crossSectionControl.YA.geometry", out)
+            self.assertIn("crossSectionControl.YA.externalDriver", out)
+        finally:
+            os.remove(fname)
+
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
@@ -785,11 +822,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_processMoveList_yaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
-        result = fh.processMoveList(moves[1])
-        self.assertEqual(len(result.loadChains), 2)
-        self.assertTrue(any(result.enriches))
-        self.assertTrue(result.rotations)
+        moves, _, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        loadChains, loopChains, enriches, loadTypes, loadNames, rotations, _ = fh.processMoveList(moves[1])
+        self.assertEqual(len(loadChains), 2)
+        self.assertTrue(any(enriches))
+        self.assertTrue(rotations)
 
     def test_getFactorList(self):
         fh = fuelHandlers.FuelHandler(self.o)

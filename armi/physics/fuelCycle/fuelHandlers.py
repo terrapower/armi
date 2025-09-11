@@ -976,6 +976,10 @@ class FuelHandler:
         """
         Execute shuffling instructions from a previous run or YAML file.
 
+        When ``yaml`` is True, the file may also contain cycle-specific case
+        setting updates, which are applied prior to processing any shuffle moves
+        for that cycle.
+
         Parameters
         ----------
         shuffleFile : str
@@ -1000,13 +1004,15 @@ class FuelHandler:
         """
         # read moves file
         if yaml:
-            moves, misloadSwaps = self.readMovesYaml(shuffleFile)
+            moves, misloadSwaps, settingsChanges = self.readMovesYaml(shuffleFile)
             cycle = self.r.p.cycle
             if cycle == 0:
                 # if cycle is 0, we are at the beginning of the first cycle
                 # this is a special case where we don't have any moves
                 # so we return an empty list
                 return []
+            if cycle in settingsChanges:
+                self._applySettings(settingsChanges[cycle])
         else:
             moves = self.readMoves(shuffleFile)
             misloadSwaps = {}
@@ -1129,6 +1135,58 @@ class FuelHandler:
         return moves
 
     @staticmethod
+    def _mergeSetting(base, updates):
+        """Recursively merge ``updates`` into ``base``.
+
+        ``updates`` may consist of nested dictionaries or objects with attributes.
+        When both ``base`` and ``updates`` contain a mapping, their keys are merged
+        recursively.  When ``base`` is an object, matching attributes are updated
+        in place.  Non-mapping values are simply returned.
+        """
+        if not isinstance(updates, dict):
+            return updates
+        if isinstance(base, dict):
+            for k, v in updates.items():
+                base[k] = FuelHandler._mergeSetting(base.get(k), v)
+            return base
+        elif hasattr(base, "__dict__") and base is not None:
+            for k, v in updates.items():
+                setattr(base, k, FuelHandler._mergeSetting(getattr(base, k, None), v))
+            return base
+        else:
+            return updates
+
+    @staticmethod
+    def _flattenSettings(d, prefix=""):
+        """Yield dotted setting paths from a nested mapping.
+
+        This produces strings like ``crossSectionControl.YA.geometry`` for use in
+        log messages summarizing the settings that changed.
+        """
+        for k, v in d.items():
+            path = f"{prefix}.{k}" if prefix else k
+            if isinstance(v, dict):
+                yield from FuelHandler._flattenSettings(v, path)
+            else:
+                yield path
+
+    def _applySettings(self, updates):
+        """Apply a mapping of setting updates to the case settings.
+
+        Nested dictionaries are merged, and a summary of the affected dotted keys
+        is logged.  Unrecognized top-level settings are ignored with a warning.
+        """
+        changed = list(self._flattenSettings(updates))
+        for key, val in updates.items():
+            if key not in self.cs:
+                runLog.warning(f"Unrecognized setting {key!r} in shuffle YAML; skipping.")
+                continue
+            merged = self._mergeSetting(self.cs[key], val)
+            self.cs[key] = merged
+        if changed:
+            runLog.important(f"Cycle {self.r.p.cycle} setting changes: {', '.join(changed)}")
+
+    @staticmethod
     def readMovesYaml(fname):
         r"""
         Read a shuffle file in YAML format.
@@ -1150,6 +1208,9 @@ class FuelHandler:
         misloadSwaps : dict
             Mapping of cycle numbers to lists of location-pair tuples describing
             assemblies to be swapped in order to simulate a misload.
+        settingChanges : dict
+            Mapping of cycle numbers to dictionaries of case setting updates to
+            be applied at the start of that cycle.
         """
         # 1. load YAML file
         try:
@@ -1168,6 +1229,7 @@ class FuelHandler:
             raise InputError("Shuffle YAML missing required 'sequence' mapping")
 
         moves = {}
+        settingChanges = {}
         misloadSwaps = defaultdict(list)
         # cycles may be provided in any order; verify only that there are no gaps
         cycleNums = {int(c) for c in data["sequence"].keys()}
@@ -1189,7 +1251,7 @@ class FuelHandler:
                 runLog.warning(f"Cycle {cycleKey} has no shuffle actions defined, skipping.")
                 continue
 
-            elif cycle == 0:
+            if cycle == 0:
                 raise InputError(
                     "Cycle 0 is not allowed in shuffle YAML. "
                     "This cycle is reserved for the initial core loading."
@@ -1197,7 +1259,7 @@ class FuelHandler:
                 )
 
             for action in actions:
-                allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap"}
+                allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap", "settings"}
                 unknown = set(action) - allowed
                 if unknown:
                     raise InputError(f"Unknown action keys {unknown} in shuffle YAML")
@@ -1248,10 +1310,17 @@ class FuelHandler:
                         FuelHandler.validateLoc(loc, cycle)
                         moves[cycle].append(AssemblyMove(loc, loc, rotation=float(angle)))
 
+                elif "settings" in action:
+                    change = action["settings"]
+                    if not isinstance(change, dict):
+                        raise InputError("settings entries must be mappings")
+                    settingChanges.setdefault(cycle, {})
+                    FuelHandler._mergeSetting(settingChanges[cycle], change)
+
                 else:
                     raise InputError(f"Unable to process {action} in {cycle}")
 
-        return moves, dict(misloadSwaps)
+        return moves, dict(misloadSwaps), settingChanges
 
     @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
