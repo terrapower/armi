@@ -24,3 +24,4 @@ analyzing ARMI output files, etc.
    physics_coupling
    radial_and_axial_expansion
    accessingEntryPoints
+   symmetry_handling
