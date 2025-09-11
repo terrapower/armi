@@ -31,6 +31,7 @@ import numpy as np
 
 from armi import nuclideBases, runLog
 from armi.bookkeeping import report
+from armi.nucDirectory import nucDir
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import (
@@ -747,6 +748,10 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
+                if child.p.molesHmBOL:
+                    child.p.hmNuclidesBOL = [nuc for nuc in child.p.nuclides if nucDir.isHeavyMetal(nuc.decode())]
+                    child.p.hmNumberDensitiesBOL = child.getNuclideNumberDensities(child.p.hmNuclidesBOL)
+                    child.p.temperatureInCBOL = child.temperatureInC
 
         self.p.massHmBOL = massHmBOL
 
@@ -1130,9 +1135,7 @@ class Block(composites.Composite):
 
     def isPlenumPin(self, c):
         """Return True if the specified component is a plenum pin."""
-        # This assumes that anything with the GAP flag will have a valid 'id' dimension. If that
-        # were not the case, then we would need to protect the call to getDimension with a
-        # try/except
+        # This assumes that anything with the GAP flag will have a valid 'id' dimension.
         cIsCenterGapGap = isinstance(c, components.Component) and c.hasFlags(Flags.GAP) and c.getDimension("id") == 0
         return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
@@ -1148,19 +1151,17 @@ class Block(composites.Composite):
         Returns
         -------
         pitch : float or None
-            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch,
-            returns None
+            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch, returns None
         component : Component or None
-            Component that has the max pitch, if returnComp == True. If no component is found to
-            define the pitch, returns None
+            Component that has the max pitch, if returnComp == True. If no component is found to define the pitch,
+            returns None.
 
         Notes
         -----
-        The block stores a reference to the component that defines the pitch, making the assumption
-        that while the dimensions can change, the component containing the largest dimension will
-        not. This lets us skip the search for largest component. We still need to ask the largest
-        component for its current dimension in case its temperature changed, or was otherwise
-        modified.
+        The block stores a reference to the component that defines the pitch, making the assumption that while the
+        dimensions can change, the component containing the largest dimension will not. This lets us skip the search for
+        largest component. We still need to ask the largest component for its current dimension in case its temperature
+        changed, or was otherwise modified.
 
         See Also
         --------
@@ -1581,12 +1582,13 @@ class Block(composites.Composite):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
-        u5 = self.getMass("U235")
-        if u5 < 1e-10:
+        """Returns fissile mass fraction of uranium."""
+        totalU = self.getMass("U")
+        if totalU < 1e-10:
             return 0.0
-        u8 = self.getMass("U238")
-        return u5 / (u8 + u5)
+
+        fissileU = self.getMass(["U233", "U235"])
+        return fissileU / totalU
 
     def getInputHeight(self) -> float:
         """Determine the input height from blueprints.
@@ -1613,6 +1615,18 @@ class Block(composites.Composite):
             return heights[myIndex]
 
         raise AttributeError(f"No ancestor of {self} has blueprints")
+
+    def sort(self):
+        """Sort the children on this block.
+
+        If there is a spatial grid, the previous pin indices on the components
+        is now invalid because the ordering of :meth:`getPinLocations` has maybe
+        changed since the ordering of components has changed. Reassign the pin
+        indices via :meth:`assignPinIndices` accordingly.
+        """
+        super().sort()
+        if self.spatialGrid is not None:
+            self.assignPinIndices()
 
 
 class HexBlock(Block):

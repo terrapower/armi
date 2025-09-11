@@ -1,9 +1,3 @@
 {
-	"path": "../../armi/tests/tutorials/data_model.ipynb",
-	"extra-media": [
-        "../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml",
-        "../../armi/tests/anl-afci-177/anl-afci-177.yaml",
-        "../../armi/tests/anl-afci-177/anl-afci-177-coreMap.yaml",
-        "../../armi/tests/anl-afci-177/anl-afci-177-fuelManagement.py"
-      ]
+	"path": "../../armi/tests/tutorials/data_model.ipynb"
 }

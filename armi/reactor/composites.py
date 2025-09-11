@@ -1564,12 +1564,14 @@ class ArmiObject(metaclass=CompositeModelType):
             return 0.0
 
     def getUraniumNumEnrich(self):
-        """Returns U-235 number fraction."""
-        u8 = self.getNumberDensity("U238")
-        if u8 < 1e-10:
+        """Returns fissile uranium number fraction."""
+        uraniumNucs = self._getNuclidesFromSpecifier("U")
+        totalU = sum(self.getNuclideNumberDensities(uraniumNucs))
+        if totalU < 1e-10:
             return 0.0
-        u5 = self.getNumberDensity("U235")
-        return u5 / (u8 + u5)
+        fissileU = sum(self.getNuclideNumberDensities(["U233", "U235"]))
+
+        return fissileU / totalU
 
     def calcTotalParam(
         self,
@@ -2451,7 +2453,8 @@ class Composite(ArmiObject):
 
     def extend(self, seq):
         """Add a list of children to this object."""
-        self._children.extend(seq)
+        for item in seq:
+            self.add(item)
 
     def add(self, obj):
         """Add one new child."""
