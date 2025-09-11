@@ -13,6 +13,7 @@
 # limitations under the License.
 """Test the basic triangle math."""
 
+import math
 import unittest
 
 from armi.utils import triangle
@@ -30,6 +31,27 @@ class TestTriangle(unittest.TestCase):
         refArea = 1.0 / 2.0 * (y3 - y1) * (x2 - x1)
         Area = triangle.getTriangleArea(x1, y1, x2, y2, x3, y3)
         self.assertAlmostEqual(refArea, Area, 6)
+
+    def test_getTriangleCentroid(self):
+        # Right triangle
+        x, y = triangle.getTriangleCentroid(0, 0, 0, 1, 1, 0)
+        self.assertAlmostEqual(x, 1 / 3, delta=1e-10)
+        self.assertAlmostEqual(y, 1 / 3, delta=1e-10)
+
+        # Right triangle, but all in the negative part of the coordinate plane
+        x, y = triangle.getTriangleCentroid(-10, -10, -10, -9, -9, -10)
+        self.assertAlmostEqual(x, -10 + 1 / 3, delta=1e-10)
+        self.assertAlmostEqual(y, -10 + 1 / 3, delta=1e-10)
+
+        # Isosceles triangle
+        x, y = triangle.getTriangleCentroid(-2, 0, 2, 0, 0, 8)
+        self.assertAlmostEqual(x, 0.0, delta=1e-10)
+        self.assertAlmostEqual(y, 2 + 2 / 3, delta=1e-10)
+
+        # Equilateral triangle
+        x, y = triangle.getTriangleCentroid(0, 0, 2, 0, 1, math.sqrt(3))
+        self.assertAlmostEqual(x, 1.0, delta=1e-10)
+        self.assertAlmostEqual(y, 1 / math.sqrt(3), delta=1e-10)
 
     def test_checkIfPointIsInTriangle(self):
         """Test that checkIfPointIsInTrinagle can correctly identify if a point is inside or outside of a triangle."""

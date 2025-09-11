@@ -1282,6 +1282,10 @@ class Block_TestCase(unittest.TestCase):
         cur = self.block.getUraniumNumEnrich()
         self.assertEqual(cur, 0.0)
 
+        self.block.setNumberDensity("U238", 0.0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
+
     def test_getUraniumNumEnrichWith233(self):
         fuel = self.block.getComponent(Flags.FUEL)
         u5 = fuel.getNumberDensity("U235")

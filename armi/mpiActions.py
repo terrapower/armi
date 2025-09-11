@@ -273,10 +273,9 @@ class MpiAction:
     def invokeHook(self):
         """This method must be overridden in sub-clases.
 
-        This method is called by worker nodes, and has access to the worker node's operator,
-        reactor, and settings (through :code:`self.o`, :code:`self.r`, and :code:`self.cs`).
-        It must return a boolean value of :code:`True` or :code:`False`, otherwise the worker node
-        will raise an exception and terminate execution.
+        This method is called by worker nodes, and has access to the worker node's operator, reactor, and settings
+        (through :code:`self.o`, :code:`self.r`, and :code:`self.cs`). It must return a boolean value of :code:`True` or
+        :code:`False`, otherwise the worker node will raise an exception and terminate execution.
 
         Returns
         -------
@@ -310,7 +309,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
             numThisNode[nodeName] += 1
 
     queue, numBatches = _makeQueue(actions, useForComputation)
-    runLog.extra("Running {} MPI actions in parallel over {} batches".format(len(actions), numBatches))
+    runLog.extra(f"Running {len(actions)} MPI actions in parallel over {numBatches} batches")
     results = []
     batchNum = 0
     while queue:
@@ -333,6 +332,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         distrib = DistributionAction(actionsThisRound)
         distrib.broadcast()
         results.append(distrib.invoke(o, r, cs))
+
     return results
 
 
