@@ -48,6 +48,7 @@ jobs:
 
           echo "Build HTML docs..."
           cd doc
+          git fetch
           git submodule init
           git submodule update
           make html
