@@ -218,18 +218,19 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
         if pastCommit in txt:
             break
 
+    print(txt)
+
     if not txt or pastCommit not in txt:
         msg = f"Could not find commit in git log: {pastCommit}"
-        print(msg)
         return msg
     else:
         print(f"TODO: JOHN: Found commit {pastCommit}")
 
     # 2. arse commit history to get the PR numbers
-    prNums = []
+    prNums = set()
     if thisPrNum > 0:
         # in case the docs are not being built from a PR
-        prNums.append(thisPrNum)
+        prNums.add(thisPrNum)
 
     for ln in txt.split("\n"):
         line = ln.strip()
@@ -239,7 +240,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
         elif line.endswith(")") and "(#" in line:
             # get the PR number
             try:
-                prNums.append(int(line.split("(#")[-1].split(")")[0]))
+                prNums.add(int(line.split("(#")[-1].split(")")[0]))
             except ValueError:
                 # This is not a PR. Someone unwisely put some trash in the commit message.
                 pass
