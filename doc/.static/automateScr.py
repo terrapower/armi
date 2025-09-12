@@ -98,7 +98,8 @@ def _buildScrLine(prNum: str):
     str
         RST-formatted list-table row.
     """
-    txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
+    txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")  # TODO: JOHN
+    # txt = subprocess.check_output(["./gh.exe", "pr", "view", prNum]).decode("utf-8")  # TODO: JOHN
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
     # grab title
@@ -208,15 +209,11 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
         RST-formatted list-table content.
     """
     print(f"TODO: JOHN buildScrTable {thisPrNum}, {pastCommit}")
-    gitCmd = "git status"
-    print(subprocess.check_output(gitCmd).decode("utf-8"))
-    gitCmd = "git log -n 10 --pretty=oneline --all"
-    print(subprocess.check_output(gitCmd).decode("utf-8"))
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 2001, 100):
         print(f"Looking back {num} commits...")
-        gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
+        gitCmd = f"git log -n {num} --pretty=oneline".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
