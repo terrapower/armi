@@ -207,6 +207,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     str
         RST-formatted list-table content.
     """
+    print(f"TODO: JOHN buildScrTable {thisPrNum}, {pastCommit}")
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 2001, 100):
@@ -217,7 +218,10 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
             break
 
     if not txt or pastCommit not in txt:
+        print(f"TODO: JOHN: Could not find commit in git log: {pastCommit}")
         return f"Could not find commit in git log: {pastCommit}"
+    else:
+        print(f"TODO: JOHN: Found commit {pastCommit}")
 
     # 2. arse commit history to get the PR numbers
     prNums = []
