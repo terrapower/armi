@@ -208,6 +208,10 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
         RST-formatted list-table content.
     """
     print(f"TODO: JOHN buildScrTable {thisPrNum}, {pastCommit}")
+    gitCmd = "git status"
+    print(subprocess.check_output(gitCmd).decode("utf-8"))
+    gitCmd = "git log -n 10 --pretty=oneline --all"
+    print(subprocess.check_output(gitCmd).decode("utf-8"))
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 2001, 100):
@@ -218,8 +222,9 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
             break
 
     if not txt or pastCommit not in txt:
-        print(f"TODO: JOHN: Could not find commit in git log: {pastCommit}")
-        return f"Could not find commit in git log: {pastCommit}"
+        msg = f"Could not find commit in git log: {pastCommit}"
+        print(msg)
+        return msg
     else:
         print(f"TODO: JOHN: Found commit {pastCommit}")
 
