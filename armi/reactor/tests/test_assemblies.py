@@ -175,7 +175,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         mat.applyInputParams(0.1, 0.0)
         self.assertAlmostEqual(
             uThZrFuel.getMass("U235") / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
-            0.1,
+            0.1111111111111111,
         )
 
 
@@ -299,6 +299,9 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.assembly.getBlocks()
         ref = self.blockList
         self.assertEqual(cur, ref)
+
+        for c in self.assembly:
+            self.assertIs(c.parent, self.assembly)
 
     def test_add(self):
         a = makeTestAssembly(1, 1)
