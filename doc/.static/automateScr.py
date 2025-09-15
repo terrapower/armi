@@ -98,8 +98,7 @@ def _buildScrLine(prNum: str):
     str
         RST-formatted list-table row.
     """
-    txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")  # TODO: JOHN
-    # txt = subprocess.check_output(["./gh.exe", "pr", "view", prNum]).decode("utf-8")  # TODO: JOHN
+    txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
     # grab title
@@ -218,10 +217,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
             break
 
     if not txt or pastCommit not in txt:
-        msg = f"Could not find commit in git log: {pastCommit}"
-        return msg
-    else:
-        print(f"TODO: JOHN: Found commit {pastCommit}")
+        return f"Could not find commit in git log: {pastCommit}"
 
     # 2. arse commit history to get the PR numbers
     prNums = set()
@@ -247,7 +243,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     for prNum in sorted(prNums):
         if not isMainPR(prNum):
             continue
-        print(f"    Found PR number {prNum}")
+
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
