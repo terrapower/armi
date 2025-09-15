@@ -1380,13 +1380,13 @@ in the working directory of a run (but can be anywhere if you use full paths). D
 ARMI checks for two fuel management settings:
 
 ``shuffleLogic``
-   The path to the Python source file that contains the user's custom fuel
+   The path to the Python source file or dotted import path to a module that contains the user's custom fuel
    management logic
 
 ``fuelHandlerName``
-   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input file
-   pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility
-   to design and place that object in that file.
+   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input module or file
+   specified by ``shuffleLogic``. Since it's input, it's the user's responsibility
+   to design and place that object in that module or file.
 
 .. note:: We consider the limited syntax needed to express fuel management in Python
    code itself to be sufficiently expressive and simple for non-programmers to
@@ -1536,8 +1536,8 @@ of them, passing one of each of the factors to each CPU in parallel. When the ca
 finish, the branch search determines the optimal result and selects the corresponding
 value of the factor to proceed.
 
-Branch searches are controlled by custom `getFactorList` methods specified in the
-`shuffleLogic` input files. This method should return two things:
+Branch searches are controlled by custom ``getFactorList`` methods specified in the
+``shuffleLogic`` input modules or files. This method should return two things:
 
     * A ``defaultFactors``; a dictionary with user-defined keys and values between
       0 and 1 for each key. These factors will be passed to the ``chooseSwaps``
