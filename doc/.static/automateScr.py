@@ -15,10 +15,11 @@
 """
 Tool to build SCR tables to be added to the RST docs.
 
-This script is meant to generate an RST-formatted list-table to the docs, to automate the process of
-generating an SCR in ARMI.
+This script is meant to generate an RST-formatted list-table to the docs, to automate the process of generating an SCR
+in ARMI.
 """
 
+import argparse
 import subprocess
 
 import requests
@@ -31,6 +32,7 @@ GITHUB_USERS = {
     "bsculac": "Brian Sculac",
     "clstocking": "Casey Stocking",
     "drewj-tp": "Drew Johnson",
+    "HunterPSmith": "Hunter Smith",
     "jakehader": "Jake Hader",
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
@@ -48,6 +50,24 @@ PR_TYPES = {
     "fixes": "Code Changes, Bugs and Fixes",
     "trivial": "Code Changes, Maintenance, or Trivial",
 }
+
+
+def main():
+    """NOTE: This is not used during CI, but exists only for testing and dev purposes."""
+    # Instantiate the parser
+    parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
+
+    # Required positional argument
+    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
+    parser.add_argument("pastCommit", help="The commit hash of the last release.")
+
+    # Parse the command line
+    args = parser.parse_args()
+    prNum = int(args.prNum)
+    pastCommit = args.pastCommit
+
+    rstContent = buildScrTable(prNum, pastCommit)
+    print(rstContent)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -199,35 +219,41 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     """
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
-    for num in range(100, 1001, 100):
+    for num in range(100, 2001, 100):
+        print(f"Looking back {num} commits...")
         gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
 
-    if not txt:
+    if not txt or pastCommit not in txt:
         return f"Could not find commit in git log: {pastCommit}"
 
     # 2. arse commit history to get the PR numbers
-    prNums = []
+    prNums = set()
     if thisPrNum > 0:
         # in case the docs are not being built from a PR
-        prNums.append(thisPrNum)
+        prNums.add(thisPrNum)
 
     for ln in txt.split("\n"):
         line = ln.strip()
         if pastCommit in line:
             # do not include the reference commit
             break
-        if line.endswith(")") and "(#" in line:
+        elif line.endswith(")") and "(#" in line:
             # get the PR number
-            prNums.append(int(line.split("(#")[-1].split(")")[0]))
+            try:
+                prNums.add(int(line.split("(#")[-1].split(")")[0]))
+            except ValueError:
+                # This is not a PR. Someone unwisely put some trash in the commit message.
+                pass
 
     # 3. Build a table row for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
         if not isMainPR(prNum):
             continue
+
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
@@ -235,9 +261,14 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     content = ""
     for typ in ["features", "fixes", "trivial", "docs"]:
         if len(data[typ]):
+            print(f"Found {len(data[typ])} SCRs in the {typ} category")
             content += _buildTableHeader(typ)
             for line in data[typ]:
                 content += line
             content += "\n\n"
 
     return content
+
+
+if __name__ == "__main__":
+    main()
