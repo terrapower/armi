@@ -19,8 +19,8 @@ This script is meant to generate an RST-formatted list-table to the docs, to aut
 in ARMI.
 """
 
+import argparse
 import subprocess
-import sys
 
 import requests
 
@@ -53,8 +53,17 @@ PR_TYPES = {
 
 def main():
     """NOTE: This is not used during CI, but exists only for testing and dev purposes."""
-    prNum = int(sys.argv[1])
-    pastCommit = sys.argv[2]
+    # Instantiate the parser
+    parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
+
+    # Required positional argument
+    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
+    parser.add_argument("pastCommit", help="The commit hash of the last release.")
+
+    # Parse the command line
+    args = parser.parse_args()
+    prNum = int(args.prNum)
+    pastCommit = args.pastCommit
 
     rstContent = buildScrTable(prNum, pastCommit)
     print(rstContent)
