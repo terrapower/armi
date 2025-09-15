@@ -1,3 +1,5 @@
+# USE AND DISTRIBUTION OF THIS CODE IS GOVERNED BY EXPORT CONTROL LAWS AND THE LICENSE IN LICENSE.txt.
+# @LICENSE:
 """Tests for :mod:`armi.physics.fuelCycle.fuelHandlerFactory`."""
 
 import unittest
