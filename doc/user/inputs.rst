@@ -366,8 +366,14 @@ A few examples of restart cases:
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 
-Fuel Shuffling
-^^^^^^^^^^^^^^
+.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
+
+.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
+
+.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
+
+Shuffling
+^^^^^^^^^
 
 .. note:: The ``explicitRepeatShuffles`` setting points to a ``*-SHUFFLES.txt``
           file that records moves from a previous run for exact repetition.
@@ -393,10 +399,10 @@ location is rotated. Valid angles depend on the assembly's geometry.
 
 Extra rotations therefore:
 
-* apply to whatever assembly resides at the specified location once all
-    cascades and misload swaps are complete;
-* rotate the assembly relative to its current orientation; and
-* execute after any algorithmic rotation routines.
+    * apply to whatever assembly resides at the specified location once all
+      cascades and misload swaps are complete;
+    * rotate the assembly relative to its current orientation; and
+    * execute after any algorithmic rotation routines.
 
 A cascade with no final destination defaults to deleting the assembly. 
 Assemblies can be retained in the model by ending the cascade with
@@ -428,12 +434,6 @@ For cycle 1 above, the actions execute in the following order:
    5. The assembly now at ``009-045`` is rotated an additional 60 degrees counterclockwise.
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
-
-.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
-
-.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
-
-.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
 
 .. _bp-input-file:
 
