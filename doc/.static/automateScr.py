@@ -208,17 +208,14 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     str
         RST-formatted list-table content.
     """
-    print(f"TODO: JOHN buildScrTable {thisPrNum}, {pastCommit}")
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 2001, 100):
         print(f"Looking back {num} commits...")
-        gitCmd = f"git log -n {num} --pretty=oneline".split(" ")
+        gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
-
-    print(txt)
 
     if not txt or pastCommit not in txt:
         msg = f"Could not find commit in git log: {pastCommit}"
