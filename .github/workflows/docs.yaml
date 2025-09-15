@@ -49,6 +49,8 @@ jobs:
           echo "Build HTML docs..."
           cd doc
           git fetch --depth=2000
+          git checkout main
+          git pull origin main
           git submodule init
           git submodule update
           make html
