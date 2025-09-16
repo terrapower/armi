@@ -403,6 +403,7 @@ Assemblies can be retained in the model by ending the cascade with
 ``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the
 spent fuel pool even if the ``trackAssems`` setting is ``False``; ``Delete``
 always removes the assembly from the model.
+
 Assemblies may also be re-inserted from the spent fuel pool by starting a
 cascade with ``SFP`` and providing an ``assemblyName`` for the assembly to
 load. No assembly type is required in this case. The cascade then proceeds as
@@ -421,6 +422,8 @@ normal from the destination location. For example
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
 
 A cascade that loads an assembly from the SFP may look like::
+
+..  code:: yaml
 
        sequence:
          1:

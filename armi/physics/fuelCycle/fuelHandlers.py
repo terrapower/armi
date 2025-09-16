@@ -1210,11 +1210,13 @@ class FuelHandler:
                         raise InputError("cascade entries must be strings")
 
                     if chain[0] == "SFP":
+                        # move an assembly from the SFP into the Core
                         assemType = None
                         locs = chain
                         if len(locs) < 2:
                             raise InputError("cascade starting with SFP must include a destination location")
                     else:
+                        # move an assembly around the Core
                         assemType = chain[0]
                         locs = chain[1:]
                         if not locs:
