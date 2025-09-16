@@ -164,7 +164,7 @@ class Pitch(yamlize.Object):
         if not any([hexPitch, x, y, z]):
             raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
 
-        self.hex = hex or x
+        self.hex = hexPitch or x
         self.x = x
         self.y = y
         self.z = z

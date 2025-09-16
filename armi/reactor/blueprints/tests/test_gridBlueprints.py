@@ -454,11 +454,28 @@ class TestGridBlueprintsSection(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
 
+    def test_pitchBasics(self):
+        # use only hex input
+        p = Pitch(123, 0, 0, 0)
+        self.assertEqual(p.hex, 123)
+        self.assertEqual(p.x, 0)
+        self.assertEqual(p.y, 0)
+        self.assertEqual(p.z, 0)
+
+        # use only X, Y, Z inputs
+        p = Pitch(0, 1, 2, 3)
+        self.assertEqual(p.hex, 1)
+        self.assertEqual(p.x, 1)
+        self.assertEqual(p.y, 2)
+        self.assertEqual(p.z, 3)
+
     def test_pitchEdgeCases(self):
         with self.assertRaises(InputError):
+            # cannot mix hex with x,y,z pitch
             Pitch(1, 2, 3, 4)
 
         with self.assertRaises(InputError):
+            # SOMETHING needs to be non-zero
             Pitch(0, 0, 0, 0)
 
     def test_simpleReadLatticeMap(self):
