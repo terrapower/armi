@@ -780,10 +780,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 - cascade: ["SFP", "005-003", "SFP"]
                   assemblyName: "{assem.getName()}"
         """
-        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
-            tf.write(yaml_text)
-            fname = tf.name
-        try:
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
             moves, _ = fuelHandlers.FuelHandler.readMovesYaml(fname)
             expected = {
                 1: [
@@ -792,8 +792,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 ]
             }
             self.assertEqual(moves, expected)
-        finally:
-            os.remove(fname)
 
     def test_performShuffleYaml_loadFromSfp(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -804,18 +802,16 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 - cascade: ["SFP", "009-045", "SFP"]
                   assemblyName: "{sfpAssem.getName()}"
         """
-        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
-            tf.write(yaml_text)
-            fname = tf.name
-        try:
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
             before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
             self.r.p.cycle = 1
             self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
             fh.outage()
             self.assertEqual(self.r.core.getAssemblyWithStringLocation("009-045").getName(), sfpAssem.getName())
             self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
-        finally:
-            os.remove(fname)
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
