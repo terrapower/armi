@@ -336,6 +336,24 @@ class TestCompositePattern(unittest.TestCase):
             self.assertTrue(self.container.hasFlags(t))
             self.assertFalse(self.container.hasFlags(t, exact=True))
 
+    def test_calcTotalParam(self):
+        minSerialNumberCount = 21.0
+        kids = self.container.getChildren()
+
+        tot = self.container.calcTotalParam("serialNum", kids)
+        self.assertGreaterEqual(tot, minSerialNumberCount)
+
+        tot = self.container.calcTotalParam("serialNum", kids, calcBasedOnFullObj=True)
+        self.assertGreaterEqual(tot, minSerialNumberCount)
+
+        tot = self.container.calcTotalParam("serialNum", kids, typeSpec=Flags.FUEL)
+        self.assertEqual(tot, 0.0)
+
+        with self.assertRaises(ValueError):
+            self.container.calcTotalParam(
+                "power", self.container.getChildren(), addSymmetricPositions=True, calcBasedOnFullObj=True
+            )
+
     def test_getBoundingCirlceOuterDiameter(self):
         od = self.container.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(od, len(list(self.container.iterComponents())))
@@ -494,6 +512,10 @@ class TestCompositePattern(unittest.TestCase):
         c0 = b.getFirstComponent()
         self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
+
+        # covering edge case: someone passes in a flag that doesn't exist on on the object
+        with self.assertRaises(ValueError):
+            b.getFirstComponent(typeSpec=Flags.POISON)
 
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
@@ -660,6 +682,52 @@ class TestCompositeTree(unittest.TestCase):
         otherBlock.spatialLocator = locator
         self.assertTrue(otherBlock < self.block)
 
+        # test some edge cases
+        otherBlock.spatialLocator._grid = None
+        with self.assertRaises(ValueError):
+            otherBlock < self.block
+
+        otherBlock.spatialLocator = None
+        with self.assertRaises(ValueError):
+            otherBlock < self.block
+
+    def test_getAncestorWithFlags(self):
+        # this test block is not part of an assembly, so it should not have a parent/ancestor
+        parent = self.block.getAncestorWithFlags(Flags.FUEL)
+        self.assertIsNone(parent)
+
+        # pick a component that is not part of a fuel composite, so it should not have a fuel ancestor
+        grandchild = self.block.getFirstComponent()
+        child = grandchild.getAncestorWithFlags(Flags.FUEL)
+        self.assertIsNone(child)
+
+        # test the usual case: get a ancestor with the fuel flag
+        child = self.block.getChildrenWithFlags(Flags.FUEL)[0]
+        grandchild = child.getFirstComponent()
+        child1 = grandchild.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child1, grandchild)
+
+        # default case: the only ancestor with the fuel flag is the composite itself, so return that
+        child2 = child.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child2, child)
+
+    def test_changeNDensByFactor(self):
+        c = deepcopy(self.block.getComponents(Flags.FUEL)[0])
+
+        # test inital state
+        dens = c.getNumberDensities()
+        zrDens = dens["ZR"]
+        u235Dens = dens["U235"]
+        u238Dens = dens["U238"]
+
+        c.changeNDensByFactor(0.5)
+
+        # test new state
+        dens = c.getNumberDensities()
+        self.assertAlmostEqual(dens["ZR"], zrDens / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["U235"], u235Dens / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["U238"], u238Dens / 2, delta=1e-6)
+
     def test_summing(self):
         a = assemblies.Assembly("dummy")
         a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
@@ -764,6 +832,34 @@ class TestCompositeTree(unittest.TestCase):
 
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
+
+    def test_setMassFrac(self):
+        # build test component
+        c = DummyComposite("test_setMassFrac")
+        c.getHeight = lambda: 1.0
+
+        fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
+        fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
+        c.add(fuelComponent)
+
+        # test initial state
+        self.assertEqual(c.getFPMass(), 0.0)
+        self.assertAlmostEqual(c.getHMMass(), 6.468105962375698, delta=1e-6)
+        self.assertAlmostEqual(c.getMass(), 7.186784402639664, delta=1e-6)
+
+        # use setMassFrac
+        c.setMassFrac("U235", 0.99)
+        c.setMassFrac("U238", 0.01)
+
+        # test new state
+        self.assertEqual(c.getFPMass(), 0.0)
+        self.assertAlmostEqual(c.getHMMass(), 7.178895593948443, delta=1e-6)
+        self.assertAlmostEqual(c.getMass(), 7.186784402639666, delta=1e-6)
+
+        # test edge case were zero density
+        c.setNumberDensities({})
+        with self.assertRaises(ValueError):
+            c.setMassFrac("U235", 0.98)
 
     def test_getFissileMass(self):
         cur = self.block.getFissileMass()
