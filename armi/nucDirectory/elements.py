@@ -165,7 +165,7 @@ class ChemicalGroup(Enum):
 class Element:
     """Represents an element defined on the Periodic Table."""
 
-    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
+    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN", skipGlobal=False):
         """
         Creates an instance of an Element.
 
@@ -206,7 +206,8 @@ class Element:
         self.group = ChemicalGroup[group]
         self.standardWeight = None
         self.nuclides = []
-        addGlobalElement(self)
+        if not skipGlobal:
+            addGlobalElement(self)
 
     def __repr__(self):
         return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
@@ -442,3 +443,189 @@ def destroyGlobalElements():
 
 
 factory()
+
+
+"""
+TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
+      Below this point is the new code.
+"""
+
+
+class Elements:
+    """TODO."""
+
+    def __init__(self):
+        self.byZ = {}
+        self.byName = {}
+        self.bySymbol = {}
+        self.elementsFile = os.path.join(context.RES, "elements.dat")
+
+    def clear(self):
+        """Empty all the data in this collection."""
+        self.byZ.clear()
+        self.byName.clear()
+        self.bySymbol.clear()
+
+    def addElement(self, element: Element):
+        """Add an element to this collection."""
+        if element.z in self.byZ or element.name in self.byName or element.symbol in self.bySymbol:
+            raise ValueError(f"{element} has already been added and cannot be duplicated.")
+
+        self.byZ[element.z] = element
+        self.byName[element.name] = element
+        self.bySymbol[element.symbol] = element
+
+    def factory(self):
+        """Generate the :class:`Elements <Element>` instances."""
+        self.clear()
+        with open(self.elementsFile, "r") as f:
+            for line in f:
+                # Skip header lines
+                if line.startswith("#") or line.startswith("Z"):
+                    continue
+                # read z, symbol, name, phase, and chemical group
+                lineData = line.split()
+                z = int(lineData[0])
+                sym = lineData[1].upper()
+                name = lineData[2]
+                phase = lineData[3]
+                group = lineData[4]
+                standardWeight = lineData[5]
+                e = Element(z, sym, name, phase, group, skipGlobal=True)
+                if standardWeight != "Derived":
+                    e.standardWeight = float(standardWeight)
+                self.addElement(e)
+
+    def getElementsByChemicalPhase(self, phase: ChemicalPhase) -> List[Element]:
+        """
+        Returns all elements that are of the given chemical phase.
+
+        Parameters
+        ----------
+        phase: ChemicalPhase
+            This should be one of the valid options from the `ChemicalPhase` class.
+
+        Returns
+        -------
+        elems : List[Element]
+            A list of elements that are associated with the given chemical phase.
+        """
+        elems = []
+        if not isinstance(phase, ChemicalPhase):
+            raise ValueError(f"{phase} is not an instance of {ChemicalPhase}")
+
+        for element in self.byName.values():
+            if element.phase == phase:
+                elems.append(element)
+
+        return elems
+
+    def getElementsByChemicalGroup(self, group: ChemicalGroup) -> List[Element]:
+        """
+        Returns all elements that are of the given chemical group.
+
+        Parameters
+        ----------
+        group: ChemicalGroup
+            This should be one of the valid options from the `ChemicalGroup` class.
+
+        Returns
+        -------
+        elems : List[Element]
+            A list of elements that are associated with the given chemical group.
+        """
+        elems = []
+        if not isinstance(group, ChemicalGroup):
+            raise ValueError(f"{group} is not an instance of {ChemicalGroup}")
+
+        for element in self.byName.values():
+            if element.group == group:
+                elems.append(element)
+
+        return elems
+
+    def getName(self, z: int = None, symbol: str = None) -> str:
+        r"""
+        Returns element name.
+
+        Parameters
+        ----------
+        z : int
+            Atomic number
+        symbol : str
+            Element abbreviation e.g. 'Zr'
+
+        Examples
+        --------
+        >>> elements.getName(10)
+        'Neon'
+        >>> elements.getName(symbol='Ne')
+        'Neon'
+        """
+        element = None
+        if z:
+            element = self.byZ[z]
+        else:
+            element = self.byName[symbol.upper()]
+
+        return element.name
+
+    def getSymbol(self, z: int = None, name: str = None) -> str:
+        r"""
+        Returns element abbreviation given atomic number Z.
+
+        Parameters
+        ----------
+        z : int
+            Atomic number
+        name : str
+            Element name E.g. Zirconium
+
+        Examples
+        --------
+        >>> elements.getSymbol(10)
+        'Ne'
+        >>> elements.getSymbol(name='Neon')
+        'Ne'
+
+        """
+        element = None
+        if z:
+            element = self.byZ[z]
+        else:
+            element = self.byName[name.lower()]
+
+        return element.symbol
+
+    def getElementZ(self, symbol: str = None, name: str = None) -> int:
+        """
+        Get element atomic number given a symbol or name.
+
+        Parameters
+        ----------
+        symbol : str
+            Element symbol e.g. 'Zr'
+        name : str
+            Element name e.g. 'Zirconium'
+
+        Examples
+        --------
+        >>> elements.getZ('Zr')
+        40
+        >>> elements.getZ(name='Zirconium')
+        40
+
+        Notes
+        -----
+        Element Z is stored in elementZBySymbol, indexed by upper-case element symbol.
+        """
+        if not symbol and not name:
+            return None
+
+        element = None
+        if symbol:
+            element = self.bySymbol[symbol.upper()]
+        else:
+            element = self.byName[name.lower()]
+
+        return element.z
