@@ -17,7 +17,7 @@ System to handle basic configuration settings.
 
 Notes
 -----
-The type of each setting is derived from the type of the default value. When users set values to their settings, ARMI
+The type of each Setting is derived from the type of the default value. When users set values to their settings, ARMI
 enforces these types with schema validation. This also allows for more complex schema validation for settings that are
 more complex dictionaries (e.g. XS, rx coeffs).
 """
@@ -160,20 +160,6 @@ class Setting:
         return self._default
 
     @property
-    def options(self):
-        return self._options
-
-    @options.setter
-    def options(self, opts):
-        if self._options is None:
-            raise AttributeError(
-                f"The Setting {self.name} has no default options, it looks like you want to add that to the Setting "
-                "definition."
-            )
-
-        self._options = opts
-
-    @property
     def value(self):
         return self._value
 
@@ -205,6 +191,19 @@ class Setting:
             raise
 
         self._value = self._load(val)
+
+    @property
+    def options(self):
+        return self._options
+
+    @options.setter
+    def options(self, opts):
+        if self._options is None:
+            raise AttributeError(
+                f"The Setting {self.name} has no default options, it looks like you want to add that to the definition."
+            )
+
+        self._options = opts
 
     def addOptions(self, options: List[Option]):
         """Extend this Setting's options with extra options."""
@@ -275,7 +274,7 @@ class Setting:
         """
         Returns a boolean based on whether or not the setting equals its default value.
 
-        It's possible for a setting to change and not be reported as such when it is changed back to its default. That
+        It is possible for a setting to change and not be reported as such when it is changed back to its default. That
         behavior seems acceptable.
         """
         return self.value == self.default
@@ -366,6 +365,7 @@ class FlagListSetting(Setting):
                 flagVals.append(v)
             else:
                 raise ValueError(f"Invalid flag input `{v}` in `FlagListSetting`")
+
         return flagVals
 
     def dump(self) -> List[str]:

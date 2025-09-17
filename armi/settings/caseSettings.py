@@ -13,13 +13,12 @@
 # limitations under the License.
 
 """
-This defines a Settings object that acts mostly like a dictionary. It
-is meant so that each ARMI run has one-and-only-one Settings object. It records
-user settings like the core power level, the input file names, the number of cycles to
-run, the run type, the environment setup, and hundreds of other things.
+This defines a Settings object that acts mostly like a dictionary. It is meant so that each ARMI run has
+one-and-only-one Settings object. It records user settings like the core power level, the input file names, the number
+of cycles to run, the run type, the environment setup, and hundreds of other things.
 
-A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
-create this settings file, which is then loaded by an ARMI process on the cluster.
+A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to create this settings file,
+which is then loaded by an ARMI process on the cluster.
 """
 
 import io
@@ -53,19 +52,17 @@ class Settings:
         :id: I_ARMI_SETTING0
         :implements: R_ARMI_SETTING
 
-        The Settings object is accessible to most ARMI objects through self.cs
-        (for 'case settings'). It acts largely as a dictionary, and setting values
-        are accessed by keys.
+        The Settings object is accessible to most ARMI objects through self.cs (for 'case settings'). It acts largely as
+        a dictionary, and setting values are accessed by keys.
 
-        The Settings object has a 1-to-1 correspondence with the ARMI settings
-        input file. This file may be created by hand or by a GUI.
+        The Settings object has a 1-to-1 correspondence with the ARMI settings input file. This file may be created by
+        hand or by a GUI.
 
     Notes
     -----
-    While it is possible to modify case settings during the course of a run, this
-    is highly discouraged because there will be no record of this happening in your
-    results or in the database produced from your run. There is no guarantee that
-    doing so will not cause unexpected problems with your calculation.
+    While it is possible to modify case settings during the course of a run, this is highly discouraged because there
+    will be no record of this happening in your results or in the database produced from your run. There is no guarantee
+    that doing so will not cause unexpected problems with your calculation.
     """
 
     defaultCaseTitle = "armi"
@@ -85,11 +82,10 @@ class Settings:
         self._failOnLoad = False
         """This is state information.
 
-        The command line can take settings, which override a value in the current
-        settings file; however, if the settings file is listed after a setting value,
-        the setting from the settings file will be used rather than the one explicitly
-        provided by the user on the command line.  Therefore, _failOnLoad is used to
-        prevent this from happening.
+        The command line can take settings, which override a value in the current settings file; however, if the
+        settings file is listed after a setting value, the setting from the settings file will be used rather than the
+        one explicitly provided by the user on the command line. Therefore, _failOnLoad is used to prevent this from
+        happening.
         """
         from armi import getApp
 
@@ -118,14 +114,11 @@ class Settings:
             :id: I_ARMI_SETTINGS_META0
             :implements: R_ARMI_SETTINGS_META
 
-            Every Settings object has a "case title"; a string for users to
-            help identify their run. This case title is used in log file
-            names, it is printed during a run, it is frequently used to
-            name the settings file. It is designed to be an easy-to-use
-            and easy-to-understand way to keep track of simulations. The
-            general idea here is that the average analyst that is using
-            ARMI will run many ARMI-based simulations, and there needs
-            to be an easy to identify them all.
+            Every Settings object has a "case title"; a string for users to help identify their run. This case title is
+            used in log file names, it is printed during a run, it is frequently used to name the settings file. It is
+            designed to be an easy-to-use and easy-to-understand way to keep track of simulations. The general idea here
+            is that the average analyst that is using ARMI will run many ARMI-based simulations, and there needs to be
+            an easy to identify them all.
         """
         if not self.path:
             return self.defaultCaseTitle
@@ -150,7 +143,7 @@ class Settings:
         isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
-        return "<{} name:{} total:{} altered:{}>".format(self.__class__.__name__, self.caseTitle, total, altered)
+        return f"<{self.__class__.__name__} name:{self.caseTitle} total:{total} altered:{altered}>"
 
     def _directAccessOfSettingAllowed(self, key):
         """
@@ -160,20 +153,19 @@ class Settings:
 
         Notes
         -----
-        Checking the validity of grabbing specific settings at this point, as is done for the
-        SIMPLE_CYCLES_INPUT's, feels a bit intrusive and out of place. In particular, the fact that
-        the check is done every time that a setting is reached for, no matter if it is the setting
-        in question, is quite clunky. In the future, it would be desirable if the settings system
-        were more flexible to control this type of thing at a deeper level.
+        Checking the validity of grabbing specific settings at this point, as is done for the SIMPLE_CYCLES_INPUT's,
+        feels a bit intrusive and out of place. In particular, the fact that the check is done every time that a setting
+        is reached for, no matter if it is the setting in question, is quite clunky. In the future, it would be
+        desirable if the settings system were more flexible to control this type of thing at a deeper level.
         """
         if key not in self.__settings:
             return False, NonexistentSetting(key)
 
         if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
             err = ValueError(
-                "Cannot grab simple cycles information from the case settings when detailed cycles "
-                "information is also entered. In general cycles information should be pulled off "
-                "the operator or parsed using the appropriate getter in the utils."
+                "Cannot grab simple cycles information from the case settings when detailed cycles information is also "
+                "entered. In general cycles information should be pulled off the operator or parsed using the "
+                "appropriate getter in the utils."
             )
 
             return False, err
@@ -217,8 +209,7 @@ class Settings:
         """
         Rebuild schema upon unpickling since schema is unpickleable.
 
-        Pickling happens during mpi broadcasts and also during testing where the test reactor is
-        cached.
+        Pickling happens during mpi broadcasts and also during testing where the test reactor is cached.
 
         See Also
         --------
@@ -255,8 +246,8 @@ class Settings:
         """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
         cs._failOnLoad = False
-        # It's not really protected access since it is a new Settings object. _failOnLoad is set to
-        # false, because this new settings object should be independent of the command line
+        # It's not really protected access since it is a new Settings object. _failOnLoad is set to false, because this
+        # new settings object should be independent of the command line
         return cs
 
     def revertToDefaults(self):
@@ -267,8 +258,8 @@ class Settings:
     def failOnLoad(self):
         """This method is used to force loading a file to fail.
 
-        After command line processing of settings has begun, the settings should be fully defined.
-        If the settings are loaded
+        After command line processing of settings has begun, the settings should be fully defined. If the settings are
+        loaded
         """
         self._failOnLoad = True
 
@@ -276,8 +267,8 @@ class Settings:
         """
         Read in settings from an input YAML file.
 
-        Passes the reader back out in case you want to know something about how the reading went
-        like for knowing if a file contained deprecated settings, etc.
+        Passes the reader back out in case you want to know something about how the reading went like for knowing if a
+        file contained deprecated settings, etc.
         """
         reader, path = self._prepToRead(fName)
         reader.readFromFile(fName, handleInvalids)
@@ -298,9 +289,9 @@ class Settings:
     def _prepToRead(self, fName):
         if self._failOnLoad:
             raise RuntimeError(
-                "Cannot load settings file after processing of command line options begins.\nYou "
-                "may be able to fix this by reordering the command line arguments, and making sure "
-                f"the settings file `{fName}` comes before any modified settings."
+                "Cannot load settings file after processing of command line options begins.\nYou may be able to fix "
+                f"this by reordering the command line arguments, and making sure the settings file `{fName}` comes "
+                "before any modified settings."
             )
         path = pathTools.armiAbsPath(fName)
         return settingsIO.SettingsReader(self), path
@@ -308,13 +299,13 @@ class Settings:
     def loadFromString(self, string, handleInvalids=True):
         """Read in settings from a YAML string.
 
-        Passes the reader back out in case you want to know something about how the reading went
-        like for knowing if a file contained deprecated settings, etc.
+        Passes the reader back out in case you want to know something about how the reading went like for knowing if a
+        file contained deprecated settings, etc.
         """
         if self._failOnLoad:
             raise RuntimeError(
-                "Cannot load settings after processing of command line options begins.\nYou may be "
-                "able to fix this by reordering the command line arguments."
+                "Cannot load settings after processing of command line options begins.\nYou may be able to fix this by "
+                "reordering the command line arguments."
             )
 
         reader = settingsIO.SettingsReader(self)
@@ -336,8 +327,7 @@ class Settings:
 
         Notes
         -----
-        This means that creating a Settings object sets the global logging level of the entire code
-        base.
+        This means that creating a Settings object sets the global logging level of the entire code base.
         """
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
@@ -359,11 +349,11 @@ class Settings:
         fName : str
             the file to write to
         style : str (optional)
-            the method of output to be used when creating the file for the current state of settings
-            (short, medium, or full)
+            the method of output to be used when creating the file for the current state of settings (short, medium, or
+            full).
         fromFile : str (optional)
-            if the source file and destination file are different (i.e. for cloning) and the style
-            argument is ``medium``, then this arg is used
+            if the source file and destination file are different (i.e. for cloning) and the style argument is
+            ``medium``, then this arg is used
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
@@ -371,6 +361,7 @@ class Settings:
             settingsSetByUser = self.getSettingsSetByUser(getSettingsPath)
         else:
             settingsSetByUser = []
+
         with open(self.path, "w") as stream:
             writer = self.writeToYamlStream(stream, style, settingsSetByUser)
 
@@ -378,8 +369,8 @@ class Settings:
 
     def getSettingsSetByUser(self, fPath):
         """
-        Grabs the list of settings in the user-defined input file so that the settings can be
-        tracked outside of a Settings object.
+        Grabs the list of settings in the user-defined input file so that the settings can be tracked outside of a
+        Settings object.
 
         Parameters
         ----------
@@ -391,8 +382,8 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-        # We do not want to load these as settings, but just grab the dictionary straight from the
-        # settings file to know which settings are user-defined.
+        # We do not want to load these as settings, but just grab the dictionary straight from the settings file to know
+        # which settings are user-defined.
         with open(fPath, "r") as stream:
             yaml = YAML()
             yaml.allow_duplicate_keys = False
@@ -424,15 +415,14 @@ class Settings:
         return writer
 
     def updateEnvironmentSettingsFrom(self, otherCs):
-        """Updates the environment settings in this object based on some other cs (from the GUI,
-        most likely).
+        """Updates the environment settings in this object based on some other cs (from the GUI, most likely).
 
         Parameters
         ----------
         otherCs : Settings
             A cs object that environment settings will be inherited from.
 
-        This enables users to run tests with their environment rather than the reference environment
+        This enables users to run tests with their environment rather than the reference environment.
         """
         for replacement in self.environmentSettings:
             self[replacement] = otherCs[replacement]
@@ -456,14 +446,14 @@ class Settings:
         return settings
 
     def setModuleVerbosities(self, force=False):
-        """Attempt to grab the module-level logger verbosities from the settings file,
-        and then set their log levels (verbosities).
+        """Attempt to grab the module-level logger verbosities from the settings file, and then set their log levels
+        (verbosities).
 
         Parameters
         ----------
         force : bool, optional
-            If force is False, don't overwrite the log verbosities if the logger already exists.
-            IF this needs to be used mid-run, force=False is safer.
+            If force is False, don't overwrite the log verbosities if the logger already exists. IF this needs to be
+            used mid-run, force=False is safer.
 
         Notes
         -----
