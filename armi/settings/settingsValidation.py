@@ -452,8 +452,8 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-            bool(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES])
-            and (bool(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]) or bool(self.cs[CONF_SHUFFLE_LOGIC]))
+                bool(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES])
+                and (bool(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]) or bool(self.cs[CONF_SHUFFLE_LOGIC]))
             ),
             "explicitRepeatShuffles cannot be used together with shuffleSequenceFile or shuffleLogic. "
             "Please specify either explicitRepeatShuffles alone, or some combination of shuffleSequenceFile"
