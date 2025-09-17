@@ -772,6 +772,47 @@ class TestFuelHandler(FuelHandlerTestHelper):
         finally:
             os.remove(fname)
 
+    def test_readMovesYaml_loadFromSfp(self):
+        assem = self.r.excore["sfp"].getChildren()[0]
+        yaml_text = f"""
+        sequence:
+            1:
+                - cascade: ["SFP", "005-003", "SFP"]
+                  assemblyName: "{assem.getName()}"
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
+            moves, _ = fuelHandlers.FuelHandler.readMovesYaml(fname)
+            expected = {
+                1: [
+                    AssemblyMove("SFP", "005-003", [], None, assem.getName()),
+                    AssemblyMove("005-003", "SFP"),
+                ]
+            }
+            self.assertEqual(moves, expected)
+
+    def test_performShuffleYaml_loadFromSfp(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        sfpAssem = self.r.excore["sfp"].getChildren()[0]
+        yaml_text = f"""
+        sequence:
+            1:
+                - cascade: ["SFP", "009-045", "SFP"]
+                  assemblyName: "{sfpAssem.getName()}"
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
+            before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            fh.outage()
+            self.assertEqual(self.r.core.getAssemblyWithStringLocation("009-045").getName(), sfpAssem.getName())
+            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
+
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
