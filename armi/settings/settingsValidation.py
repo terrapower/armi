@@ -451,17 +451,13 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: sum(
-                bool(setting)
-                for setting in [
-                    self.cs[CONF_SHUFFLE_SEQUENCE_FILE],
-                    self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES],
-                    self.cs[CONF_SHUFFLE_LOGIC],
-                ]
-            )
-            > 1,
-            "Only one shuffling method can be defined but multiple were found among: shuffleSequenceFile, "
-            "explicitRepeatShuffles, and shuffleLogic. Please specify only one.",
+            lambda: (
+            bool(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES])
+            and (bool(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]) or bool(self.cs[CONF_SHUFFLE_LOGIC]))
+            ),
+            "explicitRepeatShuffles cannot be used together with shuffleSequenceFile or shuffleLogic. "
+            "Please specify either explicitRepeatShuffles alone, or some combination of shuffleSequenceFile"
+            "and shuffleLogic.",
             "",
             self.NO_ACTION,
         )
