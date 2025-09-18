@@ -900,7 +900,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertIsNone(blocks[0].p.detailedNDens)
         self.assertIsNone(blocks[1].p.detailedNDens)
 
-    def _createRepresentativeBlocksExistingBlocks(self, validBlockTypes):
+    def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
         """Reusable code used in multiple unit tests."""
         o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         # set a few random non-default settings on AA to be copied to the new BA group

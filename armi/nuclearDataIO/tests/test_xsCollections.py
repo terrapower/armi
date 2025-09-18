@@ -36,7 +36,7 @@ class TestXsCollections(unittest.TestCase):
         self.block.setNumberDensity("U235", 0.02)
         self.block.setNumberDensity("FE", 0.01)
 
-    def test_generateTotalScatteringMatrix(self):
+    def test_genTotScatteringMatrix(self):
         """Generates the total scattering matrix by summing elastic, inelastic, and n2n scattering matrices."""
         nuc = self.microLib.nuclides[0]
         totalScatter = nuc.micros.getTotalScatterMatrix()
@@ -45,7 +45,7 @@ class TestXsCollections(unittest.TestCase):
             (nuc.micros.elasticScatter[0, 0] + nuc.micros.inelasticScatter[0, 0] + 2.0 * nuc.micros.n2nScatter[0, 0]),
         )
 
-    def test_genScatteringMatrixWithMissingData(self):
+    def test_totalScatteringMatrixWithMissingData(self):
         """
         Generates the total scattering matrix by summing elastic and n2n scattering matrices.
 
@@ -62,10 +62,7 @@ class TestXsCollections(unittest.TestCase):
         )
 
     def test_plotNucXs(self):
-        """
-        Testing this plotting method here because we need a XS library
-        to run the test.
-        """
+        """Testing this plotting method here because we need a XS library to run the test."""
         fName = "test_plotNucXs.png"
         with TemporaryDirectoryChanger():
             plotNucXs(self.microLib, "U235AA", "fission", fName=fName)
