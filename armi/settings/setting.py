@@ -108,7 +108,7 @@ class Setting:
         self.name = name
         self.description = description or name
         self.label = label or name
-        self._options = options
+        self.options = options
         self.enforcedOptions = enforcedOptions
         self.subLabels = subLabels
         self.isEnvironment = isEnvironment
@@ -192,22 +192,21 @@ class Setting:
 
         self._value = self._load(val)
 
-    @property
-    def options(self):
-        return self._options
-
-    @options.setter
-    def options(self, opts):
-        if self._options is None:
-            raise AttributeError(
-                f"The Setting {self.name} has no default options, it looks like you want to add that to the definition."
-            )
-
-        self._options = opts
-
     def addOptions(self, options: List[Option]):
         """Extend this Setting's options with extra options."""
-        self.options.extend([o.option for o in options])
+        try:
+            self.options.extend([o.option for o in options])
+        except AttributeError:
+            if self.options is None:
+                msg = (
+                    f"The Setting {self.name} has no default options, it looks like you want to add that to the "
+                    + "definition."
+                )
+                runLog.error(msg)
+                raise AttributeError(msg)
+            else:
+                raise
+
         self._setSchema()
 
     def addOption(self, option: Option):
