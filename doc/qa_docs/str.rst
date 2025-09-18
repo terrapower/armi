@@ -265,9 +265,7 @@ Appendix A Pytest Verbose Output
 
 Shown here is the verbose output from pytest.
 
-Note that the skipped tests are either skipped because they require MPI (and are run via a separate command) or because
-they have hard-coded skips in the codebase (``test_canRemoveIsotopes``, ``test_ENDFVII1DecayConstants``, and
-``test_ENDFVII1NeutronsPerFission``). None of these hard-coded skipped tests are linked to requirements.
+Note that if a test says "skipped" in the first table below (serial unit tests), then it will appear in the "MPI-enabled unit tests" sections below. Some tests can be run in serial and parallel, but some can only be run in parallel. The preference in ARMI is to be explicit about which are which. As long as all the tests are run at least once.
 
 Serial unit tests:
 

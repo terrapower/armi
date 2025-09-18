@@ -45,7 +45,7 @@ class TestXsCollections(unittest.TestCase):
             (nuc.micros.elasticScatter[0, 0] + nuc.micros.inelasticScatter[0, 0] + 2.0 * nuc.micros.n2nScatter[0, 0]),
         )
 
-    def test_generateTotalScatteringMatrixWithMissingData(self):
+    def test_genScatteringMatrixWithMissingData(self):
         """
         Generates the total scattering matrix by summing elastic and n2n scattering matrices.
 

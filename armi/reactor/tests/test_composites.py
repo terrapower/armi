@@ -409,7 +409,7 @@ class TestCompositePattern(unittest.TestCase):
         for c in self.container:
             self.assertIsNotNone(c._lumpedFissionProducts)
 
-    def test_requiresLumpedFissionProducts(self):
+    def test_requiresLumpedFissionProds(self):
         # build a lumped fission product collection
         fpd = getDummyLFPFile()
         lfps = fpd.createLFPsFromFile()
@@ -427,7 +427,7 @@ class TestCompositePattern(unittest.TestCase):
         result = self.container.requiresLumpedFissionProducts(["LFP35"])
         self.assertTrue(result)
 
-    def test_getLumpedFissionProductsIfNecessaryNullCase(self):
+    def test_getLumpedFissionProdsIfNullCase(self):
         # build a lumped fission product collection
         fpd = getDummyLFPFile()
         lfps = fpd.createLFPsFromFile()

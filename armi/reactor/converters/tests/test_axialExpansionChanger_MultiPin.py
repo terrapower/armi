@@ -160,7 +160,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertAlmostEqual(refC0Ztop, self.c0.ztop, places=self.places)
         self.assertAlmostEqual(refC1Zbottom, self.c1.zbottom, places=self.places)
 
-    def test_redistributeMass_nonTargetExpansion_noThermal(self):
+    def test_redistributeMassNonTargetExpNoTherm(self):
         """With no temperature changes anywere, grow c0 by 10% and show that 10% of the c0 mass is moved to c1.
 
         Notes
@@ -174,7 +174,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._initializeTest(growFrac, fromComp=self.c0)
         self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
 
-    def test_addMassToComponent_nonTargetCompression_noThermal(self):
+    def test_addMassToCompNonTargetCompNoTherm(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
 
         Notes
@@ -188,7 +188,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._initializeTest(growFrac, fromComp=self.c1)
         self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
 
-    def test_addMassToComponent_nonTargetCompression_yesThermal(self):
+    def test_addMassToCompNonTargetComprYesTherm(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
 
         Notes
@@ -208,7 +208,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._initializeTest(growFrac, fromComp=self.c1)
         self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True)
 
-    def test_addMassToComponent_nonTargetExpansion_yesThermal(self):
+    def test_addMassToCompNonTargetExpanYesTherm(self):
         """Increase c0 by 100 deg C and and show that c0 mass is moved to c1.
 
         Notes
@@ -633,7 +633,7 @@ class TestExceptionForMultiPin(TestMultiPinConservationBase):
         self.axialExpChngr = AxialExpansionChanger()
         self.axialExpChngr.setAssembly(self.a)
 
-    def test_failExpansionNegativeComponentHeight(self):
+    def test_failExpansionNegativeCompHeight(self):
         """Show that the negative component height check can be caught."""
         cList = []
         for _i, b in self._iterFuelBlocks():

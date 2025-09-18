@@ -586,13 +586,13 @@ class HexReactorTests(ReactorTests):
     def test_getAssemblyPitch(self):
         self.assertEqual(self.r.core.getAssemblyPitch(), 16.75)
 
-    def test_getNumAssembliesWithAllRingsFilledOut(self):
+    def test_getNumAssemsWithAllRingsFilledOut(self):
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
     @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
-    def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
+    def test_getNumAssemsWithAllRingsFilledOutBipass(self):
         nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
         self.assertEqual(19, nAssems)
 

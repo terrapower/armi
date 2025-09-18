@@ -1910,7 +1910,8 @@ class Block_TestCase(unittest.TestCase):
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
-    def test_consistentMassDensVolBetweenColdBlockAndComp(self):
+    def test_consistentMassDensVolCold(self):
+        """Consistent mass density and volume betwen cold block and component."""
         block = self.block
         expectedData = []
         actualData = []
@@ -1926,7 +1927,8 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentMassDensVolBetweenHotBlockAndComp(self):
+    def test_consistentMassDensVolHot(self):
+        """Consistent mass density and volume betwen hot block and component."""
         block = self._hotBlock
         expectedData = []
         actualData = []
