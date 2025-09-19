@@ -726,6 +726,9 @@ class RedistributeMass:
         compute the number densities and manually shift mass to account for the possibility of varying temperatures
         between toComp and fromComp at BOL.
         """
+        origToCompMolesHmBOL = self.toComp.p.molesHmBOL
+        origFromCompMolesHmBOL = self.fromComp.p.molesHmBOL
+
         # build the BOL HM NDens dictionary
         fromCompBOLNucs = [nucName.decode() for nucName in self.fromComp.p.hmNuclidesBOL]
         toCompBOLNucs = [nucName.decode() for nucName in self.toComp.p.hmNuclidesBOL]
@@ -754,6 +757,12 @@ class RedistributeMass:
         # update BOL Params for fromComp
         self.fromComp.p.molesHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
         self.fromComp.p.massHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
+
+        # update component-level percentBu based on new molesHmBOL
+        if origToCompMolesHmBOL:
+            self.toComp.p.percentBu *= self.toComp.p.molesHmBOL / origToCompMolesHmBOL
+        if origFromCompMolesHmBOL:
+            self.fromComp.p.percentBu *= self.fromComp.p.molesHmBOL / origFromCompMolesHmBOL
 
     @staticmethod
     def _sortKey(item):

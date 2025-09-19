@@ -411,6 +411,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
         super().setUp()
         self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+        self.origCompPercentBu = self.getPercentBuByComponent(self.a)
+        self.origCompMolesHmBOL = self.getMolesHmBOLByComponent(self.a)
         self.origBlockMolesHmBOL = [b.p.molesHmBOL for b in self.a]
         self.origBlockPercentBu = [b.p.percentBu for b in self.a]
 
@@ -418,6 +420,26 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     def _isFluidButNotBond(c):
         """Determine if a component is a fluid, but not Bond."""
         return isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND)
+
+    def getMolesHmBOLByComponent(self, a: "HexAssembly") -> dict["Component", float]:
+        """Get the percent burnup for components in the assembly which have heavy metal present."""
+        molesHmBOLByComp = {}
+        for b in a:
+            for c in filter(lambda c: bool(c.p.molesHmBOL), b):
+                molesHmBOLByComp[c] = c.p.molesHmBOL
+        return molesHmBOLByComp
+
+    def getPercentBuByComponent(self, a: "HexAssembly") -> dict["Component", float]:
+        """Get the percent burnup for components in the assembly which have heavy metal present."""
+        percentBuByComp = {}
+        for b in a:
+            totalBu = 0.0
+            for c in filter(lambda c: bool(c.p.molesHmBOL), b):
+                c.p.percentBu = 0.05 # populate with some arbitrary component-level burnup
+                percentBuByComp[c] = c.p.percentBu
+                totalBu += c.p.percentBu
+            b.p.percentBu = totalBu
+        return percentBuByComp
 
     def getTotalCompMassByFlag(self, a: "HexAssembly") -> dict[TypeSpec, float]:
         """Get the total mass of all components in the assembly, except Bond components.
@@ -636,6 +658,11 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
                             b.p.percentBu,
                             self.origBlockPercentBu[i] * getattr(b.p, param)/self.origBlockMolesHmBOL[i],
                         )
+
+            # Make sure that component-level burnup is populated appropriately
+            for c in b:
+                if c in self.origCompPercentBu:
+                    self.assertAlmostEqual(c.p.percentBu, self.origCompPercentBu[c] * c.p.molesHmBOL / self.origCompMolesHmBOL[c])
 
 
 class TestExceptionForMultiPin(TestMultiPinConservationBase):
