@@ -18,3 +18,5 @@ The following tables list all the SCRs in this release of the ARMI framework.
 
    thisPrNum = int(os.environ.get('PR_NUMBER', -1) or -1)
    return buildScrTable(thisPrNum, "e263c26")
+
+End of SCR for this release.
