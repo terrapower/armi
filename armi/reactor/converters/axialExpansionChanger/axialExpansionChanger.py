@@ -18,7 +18,7 @@ import typing
 from math import isclose
 from textwrap import dedent
 
-from numpy import array, sum
+from numpy import array
 from scipy.optimize import brentq
 
 from armi import runLog
