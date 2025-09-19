@@ -14,7 +14,7 @@ The following lists display all the SCRs in this release of the ARMI framework.
 
 .. exec::
    import os
-   from automateScr import buildScrTable
+   from automateScr import buildScrListing
 
    thisPrNum = int(os.environ.get('PR_NUMBER', -1) or -1)
-   return buildScrTable(thisPrNum, "e263c26")
+   return buildScrListing(thisPrNum, "e263c26")
