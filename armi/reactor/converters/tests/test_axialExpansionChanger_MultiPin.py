@@ -435,7 +435,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for b in a:
             totalBu = 0.0
             for c in filter(lambda c: bool(c.p.molesHmBOL), b):
-                c.p.percentBu = 0.05 # populate with some arbitrary component-level burnup
+                c.p.percentBu = 0.05  # populate with some arbitrary component-level burnup
                 percentBuByComp[c] = c.p.percentBu
                 totalBu += c.p.percentBu
             b.p.percentBu = totalBu
@@ -656,13 +656,15 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
                     if self.origBlockMolesHmBOL[i]:
                         self.assertAlmostEqual(
                             b.p.percentBu,
-                            self.origBlockPercentBu[i] * getattr(b.p, param)/self.origBlockMolesHmBOL[i],
+                            self.origBlockPercentBu[i] * getattr(b.p, param) / self.origBlockMolesHmBOL[i],
                         )
 
             # Make sure that component-level burnup is populated appropriately
             for c in b:
                 if c in self.origCompPercentBu:
-                    self.assertAlmostEqual(c.p.percentBu, self.origCompPercentBu[c] * c.p.molesHmBOL / self.origCompMolesHmBOL[c])
+                    self.assertAlmostEqual(
+                        c.p.percentBu, self.origCompPercentBu[c] * c.p.molesHmBOL / self.origCompMolesHmBOL[c]
+                    )
 
 
 class TestExceptionForMultiPin(TestMultiPinConservationBase):
