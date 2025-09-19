@@ -740,9 +740,19 @@ class RedistributeMass:
         )
         self.toComp.p.massHmBOL = densityTools.calculateMassDensity(newHMNDensBOL) * newBOLVol
 
+        postNames = []
+        postNDens = []
+        for n, v in newHMNDensBOL.items():
+            postNames.append(n.encode())
+            postNDens.append(v)
+        self.toComp.p.hmNuclidesBOL = postNames
+        self.toComp.p.hmNumberDensitiesBOL = postNDens
+
         # update BOL Params for fromComp
-        self.fromComp.p.molesHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
-        self.fromComp.p.massHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
+        scalar = 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
+        self.fromComp.p.molesHmBOL *= scalar
+        self.fromComp.p.massHmBOL *= scalar
+        self.fromComp.p.hmNumberDensitiesBOL *= scalar
 
     @staticmethod
     def _sortKey(item):
