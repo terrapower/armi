@@ -453,8 +453,10 @@ class AxialExpansionChanger:
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
             # Update block-level BOL params to account for changes to the child params
+            # Some params are zero, some are None. filter will discard them from the summation
             for param in ("molesHmBOL", "massHmBOL"):
-                updated = sum(getattr(c.p, param, 0) for c in b)
+                values = (getattr(c.p, param, 0) for c in b)
+                updated = sum(filter(None, values))
                 setattr(b.p, param, updated)
 
         bounds = list(self.linked.a.spatialGrid._bounds)
