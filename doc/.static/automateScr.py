@@ -259,7 +259,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
 
     # 4. Build final RST for all four tables, to return to the docs
     content = ""
-    for typ in ["features", "fixes", "trivial", "docs"]:
+    for typ in ["features", "fixes", "docs", "trivial"]:
         if len(data[typ]):
             print(f"Found {len(data[typ])} SCRs in the {typ} category")
             content += _buildTableHeader(typ)
@@ -267,7 +267,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
-    return content
+    return content + "\n\n"
 
 
 if __name__ == "__main__":
