@@ -452,16 +452,20 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-            # Update block-level BOL params to account for changes to the child params
-            # Some params are zero, some are None. filter will discard them from the summation
-            for param in ("molesHmBOL", "massHmBOL"):
-                values = (getattr(c.p, param, 0) for c in b)
-                updated = sum(filter(None, values))
-                setattr(b.p, param, updated)
+            self._updateBlockParamsPostExpansion(b)
 
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def _updateBlockParamsPostExpansion(self, b: "Block"):
+        """Update any parameters on the block after the child components have been expanded."""
+        for param in ("molesHmBOL", "massHmBOL"):
+            values = (getattr(c.p, param, 0) for c in b)
+            # Update block-level BOL params to account for changes to the child params
+            # Some params are zero, some are None. filter will discard them from the summation
+            updated = sum(filter(None, values))
+            setattr(b.p, param, updated)
 
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
         # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
