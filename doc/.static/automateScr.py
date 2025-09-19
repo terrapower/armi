@@ -33,6 +33,7 @@ GITHUB_USERS = {
     "drewj-tp": "Drew Johnson",
     "HunterPSmith": "Hunter Smith",
     "jakehader": "Jake Hader",
+    "jasonbmeng": "Jason Meng",
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
     "mgjarrett": "Michael Jarrett",
