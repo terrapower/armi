@@ -171,7 +171,7 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(17, mock1.doodle)
         self.assertEqual(42, mock2.doodle)
 
-    def test_paramPropertyDoesNotConflictWithNoneDefault(self):
+    def test_paramPropDoesNotConflictWithNoneDefault(self):
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -324,7 +324,7 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(data["n"], 99)
         self.assertEqual(data["nPlus1"], 100)
 
-    def test_cannotDefineParameterWithSameName(self):
+    def test_cannotDefineParamWithSameName(self):
         with self.assertRaises(parameters.ParameterDefinitionError):
 
             class MockParamCollection(parameters.ParameterCollection):
@@ -361,7 +361,7 @@ class ParameterTests(unittest.TestCase):
         self.assertTrue(set(base.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs)))
         self.assertTrue(set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs)))
 
-    def test_cannotDefineParamSameNameCollectionSubclass(self):
+    def test_cannotDefineParamSameNameColSubclass(self):
         class MockPCParent(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -383,7 +383,7 @@ class ParameterTests(unittest.TestCase):
             with pDefs.createBuilder() as pb:
                 pb.defParam("sameName", "units", "description 5", "location")
 
-    def test_cannotCreateAttrbuteOnParameterCollectionSubclass(self):
+    def test_cannotCreateAttrOnParamColSubclass(self):
         class MockPC(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -450,7 +450,7 @@ class ParameterTests(unittest.TestCase):
             self.assertTrue(p.hasCategory(category))
         self.assertFalse(p.hasCategory("this_shouldnot_exist"))
 
-    def test_parameterCollectionsHave__slots__(self):
+    def test_paramColHaveSlots(self):
         """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
             set(

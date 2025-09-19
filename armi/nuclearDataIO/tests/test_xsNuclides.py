@@ -26,13 +26,13 @@ class NuclideTests(unittest.TestCase):
     def setUpClass(cls):
         cls.lib = isotxs.readBinary(ISOAA_PATH)
 
-    def test_nucl_createFromLabelFailsOnBadName(self):
+    def test_nuclCreateFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
         nuc.isotxsMetadata["nuclideId"] = "BACN87"
         with self.assertRaises(OSError):
             nuc.updateBaseNuclide()
 
-    def test_nuc_creatingNucNotMessWithUnderlyingNucDict(self):
+    def test_creatingNucNotMessWithUnderlyingNucDict(self):
         nuc = nuclideBases.byName["U238"]
         self.assertFalse(hasattr(nuc, "xsId"))
         nrAA = xsNuclides.XSNuclide(None, "U238AA")
@@ -41,7 +41,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual("AA", nrAA.xsId)
         self.assertFalse(hasattr(nuc, "xsId"))
 
-    def test_nucl_modifyingNucAttrUpdatesTheIsotxsNuc(self):
+    def test_nuclModifyingNucAttrUpdatesTheIsotxsNuc(self):
         lib = xsLibraries.IsotxsLibrary()
         nuc = nuclideBases.byName["FE"]
         nrAA = xsNuclides.XSNuclide(lib, "FEAA")
@@ -98,7 +98,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual(0.0008645406924188137, sum(nuc.micros.n2n))
         self.assertEqual(0.008091875669521187, sum(nuc.micros.nGamma))
 
-    def test_nuclide_2dXsArrangementIsCorrect(self):
+    def test_nuclide2dXsArrangementIsCorrect(self):
         """Manually compare some 2d XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         self.assertAlmostEqual(5.76494979858, u235.micros.total[0, 0])
@@ -119,7 +119,7 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(383.891998291, pu239.micros.total[31, 1])
         self.assertAlmostEqual(973.399902343, pu239.micros.total[32, 1])
 
-    def test_nuclide_scatterXsArrangementIsCorrect(self):
+    def test_nucScatterXsArrangementIsCorrect(self):
         """Manually compare scatter XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         elasticScatter = u235.micros.elasticScatter

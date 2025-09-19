@@ -59,7 +59,7 @@ class TestSnapshotInterface(unittest.TestCase):
         self.si.interactCoupled(2)
         self.assertTrue(mockSnapshotRequest.called)
 
-    def test_activeateDefaultSnapshots_30cycles2BurnSteps(self):
+    def test_activateDefSnapshots_30cyc2burns(self):
         """
         Test snapshots for 30 cycles and 2 burnsteps, checking the dumpSnapshot setting.
 
@@ -79,7 +79,7 @@ class TestSnapshotInterface(unittest.TestCase):
         self.si.activateDefaultSnapshots()
         self.assertEqual(["000000", "014000", "029002"], self.si.cs["dumpSnapshot"])
 
-    def test_activeateDefaultSnapshots_17cycles5BurnSteps(self):
+    def test_activateDeftSnapshots_17cyc5surns(self):
         """
         Test snapshots for 17 cycles and 5 burnsteps, checking the dumpSnapshot setting.
 

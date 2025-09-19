@@ -282,7 +282,7 @@ class TestComponentAveraging(unittest.TestCase):
                 msg=f"{c} avg temperature {avgTemp} not equal to expected {expectedTemps[compIndex]}!",
             )
 
-    def test_getAverageComponentTemperatureVariedWeights(self):
+    def test_getAvgCompTempVariedWeights(self):
         """Test mass-weighted component temperature averaging with variable weights."""
         # make up a fake weighting with power param
         self.bc.weightingParam = "power"
@@ -299,7 +299,7 @@ class TestComponentAveraging(unittest.TestCase):
                 msg=f"{c} avg temperature {avgTemp} not equal to expected {expectedTemps[compIndex]}!",
             )
 
-    def test_getAverageComponentTemperatureNoMass(self):
+    def test_getAvgCompTempNoMass(self):
         """Test component temperature averaging when the components have no mass."""
         for b in self.bc:
             for nuc in b.getNuclides():
@@ -957,7 +957,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         """
         self._createRepresentativeBlocksUsingExistingBlocks(["fuel"])
 
-    def test_createRepBlocksFromDisableValidBlockTypes(self):
+    def test_createRepBlocksDisableValidBlockTypes(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.

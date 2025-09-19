@@ -165,7 +165,7 @@ class TestInspector(unittest.TestCase):
         self.assertEqual(self.inspector.cs["nCycles"], 1)
         self.assertEqual(self.inspector.cs["burnSteps"], 0)
 
-    def test_checkForBothSimpleAndDetailedCyclesInputs(self):
+    def test_checkForSimpleAndDetailedCycInps(self):
         self.inspector._assignCS(
             "cycles",
             [

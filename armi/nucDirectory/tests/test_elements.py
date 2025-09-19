@@ -64,7 +64,7 @@ class TestElement(unittest.TestCase):
             with self.assertRaises(ValueError):
                 elements.Element(ee.z, ee.symbol, ee.name)
 
-    def test_element_addedElementAppearsInElementList(self):
+    def test_addedElementAppearsInElementList(self):
         self.assertNotIn("bacon", elements.byName)
         self.assertNotIn(999, elements.byZ)
         self.assertNotIn("BZ", elements.bySymbol)
@@ -82,7 +82,7 @@ class TestElement(unittest.TestCase):
             with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
                 nuclideBases.imposeBurnChain(burnChainStream)
 
-    def test_elementGetNatrualIsotpicsOnlyRetrievesAbund(self):
+    def test_elementGetNatIsosOnlyRetrievesAbund(self):
         for ee in elements.byZ.values():
             if not ee.isNaturallyOccurring():
                 continue
@@ -90,7 +90,7 @@ class TestElement(unittest.TestCase):
                 self.assertGreater(nuc.abundance, 0.0)
                 self.assertGreater(nuc.a, 0)
 
-    def test_element_isNaturallyOccurring(self):
+    def test_elementIsNatOccurring(self):
         """
         Test isNaturallyOccurring method by manually testing all elements.
 

@@ -374,7 +374,7 @@ assemblies:
         keys2 = set([i for i, v in enumerate(fuel2.p.numberDensities) if v == 0.0])
         self.assertEqual(keys1, keys2)
 
-    def test_densitiesAppliedToNonCustomMaterials(self):
+    def test_densAppliedToNonCustomMats(self):
         """Ensure that a density can be set in custom isotopics for components using library materials."""
         # The template block
         fuel0 = self.a[0].getComponent(Flags.FUEL)
@@ -404,7 +404,7 @@ assemblies:
         self.assertEqual(fuel6.material.name, fuel0.material.name)
         self.assertEqual("UZr", fuel0.material.name)
 
-    def test_densitiesAppliedToNonCustomMaterialsFluid(self):
+    def test_densAppliedToNonCustomMatsFluid(self):
         """
         Ensure that a density can be set in custom isotopics for components using library materials,
         specifically in the case of a fluid component. In this case, inputHeightsConsideredHot
