@@ -411,6 +411,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
         super().setUp()
         self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+        self.origBlockMolesHmBOL = [b.p.molesHmBOL for b in self.a]
+        self.origBlockPercentBu = [b.p.percentBu for b in self.a]
 
     @staticmethod
     def _isFluidButNotBond(c):
@@ -623,10 +625,17 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
 
         # Make sure we have correctly updated block level parameters to reflect changing component level parameters
-        for b in self.a:
-            actual = b.p.molesHmBOL
-            expected = sum(c.p.molesHmBOL for c in b)
-            self.assertAlmostEqual(actual, expected, msg=b)
+        for i, b in enumerate(self.a):
+            for param in ("molesHmBOL", "massHmBOL"):
+                actual = getattr(b.p, param)
+                expected = sum(getattr(c.p, param) for c in b)
+                self.assertAlmostEqual(actual, expected, msg=b)
+                if param == "molesHmBOL":
+                    if self.origBlockMolesHmBOL[i]:
+                        self.assertAlmostEqual(
+                            b.p.percentBu,
+                            self.origBlockPercentBu[i] * getattr(b.p, param)/self.origBlockMolesHmBOL[i],
+                        )
 
 
 class TestExceptionForMultiPin(TestMultiPinConservationBase):

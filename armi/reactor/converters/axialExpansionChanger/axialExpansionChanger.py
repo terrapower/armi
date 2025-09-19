@@ -454,10 +454,14 @@ class AxialExpansionChanger:
 
             # Update block-level BOL params to account for changes to the child params
             # Some params are zero, some are None. filter will discard them from the summation
+            priorMolesHmBOL = b.p.molesHmBOL
             for param in ("molesHmBOL", "massHmBOL"):
                 values = (getattr(c.p, param, 0) for c in b)
                 updated = sum(filter(None, values))
                 setattr(b.p, param, updated)
+            if priorMolesHmBOL:
+                # scale block-level burnup as needed
+                b.p.percentBu *= b.p.molesHmBOL / priorMolesHmBOL
 
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
