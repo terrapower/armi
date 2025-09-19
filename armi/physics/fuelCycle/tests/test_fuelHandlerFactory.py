@@ -19,6 +19,7 @@ from pathlib import Path
 
 from armi.physics.fuelCycle import fuelHandlerFactory
 from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME, CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.tests import _customFuelHandlerModule
 
 
 class _DummySettings(dict):
@@ -46,31 +47,25 @@ class FuelHandlerFactoryTests(unittest.TestCase):
         modulePath = Path(__file__).resolve().with_name("_customFuelHandlerModule.py")
         self.settings.update(
             {
-                CONF_FUEL_HANDLER_NAME: "FileFuelHandler",
+                CONF_FUEL_HANDLER_NAME: "MockFileFuelHandler",
                 CONF_SHUFFLE_LOGIC: str(modulePath),
             }
         )
 
         handler = fuelHandlerFactory.fuelHandlerFactory(self.operator)
 
-        self.assertEqual(handler.__class__.__name__, "FileFuelHandler")
+        self.assertEqual(handler.__class__.__name__, "MockFileFuelHandler")
 
     def test_modulePath(self):
         """Module-style paths are imported using :mod:`importlib`."""
         moduleName = "armi.physics.fuelCycle.tests._customFuelHandlerModule"
         self.settings.update(
             {
-                CONF_FUEL_HANDLER_NAME: "ModuleFuelHandler",
+                CONF_FUEL_HANDLER_NAME: "MockModuleFuelHandler",
                 CONF_SHUFFLE_LOGIC: moduleName,
             }
         )
 
         handler = fuelHandlerFactory.fuelHandlerFactory(self.operator)
 
-        from armi.physics.fuelCycle.tests import _customFuelHandlerModule
-
-        self.assertIsInstance(handler, _customFuelHandlerModule.ModuleFuelHandler)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertIsInstance(handler, _customFuelHandlerModule.MockModuleFuelHandler)
