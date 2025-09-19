@@ -9,7 +9,7 @@ Below, this SCR is organized into the individual changes that comprise the net S
 SCR Listing
 -----------
 
-The following tables list all the SCRs in this release of the ARMI framework.
+The following lists display all the SCRs in this release of the ARMI framework.
 
 
 .. exec::
@@ -18,10 +18,3 @@ The following tables list all the SCRs in this release of the ARMI framework.
 
    thisPrNum = int(os.environ.get('PR_NUMBER', -1) or -1)
    return buildScrTable(thisPrNum, "e263c26")
-
-
-.. list-table:: End of SCR
-   :widths: 20 25
-
-   * - This is the end of
-     - the SCR this release.
