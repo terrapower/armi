@@ -452,8 +452,10 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
           existing at different temperatures.
         - The 150 deg C and 50 deg C based temperature changes are arbitrarily chosen.
         """
+        initialTotalHMBOL = 0
         for i, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL):
+                initialTotalHMBOL += c.p.molesHmBOL
                 if c.hasFlags(Flags.TEST):
                     newTemp = c.temperatureInC + 150.0 * i
                 else:
@@ -462,6 +464,12 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
+
+        postExpansionHM = 0
+        for _, b in self._iterFuelBlocks():
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
+                postExpansionHM += c.p.molesHmBOL
+        self.assertAlmostEqual(postExpansionHM, initialTotalHMBOL)
 
     def test_roundTripThermalBothFuel(self):
         """Perform thermal expansion on both fuel and test fuel components and ensure that mass and total assembly
