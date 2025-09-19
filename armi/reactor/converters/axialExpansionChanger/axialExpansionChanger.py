@@ -18,11 +18,12 @@ import typing
 from math import isclose
 from textwrap import dedent
 
-from numpy import array
+from numpy import array, where
 from scipy.optimize import brentq
 
 from armi import runLog
 from armi.materials.material import Fluid
+from armi.reactor.reactors import Core
 from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
@@ -579,6 +580,8 @@ class RedistributeMass:
         self.deltaZTop = deltaZTop
         self.massFrom: float = 0.0
         self.massTo: float = 0.0
+        core = fromComp.getAncestor(lambda c: isinstance(c, Core))
+        self.pinNucKeys = core.p.detailedPinNucKeys
         if not initOnly:
             self.performRedistribution()
 
@@ -590,18 +593,42 @@ class RedistributeMass:
             if self.fromComp.p.hmNuclidesBOL is not None and self.toComp.p.hmNuclidesBOL is not None:
                 self.updateBOLParams()
 
-    @property
-    def fromCompVolume(self):
-        return self.fromComp.getArea() * abs(self.deltaZTop)
+            for fromPinNDens, toPinNDens in zip(self.fromComp.p.pinNDens, self.toComp.p.pinNDens):
+                newNDens: dict[str, float] = {}
+                nucs = self.pinNucKeys
+                for nuc in nucs:
+                    index = where(self.pinNucKeys == nuc)[0]
+                    massByNucFrom = densityTools.getMassInGrams(
+                        nuc, self.fromCompVolume(pinWise=True), fromPinNDens[index]
+                    )
+                    massByNucTo = densityTools.getMassInGrams(
+                        nuc, self.toCompVolume(pinWise=True), toPinNDens[index]
+                    )
+                    newNDens[nuc] = densityTools.calculateNumberDensity(
+                        nuc, massByNucFrom + massByNucTo, self.newVolume(pinWise=True)
+                    )
+                    self.massFrom += massByNucFrom
+                    self.massTo += massByNucTo
+
+                # Set newNDens on toPinNDens
+                toPinNDens = newNDens
 
     @property
-    def toCompVolume(self):
-        return self.toComp.getArea() * self.toComp.height
+    def fromCompVolume(self, pinWise:bool = False):
+        """Compute the volume of the component. If pinWise, divide by the mult to make the volume pin-specific."""
+        vol = self.fromComp.getArea() * abs(self.deltaZTop)
+        return vol if not pinWise else vol/self.fromComp.getDimension("mult")
 
     @property
-    def newVolume(self):
+    def toCompVolume(self, pinWise:bool = False):
+        """Compute the volume of the component. If pinWise, divide by the mult to make the volume pin-specific."""
+        vol = self.toComp.getArea() * self.toComp.height
+        return vol if not pinWise else vol/self.toComp.getDimension("mult")
+
+    @property
+    def newVolume(self, pinWise:bool = False):
         """Compute and return the new post-redistribution volume of toComp."""
-        return self.toCompVolume + self.fromCompVolume
+        return self.toCompVolume(pinWise) + self.fromCompVolume(pinWise)
 
     def compatabilityCheck(self) -> bool:
         """Ensure fromComp and toComp are the same material.
