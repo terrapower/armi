@@ -41,7 +41,7 @@ assemblies:
         specifier: LA
         blocks: [
             *block_grid_plate, *block_fuel_multiPin_axial_shield,
-            *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
+            *block_mixed_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
             *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
             *block_fuel_multiPin, *block_fuel_multiPin, *block_mixed_multiPin,
             *block_mixed_multiPin, *block_aclp_multiPin, *block_plenum_multiPin,
