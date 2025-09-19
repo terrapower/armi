@@ -452,6 +452,11 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
+            # Update block-level BOL params to account for changes to the child params
+            for param in ("molesHmBOL", "massHmBOL"):
+                updated = sum(getattr(c.p, param, 0) for c in b)
+                setattr(b.p, param, updated)
+
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)

@@ -622,6 +622,12 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
 
+        # Make sure we have correctly updated block level parameters to reflect changing component level parameters
+        for b in self.a:
+            actual = b.p.molesHmBOL
+            expected = sum(c.p.molesHmBOL for c in b)
+            self.assertAlmostEqual(actual, expected, msg=b)
+
 
 class TestExceptionForMultiPin(TestMultiPinConservationBase):
     def setUp(self):
