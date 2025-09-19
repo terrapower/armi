@@ -144,6 +144,9 @@ def _buildScrLine(prNum: str):
     content += f"{tab}* Author: {author}\n"
     content += f"{tab}* {reviewerHeader}: {reviewers}\n"
 
+    print("TODO: JOHN")
+    print(content)
+
     return content, scrType
 
 
