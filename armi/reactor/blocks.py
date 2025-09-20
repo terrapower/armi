@@ -228,9 +228,12 @@ class Block(composites.Composite):
             raise ValueError(f"Cannot get smear density of {self}. There are no clad components.")
 
         # Compute component areas
-        cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
-        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
-        sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(clads.pop())
+        innerCladdingArea = sum(
+            math.pi * clad.getDimension("id", cold=cold) ** 2 / 4.0  * clad.getDimension("mult")
+            for clad in clads
+        )
+        sortedClads = sorted(clads)
+        sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(sortedClads.pop())
 
         return self.computeSmearDensity(innerCladdingArea, sortedCompsInsideClad, cold)
 
@@ -259,6 +262,9 @@ class Block(composites.Composite):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
+            elif c.hasFlags(Flags.CLAD):
+                # this is another component's clad; don't count it towards unmoveable area
+                pass
             elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
                 # this flag designates that this clad/slug combination isn't fuel and shouldn't be in the average
                 pass
