@@ -41,7 +41,7 @@ assemblies:
         specifier: LA
         blocks: [
             *block_grid_plate, *block_fuel_multiPin_axial_shield,
-            *block_mixed_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
+            *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
             *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
             *block_fuel_multiPin, *block_fuel_multiPin, *block_mixed_multiPin,
             *block_mixed_multiPin, *block_aclp_multiPin, *block_plenum_multiPin,
@@ -411,6 +411,10 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
         super().setUp()
         self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+        self.initialTotalHMBOL = 0.0
+        for _, b in self._iterFuelBlocks():
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
+                self.initialTotalHMBOL += c.p.molesHmBOL
 
     @staticmethod
     def _isFluidButNotBond(c):
@@ -452,10 +456,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
           existing at different temperatures.
         - The 150 deg C and 50 deg C based temperature changes are arbitrarily chosen.
         """
-        initialTotalHMBOL = 0
         for i, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL):
-                initialTotalHMBOL += c.p.molesHmBOL
                 if c.hasFlags(Flags.TEST):
                     newTemp = c.temperatureInC + 150.0 * i
                 else:
@@ -464,12 +466,6 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
-
-        postExpansionHM = 0
-        for _, b in self._iterFuelBlocks():
-            for c in b.iterChildrenWithFlags(Flags.FUEL):
-                postExpansionHM += c.p.molesHmBOL
-        self.assertAlmostEqual(postExpansionHM, initialTotalHMBOL)
 
     def test_roundTripThermalBothFuel(self):
         """Perform thermal expansion on both fuel and test fuel components and ensure that mass and total assembly
@@ -629,6 +625,12 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
             self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
+
+        postExpansionHM = 0
+        for _, b in self._iterFuelBlocks():
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
+                postExpansionHM += c.p.molesHmBOL
+        self.assertAlmostEqual(postExpansionHM, self.initialTotalHMBOL)
 
 
 class TestExceptionForMultiPin(TestMultiPinConservationBase):

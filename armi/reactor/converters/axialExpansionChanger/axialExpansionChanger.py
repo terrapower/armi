@@ -735,18 +735,15 @@ class RedistributeMass:
             newHMNDensBOL[nuc] = densityTools.calculateNumberDensity(
                 nuc, hmMassBOLByNucFromComp + hmMassBOLByNucToComp, newBOLVol
             )
+
+        # update the hmNumberDensitiesBOL for toComp
+        self.toComp.p.hmNumberDensitiesBOL = array(list(newHMNDensBOL.values()))
+
+        # update the molesHmBOL and massHmBOL for toComp
         self.toComp.p.molesHmBOL = (
             sum(list(newHMNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
         )
         self.toComp.p.massHmBOL = densityTools.calculateMassDensity(newHMNDensBOL) * newBOLVol
-
-        postNames = []
-        postNDens = []
-        for n, v in newHMNDensBOL.items():
-            postNames.append(n.encode())
-            postNDens.append(v)
-        self.toComp.p.hmNuclidesBOL = postNames
-        self.toComp.p.hmNumberDensitiesBOL = postNDens
 
         # update BOL Params for fromComp
         scalar = 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
