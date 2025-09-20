@@ -448,6 +448,7 @@ class AxialExpansionChanger:
                     c.height = c.ztop - c.zbottom
 
             self._checkBlockHeight(b)
+            self.recalculateBurnup(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -455,6 +456,15 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def recalculateBurnup(self, b: "Block"):
+        """Post axial-expansion, heavy metal may have moved between blocks; recalculate burnup.
+
+        Notes
+        -----
+        Since burnup can be calculated differently, this is meant to be populated in a downstream application subclass.
+        """
+        pass
 
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
         # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
