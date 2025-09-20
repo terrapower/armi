@@ -316,16 +316,12 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             fromHeight = self.c0.height
             self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
             self.amountBeingRedistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / fromHeight
-            self.amountBeingRedistributedBOLMoles = (
-                self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
-            )
+            self.amountBeingRedistributedBOLMoles = self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
         else:
             fromHeight = self.c1.height
             self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
             self.amountBeingRedistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / fromHeight
-            self.amountBeingRedistributedBOLMoles = (
-                self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
-            )
+            self.amountBeingRedistributedBOLMoles = self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
         """Pull the reference data needed for ``fromComp`` and ``toComp``."""
