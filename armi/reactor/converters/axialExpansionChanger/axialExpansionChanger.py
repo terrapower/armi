@@ -172,7 +172,9 @@ class AxialExpansionChanger:
             for b in a:
                 b.p.heightBOL = b.getHeight()
                 b.completeInitialLoading()
-                axialExpChanger.recalculateBurnup(b)
+                # if b has more than one fuel component, need to recalculate burnup
+                if len(b.getComponents(Flags.FUEL)) > 1:
+                    axialExpChanger.recalculateBurnup(b)
 
     def performPrescribedAxialExpansion(self, a: Assembly, components: list, percents: list, setFuel=True):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
