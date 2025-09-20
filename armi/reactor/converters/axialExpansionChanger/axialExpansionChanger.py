@@ -592,7 +592,6 @@ class RedistributeMass:
             self.setNewToCompTemperature()
             if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
                 self._adjustMassParams()
-                self._recalculateBurnup()
 
     @property
     def fromCompVolume(self):
@@ -731,13 +730,6 @@ class RedistributeMass:
                 amountMoved = removalFrac * self.fromComp.p[paramName]
                 self.toComp.p[paramName] = self.toComp.p[paramName] + amountMoved
                 self.fromComp.p[paramName] = self.fromComp.p[paramName] - amountMoved
-
-    def _recalculateBurnup(self):
-        """After moving nuclides around, recalculate burnup."""
-        for c in (self.fromComp, self.toComp):
-            hmMolesNow = c.getHMMoles()
-            bu = 100.0 * (1 - hmMolesNow / c.p.molesHmBOL)
-            c.p.percentBu = bu
 
     @staticmethod
     def _sortKey(item):
