@@ -172,6 +172,29 @@ class AxialExpansionChanger:
             for b in a:
                 b.p.heightBOL = b.getHeight()
                 b.completeInitialLoading()
+                axialExpChanger._recalculateBurnup(b)
+
+    def _recalculateBurnup(self, b):
+        """After moving nuclides around, recalculate burnup."""
+        for c in b.iterComponents(Flags.FUEL):
+            c.p.percentBu = self._calcBurnup(c.getHMMoles(), c.p.molesHmBOL, c)
+        b.p.percentBu = self._calcBurnup(b.getHMMoles(), b.p.molesHmBOL, b)
+
+    def _calcBurnup(self, currentHM, initialHM, obj):
+        """Handle edge cases in floating point math for burnup calc."""
+        if initialHM == 0.0:
+            return 0.0
+        burnup = 100.0 * (1 - currentHM / initialHM)
+        if abs(burnup) < 1e-10:
+            return 0.0
+        if burnup < 0.0:
+            msg = (
+                f"Negative burnup {burnup} encountered in axial expansion for {obj}, parent = {obj.parent}"
+                f"{currentHM}, {initialHM}, {obj.parent.getHeight()}, {obj.parent.p.heightBOL}"
+            )
+            runLog.error(msg)
+            raise ValueError(msg)
+        return burnup
 
     def performPrescribedAxialExpansion(self, a: Assembly, components: list, percents: list, setFuel=True):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
@@ -454,30 +477,9 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-        # after expansion, recalculate all the burnups
-        for b in self.linked.a:
-            self._recalculateBurnup(b)
-
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
-    
-    def _recalculateBurnup(self, b):
-        """After moving nuclides around, recalculate burnup."""
-        for c in b.iterComponents(Flags.FUEL):
-            c.p.percentBu = self._calcBurnup(c.getHMMoles(), c.p.molesHmBOL) 
-        b.p.percentBu = self._calcBurnup(b.getHMMoles(), b.p.molesHmBOL)
-
-    def _calcBurnup(self, currentHM, initialHM):
-        """Handle edge cases in floating point math for burnup calc."""
-        if initialHM == 0.0:
-            return 0.0
-        burnup = 100.0 * (1 - currentHM / initialHM)
-        if abs(burnup) < 1e-10:
-            return 0.0
-        if burnup < 0.0:
-            raise ValueError()
-        return burnup
 
     def _recomputeBlockMassParams(self, b: "Block"):
         """
