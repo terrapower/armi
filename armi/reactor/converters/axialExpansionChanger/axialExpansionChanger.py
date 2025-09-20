@@ -454,9 +454,19 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
+        # after expansion, recalculate all the burnups
+        for b in self.linked.a:
+            self._recalculateBurnup(b)
+
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def _recalculateBurnup(self, b):
+        """After moving nuclides around, recalculate burnup."""
+        for c in b.iterComponents(Flags.FUEL):
+            c.p.percentBu = 100.0 * (1 - c.getHMMoles()/ c.p.molesHmBOL) 
+        b.p.percentBu = 100.0 * (1 - b.getHMMoles() / b.p.molesHmBOL)
 
     def _recomputeBlockMassParams(self, b: "Block"):
         """
@@ -592,7 +602,6 @@ class RedistributeMass:
             self.setNewToCompTemperature()
             if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
                 self._adjustMassParams()
-                self._recalculateBurnup()
 
     @property
     def fromCompVolume(self):
@@ -731,13 +740,6 @@ class RedistributeMass:
                 amountMoved = removalFrac * self.fromComp.p[paramName]
                 self.toComp.p[paramName] = self.toComp.p[paramName] + amountMoved
                 self.fromComp.p[paramName] = self.fromComp.p[paramName] - amountMoved
-
-    def _recalculateBurnup(self):
-        """After moving nuclides around, recalculate burnup."""
-        for c in (self.fromComp, self.toComp):
-            hmMolesNow = c.getHMMoles()
-            bu = 100.0 * (1 - hmMolesNow / c.p.molesHmBOL)
-            c.p.percentBu = bu
 
     @staticmethod
     def _sortKey(item):
