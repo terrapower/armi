@@ -228,8 +228,7 @@ class Block(composites.Composite):
 
         # Compute component areas
         innerCladdingArea = sum(
-            math.pi * clad.getDimension("id", cold=cold) ** 2 / 4.0  * clad.getDimension("mult")
-            for clad in clads
+            math.pi * clad.getDimension("id", cold=cold) ** 2 / 4.0 * clad.getDimension("mult") for clad in clads
         )
         sortedClads = sorted(clads)
         sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(sortedClads.pop())
