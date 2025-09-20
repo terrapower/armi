@@ -288,9 +288,10 @@ class Block(composites.Composite):
 
         innerCladdingArea += negativeArea  # See note 2 of self.getSmearDensity
         totalMovableArea = innerCladdingArea - unmovableComponentArea
-        smearDensity = fuelComponentArea / totalMovableArea
-
-        return smearDensity
+        if totalMovableArea <= 0.0:
+            return 0.0
+        else:
+            return fuelComponentArea / totalMovableArea
 
     def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
