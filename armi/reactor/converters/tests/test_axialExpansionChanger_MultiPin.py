@@ -303,10 +303,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.deltaZTop = self.b0.p.ztop - self.c0.ztop
 
         # set b0 elevations to match c0
-        self.b0.p.zbottom = self.c0.zbottom
-        self.b0.p.ztop = self.c0.ztop
-        self.b0.p.height = self.b0.p.ztop - self.b0.p.zbottom
-        # clear the cache to update volume calculations
         self.b0.clearCache()
 
         # initialize component elevations for self.b1
@@ -317,16 +313,18 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.b1.clearCache()
 
         if fromComp is self.c0:
-            self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / self.c0.height
-            self.amountBeingRedistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / self.b0.p.heightBOL
+            fromHeight = self.c0.height
+            self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
+            self.amountBeingRedistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / fromHeight
             self.amountBeingRedistributedBOLMoles = (
-                self.originalC0.HMmolesBOL * abs(self.deltaZTop) / self.b0.p.heightBOL
+                self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
             )
         else:
-            self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / self.c1.height
-            self.amountBeingRedistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / self.b1.p.heightBOL
+            fromHeight = self.c1.height
+            self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
+            self.amountBeingRedistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / fromHeight
             self.amountBeingRedistributedBOLMoles = (
-                self.originalC1.HMmolesBOL * abs(self.deltaZTop) / self.b1.p.heightBOL
+                self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
             )
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
