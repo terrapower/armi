@@ -361,7 +361,11 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
 
         with TemporaryDirectoryChanger():
             # copy over settings files
-            for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
+            for fileName in [
+                "armiRun.yaml",
+                "refSmallReactor.yaml",
+                "refSmallReactorShuffleLogic.py",
+            ]:
                 copyfile(os.path.join(TEST_ROOT, fileName), fileName)
 
             # pass in --nTasks=333
