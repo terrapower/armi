@@ -61,7 +61,7 @@ class RedistributeMass:
         if self.compatabilityCheck():
             self.setNewToCompNDens()
             self.setNewToCompTemperature()
-            if self.fromComp.p.hmNuclidesBOL is not None and self.toComp.p.hmNuclidesBOL is not None:
+            if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
                 self._adjustMassParams()
 
     @property
