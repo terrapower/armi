@@ -32,7 +32,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
-from armi.utils import densityTools, units
+from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
 
 if typing.TYPE_CHECKING:
@@ -719,12 +719,7 @@ class RedistributeMass:
         self.toComp.clearCache()
 
     def _adjustMassParams(self):
-        """
-        Adjust the following parameters on fromComp and toComp:
-
-        * massHmBOL
-        * molesHmBOL
-        """
+        """Adjust massHmBOL and molesHmBOL on fromComp and toComp."""
         paramsToMove = (
             "massHmBOL",
             "molesHmBOL",
