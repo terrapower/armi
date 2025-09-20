@@ -461,12 +461,23 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
-
+    
     def _recalculateBurnup(self, b):
         """After moving nuclides around, recalculate burnup."""
         for c in b.iterComponents(Flags.FUEL):
-            c.p.percentBu = 100.0 * (1 - c.getHMMoles()/ c.p.molesHmBOL) 
-        b.p.percentBu = 100.0 * (1 - b.getHMMoles() / b.p.molesHmBOL)
+            c.p.percentBu = self._calcBurnup(c.getHMMoles(), c.p.molesHmBOL) 
+        b.p.percentBu = self._calcBurnup(b.getHMMoles(), b.p.molesHmBOL)
+
+    def _calcBurnup(self, currentHM, initialHM):
+        """Handle edge cases in floating point math for burnup calc."""
+        if initialHM == 0.0:
+            return 0.0
+        burnup = 100.0 * (1 - currentHM / initialHM)
+        if abs(burnup) < 1e-10:
+            return 0.0
+        if burnup < 0.0:
+            raise ValueError()
+        return burnup
 
     def _recomputeBlockMassParams(self, b: "Block"):
         """
