@@ -24,8 +24,9 @@ from numpy import array, array_equal, full
 from armi.materials.material import Fluid
 from armi.reactor.blueprints import Blueprints
 from armi.reactor.components.component import Component
-from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger, RedistributeMass
+from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
+from armi.reactor.converters.axialExpansionChanger.redistributeMass import RedistributeMass
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
 from armi.settings.caseSettings import Settings
