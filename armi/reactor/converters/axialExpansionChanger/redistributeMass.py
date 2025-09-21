@@ -17,12 +17,11 @@ import typing
 from math import isclose
 from textwrap import dedent
 
-from numpy import sum
 from scipy.optimize import brentq
 
 from armi import runLog
 from armi.reactor.flags import Flags
-from armi.utils import densityTools, units
+from armi.utils import densityTools
 
 if typing.TYPE_CHECKING:
     from armi.reactor.components.component import Component
