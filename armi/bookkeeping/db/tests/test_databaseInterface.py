@@ -55,7 +55,11 @@ def getSimpleDBOperator(cs):
     runLog.setVerbosity("info")
 
     o = genDBCase.initializeOperator()
-    o.interfaces = [interface for interface in o.interfaces if interface.name in ["database", "main"]]
+    o.interfaces = [
+        interface
+        for interface in o.interfaces
+        if interface.name in ["database", "main"]
+    ]
 
     return o, cs
 
@@ -77,7 +81,9 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     def test_interactBOL(self):
         """This test is in its own class, because of temporary directory issues."""
         with directoryChangers.TemporaryDirectoryChanger():
-            self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+            self.o, self.r = loadTestReactor(
+                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            )
             self.dbi = DatabaseInterface(self.r, self.o.cs)
 
             dbName = f"{self._testMethodName}.h5"
@@ -100,7 +106,9 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database = self.dbi.database
@@ -232,6 +240,72 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertFalse(os.path.exists(self.dbi.database.fileName))
         self.dbi.interactEOL()
         self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
+    def test_writeDBFromDBLoadSameDir(self):
+        """
+        Test to ensure that a reactor loaded from a database can be written to a
+        working database file (one that has case settings and blueprints if applicable).
+        """
+        # Write this reactor to a database file.
+        dbi = DatabaseInterface(self.r, self.o.cs)
+        dbi.initDB(fName="testDB1.h5")
+        db = dbi.database
+        db.writeToDB(self.r)
+        db.close()
+
+        # Now load the db again
+        with Database("testDB1.h5", "r") as db:
+            cs2 = db.loadCS()
+            r2 = db.load(0, 0, cs=cs2)
+
+        # Now write this db to this folder
+        # This write is going to not write the blueprints file because the case setting path variable is wrong.
+        dbi = DatabaseInterface(r2, cs2)
+        dbi.initDB(fName="testDB2.h5")
+        db = dbi.database
+        db.writeToDB(r2)
+        db.close()
+
+        # Now load this db. It should load
+        with Database("testDB2.h5", "r") as db:
+            cs3 = db.loadCS()
+            _ = db.load(0, 0, cs=cs3)
+
+    def test_writeDBFromDBLoadDifDir(self):
+        """
+        Test to ensure that a reactor loaded from a database can be written to a
+        working database file (one that has case settings and blueprints if applicable).
+
+        The directory is changed between writing and loading.
+        """
+        # Write this reactor to a database file.
+        dbi = DatabaseInterface(self.r, self.o.cs)
+        dbi.initDB(fName="testDB1.h5")
+        db = dbi.database
+        db.writeToDB(self.r)
+        db.close()
+
+        # Let's move to a different folder
+        os.makedirs("sub", exist_ok=True)
+        os.chdir("sub")
+
+        # Now load the db again
+        with Database("../testDB1.h5", "r") as db:
+            cs2 = db.loadCS()
+            r2 = db.load(0, 0, cs=cs2)
+
+        # Now write this db to this folder
+        # This write is going to not write the blueprints file because the case setting path variable is wrong.
+        dbi = DatabaseInterface(r2, cs2)
+        dbi.initDB(fName="testDB2.h5")
+        db = dbi.database
+        db.writeToDB(r2)
+        db.close()
+
+        # Now load this db. It should load
+        with Database("testDB2.h5", "r") as db:
+            cs3 = db.loadCS()
+            _ = db.load(0, 0, cs=cs3)
 
 
 class TestDatabaseWriter(unittest.TestCase):
@@ -525,7 +599,9 @@ class TestDatabaseReading(unittest.TestCase):
                             np.array(c2.spatialLocator.indices),
                         )
                     else:
-                        assert_equal(c1.spatialLocator.indices, c2.spatialLocator.indices)
+                        assert_equal(
+                            c1.spatialLocator.indices, c2.spatialLocator.indices
+                        )
                     self.assertEqual(c1.p.serialNum, c2.p.serialNum)
 
                 # volume is pretty difficult to get right. it relies upon linked dimensions
@@ -623,11 +699,15 @@ class TestStandardFollowOn(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         with self.td:
             # make DB to load from
-            o = self._getOperatorThatChangesVariables(settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml")))
+            o = self._getOperatorThatChangesVariables(
+                settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+            )
             with o:
                 o.operate()
                 firstEndTime = o.r.p.time
-                self.assertNotEqual(firstEndTime, 0, "Time should have advanced by the end of the run.")
+                self.assertNotEqual(
+                    firstEndTime, 0, "Time should have advanced by the end of the run."
+                )
 
             # run standard restart case
             loadDB = "loadFrom.h5"
@@ -649,5 +729,7 @@ class TestStandardFollowOn(unittest.TestCase):
                     firstEndTime,
                     o.r.p.time,
                     "End time should have been the same for the restart run.\n"
-                    "First end time: {},\nSecond End time: {}".format(firstEndTime, o.r.p.time),
+                    "First end time: {},\nSecond End time: {}".format(
+                        firstEndTime, o.r.p.time
+                    ),
                 )
