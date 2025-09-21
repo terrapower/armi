@@ -251,7 +251,6 @@ class TestDatabaseInterface(unittest.TestCase):
             r2 = db.load(0, 0, cs=cs2)
 
         # Now write this db to this folder
-        # This write is going to not write the blueprints file because the case setting path variable is wrong.
         dbi = DatabaseInterface(r2, cs2)
         dbi.initDB(fName="testDB2.h5")
         db = dbi.database
@@ -282,12 +281,11 @@ class TestDatabaseInterface(unittest.TestCase):
         os.chdir("sub")
 
         # Now load the db again
-        with Database("../testDB1.h5", "r") as db:
+        with Database(os.path.join(os.pardir, "testDB1.h5"), "r") as db:
             cs2 = db.loadCS()
             r2 = db.load(0, 0, cs=cs2)
 
         # Now write this db to this folder
-        # This write is going to not write the blueprints file because the case setting path variable is wrong.
         dbi = DatabaseInterface(r2, cs2)
         dbi.initDB(fName="testDB2.h5")
         db = dbi.database

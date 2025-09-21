@@ -102,13 +102,20 @@ def writeWelcomeHeaders(o, cs):
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
         if pathToLoading.is_file():
-            includedBlueprints = [inclusion[0] for inclusion in textProcessors.findYamlInclusions(pathToLoading)]
+            if pathToLoading.suffix == ".h5":
+                # The blueprints are in a database, there aren't multiple included files
+                includedBlueprints = [pathToLoading]
+            else:
+                includedBlueprints = [inclusion[0] for inclusion in textProcessors.findYamlInclusions(pathToLoading)]
         else:
             includedBlueprints = []
 
         inputInfo = []
         inputFiles = [
-            ("Case Settings", cs.caseTitle + ".yaml"),
+            (
+                "Case Settings",
+                os.path.basename(cs.path),
+            ),  # This could be a YAML or an h5.
             ("Blueprints", cs[CONF_LOADING_FILE]),
         ] + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
 
