@@ -172,15 +172,11 @@ class Database:
         return self._versionMinor
 
     def __repr__(self):
-        return "<{} {}>".format(
-            self.__class__.__name__, repr(self.h5db).replace("<", "").replace(">", "")
-        )
+        return "<{} {}>".format(self.__class__.__name__, repr(self.h5db).replace("<", "").replace(">", ""))
 
     def open(self):
         if self.h5db is not None:
-            raise ValueError(
-                "This database is already open; make sure to close it before trying to open it again."
-            )
+            raise ValueError("This database is already open; make sure to close it before trying to open it again.")
         filePath = self._fileName
         self._openCount += 1
 
@@ -197,9 +193,7 @@ class Database:
 
         else:
             runLog.error("Unrecognized file permissions `{}`".format(self._permission))
-            raise ValueError(
-                "Cannot open database with permission `{}`".format(self._permission)
-            )
+            raise ValueError("Cannot open database with permission `{}`".format(self._permission))
 
         # open the database, and write a bunch of metadata to it
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
@@ -213,10 +207,7 @@ class Database:
         app = getApp()
         self.h5db.attrs["appName"] = app.name
         plugins = app.pluginManager.list_name_plugin()
-        ps = [
-            (os.path.abspath(sys.modules[p[1].__module__].__file__), p[1].__name__)
-            for p in plugins
-        ]
+        ps = [(os.path.abspath(sys.modules[p[1].__module__].__file__), p[1].__name__) for p in plugins]
         ps = np.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
         self.h5db.attrs["pluginPaths"] = ps
         self.h5db.attrs["localCommitHash"] = Database.grabLocalCommitHash()
@@ -311,9 +302,7 @@ class Database:
             newPath = safeMove(self._fullPath, self._fileName)
             self._fullPath = os.path.abspath(newPath)
 
-    def splitDatabase(
-        self, keepTimeSteps: Sequence[Tuple[int, int]], label: str
-    ) -> str:
+    def splitDatabase(self, keepTimeSteps: Sequence[Tuple[int, int]], label: str) -> str:
         """
         Discard all data except for specific time steps, retaining old data in a separate file.
 
@@ -364,9 +353,7 @@ class Database:
 
             if not set(keepTimeSteps).issubset(timeSteps):
                 raise ValueError(
-                    "Not all desired time steps ({}) are even present in the database".format(
-                        keepTimeSteps
-                    )
+                    "Not all desired time steps ({}) are even present in the database".format(keepTimeSteps)
                 )
 
             minCycle = next(iter(sorted(keepTimeSteps)))[0]
@@ -404,9 +391,7 @@ class Database:
         """
         cs = settings.Settings()
         cs.path = self.fileName
-        cs.loadFromString(
-            self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids
-        )
+        cs.loadFromString(self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids)
 
         # Need to update the blueprint file to be the database so that its not pointing at a source
         # that doesn't exist anymore (the original blueprints yaml).
@@ -476,9 +461,7 @@ class Database:
         file contains a hash of each files' contents. In the future, we should be able to reproduce
         a calculation with confidence that the inputs are identical.
         """
-        caseTitle = (
-            cs.caseTitle if cs is not None else os.path.splitext(self.fileName)[0]
-        )
+        caseTitle = cs.caseTitle if cs is not None else os.path.splitext(self.fileName)[0]
         self.h5db.attrs["caseTitle"] = caseTitle
         if csString is None:
             # don't read file; use what's in the cs now.
@@ -503,9 +486,7 @@ class Database:
                 if bpPath.exists() and bpPath.is_file():
                     # only store blueprints if we actually loaded from them
                     # Ensure that the input as stored in the DB is complete
-                    bpString = resolveMarkupInclusions(
-                        pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
-                    ).read()
+                    bpString = resolveMarkupInclusions(pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]).read()
                 else:
                     bpString = ""
 
@@ -582,9 +563,7 @@ class Database:
         self, timeSteps: Sequence[Tuple[int, int]] = None
     ) -> Generator[h5py._hl.group.Group, None, None]:
         """Returns a generator of HDF5 Groups for all time nodes, or for the passed selection."""
-        assert (
-            self.h5db is not None
-        ), "Must open the database before calling genTimeStepGroups"
+        assert self.h5db is not None, "Must open the database before calling genTimeStepGroups"
         if timeSteps is None:
             for groupName, h5TimeNodeGroup in sorted(self.h5db.items()):
                 match = self.timeNodeGroupPattern.match(groupName)
@@ -603,9 +582,7 @@ class Database:
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
         """Returns a generator of (cycle, node) tuples that are present in the DB."""
-        assert (
-            self.h5db is not None
-        ), "Must open the database before calling genTimeSteps"
+        assert self.h5db is not None, "Must open the database before calling genTimeSteps"
         for groupName in sorted(self.h5db.keys()):
             match = self.timeNodeGroupPattern.match(groupName)
             if match:
@@ -615,9 +592,7 @@ class Database:
 
     def genAuxiliaryData(self, ts: Tuple[int, int]) -> Generator[str, None, None]:
         """Returns a generator of names of auxiliary data on the requested time point."""
-        assert (
-            self.h5db is not None
-        ), "Must open the database before calling genAuxiliaryData"
+        assert self.h5db is not None, "Must open the database before calling genAuxiliaryData"
         cycle, node = ts
         groupName = getH5GroupName(cycle, node)
         timeGroup = self.h5db[groupName]
@@ -755,9 +730,7 @@ class Database:
         if node < 0:
             numNodes = getNodesPerCycle(cs)[cycle]
             if (node + numNodes) < 0:
-                raise ValueError(
-                    f"Node {node} specified does not exist for cycle {cycle}"
-                )
+                raise ValueError(f"Node {node} specified does not exist for cycle {cycle}")
             node = numNodes + node
 
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
@@ -777,9 +750,7 @@ class Database:
         self._compose(iter(comps), cs)
 
         # also, make sure to update the global serial number so we don't reuse a number
-        parameterCollections.GLOBAL_SERIAL_NUM = max(
-            parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
-        )
+        parameterCollections.GLOBAL_SERIAL_NUM = max(parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max())
         root = comps[0][0]
 
         # return a Reactor object
@@ -822,9 +793,7 @@ class Database:
     @staticmethod
     def _setParamsBeforeFreezing(r: Reactor):
         """Set some special case parameters before they are made read-only."""
-        for child in r.iterChildren(
-            deep=True, predicate=lambda c: isinstance(c, Component)
-        ):
+        for child in r.iterChildren(deep=True, predicate=lambda c: isinstance(c, Component)):
             # calling Component.getVolume() sets the volume parameter
             child.getVolume()
 
@@ -834,12 +803,7 @@ class Database:
             (Block, blueprints.blockDesigns),
             (Assembly, blueprints.assemDesigns),
         ):
-            paramsToSet = {
-                pDef.name
-                for pDef in compType.pDefs.inCategory(
-                    parameters.Category.assignInBlueprints
-                )
-            }
+            paramsToSet = {pDef.name for pDef in compType.pDefs.inCategory(parameters.Category.assignInBlueprints)}
 
             for comp in groupedComps[compType]:
                 design = designs[comp.p.type]
@@ -873,9 +837,7 @@ class Database:
             if parent is not None and parent.spatialGrid is not None:
                 comp.spatialLocator = parent.spatialGrid[location]
             else:
-                comp.spatialLocator = grids.CoordinateLocation(
-                    location[0], location[1], location[2], None
-                )
+                comp.spatialLocator = grids.CoordinateLocation(location[0], location[1], location[2], None)
 
         # Need to keep a collection of Component instances for linked dimension resolution, before
         # they can be add()ed to their parents. Not just filtering out of `children`, since
@@ -950,9 +912,7 @@ class Database:
                 temp = [c.p.get(paramDef.name, paramDef.default) for c in comps]
                 if paramDef.serializer is not None:
                     data, sAttrs = paramDef.serializer.pack(temp)
-                    assert (
-                        data.dtype.kind != "O"
-                    ), "{} failed to convert {} to a numpy-supported type.".format(
+                    assert data.dtype.kind != "O", "{} failed to convert {} to a numpy-supported type.".format(
                         paramDef.serializer.__name__, paramDef.name
                     )
                     attrs.update(sAttrs)
@@ -964,9 +924,7 @@ class Database:
                         jagged = len(set([self._getArrayShape(x) for x in temp])) != 1
                     else:
                         jagged = False
-                    data = (
-                        JaggedArray(temp, paramDef.name) if jagged else np.array(temp)
-                    )
+                    data = JaggedArray(temp, paramDef.name) if jagged else np.array(temp)
                     del temp
 
             # - Check to see if the array is jagged. If so, flatten, store the data offsets and
@@ -1006,22 +964,14 @@ class Database:
             try:
                 if paramDef.name in g:
                     raise ValueError(
-                        "`{}` was already in `{}`. This time node should have been empty".format(
-                            paramDef.name, g
-                        )
+                        "`{}` was already in `{}`. This time node should have been empty".format(paramDef.name, g)
                     )
 
-                dataset = g.create_dataset(
-                    paramDef.name, data=data, compression="gzip", track_order=True
-                )
+                dataset = g.create_dataset(paramDef.name, data=data, compression="gzip", track_order=True)
                 if any(attrs):
                     Database._writeAttrs(dataset, h5group, attrs)
             except Exception:
-                runLog.error(
-                    "Failed to write {} to database. Data: {}".format(
-                        paramDef.name, data
-                    )
-                )
+                runLog.error("Failed to write {} to database. Data: {}".format(paramDef.name, data))
                 raise
         if isinstance(c, Block):
             self._addHomogenizedNumberDensityParams(comps, g)
@@ -1038,9 +988,7 @@ class Database:
         nDens = collectBlockNumberDensities(blocks)
 
         for nucName, numDens in nDens.items():
-            h5group.create_dataset(
-                nucName, data=numDens, compression="gzip", track_order=True
-            )
+            h5group.create_dataset(nucName, data=numDens, compression="gzip", track_order=True)
 
     @staticmethod
     def _readParams(h5group, compTypeName, comps, allowMissing=False):
@@ -1085,11 +1033,7 @@ class Database:
                 assert dataSet.attrs[_SERIALIZER_NAME] == pDef.serializer.__name__
                 assert _SERIALIZER_VERSION in dataSet.attrs
 
-                data = np.array(
-                    pDef.serializer.unpack(
-                        data, dataSet.attrs[_SERIALIZER_VERSION], attrs
-                    )
-                )
+                data = np.array(pDef.serializer.unpack(data, dataSet.attrs[_SERIALIZER_VERSION], attrs))
 
             # nuclides are a special case where we want to keep in np.bytes_ format
             if data.dtype.type is np.bytes_ and "nuclides" not in paramName.lower():
@@ -1119,9 +1063,7 @@ class Database:
                 Database._applyComponentNumberDensitiesMigration(comps, unpackedData)
             else:
                 # iterating of np is not fast...
-                for c, val, linkedDim in itertools.zip_longest(
-                    comps, unpackedData, linkedDims, fillvalue=""
-                ):
+                for c, val, linkedDim in itertools.zip_longest(comps, unpackedData, linkedDims, fillvalue=""):
                     try:
                         if linkedDim != "":
                             c.p[paramName] = linkedDim
@@ -1140,9 +1082,7 @@ class Database:
         timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
     ) -> History:
         """Get the parameter histories at a specific location."""
-        return self.getHistoriesByLocation([comp], params=params, timeSteps=timeSteps)[
-            comp
-        ]
+        return self.getHistoriesByLocation([comp], params=params, timeSteps=timeSteps)[comp]
 
     def getHistoriesByLocation(
         self,
@@ -1184,15 +1124,11 @@ class Database:
 
         locations = [c.spatialLocator.getCompleteIndices() for c in comps]
 
-        histData: Histories = {
-            c: collections.defaultdict(collections.OrderedDict) for c in comps
-        }
+        histData: Histories = {c: collections.defaultdict(collections.OrderedDict) for c in comps}
 
         # Check our assumptions about the passed locations: All locations must have the same parent
         # and bear the same relationship to the anchor object.
-        anchors = {
-            obj.getAncestorAndDistance(lambda a: isinstance(a, Core)) for obj in comps
-        }
+        anchors = {obj.getAncestorAndDistance(lambda a: isinstance(a, Core)) for obj in comps}
 
         if len(anchors) != 1:
             raise ValueError(
@@ -1204,20 +1140,14 @@ class Database:
         if anchorInfo is not None:
             anchor, anchorDistance = anchorInfo
         else:
-            raise ValueError(
-                "Could not determine an anchor object for the passed components"
-            )
+            raise ValueError("Could not determine an anchor object for the passed components")
 
         anchorSerialNum = anchor.p.serialNum
 
         # All objects of the same type
         objectTypes = {type(obj) for obj in comps}
         if len(objectTypes) != 1:
-            raise TypeError(
-                "The passed objects must be the same type; got objects of types `{}`".format(
-                    objectTypes
-                )
-            )
+            raise TypeError("The passed objects must be the same type; got objects of types `{}`".format(objectTypes))
 
         compType = objectTypes.pop()
         objClassName = compType.__name__
@@ -1233,13 +1163,9 @@ class Database:
 
             cycle = h5TimeNodeGroup.attrs["cycle"]
             timeNode = h5TimeNodeGroup.attrs["timeNode"]
-            layout = Layout(
-                (self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup
-            )
+            layout = Layout((self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup)
 
-            ancestors = layout.computeAncestors(
-                layout.serialNum, layout.numChildren, depth=anchorDistance
-            )
+            ancestors = layout.computeAncestors(layout.serialNum, layout.numChildren, depth=anchorDistance)
 
             lLocation = layout.location
             # filter for objects that live under the desired ancestor and at a desired location
@@ -1254,18 +1180,12 @@ class Database:
             # This could also be way more efficient if lLocation were a numpy array
             objectLocationsInLayout = [lLocation[i] for i in objectIndicesInLayout]
 
-            objectIndicesInData = np.array(layout.indexInData)[
-                objectIndicesInLayout
-            ].tolist()
+            objectIndicesInData = np.array(layout.indexInData)[objectIndicesInLayout].tolist()
 
             try:
                 h5GroupForType = h5TimeNodeGroup[objClassName]
             except KeyError as ee:
-                runLog.error(
-                    "{} not found in {} of {}".format(
-                        objClassName, h5TimeNodeGroup, self
-                    )
-                )
+                runLog.error("{} not found in {} of {}".format(objClassName, h5TimeNodeGroup, self))
                 raise ee
 
             for paramName in params or h5GroupForType.keys():
@@ -1278,9 +1198,7 @@ class Database:
                         data = dataSet[objectIndicesInData]
                     except:
                         runLog.error(
-                            "Failed to load index {} from {}@{}".format(
-                                objectIndicesInData, dataSet, (cycle, timeNode)
-                            )
+                            "Failed to load index {} from {}@{}".format(objectIndicesInData, dataSet, (cycle, timeNode))
                         )
                         raise
 
@@ -1294,9 +1212,7 @@ class Database:
                             raise ValueError(
                                 "History tracking for non-None, "
                                 "special-formatted parameters is not supported: "
-                                "{}, {}".format(
-                                    paramName, {k: v for k, v in dataSet.attrs.items()}
-                                )
+                                "{}, {}".format(paramName, {k: v for k, v in dataSet.attrs.items()})
                             )
                 else:
                     # Nothing in the database for this param, so use the default value
@@ -1368,13 +1284,9 @@ class Database:
         dict
             Dictionary ArmiObject (input): dict of str/list pairs containing ((cycle, node), value).
         """
-        histData: Histories = {
-            c: collections.defaultdict(collections.OrderedDict) for c in comps
-        }
+        histData: Histories = {c: collections.defaultdict(collections.OrderedDict) for c in comps}
         types = {c.__class__ for c in comps}
-        compsByTypeThenSerialNum: Dict[Type[ArmiObject], Dict[int, ArmiObject]] = {
-            t: dict() for t in types
-        }
+        compsByTypeThenSerialNum: Dict[Type[ArmiObject], Dict[int, ArmiObject]] = {t: dict() for t in types}
 
         for c in comps:
             compsByTypeThenSerialNum[c.__class__][c.p.serialNum] = c
@@ -1389,20 +1301,14 @@ class Database:
             # might save as int or np.int64, so forcing int keeps things predictable
             cycle = int(h5TimeNodeGroup.attrs["cycle"])
             timeNode = int(h5TimeNodeGroup.attrs["timeNode"])
-            layout = Layout(
-                (self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup
-            )
+            layout = Layout((self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup)
 
             for compType, compsBySerialNum in compsByTypeThenSerialNum.items():
                 compTypeName = compType.__name__
                 try:
                     h5GroupForType = h5TimeNodeGroup[compTypeName]
                 except KeyError as ee:
-                    runLog.error(
-                        "{} not found in {} of {}".format(
-                            compTypeName, h5TimeNodeGroup, self
-                        )
-                    )
+                    runLog.error("{} not found in {} of {}".format(compTypeName, h5TimeNodeGroup, self))
                     raise ee
                 layoutIndicesForType = np.where(layout.type == compTypeName)[0]
                 serialNumsForType = layout.serialNum[layoutIndicesForType].tolist()
@@ -1436,9 +1342,7 @@ class Database:
                             data = dataSet[indexInData]
                         except:
                             runLog.error(
-                                "Failed to load index {} from {}@{}".format(
-                                    indexInData, dataSet, (cycle, timeNode)
-                                )
+                                "Failed to load index {} from {}@{}".format(indexInData, dataSet, (cycle, timeNode))
                             )
                             raise
 
@@ -1509,9 +1413,7 @@ class Database:
                     raise
 
                 runLog.info(
-                    "Storing attribute `{}` for `{}` into it's own dataset within `{}/attrs`".format(
-                        key, obj, group
-                    )
+                    "Storing attribute `{}` for `{}` into it's own dataset within `{}/attrs`".format(key, obj, group)
                 )
 
                 if "attrs" not in group:
@@ -1598,9 +1500,7 @@ class Database:
         """
         # basic sanity checks
         assert startTime >= 0.0, f"The start time cannot be negative: {startTime}."
-        assert (
-            endTime >= startTime
-        ), f"The end time ({endTime}) is not greater than the start time ({startTime})."
+        assert endTime >= startTime, f"The end time ({endTime}) is not greater than the start time ({startTime})."
 
         # open the H5 file directly
         with h5py.File(dbPath, "r") as h5:
@@ -1620,9 +1520,7 @@ class Database:
 
         # more validation
         if not cycleNodes:
-            raise ValueError(
-                f"Provided start time ({startTime}) was greater than the modeled period: {thisTime}."
-            )
+            raise ValueError(f"Provided start time ({startTime}) was greater than the modeled period: {thisTime}.")
         elif errorIfNotExactlyOne and len(cycleNodes) != 1:
             raise ValueError(f"Did not find exactly one cycle/node pair: {cycleNodes}")
 
@@ -1699,9 +1597,7 @@ def packSpecialData(
         keys = sorted({k for d in data for k in d})
         data = np.array([[d.get(k, np.nan) for k in keys] for d in data])
         if data.dtype == "O":
-            raise TypeError(
-                f"Unable to coerce dictionary data into usable numpy array for {paramName}"
-            )
+            raise TypeError(f"Unable to coerce dictionary data into usable numpy array for {paramName}")
         # We store the union of all of the keys for all of the objects as a special "keys"
         # attribute, and store a value for all of those keys for all objects, whether or not there
         # is actually data associated with that key
@@ -1729,9 +1625,7 @@ def packSpecialData(
         return data, attrs
 
     if len(nones) == 0:
-        raise TypeError(
-            f"Cannot write {paramName} to the database, it did not resolve to a numpy/HDF5 type."
-        )
+        raise TypeError(f"Cannot write {paramName} to the database, it did not resolve to a numpy/HDF5 type.")
 
     runLog.error(f"Data unable to find special none value: {data}")
     raise TypeError(f"Failed to process special data for {paramName}")
@@ -1784,9 +1678,7 @@ def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
         unpackedData = []
         assert data.ndim == 2
         for d in data:
-            unpackedData.append(
-                {key: value for key, value in zip(keys, d) if not np.isnan(value)}
-            )
+            unpackedData.append({key: value for key, value in zip(keys, d) if not np.isnan(value)})
         return np.array(unpackedData)
 
     raise ValueError(

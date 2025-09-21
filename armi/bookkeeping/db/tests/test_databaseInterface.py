@@ -55,11 +55,7 @@ def getSimpleDBOperator(cs):
     runLog.setVerbosity("info")
 
     o = genDBCase.initializeOperator()
-    o.interfaces = [
-        interface
-        for interface in o.interfaces
-        if interface.name in ["database", "main"]
-    ]
+    o.interfaces = [interface for interface in o.interfaces if interface.name in ["database", "main"]]
 
     return o, cs
 
@@ -81,9 +77,7 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     def test_interactBOL(self):
         """This test is in its own class, because of temporary directory issues."""
         with directoryChangers.TemporaryDirectoryChanger():
-            self.o, self.r = loadTestReactor(
-                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-            )
+            self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
             self.dbi = DatabaseInterface(self.r, self.o.cs)
 
             dbName = f"{self._testMethodName}.h5"
@@ -106,9 +100,7 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database = self.dbi.database
@@ -599,9 +591,7 @@ class TestDatabaseReading(unittest.TestCase):
                             np.array(c2.spatialLocator.indices),
                         )
                     else:
-                        assert_equal(
-                            c1.spatialLocator.indices, c2.spatialLocator.indices
-                        )
+                        assert_equal(c1.spatialLocator.indices, c2.spatialLocator.indices)
                     self.assertEqual(c1.p.serialNum, c2.p.serialNum)
 
                 # volume is pretty difficult to get right. it relies upon linked dimensions
@@ -699,15 +689,11 @@ class TestStandardFollowOn(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         with self.td:
             # make DB to load from
-            o = self._getOperatorThatChangesVariables(
-                settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            )
+            o = self._getOperatorThatChangesVariables(settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml")))
             with o:
                 o.operate()
                 firstEndTime = o.r.p.time
-                self.assertNotEqual(
-                    firstEndTime, 0, "Time should have advanced by the end of the run."
-                )
+                self.assertNotEqual(firstEndTime, 0, "Time should have advanced by the end of the run.")
 
             # run standard restart case
             loadDB = "loadFrom.h5"
@@ -729,7 +715,5 @@ class TestStandardFollowOn(unittest.TestCase):
                     firstEndTime,
                     o.r.p.time,
                     "End time should have been the same for the restart run.\n"
-                    "First end time: {},\nSecond End time: {}".format(
-                        firstEndTime, o.r.p.time
-                    ),
+                    "First end time: {},\nSecond End time: {}".format(firstEndTime, o.r.p.time),
                 )
