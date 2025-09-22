@@ -393,13 +393,9 @@ class Database:
         cs.path = self.fileName
         cs.loadFromString(self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids)
 
-        # Need to update the blueprint file to be the database so that its not pointing at a source
-        # that doesn't exist anymore (the original blueprints yaml).
-        cs[CONF_LOADING_FILE] = os.path.basename(self.fileName)
-
         return cs
 
-    def loadBlueprints(self):
+    def loadBlueprints(self, cs=None):
         """Attempt to load reactor blueprints from the database file.
 
         Notes
@@ -417,6 +413,12 @@ class Database:
 
         try:
             bpString = self.h5db["inputs/blueprints"].asstr()[()]
+            # Need to update the blueprint file to be the database so that its not pointing at a source
+            # that doesn't exist anymore (the original blueprints yaml).
+
+            if cs:
+                # Update the settings to point at where the file was actually read from
+                cs[CONF_LOADING_FILE] = os.path.basename(self.fileName)
         except KeyError:
             # not all reactors need to be created from blueprints, so they may not exist
             pass
@@ -722,7 +724,7 @@ class Database:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS(handleInvalids=handleInvalids)
-        bp = bp or self.loadBlueprints()
+        bp = bp or self.loadBlueprints(cs)
 
         if callReactorConstructionHook:
             getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
