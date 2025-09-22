@@ -427,8 +427,7 @@ class Block_TestCase(unittest.TestCase):
         ref = (self.block.getDim(Flags.FUEL, "od") ** 2 - self.block.getDim(Flags.FUEL, "id") ** 2) / self.block.getDim(
             Flags.LINER, "id"
         ) ** 2
-        places = 10
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=10)
 
         # test with liner instead of clad
         ref = (self.block.getDim(Flags.FUEL, "od") ** 2 - self.block.getDim(Flags.FUEL, "id") ** 2) / self.block.getDim(
@@ -501,8 +500,7 @@ class Block_TestCase(unittest.TestCase):
             innerArea -= liner.getArea(cold=True)
 
         ref = fuelArea / innerArea
-        places = 10
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=10)
 
     def test_getSmearDensityMixedPin(self):
         fuel = self.block.getComponent(Flags.FUEL)
