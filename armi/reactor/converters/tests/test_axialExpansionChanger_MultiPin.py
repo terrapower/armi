@@ -159,6 +159,7 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
         self.assertAlmostEqual(totalHMMolesBOL, self.initialTotalHMMolesBOL, places=self.places)
         self.assertAlmostEqual(totalHMMassBOL, self.initialTotalHMMassBOL, places=self.places)
 
+
 class TestRedistributeMass(TestMultiPinConservationBase):
     b0: "HexBlock"
     b1: "HexBlock"
@@ -357,9 +358,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         # calculate deltaZTop to inform how much mass will be redistributed
         self.deltaZTop = self.b0.p.ztop - self.c0.ztop
-
-        # set b0 elevations to match c0
-        self.b0.clearCache()
 
         # initialize component elevations for self.b1
         for c in self.b1:
