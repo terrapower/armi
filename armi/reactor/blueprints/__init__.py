@@ -64,15 +64,14 @@ The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
 """
 
-import os
 import copy
 import io
-import h5py
 import math
 import pathlib
 import traceback
 import typing
 
+import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
@@ -120,20 +119,17 @@ def loadFromCs(cs, roundTrip=False):
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         bpPath = pathlib.Path(cs[CONF_LOADING_FILE])
-        print(f"loading file {bpPath}")
         if bpPath.suffix.lower() in (".h5", ".hdf5"):
             # This is a case settings from a database so the blueprints are also in the database.
-            # try:
-            print(os.listdir())
-            db = h5py.File(bpPath, "r")
-            bpString = db["inputs/blueprints"].asstr()[()]
-            # print(f"bpString: {bpString}")
-            stream = io.StringIO(bpString)
-            stream = Blueprints.migrate(stream)
-            bp = Blueprints.load(stream)
-            # except KeyError:
-            # not all reactors need to be created from blueprints, so they may not exist
-            bp = None
+            try:
+                db = h5py.File(bpPath, "r")
+                bpString = db["inputs/blueprints"].asstr()[()]
+                stream = io.StringIO(bpString)
+                stream = Blueprints.migrate(stream)
+                bp = Blueprints.load(stream)
+            except KeyError:
+                # not all reactors need to be created from blueprints, so they may not exist
+                bp = None
         else:
             with open(cs[CONF_LOADING_FILE], "r") as bpYaml:
                 root = bpPath.parent.absolute()
