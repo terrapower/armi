@@ -163,7 +163,7 @@ class AxialExpansionChanger:
             axialExpChanger.setAssembly(a, expandFromTinputToThot=True)
             axialExpChanger.applyColdHeightMassIncrease()
             axialExpChanger.expansionData.computeThermalExpansionFactors()
-            axialExpChanger.axiallyExpandAssembly()
+            axialExpChanger.axiallyExpandAssembly(recalculateBurnup=False)
         if not isDetailedAxialExpansion:
             for a in assems:
                 a.setBlockMesh(referenceAssembly.getAxialMesh())
@@ -342,8 +342,13 @@ class AxialExpansionChanger:
                 runLog.error(msg)
                 raise RuntimeError(msg)
 
-    def axiallyExpandAssembly(self):
+    def axiallyExpandAssembly(self, recalculateBurnup: typing.Optional[bool] = True):
         """Utilizes assembly linkage to do axial expansion.
+
+        Parameters
+        ----------
+        recalculateBurnup
+            Optional parameter to skip the recalculate burnup step.
 
         .. impl:: Preserve the total height of an ARMI assembly, during expansion.
             :id: I_ARMI_ASSEM_HEIGHT_PRES
@@ -461,6 +466,9 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+        if recalculateBurnup:
+            for b in self.linked.a.iterBlocks(Flags.FUEL):
+                self.recalculateBurnup(b)
 
     def _recomputeBlockMassParams(self, b: "Block"):
         """
