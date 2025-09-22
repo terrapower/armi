@@ -61,6 +61,7 @@ from armi import context, getApp, getPluginManagerOrFail, meta, runLog, settings
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.layout import (
     DB_VERSION,
+    LOC_COORD,
     Layout,
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
@@ -800,7 +801,7 @@ class Database:
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
-        comp, _, numChildren, location = next(comps)
+        comp, _, numChildren, location, locationType = next(comps)
 
         # attach the parent early, if provided; some cases need the parent attached for the rest of
         # _compose to work properly.
@@ -821,7 +822,14 @@ class Database:
         # set the spatialLocators on each component
         if location is not None:
             if parent is not None and parent.spatialGrid is not None:
-                comp.spatialLocator = parent.spatialGrid[location]
+                if locationType != LOC_COORD:
+                    # We can directly index into the spatial grid for IndexLocation
+                    # and MultiIndexLocators to get equivalent spatial locators
+                    comp.spatialLocator = parent.spatialGrid[location]
+                else:
+                    comp.spatialLocator = grids.CoordinateLocation(
+                        location[0], location[1], location[2], parent.spatialGrid
+                    )
             else:
                 comp.spatialLocator = grids.CoordinateLocation(location[0], location[1], location[2], None)
 
