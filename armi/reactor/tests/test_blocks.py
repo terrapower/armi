@@ -549,13 +549,12 @@ class Block_TestCase(unittest.TestCase):
         }
         self.block.add(components.Circle("clad", "HT9", **cladDims))
 
-        cur = self.block.getSmearDensity()
+        # calculate reference smear density
         fuel = self.block.getComponent(Flags.FUEL, exact=True)
         annularFuel = self.block.getComponent(Flags.FUEL | Flags.ANNULAR)
         liner = self.block.getComponent(Flags.LINER | Flags.INNER)
         clads = self.block.getComponents(Flags.CLAD)
-        fuelArea = 0.0
-        fuelArea += math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
+        fuelArea = math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
         fuelArea += (
             math.pi
             / 4.0
@@ -569,8 +568,8 @@ class Block_TestCase(unittest.TestCase):
             innerArea -= liner.getArea(cold=True)
 
         ref = fuelArea / innerArea
-        places = 10
-        self.assertAlmostEqual(cur, ref, places=places)
+        cur = self.block.getSmearDensity()
+        self.assertAlmostEqual(cur, ref, places=10)
 
     def test_getSmearDensityMultipleLiner(self):
         numLiners = sum(1 for c in self.block if "liner" in c.name and "gap" not in c.name)
