@@ -427,7 +427,8 @@ class Block_TestCase(unittest.TestCase):
         ref = (self.block.getDim(Flags.FUEL, "od") ** 2 - self.block.getDim(Flags.FUEL, "id") ** 2) / self.block.getDim(
             Flags.LINER, "id"
         ) ** 2
-        self.assertAlmostEqual(cur, ref, places=10)
+        places = 10
+        self.assertAlmostEqual(cur, ref, places=places)
 
         # test with liner instead of clad
         ref = (self.block.getDim(Flags.FUEL, "od") ** 2 - self.block.getDim(Flags.FUEL, "id") ** 2) / self.block.getDim(
