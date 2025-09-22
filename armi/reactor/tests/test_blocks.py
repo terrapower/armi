@@ -463,6 +463,45 @@ class Block_TestCase(unittest.TestCase):
             msg="Incorrect getSmearDensity with annular fuel. Got {0}. Should be {1}".format(cur, ref),
         )
 
+    def test_getSmearDensityMultipleClads(self):
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        cur = self.block.getSmearDensity()
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        ref = (fuel.getDimension("od", cold=True) ** 2 - fuel.getDimension("id", cold=True) ** 2) / liner.getDimension("id", cold=True) ** 2
+        fuelArea = fuel.getArea(cold=True)
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        places = 10
+        self.assertAlmostEqual(cur, ref, places=places)
+
     def test_getSmearDensityMixedPin(self):
         fuel = self.block.getComponent(Flags.FUEL)
         self.block.remove(fuel)
