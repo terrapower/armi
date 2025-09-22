@@ -490,7 +490,9 @@ class Block_TestCase(unittest.TestCase):
         fuel = self.block.getComponent(Flags.FUEL, exact=True)
         liner = self.block.getComponent(Flags.LINER | Flags.INNER)
         clads = self.block.getComponents(Flags.CLAD)
-        ref = (fuel.getDimension("od", cold=True) ** 2 - fuel.getDimension("id", cold=True) ** 2) / liner.getDimension("id", cold=True) ** 2
+        ref = (fuel.getDimension("od", cold=True) ** 2 - fuel.getDimension("id", cold=True) ** 2) / liner.getDimension(
+            "id", cold=True
+        ) ** 2
         fuelArea = fuel.getArea(cold=True)
         innerArea = 0.0
         for clad in clads:
@@ -554,7 +556,12 @@ class Block_TestCase(unittest.TestCase):
         clads = self.block.getComponents(Flags.CLAD)
         fuelArea = 0.0
         fuelArea += math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
-        fuelArea += math.pi / 4.0 * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2) * annularFuel.getDimension("mult")
+        fuelArea += (
+            math.pi
+            / 4.0
+            * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2)
+            * annularFuel.getDimension("mult")
+        )
         innerArea = 0.0
         for clad in clads:
             innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
