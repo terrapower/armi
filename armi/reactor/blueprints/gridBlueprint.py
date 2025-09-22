@@ -313,13 +313,13 @@ class GridBlueprint(yamlize.Object):
         """
         Build spatial grid.
 
-        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be
-        adjusted to the proper dimensions (often by inspection of children) at a later time.
+        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be adjusted to the proper
+        dimensions (often by inspection of children) at a later time.
         """
         symmetry = geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
         geom = self.geom
         maxIndex = self._getMaxIndex()
-        runLog.extra("Creating the spatial grid")
+        runLog.extra(f"Creating the spatial grid {self.name}", single=True)
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
                 # This check is regrettably late. It would be nice if we could validate that bounds
