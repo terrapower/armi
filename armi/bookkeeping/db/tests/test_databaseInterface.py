@@ -30,6 +30,7 @@ from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
+from armi.reactor.reactors import Reactor
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
@@ -250,6 +251,9 @@ class TestDatabaseInterface(unittest.TestCase):
             cs2 = db.loadCS()
             r2 = db.load(0, 0, cs=cs2)
 
+        self.assertIsInstance(cs2, settings.Settings)
+        self.assertIsInstance(r2, Reactor)
+
         # Now write this db to this folder
         dbi = DatabaseInterface(r2, cs2)
         dbi.initDB(fName="testDB2.h5")
@@ -260,7 +264,10 @@ class TestDatabaseInterface(unittest.TestCase):
         # Now load this db. It should load
         with Database("testDB2.h5", "r") as db:
             cs3 = db.loadCS()
-            _ = db.load(0, 0, cs=cs3)
+            r3 = db.load(0, 0, cs=cs3)
+
+        self.assertIsInstance(cs3, settings.Settings)
+        self.assertIsInstance(r3, Reactor)
 
     def test_writeDBFromDBLoadDifDir(self):
         """
@@ -285,6 +292,9 @@ class TestDatabaseInterface(unittest.TestCase):
             cs2 = db.loadCS()
             r2 = db.load(0, 0, cs=cs2)
 
+        self.assertIsInstance(cs2, settings.Settings)
+        self.assertIsInstance(r2, Reactor)
+
         # Now write this db to this folder
         dbi = DatabaseInterface(r2, cs2)
         dbi.initDB(fName="testDB2.h5")
@@ -295,7 +305,10 @@ class TestDatabaseInterface(unittest.TestCase):
         # Now load this db. It should load
         with Database("testDB2.h5", "r") as db:
             cs3 = db.loadCS()
-            _ = db.load(0, 0, cs=cs3)
+            r3 = db.load(0, 0, cs=cs3)
+
+        self.assertIsInstance(cs3, settings.Settings)
+        self.assertIsInstance(r3, Reactor)
 
 
 class TestDatabaseWriter(unittest.TestCase):

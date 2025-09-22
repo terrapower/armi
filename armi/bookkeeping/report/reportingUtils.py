@@ -114,7 +114,7 @@ def writeWelcomeHeaders(o, cs):
         inputFiles = [
             (
                 "Case Settings",
-                os.path.basename(cs.path),
+                os.path.basename(cs.path) if cs.path else cs.caseTitle + ".yaml",
             ),  # This could be a YAML or an h5.
             ("Blueprints", cs[CONF_LOADING_FILE]),
         ] + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
