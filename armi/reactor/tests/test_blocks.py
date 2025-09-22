@@ -463,6 +463,47 @@ class Block_TestCase(unittest.TestCase):
             msg="Incorrect getSmearDensity with annular fuel. Got {0}. Should be {1}".format(cur, ref),
         )
 
+    def test_getSmearDensityMixedPin(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        self.block.remove(fuel)
+
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": fuel.getDimension("od"),
+            "id": fuel.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("fuel annular", "UZr", **fuelDims))
+
+        # add non-annular fuel
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": 0.75,
+            "id": 0.0,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("fuel", "UZr", **fuelDims))
+
+        cur = self.block.getSmearDensity()
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        annularFuel = self.block.getComponent(Flags.FUEL | Flags.ANNULAR)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clad = self.block.getComponent(Flags.CLAD)
+        fuelArea = 0.0
+        fuelArea += math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * 100.0
+        fuelArea += math.pi / 4.0 * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2) * 117.0
+        innerArea = math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * 217.0
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        fuelSmearDens = ( fuel.getDimension("od", cold=True) / clad.getDimension("id", cold=True) ) ** 2
+        annularSmearDens = (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2) / clad.getDimension("id", cold=True) ** 2
+        ref = fuelArea /innerArea
+        places = 10
+        self.assertAlmostEqual(cur, ref, places=places)
+
     def test_getSmearDensityMultipleLiner(self):
         numLiners = sum(1 for c in self.block if "liner" in c.name and "gap" not in c.name)
         self.assertEqual(
