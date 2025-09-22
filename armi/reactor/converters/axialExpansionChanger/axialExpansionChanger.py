@@ -452,7 +452,7 @@ class AxialExpansionChanger:
 
             self._checkBlockHeight(b)
             self._recomputeBlockMassParams(b)
-
+            self.recalculateBurnup(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
