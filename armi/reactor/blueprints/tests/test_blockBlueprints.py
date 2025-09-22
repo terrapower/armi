@@ -344,8 +344,7 @@ class TestGriddedBlock(unittest.TestCase):
     def test_latticeNotInComponents(self):
         """
         Ensure that we catch cases when a latticeID listed in the grid is not present
-        in any of the components on the block. In this case, latticeID "2" is not
-        in the lattice.
+        in any of the components on the block. In this case, latticeID "2" is not in the lattice.
         """
         with self.assertRaises(ValueError) as ee:
             with io.StringIO(FULL_BP_NO_COMP) as stream:
@@ -386,7 +385,7 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
 
-    def test_densityConsistentWithComponentConstructor(self):
+    def test_densConsistentCompConstructor(self):
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(self.cs, self.blueprints)
         fuelBlock = a1[0]
         clad = fuelBlock.getComponent(Flags.CLAD)
