@@ -207,8 +207,6 @@ class AxialExpansionChanger:
         self.setAssembly(a, setFuel)
         self.expansionData.setExpansionFactors(components, percents)
         self.axiallyExpandAssembly()
-        for b in a.iterBlocks(Flags.FUEL):
-            self.recalculateBurnup(b)
 
     def performThermalAxialExpansion(
         self,
@@ -254,8 +252,6 @@ class AxialExpansionChanger:
         self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly()
-        for b in a.iterBlocks(Flags.FUEL):
-            self.recalculateBurnup(b)
 
     def reset(self):
         self.linked = None
