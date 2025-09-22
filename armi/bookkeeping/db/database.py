@@ -473,7 +473,7 @@ class Database:
 
         if bpString is None:
             bpPath = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
-            if bpPath.suffix == ".h5":
+            if bpPath.suffix.lower() in (".h5", ".hdf5"):
                 # The blueprints are in a database file, they need to be read
                 try:
                     db = h5py.File(bpPath, "r")

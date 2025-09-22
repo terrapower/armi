@@ -102,7 +102,7 @@ def writeWelcomeHeaders(o, cs):
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
         if pathToLoading.is_file():
-            if pathToLoading.suffix == ".h5":
+            if pathToLoading.suffix.lower() in (".h5", ".hdf5"):
                 # The blueprints are in a database, there aren't multiple included files
                 includedBlueprints = [pathToLoading]
             else:

@@ -232,7 +232,6 @@ def _resolveMarkupInclusions(
 
     if isinstance(src, pathlib.Path):
         # this is inefficient, but avoids having to play with io buffers
-        print(src)
         with open(src, "r") as rootFile:
             src = io.StringIO(rootFile.read())
 
