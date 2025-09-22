@@ -172,6 +172,7 @@ class AxialExpansionChanger:
             for b in a:
                 b.p.heightBOL = b.getHeight()
                 b.completeInitialLoading()
+                axialExpChanger.recalculateBurnup(b)
 
     def performPrescribedAxialExpansion(self, a: Assembly, components: list, percents: list, setFuel=True):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
@@ -449,7 +450,6 @@ class AxialExpansionChanger:
 
             self._checkBlockHeight(b)
             self._recomputeBlockMassParams(b)
-            self.recalculateBurnup(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
