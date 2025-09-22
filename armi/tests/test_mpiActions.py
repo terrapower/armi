@@ -54,6 +54,16 @@ class MockMpiComm:
         return self
 
 
+class MockMpiAction(MpiAction):
+    """Mock MPI Action, to simplify tests."""
+
+    def broadcast(self, obj=None):
+        return 3
+
+    def invoke(self, o, r, cs):
+        return 7
+
+
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class MpiIterTests(unittest.TestCase):
     def setUp(self):
@@ -145,7 +155,6 @@ class MpiIterTests(unittest.TestCase):
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
     def test_runActionsDistributionAction(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
@@ -154,10 +163,24 @@ class MpiIterTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
+        o.cs["verbosity"] = "debug"
+        res = act.invokeHook()
+        self.assertIsNone(res)
+
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
     def test_runActionsDistributeStateAction(self):
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        act = DistributeStateAction([self.action])
+        results = runActions(o, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runActionsDistStateActionParallel(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributeStateAction([self.action])
@@ -186,6 +209,10 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Scanning all blocks", mock.getStdout())
             self.assertIn("Scanning blocks by name", mock.getStdout())
             self.assertIn("Scanning the ISOTXS library", mock.getStdout())
+
+    def test_invokeAsMaster(self):
+        """Verify that calling invokeAsMaster calls invoke."""
+        self.assertEqual(7, MockMpiAction.invokeAsMaster(1, 2, 3))
 
 
 class QueueActionsTests(unittest.TestCase):

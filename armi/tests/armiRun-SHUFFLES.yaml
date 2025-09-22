@@ -4,7 +4,7 @@ sequence:
       cascade: ["outer fuel", "009-045", "008-004", "007-001", "006-005"]
       fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
     - extraRotations: {"009-045": 60}
-    - cascade: ["outer fuel", "010-046", "011-046", "012-046", "ExCore"]
+    - cascade: ["outer fuel", "010-046", "011-046", "012-046", "Delete"]
       fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
   2: *cycle_1
   3:

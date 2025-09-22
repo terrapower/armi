@@ -463,6 +463,113 @@ class Block_TestCase(unittest.TestCase):
             msg="Incorrect getSmearDensity with annular fuel. Got {0}. Should be {1}".format(cur, ref),
         )
 
+    def test_getSmearDensityMultipleClads(self):
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        cur = self.block.getSmearDensity()
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        ref = (fuel.getDimension("od", cold=True) ** 2 - fuel.getDimension("id", cold=True) ** 2) / liner.getDimension(
+            "id", cold=True
+        ) ** 2
+        fuelArea = fuel.getArea(cold=True)
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        self.assertAlmostEqual(cur, ref, places=10)
+
+    def test_getSmearDensityMixedPin(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        self.block.remove(fuel)
+
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": fuel.getDimension("od"),
+            "id": fuel.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("fuel annular", "UZr", **fuelDims))
+
+        # add non-annular fuel
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": 0.75,
+            "id": 0.0,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("fuel", "UZr", **fuelDims))
+
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        # calculate reference smear density
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        annularFuel = self.block.getComponent(Flags.FUEL | Flags.ANNULAR)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        fuelArea = math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
+        fuelArea += (
+            math.pi
+            / 4.0
+            * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2)
+            * annularFuel.getDimension("mult")
+        )
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        cur = self.block.getSmearDensity()
+        self.assertAlmostEqual(cur, ref, places=10)
+
     def test_getSmearDensityMultipleLiner(self):
         numLiners = sum(1 for c in self.block if "liner" in c.name and "gap" not in c.name)
         self.assertEqual(
@@ -1251,6 +1358,8 @@ class Block_TestCase(unittest.TestCase):
             self.block.getMicroSuffix()
 
     def test_getUraniumMassEnrich(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        fuel.setNumberDensity("U234", 1.0e-4)
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
@@ -1262,13 +1371,16 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getUraniumNumEnrich(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        fuel.setNumberDensity("U234", 1.0e-4)
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
 
         u8 = self.block.getNumberDensity("U238")
         u5 = self.block.getNumberDensity("U235")
-        ref = u5 / (u8 + u5)
+        u4 = self.block.getNumberDensity("U234")
+        ref = u5 / (u8 + u5 + u4)
 
         self.assertAlmostEqual(cur, ref, places=6)
 
@@ -1276,6 +1388,25 @@ class Block_TestCase(unittest.TestCase):
         self.block.adjustUEnrich(0)
         cur = self.block.getUraniumNumEnrich()
         self.assertEqual(cur, 0.0)
+
+        self.block.setNumberDensity("U238", 0.0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
+
+    def test_getUraniumNumEnrichWith233(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        u5 = fuel.getNumberDensity("U235")
+        fuel.setNumberDensity("U233", 0.005)
+        self.block.adjustUEnrich(0.25)
+
+        cur = self.block.getUraniumNumEnrich()
+
+        u3 = self.block.getNumberDensity("U233")
+        u5 = self.block.getNumberDensity("U235")
+        u8 = self.block.getNumberDensity("U238")
+        ref = (u3 + u5) / (u3 + u5 + u8)
+
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getNumberOfAtoms(self):
         self.block.clearNumberDensities()
@@ -1435,11 +1566,14 @@ class Block_TestCase(unittest.TestCase):
                     sum(ndens for ndens in hmNDens.values()) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * c.getVolume(),
                     places=12,
                 )
+                self.assertAlmostEqual(c.p.enrichmentBOL, c.getFissileMassEnrich(), places=12)
             else:
                 self.assertEqual(c.p.massHmBOL, 0.0)
                 self.assertEqual(c.p.molesHmBOL, 0.0)
+                self.assertEqual(c.p.enrichmentBOL, 0.0)
 
         self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
+        self.assertAlmostEqual(self.block.p.enrichmentBOL, self.block.getFissileMassEnrich(), places=12)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
@@ -1452,6 +1586,27 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertIn(newComp, self.block.getComponents())
         self.block.remove(newComp)
+
+    def test_extend(self):
+        # generate a list of composites to extend onto this block
+        comps = []
+        nunComps = 3
+        for i in range(nunComps):
+            fuelDims = {"Tinput": 25.0 * i, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+            comps.append(components.Circle("fuel", "UZr", **fuelDims))
+
+        # show the composites have no parents
+        for c in comps:
+            self.assertIsNone(c.parent)
+
+        # add the composites to the block
+        lenBlock = len(self.block)
+        self.block.extend(comps)
+        self.assertEqual(len(self.block), lenBlock + nunComps)
+
+        # show all the composites in the block have the block as the parent
+        for c in self.block:
+            self.assertIs(c.parent, self.block)
 
     def test_hasComponents(self):
         self.assertTrue(self.block.hasComponents([Flags.FUEL, Flags.CLAD]))

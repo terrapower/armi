@@ -398,12 +398,16 @@ Extra rotations therefore:
 * rotate the assembly relative to its current orientation; and
 * execute after any algorithmic rotation routines.
 
-A cascade with no final destination defaults to discharging the assembly to
-the spent fuel pool ``SFP``. Assemblies can also be removed from the model
-entirely by ending with ``ExCore``. When an assembly is sent to the ``SFP`` it
-is only retained in memory if the ``trackAssems`` setting is True; ``ExCore`` always
-deletes the assembly.
-For example
+A cascade with no final destination defaults to deleting the assembly. 
+Assemblies can be retained in the model by ending the cascade with
+``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the
+spent fuel pool even if the ``trackAssems`` setting is ``False``; ``Delete``
+always removes the assembly from the model.
+
+Assemblies may also be re-inserted from the spent fuel pool by starting a
+cascade with ``SFP`` and providing an ``assemblyName`` for the assembly to
+load. No assembly type is required in this case. The cascade then proceeds as
+normal from the destination location. For example
    
 ..  code:: yaml
 
@@ -414,8 +418,21 @@ For example
            - misloadSwap: ["009-045", "008-004"]
            - extraRotations: {"009-045": 60}
          2:
-           - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
+           - cascade: ["outer fuel", "010-046", "009-045", "Delete"]
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
+
+A cascade that loads an assembly from the SFP may look like::
+
+..  code:: yaml
+
+       sequence:
+         1:
+           - cascade: ["SFP", "005-003", "SFP"]
+             assemblyName: "A0073"
+
+This example retrieves assembly ``A0073`` from the spent fuel pool and places it
+in location ``005-003`` while sending the previous occupant of ``005-003`` 
+to the pool.
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 
@@ -1380,13 +1397,13 @@ in the working directory of a run (but can be anywhere if you use full paths). D
 ARMI checks for two fuel management settings:
 
 ``shuffleLogic``
-   The path to the Python source file that contains the user's custom fuel
+   The path to the Python source file or dotted import path to a module that contains the user's custom fuel
    management logic
 
 ``fuelHandlerName``
-   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input file
-   pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility
-   to design and place that object in that file.
+   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input module or file
+   specified by ``shuffleLogic``. Since it's input, it's the user's responsibility
+   to design and place that object in that module or file.
 
 .. note:: We consider the limited syntax needed to express fuel management in Python
    code itself to be sufficiently expressive and simple for non-programmers to
@@ -1536,8 +1553,8 @@ of them, passing one of each of the factors to each CPU in parallel. When the ca
 finish, the branch search determines the optimal result and selects the corresponding
 value of the factor to proceed.
 
-Branch searches are controlled by custom `getFactorList` methods specified in the
-`shuffleLogic` input files. This method should return two things:
+Branch searches are controlled by custom ``getFactorList`` methods specified in the
+``shuffleLogic`` input modules or files. This method should return two things:
 
     * A ``defaultFactors``; a dictionary with user-defined keys and values between
       0 and 1 for each key. These factors will be passed to the ``chooseSwaps``

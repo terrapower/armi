@@ -28,4 +28,5 @@ class TestArmiThermalHydraulicsParamSymmetry(symmetryTesting.BasicArmiSymmetryTe
     def setUp(self):
         pluginParameters = getParameterDefinitions()
         self.blockParamsToTest = pluginParameters[Block]
+        self.expectedSymmetricBlockParams = ["THmassFlowRate"]
         super().setUp()

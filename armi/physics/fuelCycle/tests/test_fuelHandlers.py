@@ -46,6 +46,7 @@ from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
+from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
 from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import InputError
@@ -609,7 +610,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         firstPassResults = {}
         for a in self.r.core:
             firstPassResults[a.getLocation()] = a.getName()
-            self.assertNotIn(a.getLocation(), ["SFP", "LoadQueue", "ExCore"])
+            self.assertNotIn(a.getLocation(), ["SFP", "LoadQueue", "Delete"])
 
         # reset core to BOL state
         # reset assembly counter to get the same assem nums.
@@ -677,31 +678,31 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "SFP"),
+                AssemblyMove("006-005", "Delete"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
                 AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("010-046", "011-046"),
                 AssemblyMove("011-046", "012-046"),
-                AssemblyMove("012-046", "ExCore"),
+                AssemblyMove("012-046", "Delete"),
             ],
             2: [
                 AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "SFP"),
+                AssemblyMove("006-005", "Delete"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
                 AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("010-046", "011-046"),
                 AssemblyMove("011-046", "012-046"),
-                AssemblyMove("012-046", "ExCore"),
+                AssemblyMove("012-046", "Delete"),
             ],
             3: [
                 AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "SFP"),
+                AssemblyMove("006-005", "Delete"),
             ],
         }
         self.assertEqual(moves, expected)
@@ -724,7 +725,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
             locs = ["009-045", "008-004", "007-001", "006-005"]
             before = {loc: self.r.core.getAssemblyWithStringLocation(loc).getName() for loc in locs}
             self.r.p.cycle = 1
-            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False})
+            self.r.core._trackAssems = False
             fh.outage()
 
             fresh = self.r.core.getAssemblyWithStringLocation("008-004")
@@ -743,36 +745,92 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 self.r.core.getAssemblyWithStringLocation("006-005").getName(),
                 before["007-001"],
             )
-            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before["006-005"]))
+            self.assertIsNone(self.r.excore["sfp"].getAssembly(before["006-005"]))
         finally:
             os.remove(fname)
+
+    def test_yamlSfpOverridesTrackAssems(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        yaml_text = """
+        sequence:
+            1:
+                - cascade: ["igniter fuel", "009-045", "SFP"]
+                  fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
+        """
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(yaml_text)
+            fname = tf.name
+        try:
+            before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False})
+            self.r.core._trackAssems = False
+            fh.outage()
+
+            self.assertFalse(self.r.core._trackAssems)
+            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
+        finally:
+            os.remove(fname)
+
+    def test_readMovesYaml_loadFromSfp(self):
+        assem = self.r.excore["sfp"].getChildren()[0]
+        yaml_text = f"""
+        sequence:
+            1:
+                - cascade: ["SFP", "005-003", "SFP"]
+                  assemblyName: "{assem.getName()}"
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
+            moves, _ = fuelHandlers.FuelHandler.readMovesYaml(fname)
+            expected = {
+                1: [
+                    AssemblyMove("SFP", "005-003", [], None, assem.getName()),
+                    AssemblyMove("005-003", "SFP"),
+                ]
+            }
+            self.assertEqual(moves, expected)
+
+    def test_performShuffleYaml_loadFromSfp(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        sfpAssem = self.r.excore["sfp"].getChildren()[0]
+        yaml_text = f"""
+        sequence:
+            1:
+                - cascade: ["SFP", "009-045", "SFP"]
+                  assemblyName: "{sfpAssem.getName()}"
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
+            before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            fh.outage()
+            self.assertEqual(self.r.core.getAssemblyWithStringLocation("009-045").getName(), sfpAssem.getName())
+            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
-        (
-            loadChains,
-            loopChains,
-            _,
-            _,
-            loadNames,
-            rotations,
-            _,
-        ) = fh.processMoveList(moves[2])
-        self.assertIn("A0073", loadNames)
-        self.assertIn(None, loadNames)
-        self.assertNotIn("SFP", loadChains)
-        self.assertNotIn("LoadQueue", loadChains)
-        self.assertFalse(loopChains)
-        self.assertFalse(rotations)
+        result = fh.processMoveList(moves[2])
+        self.assertIn("A0073", result.loadNames)
+        self.assertIn(None, result.loadNames)
+        self.assertTrue(all("SFP" not in chain for chain in result.loadChains))
+        self.assertTrue(all("LoadQueue" not in chain for chain in result.loadChains))
+        self.assertFalse(result.loopChains)
+        self.assertFalse(result.rotations)
 
     def test_processMoveList_yaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
-        loadChains, loopChains, enriches, loadTypes, loadNames, rotations, _ = fh.processMoveList(moves[1])
-        self.assertEqual(len(loadChains), 2)
-        self.assertTrue(any(enriches))
-        self.assertTrue(rotations)
+        result = fh.processMoveList(moves[1])
+        self.assertEqual(len(result.loadChains), 2)
+        self.assertTrue(any(result.enriches))
+        self.assertTrue(result.rotations)
 
     def test_getFactorList(self):
         fh = fuelHandlers.FuelHandler(self.o)

@@ -13,14 +13,12 @@
 # limitations under the License.
 
 """
-This module makes heavy use of matplotlib. Beware that plots generated with matplotlib
-may not free their memory, even after the plot is closed, and excessive use of
-plotting functions may gobble up all of your machine's memory.
+This module makes heavy use of matplotlib. Beware that plots generated with matplotlib may not free their memory, even
+after the plot is closed, and excessive use of plotting functions may gobble up all of your machine's memory.
 
-Therefore, you should use these plotting tools judiciously. It is not advisable to,
-for instance, plot some sequence of objects in a loop at every time node. If you start
-to see your memory usage grow inexplicably, you should question any plots that you are
-generating.
+Therefore, you should use these plotting tools judiciously. It is not advisable to, for instance, plot some sequence of
+objects in a loop at every time node. If you start to see your memory usage grow inexplicably, you should question any
+plots that you are generating.
 """
 
 import collections
@@ -58,9 +56,8 @@ def colorGenerator(skippedColors=10):
     Parameters
     ----------
     skippedColors: int
-        Number of colors to skip in the matplotlib CSS color database when generating the
-        next color. Without skipping colors the next color may be similar to the previous
-        color.
+        Number of colors to skip in the matplotlib CSS color database when generating the next color. Without skipping
+        colors the next color may be similar to the previous color.
 
     Notes
     -----
@@ -98,9 +95,8 @@ def plotBlockDepthMap(
 
     Notes
     -----
-    This is useful for visualizing the spatial distribution of a param through the core.
-    Blocks could possibly not be in alignment between assemblies, but the depths
-    viewable are based on the first fuel assembly.
+    This is useful for visualizing the spatial distribution of a param through the core. Blocks could possibly not be in
+    alignment between assemblies, but the depths viewable are based on the first fuel assembly.
 
     Parameters
     ----------
@@ -113,8 +109,7 @@ def plotBlockDepthMap(
     fuelAssem = core.getFirstAssembly(typeSpec=Flags.FUEL)
     if not fuelAssem:
         raise ValueError(
-            "Could not find fuel assembly. "
-            "This method uses the first fuel blocks mesh for the axial mesh of the plot. "
+            "Could not find fuel assembly. This method uses the first fuel blocks mesh for the axial mesh of the plot. "
             "Cannot proceed without fuel block."
         )
 
@@ -216,8 +211,8 @@ def plotFaceMap(
         The block-parameter to plot. Default: pdens
 
     vals : str, optional
-        Can be 'peak', 'average', or 'sum'. The type of vals to produce. Will find peak,
-        average, or sum of block values in an assembly. Default: peak
+        Can be 'peak', 'average', or 'sum'. The type of vals to produce. Will find peak, average, or sum of block values
+        in an assembly. Default: peak
 
     data : list, optional
         rather than using param and vals, use the data supplied as is. It must be in the
@@ -312,14 +307,12 @@ def plotFaceMap(
             elif vals == "sum":
                 data.append(a.calcTotalParam(param))
             else:
-                raise ValueError(
-                    "{0} is an invalid entry for `vals` in plotFaceMap. Use peak, average, or sum.".format(vals)
-                )
+                raise ValueError(f"{vals} is an invalid entry for `vals` in plotFaceMap. Use peak, average, or sum.")
     if not labels:
         labels = [None] * len(data)
     if len(data) != len(labels):
         raise ValueError(
-            "Data had length {}, but labels had length {}. They should be equal length.".format(len(data), len(labels))
+            f"Data had length {len(data)}, but labels had length {len(labels)}. They should be equal length."
         )
 
     collection.set_array(np.array(data))
@@ -408,10 +401,8 @@ def close(fig=None):
     """
     Wrapper for matplotlib close.
 
-    This is useful to avoid needing to import plotting and matplotlib.
-    The plot functions cannot always close their figure if it is going
-    to be used somewhere else after becoming active (e.g. in reports
-    or gallery examples).
+    This is useful to avoid needing to import plotting and matplotlib. The plot functions cannot always close their
+    figure if it is going to be used somewhere else after becoming active (e.g. in reports or gallery examples).
     """
     plt.close(fig)
 
@@ -586,7 +577,6 @@ class DepthSlider(Slider):
         # The color of the currently displayed depth page.
         self.selectedDepthColor = selectedDepthColor
         self.nonSelectedDepthColor = "w"
-
         self.depths = depths
 
         # Make the selection depth buttons
@@ -794,7 +784,7 @@ def plotAssemblyTypes(
     ax.plot()
     if fileName:
         fig.savefig(fileName)
-        runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
+        runLog.debug(f"Writing assem layout {fileName} in {os.getcwd()}")
         plt.close(fig)
 
     return fig
@@ -842,10 +832,9 @@ def _plotBlocksInAssembly(
                 blockHeight = b.getInputHeight()
             except AttributeError:
                 raise ValueError(
-                    f"Cannot plot cold height for block {b} in assembly {assem} "
-                    "because it does not have access to a blueprints through any "
-                    "of its parents. Either make sure that a blueprints is accessible "
-                    " or plot the hot heights instead."
+                    f"Cannot plot cold height for block {b} in assembly {assem} because it does not have access to a "
+                    "blueprints through any of its parents. Either make sure that a blueprints is accessible or plot "
+                    "the hot heights instead."
                 )
 
         # Get the basic text label for the block
@@ -899,7 +888,7 @@ def _plotBlocksInAssembly(
             axis.text(
                 xEndLoc,
                 bCenter,
-                "{} cm ({})".format(bHeight, axMeshPoints),
+                f"{bHeight} cm ({axMeshPoints})",
                 fontsize=10,
                 ha="left",
             )
@@ -1025,7 +1014,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                 f.write("{0:12E} {1:12E} {2:12E}\n".format(eMax, avgFlux, peakFlux))
 
     if max(bf1.avgFlux) <= 0.0:
-        runLog.warning("Cannot plot flux with maxval=={0} in {1}".format(bf1.avgFlux, bList[0]))
+        runLog.warning(f"Cannot plot flux with maxval=={bf1.avgFlux} in {bList[0]}")
         return
 
     plt.figure()
@@ -1059,7 +1048,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
     if fName:
         plt.savefig(fName)
         report.setData(
-            "Flux Plot {}".format(os.path.split(fName)[1]),
+            f"Flux Plot {os.path.split(fName)[1]}",
             os.path.abspath(fName),
             report.FLUX_PLOT,
         )
@@ -1380,7 +1369,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, f
     collection.norm.autoscale(allColors)
 
     # set up plot axis, labels and legends
-    legendMap = [(materialMap[materialName], "", "{}".format(materialName)) for materialName in np.unique(data)]
+    legendMap = [(materialMap[materialName], "", f"{materialName}") for materialName in np.unique(data)]
     legend = _createLegend(legendMap, collection, size=50, shape=Rectangle)
     pltKwargs = {"bbox_extra_artists": (legend,), "bbox_inches": "tight"}
 
@@ -1446,7 +1435,7 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
     ax.set_xscale("log")
     ax.set_yscale("log")
     plt.grid(color="0.70")
-    plt.title(title or " microscopic XS from {0}".format(isotxs))
+    plt.title(title or f"microscopic XS from {isotxs}")
     plt.xlabel("Energy (MeV)")
     plt.ylabel("microscopic XS (barns)")
     plt.legend()
