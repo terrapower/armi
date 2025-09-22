@@ -486,21 +486,43 @@ class Block_TestCase(unittest.TestCase):
         }
         self.block.add(components.Circle("fuel", "UZr", **fuelDims))
 
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
         cur = self.block.getSmearDensity()
         fuel = self.block.getComponent(Flags.FUEL, exact=True)
         annularFuel = self.block.getComponent(Flags.FUEL | Flags.ANNULAR)
         liner = self.block.getComponent(Flags.LINER | Flags.INNER)
-        clad = self.block.getComponent(Flags.CLAD)
+        clads = self.block.getComponents(Flags.CLAD)
         fuelArea = 0.0
-        fuelArea += math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * 100.0
-        fuelArea += math.pi / 4.0 * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2) * 117.0
-        innerArea = math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * 217.0
+        fuelArea += math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
+        fuelArea += math.pi / 4.0 * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2) * annularFuel.getDimension("mult")
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
         for liner in self.block.getComponents(Flags.LINER):
             innerArea -= liner.getArea(cold=True)
 
-        fuelSmearDens = ( fuel.getDimension("od", cold=True) / clad.getDimension("id", cold=True) ) ** 2
-        annularSmearDens = (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2) / clad.getDimension("id", cold=True) ** 2
-        ref = fuelArea /innerArea
+        ref = fuelArea / innerArea
         places = 10
         self.assertAlmostEqual(cur, ref, places=places)
 
