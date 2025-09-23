@@ -1082,18 +1082,11 @@ def destroyGlobalNuclides():
     nuclideBases.clear()
 
 
-"""
-TODO: Document that this global stuff is on its way out.
-
-TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
-      Below this point is the new code.
-"""
-
-
 class NuclideBases:
     """
-    TODO: This is the class I am crafting to replace global nuclides.
-    To start with, I will keep everything global, but use this class.
+    A container for all the nuclide information in the simulation.
+
+    By design, you would only expect to have one instance of this object in memory during a simulation.
     """
 
     def __init__(self):
@@ -1113,6 +1106,7 @@ class NuclideBases:
         self.factory()
 
     def clear(self):
+        """Empty all the data containers in this object."""
         self.burnChainImposed = False
         self.instances = []
         self.byName = {}
@@ -1247,7 +1241,7 @@ class NuclideBases:
         raise ValueError(msg)
 
     def isotopes(self, z: int):
-        """TODO."""
+        """TODO: This seems like it's in the wrong file."""
         return elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName):
@@ -1446,7 +1440,7 @@ class NuclideBases:
         self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, skipGlobal=True))
 
     def __addLumpedFissionProductNuclideBases(self):
-        """TODO."""
+        """Generates a set of nuclides for use as lumped fission products."""
         self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, skipGlobal=True))
         self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, skipGlobal=True))
         self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, skipGlobal=True))

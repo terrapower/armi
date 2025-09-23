@@ -313,16 +313,12 @@ def destroyGlobalElements():
     elements.clear()
 
 
-"""
-TODO: This split is only temporary. Global nuclides are going away. Document that.
-
-TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
-      Below this point is the new code.
-"""
-
-
 class Elements:
-    """TODO."""
+    """
+    A container for all the elements information in the simulation.
+
+    By design, you would only expect to have one instance of this object in memory during a simulation.
+    """
 
     def __init__(self):
         self.byZ = {}
