@@ -204,6 +204,39 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             )
         )
 
+    def test_adjustMassParams(self):
+        self._initializeTest(1.05, fromComp=self.c0)
+
+        # component-level params
+        initialFromMassBOL = self.c0.p.massHmBOL
+        initialFromMolesBOL = self.c0.p.molesHmBOL
+        initialToMassBOL = self.c1.p.massHmBOL
+        initialToMolesBOL = self.c1.p.molesHmBOL
+
+        dist = RedistributeMass(fromComp=self.c0, toComp=self.c1, assemName=repr(self.a), deltaZTop=self.deltaZTop, initOnly=True)
+        dist._adjustMassParams()
+        self.assertLess(self.c0.p.massHmBOL, initialFromMassBOL)
+        self.assertLess(self.c0.p.molesHmBOL, initialFromMolesBOL)
+        self.assertGreater(self.c1.p.massHmBOL, initialToMassBOL)
+        self.assertGreater(self.c1.p.molesHmBOL, initialToMolesBOL)
+        self.assertAlmostEqual(self.c0.p.massHmBOL + self.c1.p.massHmBOL, initialFromMassBOL + initialToMassBOL)
+        self.assertAlmostEqual(self.c0.p.molesHmBOL + self.c1.p.molesHmBOL, initialFromMolesBOL + initialToMolesBOL)
+
+        # block-level params
+        initialFromMassBOL = self.b0.p.massHmBOL
+        initialFromMolesBOL = self.b0.p.molesHmBOL
+        initialToMassBOL = self.b1.p.massHmBOL
+        initialToMolesBOL = self.b1.p.molesHmBOL
+        self.axialExpChngr._recomputeBlockMassParams(self.b0)
+        self.axialExpChngr._recomputeBlockMassParams(self.b1)
+
+        self.assertLess(self.b0.p.massHmBOL, initialFromMassBOL)
+        self.assertLess(self.b0.p.molesHmBOL, initialFromMolesBOL)
+        self.assertGreater(self.b1.p.massHmBOL, initialToMassBOL)
+        self.assertGreater(self.b1.p.molesHmBOL, initialToMolesBOL)
+        self.assertAlmostEqual(self.b0.p.massHmBOL + self.b1.p.massHmBOL, initialFromMassBOL + initialToMassBOL)
+        self.assertAlmostEqual(self.b0.p.molesHmBOL + self.b1.p.molesHmBOL, initialFromMolesBOL + initialToMolesBOL)
+
     def test_shiftLinkedCompsForDelta(self):
         """Ensure that given a deltaZTop, component elevations are adjusted appropriately."""
         self._initializeTest(growFrac=1.0, fromComp=self.c0)  # setting fromComp is meaningless here
@@ -453,7 +486,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             fromCompRefData.HMmolesBOL - self.redistributedBOLMoles,
             places=self.places,
         )
-
 
 class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
