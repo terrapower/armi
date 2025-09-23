@@ -81,7 +81,7 @@ jobs:
 
           echo "Build PDF docs..."
           make latex
-          cd _build/latex/
+          cd doc/_build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
