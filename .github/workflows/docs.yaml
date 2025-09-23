@@ -80,8 +80,8 @@ jobs:
           rm -rf doc/.apidocs
 
           echo "Build PDF docs..."
-          cd doc/_build/latex/
           make latex
+          cd doc/_build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
