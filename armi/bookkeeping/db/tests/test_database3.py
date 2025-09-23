@@ -30,6 +30,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.fwSettings.globalSettings import (
@@ -862,6 +863,8 @@ grids:
         self.r.p.timeNode = 0
         self.r.core.p.keff = 0.99
         b = self.r.core.getFirstBlock()
+        self.assertIsInstance(b[0].spatialLocator, MultiIndexLocation)
+        self.assertIsInstance(b[-1].spatialLocator, CoordinateLocation)
         b.p.power = 12345.6
 
         self.db.writeToDB(self.r)
@@ -899,6 +902,11 @@ grids:
             self.assertEqual(len(r0.core.getChildren()), 1)
             b0 = r0.core.getFirstBlock()
             self.assertEqual(b0.p.power, 12345.6)
+
+            self.assertIsInstance(b0[0].spatialLocator, MultiIndexLocation)
+            np.testing.assert_array_equal(b[0].spatialLocator.indices, b0[0].spatialLocator.indices)
+            self.assertIsInstance(b0[-1].spatialLocator, CoordinateLocation)
+            np.testing.assert_array_equal(b[-1].spatialLocator.indices, b0[-1].spatialLocator.indices)
 
             # the ex-core structures should be empty
             self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)

@@ -28,8 +28,10 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import grids
+from armi.reactor import blueprints, grids
+from armi.reactor.blueprints import loadFromCs
 from armi.reactor.flags import Flags
+from armi.reactor.reactors import Reactor
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
@@ -232,6 +234,84 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertFalse(os.path.exists(self.dbi.database.fileName))
         self.dbi.interactEOL()
         self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
+    def test_writeDBFromDBLoadSameDir(self):
+        """
+        Test to ensure that a reactor loaded from a database can be written to a
+        working database file (one that has case settings and blueprints if applicable).
+        """
+        # Write this reactor to a database file.
+        dbi = DatabaseInterface(self.r, self.o.cs)
+        dbi.initDB(fName="testDB1.h5")
+        db = dbi.database
+        db.writeToDB(self.r)
+        db.close()
+
+        # Now load the db again
+        with Database("testDB1.h5", "r") as db:
+            cs2 = db.loadCS()
+            r2 = db.load(0, 0, cs=cs2)
+
+        self.assertIsInstance(cs2, settings.Settings)
+        self.assertIsInstance(r2, Reactor)
+
+        # Now write this db to this folder
+        dbi = DatabaseInterface(r2, cs2)
+        dbi.initDB(fName="testDB2.h5")
+        db = dbi.database
+        db.writeToDB(r2)
+        db.close()
+
+        # Now load this db. It should load
+        with Database("testDB2.h5", "r") as db:
+            cs3 = db.loadCS()
+            bp3 = loadFromCs(cs3)
+            self.assertIsInstance(bp3, blueprints.Blueprints)
+            r3 = db.load(0, 0, cs=cs3, bp=bp3)
+
+        self.assertIsInstance(cs3, settings.Settings)
+        self.assertIsInstance(r3, Reactor)
+
+    def test_writeDBFromDBLoadDifDir(self):
+        """
+        Test to ensure that a reactor loaded from a database can be written to a
+        working database file (one that has case settings and blueprints if applicable).
+
+        The directory is changed between writing and loading.
+        """
+        # Write this reactor to a database file.
+        dbi = DatabaseInterface(self.r, self.o.cs)
+        dbi.initDB(fName="testDB1.h5")
+        db = dbi.database
+        db.writeToDB(self.r)
+        db.close()
+
+        # Let's move to a different folder
+        os.makedirs("sub", exist_ok=True)
+        os.chdir("sub")
+
+        # Now load the db again
+        with Database(os.path.join(os.pardir, "testDB1.h5"), "r") as db:
+            cs2 = db.loadCS()
+            r2 = db.load(0, 0, cs=cs2)
+
+        self.assertIsInstance(cs2, settings.Settings)
+        self.assertIsInstance(r2, Reactor)
+
+        # Now write this db to this folder
+        dbi = DatabaseInterface(r2, cs2)
+        dbi.initDB(fName="testDB2.h5")
+        db = dbi.database
+        db.writeToDB(r2)
+        db.close()
+
+        # Now load this db. It should load
+        with Database("testDB2.h5", "r") as db:
+            cs3 = db.loadCS()
+            r3 = db.load(0, 0, cs=cs3)
+
+        self.assertIsInstance(cs3, settings.Settings)
+        self.assertIsInstance(r3, Reactor)
 
 
 class TestDatabaseWriter(unittest.TestCase):

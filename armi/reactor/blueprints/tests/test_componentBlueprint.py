@@ -45,7 +45,7 @@ assemblies:
         xs types: [A]
 """
 
-    def test_componentInitIncompleteBurnChain(self):
+    def test_compInitIncompleteBurnChain(self):
         nuclideFlagsFuelWithBurn = (
             inspect.cleandoc(
                 r"""
@@ -64,7 +64,7 @@ assemblies:
         with self.assertRaises(ValueError):
             bp.constructAssem(cs, "assembly")
 
-    def test_componentInitControlCustomIsotopics(self):
+    def test_compInitControlCustomIso(self):
         nuclideFlags = (
             inspect.cleandoc(
                 """
@@ -149,7 +149,7 @@ assemblies:
         # More robust test, but worse unittest.py output when it fails
         self.assertTrue(c.hasFlags(Flags.FUEL | Flags.TEST))
 
-    def test_componentInitAmericiumCustomIsotopics(self):
+    def test_compInitAmericiumCustomIso(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -237,7 +237,7 @@ assemblies:
         for nuc in unexpectedNuclides:
             self.assertNotIn(nuc, a[0][0].getNuclides())
 
-    def test_componentInitThoriumBurnCustomIsotopics(self):
+    def test_compInitThoriumBurnCustomIso(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -293,7 +293,7 @@ assemblies:
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
 
-    def test_componentInitThoriumNoBurnCustomIsotopics(self):
+    def test_compInitThoriumNoBurnCustomIso(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""

@@ -13,9 +13,13 @@
 # limitations under the License.
 """Tests for elements."""
 
+import os
 import unittest
 
+from armi import nuclideBases
+from armi.context import RES
 from armi.nucDirectory.elements import Element, Elements
+from armi.tests import mockRunLogs
 
 
 class TestElement(unittest.TestCase):
@@ -63,7 +67,7 @@ class TestElement(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.elements.Element(ee.z, ee.symbol, ee.name, skipGlobal=True)
 
-    def test_element_addedElementAppearsInElementList(self):
+    def test_addedElementAppearsInElementList(self):
         self.assertNotIn("bacon", self.elements.byName)
         self.assertNotIn(999, self.elements.byZ)
         self.assertNotIn("BZ", self.elements.bySymbol)
@@ -71,8 +75,17 @@ class TestElement(unittest.TestCase):
         self.assertIn("bacon", self.elements.byName)
         self.assertIn(999, self.elements.byZ)
         self.assertIn("BZ", self.elements.bySymbol)
+        # re-initialize the elements
+        with mockRunLogs.BufferLog():
+            nuclideBases.destroyGlobalNuclides()
+            nuclideBases.factory()
+            # Ensure that the burn chain data is initialized after clearing
+            # out the nuclide data and reinitializing it.
+            nuclideBases.burnChainImposed = False
+            with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
+                nuclideBases.imposeBurnChain(burnChainStream)
 
-    def test_elementGetNatrualIsotpicsOnlyRetrievesAbund(self):
+    def test_elementGetNatIsosOnlyRetrievesAbund(self):
         for ee in self.elements.byZ.values():
             if not ee.isNaturallyOccurring():
                 continue
@@ -81,7 +94,7 @@ class TestElement(unittest.TestCase):
                 self.assertGreater(nuc.abundance, 0.0)
                 self.assertGreater(nuc.a, 0)
 
-    def test_element_isNaturallyOccurring(self):
+    def test_elementIsNatOccurring(self):
         """
         Test isNaturallyOccurring method by manually testing all elements.
 

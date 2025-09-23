@@ -13,6 +13,8 @@
 # limitations under the License.
 """Settings for generic fuel cycle code."""
 
+import importlib.util
+
 from armi.settings import setting, settingsValidation
 
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
@@ -74,8 +76,8 @@ def getFuelCycleSettings():
             default="",
             label="Shuffle Logic",
             description=(
-                "Python script written to handle the fuel shuffling for this case.  "
-                "This is user-defined per run as a dynamic input."
+                "Path to a Python script or dotted module path that handles the fuel shuffling "
+                "for this case. This is user-defined per run as a dynamic input."
             ),
         ),
         setting.Setting(
@@ -158,8 +160,9 @@ def getFuelCycleSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_SHUFFLE_LOGIC]
-            and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_LOGIC]),
-            "The specified shuffle logic file '{0}' cannot be found. Shuffling will not occur.".format(
+            and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_LOGIC])
+            and importlib.util.find_spec(inspector.cs[CONF_SHUFFLE_LOGIC]) is None,
+            "The specified shuffle logic module or file '{0}' cannot be found. Shuffling will not occur.".format(
                 inspector.cs[CONF_SHUFFLE_LOGIC]
             ),
             "Clear specified file value?",
