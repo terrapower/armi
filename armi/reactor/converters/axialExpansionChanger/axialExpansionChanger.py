@@ -476,7 +476,7 @@ class AxialExpansionChanger:
             "molesHmBOL",
         )
         for paramName in paramsToMove:
-            b.p[paramName] = sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None)
+            b.p[paramName] = sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None) / b.getSymmetryFactor()
 
     def recalculateBurnup(self, b: "Block"):
         """Post axial-expansion, heavy metal may have moved between blocks; recalculate burnup.
