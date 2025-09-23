@@ -13,8 +13,7 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI
-``Component``.
+This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
 
 Special logic is required for handling component links.
 """
@@ -42,10 +41,10 @@ class ComponentDimension(yamlize.Object):
         self.value = value
         if isinstance(value, str):
             if not components.COMPONENT_LINK_REGEX.search(value):
-                raise ValueError("Bad component link `{}`, must be in form `name.dimension`".format(value))
+                raise ValueError(f"Bad component link `{value}`, must be in form `name.dimension`")
 
     def __repr__(self):
-        return "<ComponentDimension value: {}>".format(self.value)
+        return f"<ComponentDimension value: {self.value}>"
 
     @classmethod
     def from_yaml(cls, loader, node, _rtd=None):
@@ -219,7 +218,6 @@ class ComponentBlueprint(yamlize.Object):
                 _setComponentFlags(component, self.flags, blueprint)
                 insertDepletableNuclideKeys(component, blueprint)
                 constructedObject.add(component)
-
         else:
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
@@ -275,11 +273,9 @@ class ComponentBlueprint(yamlize.Object):
             if isinstance(mat, materials.Fluid):
                 densityRatio = densityFromCustomIsotopic / mat.density(Tc=comp.inputTemperatureInC)
             else:
-                # for solids we need to consider if the input heights are hot or
-                # cold, in order to get the density correct.
-                # There may be a better place in the initialization to determine
-                # if the block height will be interpreted as hot dimensions, which would
-                # allow us to not have to pass the case settings down this far
+                # For solids we need to consider if the input heights are hot or cold, in order to get the density
+                # correct. There may be a better place in the initialization to determine if the block height will be
+                # interpreted as hot, which would allow us to not have to pass the case settings down this far.
                 dLL = mat.linearExpansionFactor(Tc=comp.temperatureInC, T0=comp.inputTemperatureInC)
                 if inputHeightsConsideredHot:
                     f = 1.0 / (1 + dLL) ** 2
@@ -315,14 +311,14 @@ class ComponentBlueprint(yamlize.Object):
                 # They're applied during block construction.
                 continue
             elif attr.name == "flags":
-                # Don't pass these to the component constructor. These are used to
-                # override the flags derived from the type, if present.
+                # Don't pass these to the component constructor. These are used to override the flags derived from the
+                # type, if present.
                 continue
             else:
                 value = attr.get_value(self)
 
-            # Keep digging until the actual value is found. This is a bit of a hack to get around an
-            # issue in yamlize/ComponentDimension where Dimensions can end up chained.
+            # Keep digging until the actual value is found. This is a bit of a hack to get around an issue in
+            # yamlize/ComponentDimension where Dimensions can end up chained.
             while isinstance(value, ComponentDimension):
                 value = value.value
 
@@ -336,8 +332,7 @@ class ComponentBlueprint(yamlize.Object):
         mat = materials.resolveMaterialClassByName(self.material)()
 
         if self.isotopics is not None:
-            # Apply custom isotopics before processing input mods so
-            # the input mods have the final word
+            # Apply custom isotopics before processing input mods so the input mods have the final word
             blueprint.customIsotopics.apply(mat, self.isotopics)
 
         # add mass fraction custom isotopics info, since some material modifications need
@@ -351,14 +346,13 @@ class ComponentBlueprint(yamlize.Object):
             except TypeError as ee:
                 errorMessage = ee.args[0]
                 if "got an unexpected keyword argument" in errorMessage:
-                    # This component does not accept material modification inputs of the names passed in
-                    # Keep going since the modification could work for another component
+                    # This component does not accept material modification inputs of the names passed in Keep going
+                    # since the modification could work for another component.
                     pass
                 else:
                     raise ValueError(
-                        f"Something went wrong in applying the material modifications {matMods} "
-                        f"to component {self.name}.\n"
-                        f"Error message is: \n{errorMessage}."
+                        f"Something went wrong in applying the material modifications {matMods} to component "
+                        "{self.name}.\nError message is: \n{errorMessage}."
                     )
 
         expandElementals(mat, blueprint)
@@ -367,9 +361,9 @@ class ComponentBlueprint(yamlize.Object):
 
         if missing:
             raise ValueError(
-                "The nuclides {} are present in material {} by compositions, but are not "
-                "specified in the `nuclide flags` section of the input file. "
-                "They need to be added, or custom isotopics need to be applied.".format(missing, mat)
+                f"The nuclides {missing} are present in material {mat} by compositions, but are not specified in the "
+                "`nuclide flags` section of the input file. They need to be added, or custom isotopics need to be "
+                "applied."
             )
 
         return mat
@@ -397,7 +391,7 @@ def expandElementals(mat, blueprint):
         nucFlags = blueprint.nuclideFlags.get(elementToExpand.symbol)
 
         print(f"nucFlags: {nucFlags}")
-        #print(f"nuclideBases.byName: {nuclideBases.byName.keys()}")
+        # print(f"nuclideBases.byName: {nuclideBases.byName.keys()}")
 
         nuclidesToBecome = (
             [nuclideBases.byName[nn] for nn in nucFlags.expandTo] if (nucFlags and nucFlags.expandTo) else None
@@ -407,7 +401,7 @@ def expandElementals(mat, blueprint):
         elementExpansionPairs.append((elementToExpand, nuclidesToBecome))
 
     densityTools.expandElementalMassFracsToNuclides(mat.massFrac, elementExpansionPairs)
-    
+
     print("\n\n\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\n\n")
 
 
@@ -422,21 +416,19 @@ def insertDepletableNuclideKeys(c, blueprint):
         This is called during the component construction process for each component from within
         :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`.
 
-        For a given initialized component, check its flags to determine if it has been marked as
-        depletable. If it is, use
-        :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain` to
-        apply the user-specifications in the "nuclide flags" section of the blueprints to the
-        Component such that all active isotopes and derivatives of those isotopes in the burn chain
-        are initialized to have an entry in the component's ``nuclides`` array.
+        For a given initialized component, check its flags to determine if it has been marked as depletable. If it is,
+        use :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain` to apply the
+        user-specifications in the "nuclide flags" section of the blueprints to the Component such that all active
+        isotopes and derivatives of those isotopes in the burn chain are initialized to have an entry in the component's
+        ``nuclides`` array.
 
-        Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``, may trigger
-        modifications to the active nuclides specified by the user in the "nuclide flags" section of
-        the blueprints.
+        Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``, may trigger modifications to the
+        active nuclides specified by the user in the "nuclide flags" section of the blueprints.
 
     Notes
     -----
-    This should be moved to a neutronics/depletion plugin hook but requires some refactoring in how
-    active nuclides and reactors are initialized first.
+    This should be moved to a neutronics/depletion plugin hook but requires some refactoring in how active nuclides and
+    reactors are initialized first.
 
     See Also
     --------
@@ -461,8 +453,8 @@ class ComponentKeyedList(yamlize.KeyedList):
 
     This is used within the ``components:`` main entry of the blueprints.
 
-    This is *not* (yet) used when components are defined within a block blueprint. That is handled
-    in the blockBlueprint construct method.
+    This is *not* (yet) used when components are defined within a block blueprint. That is handled in the blockBlueprint
+    construct method.
     """
 
     item_type = ComponentBlueprint
@@ -509,11 +501,9 @@ class ComponentGroups(yamlize.KeyedList):
     item_type = ComponentGroup
 
 
-# This import-time magic requires all possible components
-# be imported before this module imports. The intent
-# was to make registration basically automatic. This has proven
-# to be quite problematic and will be replaced with an
-# explicit plugin-level component registration system.
+# This import-time magic requires all possible components be imported before this module imports. The intent was to make
+# registration basically automatic. This has proven to be quite problematic and will be replaced with an explicit
+# plugin-level component registration system.
 for dimName in set([kw for cType in components.ComponentType.TYPES.values() for kw in cType.DIMENSION_NAMES]):
     setattr(
         ComponentBlueprint,
@@ -524,15 +514,13 @@ for dimName in set([kw for cType in components.ComponentType.TYPES.values() for 
 
 def _setComponentFlags(component, flags, blueprint):
     """Update component flags based on user input in blueprint."""
-    # the component __init__ calls setType(), which gives us our initial guess at
-    # what the flags should be.
+    # The component __init__ calls setType(), which gives us our initial guess at what the flags should be.
     if flags is not None:
         # override the flags from __init__ with the ones from the blueprint
         component.p.flags = Flags.fromString(flags)
     else:
-        # potentially add the DEPLETABLE flag. Don't do this if we set flags
-        # explicitly. WARNING: If you add flags explicitly, it will
-        # turn off depletion so be sure to add depletable to your list of flags
-        # if you expect depletion
+        # Potentially add the DEPLETABLE flag. Don't do this if we set flags explicitly.
+        # WARNING: If you add flags explicitly, it will turn off depletion so be sure to add depletable to your list of
+        # flags if you expect depletion.
         if any(nuc in blueprint.activeNuclides for nuc in component.getNuclides()):
             component.p.flags |= Flags.DEPLETABLE
