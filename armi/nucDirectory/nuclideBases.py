@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 r"""
-This module provides fundamental nuclide information to be used throughout the
-framework and applications.
+This module provides fundamental nuclide information to be used throughout the framework and applications.
 
 .. impl:: Isotopes and isomers can be queried by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.
     :id: I_ARMI_ND_ISOTOPES0
@@ -104,27 +103,27 @@ from armi import context, runLog
 from armi.nucDirectory import transmutations
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
-# used to prevent multiple applications of burn chains, which would snowball
-# unphysically. This is a bit of a crutch for the global state that is the nuclide
-# directory.
+# Used to prevent multiple applications of burn chains, which would snowball unphysically. This is a bit of a crutch for
+# the global state that is the nuclide directory.
 burnChainImposed = False
 
 instances = []
-# The elements must be imported after the instances list is established
-# to allow for simultaneous initialization of the nuclides and elements
-# together to maintain self-consistency.
+# The elements must be imported after the instances list is established to allow for simultaneous initialization of the
+# nuclides and elements together to maintain self-consistency.
 from armi.nucDirectory import elements  # noqa: E402
 
-# Dictionary of INuclides by the INuclide.name for fast indexing
-byName = {}
-byDBName = {}
-byLabel = {}
-byMcc2Id = {}
-byMcc3Id = {}  # for backwards compatibility. Identical to byMcc3IdEndfbVII1
-byMcc3IdEndfbVII0 = {}
-byMcc3IdEndfbVII1 = {}
-byMcnpId = {}
-byAAAZZZSId = {}
+# Global nuclide and nuclideBases data
+nuclideBases = None
+byName = None
+byDBName = None
+byLabel = None
+byMcc2Id = None
+byMcc3Id = None  # for backwards compatibility. Identical to byMcc3IdEndfbVII1
+byMcc3IdEndfbVII0 = None
+byMcc3IdEndfbVII1 = None
+byMcnpId = None
+byAAAZZZSId = None
+
 
 # lookup table from https://t2.lanl.gov/nis/data/endf/endfvii-n.html
 BASE_ENDFB7_MAT_NUM = {
@@ -347,8 +346,8 @@ class INuclide(NuclideInterface):
             )
         if state < 0:
             raise ValueError(
-                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The "
-                "state must be a positive integer."
+                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The state must be a "
+                "positive integer."
             )
         if halflife < 0.0:
             raise ValueError(f"Error in initializing nuclide {name}. The halflife must be a positive value.")
@@ -413,15 +412,14 @@ class INuclide(NuclideInterface):
             elif nuclideBurnType == self.SPONTANEOUS_FISSION:
                 userSpontaneousFissionYield = nuclideBurnCategory.get(nuclideBurnType, None)
 
-                # Check for user-defined value of nuSF within the burn-chain data. If this is
-                # updated then prefer the user change and then note this to the user. Otherwise,
-                # maintain the default loaded from the nuclide bases.
+                # Check for user-defined value of nuSF within the burn-chain data. If this is updated then prefer the
+                # user change and then note this to the user. Otherwise, maintain the default loaded from the nuclide
+                # bases.
                 if userSpontaneousFissionYield:
                     if userSpontaneousFissionYield != self.nuSF:
                         runLog.info(
-                            f"nuSF provided for {self} will be updated from "
-                            f"{self.nuSF:<8.6e} to {userSpontaneousFissionYield:<8.6e} based on "
-                            "user provided burn-chain data."
+                            f"nuSF provided for {self} will be updated from {self.nuSF:<8.6e} to "
+                            f"{userSpontaneousFissionYield:<8.6e} based on user provided burn-chain data."
                         )
                         self.nuSF = userSpontaneousFissionYield
             else:
@@ -438,8 +436,7 @@ class INuclide(NuclideInterface):
     def getDecay(self, decayType):
         """Get a :py:class:`~armi.nucDirectory.transmutations.DecayMode`.
 
-        Retrieve the first :py:class:`~armi.nucDirectory.transmutations.DecayMode`
-        matching the specified decType.
+        Retrieve the first :py:class:`~armi.nucDirectory.transmutations.DecayMode` matching the specified decType.
 
         Parameters
         ----------
@@ -512,15 +509,12 @@ class NuclideBase(INuclide, IMcnpNuclide):
         :id: I_ARMI_ND_ISOTOPES1
         :implements: R_ARMI_ND_ISOTOPES
 
-        The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-        class provides a data structure for information about a single nuclide,
-        including the atom number, atomic weight, element, isomeric state,
-        half-life, and name. The class contains static methods for creating an
-        internal ARMI name or label for a nuclide. There are instance methods
-        for generating the nuclide ID for external codes, e.g. MCNP or Serpent,
-        and retrieving the nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3.
-        There are also instance methods for generating an AAAZZZS ID and an ENDF
-        MAT number.
+        The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` class provides a data structure for
+        information about a single nuclide, including the atom number, atomic weight, element, isomeric state,
+        half-life, and name. The class contains static methods for creating an internal ARMI name or label for a
+        nuclide. There are instance methods for generating the nuclide ID for external codes, e.g. MCNP or Serpent, and
+        retrieving the nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3. There are also instance methods for generating
+        an AAAZZZS ID and an ENDF MAT number.
     """
 
     def __init__(self, element, a, weight, abundance, state, halflife, skipGlobal=False):
@@ -550,17 +544,17 @@ class NuclideBase(INuclide, IMcnpNuclide):
         metaChar = ["", "M", "M2", "M3"]
         if state > len(metaChar):
             raise ValueError(f"The state of NuclideBase is not valid and must not be larger than {len(metaChar)}.")
-        return "{}{}{}".format(element.symbol, a, metaChar[state])
+
+        return f"{element.symbol}{a}{metaChar[state]}"
 
     @staticmethod
     def _createLabel(element, a, state):
         """
         Make label for nuclide base.
 
-        The logic causes labels for things with A<10 to be zero padded like H03 or tritium
-        instead of H3. This avoids the metastable tritium collision which would look
-        like elemental HE. It also allows things like MO100 to be held within 4 characters,
-        which is a constraint of the ISOTXS format if we append 2 characters for XS type.
+        The logic causes labels for things with A<10 to be zero padded like H03 or tritium instead of H3. This avoids
+        the metastable tritium collision which would look like elemental HE. It also allows things like MO100 to be held
+        within 4 characters, which is a constraint of the ISOTXS format if we append 2 characters for XS type.
         """
         # len(e.symbol) is 1 or 2 => a % (either 1000 or 100)
         #                         => gives exact a, or last two digits.
@@ -568,7 +562,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         firstTwoDigits = (a % (10 ** (4 - len(element.symbol)))) // 10
         # the last digit is either 0-9 if state=0, or A-J if state=1, or K-T if state=2, or U-d if state=3
         lastDigit = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcd"[(a % 10) + state * 10]
-        return "{}{}{}".format(element.symbol, firstTwoDigits, lastDigit)
+        return f"{element.symbol}{firstTwoDigits}{lastDigit}"
 
     def getNaturalIsotopics(self):
         """Gets the natural isotopics root :py:class:`~elements.Element`.
@@ -594,9 +588,8 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :implements: R_ARMI_ND_ISOTOPES
 
             This method returns the ``mcc2id`` attribute of a
-            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
-            mcc-nuclides.yaml file in the ARMI resources folder.
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instance. This attribute is initially
+            populated by reading from the mcc-nuclides.yaml file in the ARMI resources folder.
         """
         return self.mcc2id
 
@@ -613,7 +606,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
             This method returns the ``mcc3idEndfbVII0`` attribute of a
             :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
+            instance. This attribute is initially populated by reading from the
             mcc-nuclides.yaml file in the ARMI resources folder.
         """
         return self.mcc3idEndfbVII0
@@ -627,7 +620,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
             This method returns the ``mcc3idEndfbVII1`` attribute of a
             :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
+            instance. This attribute is initially populated by reading from the
             mcc-nuclides.yaml file in the ARMI resources folder.
         """
         return self.mcc3idEndfbVII1
@@ -707,8 +700,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         Basically, it's Z * 100 + I where I is an isotope number. I=25 is defined
         as the lightest known stable isotope of element Z, so for Uranium,
         Z=92 and I=25 refers to U234. The values of I go up by 3 for each
-        mass number, so U235 is 9228. This leaves room for three isomeric
-        states of each nuclide.
+        mass number, so U235 is 9228. This leaves room for three isomeric states of each nuclide.
 
         Returns
         -------
@@ -737,9 +729,8 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
 
     Notes
     -----
-    This is meant to represent the combination of all naturally occurring nuclides
-    within an element. The abundance is forced to zero here so that it does not
-    have any interactions with the NuclideBase objects.
+    This is meant to represent the combination of all naturally occurring nuclides within an element. The abundance is
+    forced to zero here so that it does not have any interactions with the NuclideBase objects.
     """
 
     def __init__(self, name, element, skipGlobal=False):
@@ -809,17 +800,17 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
         id: str
             SERPENT ID: ``C-nat``, `Fe-nat``
         """
-        return "{}-nat".format(self.element.symbol.capitalize())
+        return f"{self.element.symbol.capitalize()}-nat"
 
     def getEndfMatNum(self):
         """Get the ENDF mat number for this element."""
         if self.z != 6:
             runLog.warning(
-                "The only elemental in ENDF/B VII.1 is carbon. "
-                "ENDF mat num was requested for the elemental {} and will not be helpful "
-                "for working with ENDF/B VII.1. Try to expandElementalsToIsotopics".format(self)
+                f"The only elemental in ENDF/B VII.1 is carbon. ENDF mat num was requested for the elemental {self} and"
+                "will not be helpful for working with ENDF/B VII.1. Try to expandElementalsToIsotopics"
             )
-        return "{0}".format(self.z * 100)
+
+        return f"{self.z * 100}"
 
 
 class DummyNuclideBase(INuclide):
@@ -828,8 +819,8 @@ class DummyNuclideBase(INuclide):
 
     Notes
     -----
-    This may be used to store mass from a depletion calculation, specifically
-    in the instances where the burn chain is truncated.
+    This may be used to store mass from a depletion calculation, specifically in the instances where the burn chain is
+    truncated.
     """
 
     def __init__(self, name, weight, skipGlobal=False):
@@ -973,453 +964,69 @@ class LumpNuclideBase(INuclide):
 
 
 def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activeNuclides):
-    """
-    March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
-
-    This limits depletion to the smallest set of nuclides that matters.
-
-    Parameters
-    ----------
-    nuclides : np.array, dtype="S6"
-        Starting array of nuclide names
-    numberDensities : np.array, dtype=np.float64
-        Starting array of number densities
-    activeNuclides : OrderedSet
-        Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
-    """
-    if not burnChainImposed:
-        return nuclides, numberDensities
-
-    missingActiveNuclides = set()
-    memo = set()
-    nucNames = [nucName.decode() for nucName in nuclides]
-    difference = set(nucNames).difference(memo)
-    while any(difference):
-        newNucs = set()
-        nuclide = difference.pop()
-        memo.add(nuclide)
-        # Skip the nuclide if it is not `active` in the burn-chain
-        if nuclide not in activeNuclides:
-            continue
-
-        nuclideObj = byName[nuclide]
-
-        for interaction in nuclideObj.trans + nuclideObj.decays:
-            try:
-                # Interaction nuclides can only be added to the number density arrays if they
-                # are a part of the user-defined active nuclides
-                productNuclide = interaction.getPreferredProduct(activeNuclides)
-                if productNuclide not in nucNames:
-                    newNucs.add(productNuclide.encode())
-            except KeyError:
-                # Keep track of the first production nuclide
-                missingActiveNuclides.add(interaction.productNuclides)
-
-        # add the new nuclides to the number density arrays
-        newNDens = np.zeros(len(newNucs), dtype=np.float64)
-        nuclides = np.append(nuclides, list(newNucs))
-        numberDensities = np.append(numberDensities, newNDens)
-
-        nucNames = [nucName.decode() for nucName in nuclides]
-        difference = set(nucNames).difference(memo)
-
-    if burnChainImposed and missingActiveNuclides:
-        _failOnMissingActiveNuclides(missingActiveNuclides)
-
-    return nuclides, numberDensities
-
-
-def _failOnMissingActiveNuclides(missingActiveNuclides):
-    """Raise ValueError with notification of which nuclides to include in the burn-chain."""
-    msg = "Missing active nuclides in loading file. Add the following nuclides:"
-    for i, nucList in enumerate(missingActiveNuclides, 1):
-        msg += "\n {} - ".format(i)  # Index of
-        for j, nuc in enumerate(nucList, 1):
-            delimiter = " or " if j < len(nucList) else ""
-            msg += "{}{}".format(nuc, delimiter)
-    raise ValueError(msg)
+    """Pass through to NuclideBases.initReachableActiveNuclidesThroughBurnChain() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activeNuclides)
 
 
 def isotopes(z):
+    # TODO: Seems like this is in the wrong file.
     return elements.byZ[z].nuclides
 
 
 def getIsotopics(nucName):
-    """Expand elemental nuc name to isotopic nuc bases."""
-    nb = byName[nucName]
-    if isinstance(nb, (LumpNuclideBase, DummyNuclideBase)):
-        # skip lumped fission products or dumps
-        return []
-    elif isinstance(nb, NaturalNuclideBase):
-        isotopics = nb.getNaturalIsotopics()
-    else:
-        isotopics = [nb]
-    return isotopics
+    """Pass through to NuclideBases.getIsotopics() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.getIsotopics(nucName)
 
 
 def fromName(name):
-    """Return a nuclide from its name."""
-    matches = [nn for nn in instances if nn.name == name]
-    if len(matches) != 1:
-        raise Exception("Too many or too few ({}) matches for {}".format(len(matches), name))
-    return matches[0]
+    """Pass through to NuclideBases.fromName() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.fromName(name)
 
 
 def isMonoIsotopicElement(name):
-    """Return true if this is the only naturally occurring isotope of its element."""
-    base = byName[name]
-    return base.abundance > 0 and len([e for e in base.element.nuclides if e.abundance > 0]) == 1
+    """Pass through to NuclideBases.isMonoIsotopicElement() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.isMonoIsotopicElement(name)
 
 
 def where(predicate):
-    """
-    Return all :py:class:`INuclides <INuclide>` objects matching a condition.
-
-    Returns an iterator of :py:class:`INuclides <INuclide>` matching the specified condition.
-
-    Attributes
-    ----------
-    predicate: lambda
-        A lambda, or function, accepting a :py:class:`INuclide` as a parameter
-
-    Examples
-    --------
-    >>> from armi.nucDirectory import nuclideBases
-    >>> [nn.name for nn in nuclideBases.where(lambda nb: 'Z' in nb.name)]
-    ['ZN64', 'ZN66', 'ZN67', 'ZN68', 'ZN70', 'ZR90', 'ZR91', 'ZR92', 'ZR94', 'ZR96', 'ZR93', 'ZR95', 'ZR']
-
-    >>> # in order to get length, convert to list
-    >>> isomers90 = list(nuclideBases.where(lambda nb: nb.a == 95))
-    >>> len(isomers90)
-    3
-    >>> for iso in isomers: print(iso)
-    <NuclideBase MO95: Z:42, A:95, S:0, label:MO2N>
-    <NuclideBase NB95: Z:41, A:95, S:0, label:NB2N>
-    <NuclideBase ZR95: Z:40, A:95, S:0, label:ZR2N>
-    """
-    for nuc in instances:
-        if predicate(nuc):
-            yield (nuc)
+    """Pass through to NuclideBases.where() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.where(predicate)
 
 
 def single(predicate):
-    """
-    Return a single :py:class:`INuclide` object meeting the specified condition.
-
-    Similar to :py:func:`where`, this function uses a lambda input to filter
-    the :py:attr:`INuclide instances <instances>`. If there is not 1 and only
-    1 match for the specified condition, an exception is raised.
-
-    Examples
-    --------
-    >>> from armi.nucDirectory import nuclideBases
-    >>> nuclideBases.single(lambda nb: nb.name == 'C')
-    <NaturalNuclideBase C: Z:6, w:12.0107358968, label:C>
-
-    >>> nuclideBases.single(lambda nb: nb.z == 95 and nb.a == 242 and nb.state == 1)
-    <NuclideBase AM242M: Z:95, A:242, S:1, label:AM4C>
-    """
-    matches = [nuc for nuc in instances if predicate(nuc)]
-    if len(matches) != 1:
-        raise IndexError(
-            "Expected single match, but got {} matches:\n  {}".format(
-                len(matches), "\n  ".join(str(mo) for mo in matches)
-            )
-        )
-    return matches[0]
+    """Pass through to NuclideBases.single() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.single(predicate)
 
 
 def changeLabel(nuclideBase, newLabel):
-    """
-    Updates a nuclide label and modifies the ``byLabel`` look-up dictionary.
-
-    Notes
-    -----
-    Since nuclide objects are defined and stored globally, any change to the
-    attributes will be maintained.
-    """
-    nuclideBase.label = newLabel
-    byLabel[newLabel] = nuclideBase
+    """Pass through to NuclideBases.changeLabel() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.changeLabel(nuclideBase, newLabel)
 
 
 def getDepletableNuclides(activeNuclides, obj):
-    """Get nuclides in this object that are in the burn chain."""
-    return sorted(set(activeNuclides) & set(obj.getNuclides()))
+    """Pass through to NuclideBases.getDepletableNuclides() for the global NuclideBases object."""
+    global nuclideBases
+    return nuclideBases.getDepletableNuclides(activeNuclides, obj)
 
 
 def imposeBurnChain(burnChainStream):
-    """
-    Apply transmutation and decay information to each nuclide.
-
-    Notes
-    -----
-    You cannot impose a burn chain twice. Doing so would require that you clean out the
-    transmutations and decays from all the module-level nuclide bases, which generally
-    requires that you rebuild them. But rebuilding those is not an option because some
-    of them get set as class-level attributes and would be orphaned. If a need to change
-    burn chains mid-run re-arises, then a better nuclideBase-level burnchain cleanup
-    should be implemented so the objects don't have to change identity.
-
-    Notes
-    -----
-    We believe the transmutation information would probably be better stored on a
-    less fundamental place (e.g. not on the NuclideBase).
-
-    See Also
-    --------
-    armi.nucDirectory.transmutations : describes file format
-    """
-    global burnChainImposed
-    if burnChainImposed:
-        # the only time this should happen is if in a unit test that has already
-        # processed conftest.py and is now building a Case that also imposes this.
-        runLog.warning("Burn chain already imposed. Skipping reimposition.")
-        return
-    burnChainImposed = True
-    yaml = YAML(typ="rt")
-    yaml.allow_duplicate_keys = False
-    burnData = yaml.load(burnChainStream)
-
-    for nucName, burnInfo in burnData.items():
-        nuclide = byName[nucName]
-        # think of this protected stuff as "module level protection" rather than class.
-        nuclide._processBurnData(burnInfo)
+    """Pass through to NuclideBases.imposeBurnChain() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.imposeBurnChain(burnChainStream)
 
 
 def factory():
-    """
-    Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
-
-    Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`.
-    Also clears and fills in the
-    :py:data:`~armi.nucDirectory.nuclideBases.instances`,
-    :py:data:`byName`, :py:attr:`byLabel`, :py:data:`byMcc3IdEndfbVII0`, and
-    :py:data:`byMcc3IdEndfbVII1` module attributes. This method is automatically run upon
-    loading the module, hence it is not usually necessary to re-run it unless there is a
-    change to the data files, which should not happen during run time, or a *bad*
-    :py:class`INuclide` is created.
-
-    Notes
-    -----
-    This cannot be run more than once. NuclideBase instances are used throughout the ARMI
-    ecosystem and are even class attributes in some cases. Re-instantiating them would orphan
-    any existing ones and break everything.
-    """
-    if len(instances) != 0:
-        raise RuntimeError(
-            "Nuclides are already initialized and cannot be re-initialized unless "
-            "`nuclideBases.destroyGlobalNuclides` is called first."
-        )
-    addNuclideBases()
-    __addNaturalNuclideBases()
-    __addDummyNuclideBases()
-    __addLumpedFissionProductNuclideBases()
-    updateNuclideBasesForSpecialCases()
-    readMCCNuclideData()
-    __renormalizeNuclideToElementRelationship()
-    __deriveElementalWeightsByNaturalNuclideAbundances()
-
-    # reload the thermal scattering library with the new nuclideBases too
-    from armi.nucDirectory import thermalScattering
-
-    thermalScattering.factory()
-
-
-def addNuclideBases():
-    """
-    Read natural abundances of any natural nuclides.
-
-    This adjusts already-existing NuclideBases and Elements with the new information.
-
-    .. impl:: Separating natural abundance data from code.
-        :id: I_ARMI_ND_DATA0
-        :implements: R_ARMI_ND_DATA
-
-        This function reads the ``nuclides.dat`` file from the ARMI resources
-        folder. This file contains metadata for 4,614 nuclides, including
-        number of protons, number of neutrons, atomic number, excited
-        state, element symbol, atomic mass, natural abundance, half-life,
-        and spontaneous fission yield. The data in ``nuclides.dat`` have been
-        collected from multiple different sources; the references are given
-        in comments at the top of that file.
-    """
-    with open(os.path.join(context.RES, "nuclides.dat")) as f:
-        for line in f:
-            # Skip header lines
-            if line.startswith("#") or line.startswith("Z"):
-                continue
-            lineData = line.split()
-            _z = int(lineData[0])
-            _n = int(lineData[1])
-            a = int(lineData[2])
-            state = int(lineData[3])
-            sym = lineData[4].upper()
-            mass = float(lineData[5])
-            abun = float(lineData[6])
-            halflife = lineData[7]
-            if halflife == "inf":
-                halflife = np.inf
-            else:
-                halflife = float(halflife)
-            nuSF = float(lineData[8])
-
-            element = elements.bySymbol[sym]
-            nb = NuclideBase(element, a, mass, abun, state, halflife)
-            nb.nuSF = nuSF
-
-
-def __addNaturalNuclideBases():
-    """Generates a complete set of nuclide bases for each naturally occurring element."""
-    for element in elements.byZ.values():
-        if element.symbol not in byName:
-            if element.isNaturallyOccurring():
-                NaturalNuclideBase(element.symbol, element)
-
-
-def __addDummyNuclideBases():
-    """
-    Generates a set of dummy nuclides.
-
-    Notes
-    -----
-    These nuclides can be used to truncate a depletion / burn-up chain within the
-    """
-    DummyNuclideBase(name="DUMP1", weight=10.0)
-    DummyNuclideBase(name="DUMP2", weight=240.0)
-
-
-def __addLumpedFissionProductNuclideBases():
-    LumpNuclideBase(name="LFP35", weight=233.273)
-    LumpNuclideBase(name="LFP38", weight=235.78)
-    LumpNuclideBase(name="LFP39", weight=236.898)
-    LumpNuclideBase(name="LFP40", weight=237.7)
-    LumpNuclideBase(name="LFP41", weight=238.812)
-    LumpNuclideBase(name="LREGN", weight=1.0)
-
-
-def readMCCNuclideData():
-    r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
-
-    .. impl:: Separating MCC data from code.
-        :id: I_ARMI_ND_DATA1
-        :implements: R_ARMI_ND_DATA
-
-        This function reads the mcc-nuclides.yaml file from the ARMI resources
-        folder. This file contains the MC\ :sup:`2`-2 ID (from ENDF/B-V.2) and MC\ :sup:`2`-3 ID
-        (from ENDF/B-VII.0) for all nuclides in MC\ :sup:`2`. The ``mcc2id``,
-        ``mcc3idEndfVII0``, and  ``mcc3idEndfVII1`` attributes of each :py:class:`NuclideBase
-        <armi.nucDirectory.nuclideBases.NuclideBase>` instance are updated as
-        the data is read, and the global dictionaries ``byMcc2Id``
-        ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated with the nuclide bases
-        keyed by their corresponding ID for each code.
-    """
-    global byMcc2Id
-    global byMcc3Id
-    global byMcc3IdEndfbVII0
-    global byMcc3IdEndfbVII1
-
-    with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
-        yaml = YAML(typ="rt")
-        nuclides = yaml.load(f)
-
-    for n in nuclides:
-        nb = byName[n]
-        mcc2id = nuclides[n]["ENDF/B-V.2"]
-        mcc3idEndfbVII0 = nuclides[n]["ENDF/B-VII.0"]
-        mcc3idEndfbVII1 = nuclides[n]["ENDF/B-VII.1"]
-        if mcc2id is not None:
-            nb.mcc2id = mcc2id
-            byMcc2Id[nb.getMcc2Id()] = nb
-        if mcc3idEndfbVII0 is not None:
-            nb.mcc3idEndfbVII0 = mcc3idEndfbVII0
-            byMcc3IdEndfbVII0[nb.getMcc3IdEndfbVII0()] = nb
-        if mcc3idEndfbVII1 is not None:
-            nb.mcc3idEndfbVII1 = mcc3idEndfbVII1
-            byMcc3IdEndfbVII1[nb.getMcc3IdEndfbVII1()] = nb
-
-    # Have the byMcc3Id dictionary be VII.1 IDs.
-    byMcc3Id = byMcc3IdEndfbVII1
-
-
-def updateNuclideBasesForSpecialCases():
-    """
-    Update the nuclide bases for special case name changes.
-
-    .. impl:: The special case name Am242g is supported.
-        :id: I_ARMI_ND_ISOTOPES6
-        :implements: R_ARMI_ND_ISOTOPES
-
-        This function updates the keys for the :py:class:`NuclideBase
-        <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and
-        Am-242 in the ``byName`` and ``byDBName`` global dictionaries.  This
-        function associates the more common isomer Am-242m with the name
-        "AM242", and uses "AM242G" to denote the ground state.
-
-    Notes
-    -----
-    This function is specifically added to change the definition of
-    `AM242` to refer to its metastable isomer, `AM242M` by default. `AM242M`
-    is most common isomer of `AM242` and is typically the desired isomer
-    when being requested rather than than the ground state (i.e., S=0) of
-    `AM242`.
-    """
-    # Change the name of `AM242` to specific represent its ground state.
-    am242g = byName["AM242"]
-    am242g.name = "AM242G"
-    byName["AM242G"] = am242g
-    byDBName[byName["AM242G"].getDatabaseName()] = am242g
-
-    # Update the pointer of `AM242` to refer to `AM242M`.
-    am242m = byName["AM242M"]
-    byName["AM242"] = am242m
-    byDBName["nAm242"] = am242m
-    byDBName[byName["AM242"].getDatabaseName()] = am242m
-
-
-def __renormalizeNuclideToElementRelationship():
-    for nuc in instances:
-        if nuc.element is not None:
-            nuc.element = elements.byZ[nuc.z]
-            nuc.element.append(nuc)
-
-
-def __deriveElementalWeightsByNaturalNuclideAbundances():
-    """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
-    for element in elements.byName.values():
-        numer = 0.0
-        denom = 0.0
-        for nb in element.getNaturalIsotopics():
-            numer += nb.weight * nb.abundance
-            denom += nb.abundance
-
-        if denom:
-            element.standardWeight = numer / denom
-
-
-def addGlobalNuclide(nuclide: NuclideBase):
-    """Add an element to the global dictionaries."""
-    if nuclide.name in byName or nuclide.getDatabaseName() in byDBName or nuclide.label in byLabel:
-        raise ValueError(f"{nuclide} has already been added and cannot be duplicated.")
-
-    instances.append(nuclide)
-    byName[nuclide.name] = nuclide
-    byDBName[nuclide.getDatabaseName()] = nuclide
-    byLabel[nuclide.label] = nuclide
-
-    # Add look-up based on the MCNP nuclide ID
-    if isinstance(nuclide, IMcnpNuclide):
-        if nuclide.getMcnpId() in byMcnpId:
-            raise ValueError(
-                f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added and cannot be duplicated."
-            )
-        byMcnpId[nuclide.getMcnpId()] = nuclide
-    if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
-        # There are no AZS ID for elements / natural nuclides, or fictitious lump or dummy nuclides
-        byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
-
-
-def destroyGlobalNuclides():
-    """Delete all global nuclide bases."""
+    """Pass through to NuclideBases.factory() for the global NuclideBases object."""
+    print("xxxxxxxxxxxxxxxxxxxxxxxxxx NuclideBases factory xxxxxxxxxxxxxxxxxxxxxxxxxx")
+    global nuclideBases
+    global burnChainImposed
     global instances
     global byName
     global byDBName
@@ -1431,19 +1038,54 @@ def destroyGlobalNuclides():
     global byMcnpId
     global byAAAZZZSId
 
-    instances = []
-    byName.clear()
-    byDBName.clear()
-    byLabel.clear()
-    byMcc2Id.clear()
-    byMcc3Id.clear()
-    byMcc3IdEndfbVII1.clear()
-    byMcc3IdEndfbVII0.clear()
-    byMcnpId.clear()
-    byAAAZZZSId.clear()
+    nuclideBases = NuclideBases()
+
+    instances = nuclideBases.instances
+    burnChainImposed = nuclideBases.burnChainImposed
+    byName = nuclideBases.byName
+    byDBName = nuclideBases.byDBName
+    byLabel = nuclideBases.byLabel
+    byMcc2Id = nuclideBases.byMcc2Id
+    byMcc3Id = nuclideBases.byMcc3Id  # for backwards compatibility. Identical to byMcc3IdEndfbVII1
+    byMcc3IdEndfbVII0 = nuclideBases.byMcc3IdEndfbVII0
+    byMcc3IdEndfbVII1 = nuclideBases.byMcc3IdEndfbVII1
+    byMcnpId = nuclideBases.byMcnpId
+    byAAAZZZSId = nuclideBases.byAAAZZZSId
+
+
+def addNuclideBases():
+    """Pass through to NuclideBases.addNuclideBases() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.addNuclideBases()
+
+
+def readMCCNuclideData():
+    """Pass through to NuclideBases.readMCCNuclideData() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.readMCCNuclideData()
+
+
+def updateNuclideBasesForSpecialCases():
+    """Pass through to NuclideBases.updateNuclideBasesForSpecialCases() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.updateNuclideBasesForSpecialCases()
+
+
+def addGlobalNuclide(nuclide: NuclideBase):
+    """Pass through to NuclideBases.addNuclide() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.addNuclide(nuclide)
+
+
+def destroyGlobalNuclides():
+    """Pass through to NuclideBases.clear() for the global NuclideBases object."""
+    global nuclideBases
+    nuclideBases.clear()
 
 
 """
+TODO: Document that this global stuff is on its way out.
+
 TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
       Below this point is the new code.
 """
@@ -1536,7 +1178,7 @@ class NuclideBases:
         # reload the thermal scattering library with the new nuclideBases too
         from armi.nucDirectory import thermalScattering
 
-        thermalScattering.factory()
+        thermalScattering.factory(self.byName)
 
     def initReachableActiveNuclidesThroughBurnChain(self, nuclides, numberDensities, activeNuclides):
         """
@@ -1554,7 +1196,7 @@ class NuclideBases:
             Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
         """
         if not self.burnChainImposed:
-            return
+            return nuclides, numberDensities
 
         missingActiveNuclides = set()
         memo = set()
@@ -1728,12 +1370,14 @@ class NuclideBases:
         armi.nucDirectory.transmutations : describes file format
         """
         if self.burnChainImposed:
-            # The only time this should happen is if in a unit test that has already processed
-            # conftest.py and is now building a Case that also imposes this.
+            # The only time this should happen is if in a unit test that has already processed conftest.py and is now
+            # building a Case that also imposes this.
             runLog.warning("Burn chain already imposed. Skipping reimposition.")
             return
 
         self.burnChainImposed = True
+        global burnChainImposed
+        burnChainImposed = True
         yaml = YAML(typ="rt")
         yaml.allow_duplicate_keys = False
         burnData = yaml.load(burnChainStream)
@@ -1797,7 +1441,7 @@ class NuclideBases:
 
         Notes
         -----
-        These nuclides can be used to truncate a depletion / burn-up chain within the
+        These nuclides can be used to truncate a depletion / burn-up chain within the MC2 program.
         """
         self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, skipGlobal=True))
         self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, skipGlobal=True))
@@ -1896,3 +1540,6 @@ class NuclideBases:
 
             if denom:
                 element.standardWeight = numer / denom
+
+
+factory()

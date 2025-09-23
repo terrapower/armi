@@ -42,6 +42,15 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        from armi.nucDirectory import elements, nuclideBases
+
+        elements.factory()
+        nuclideBases.factory()
+        print("=================================================")
+        print(nuclideBases.nuclideBases)
+        print([k for k in nuclideBases.nuclideBases.byName.keys() if k.startswith("AL")])
+        print("=================================================")
+
         cls.o, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
     def test_plotDepthMap(self):

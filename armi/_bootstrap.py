@@ -16,9 +16,7 @@
 
 from armi.nucDirectory import nuclideBases  # noqa: E402
 
-# Nuclide bases get built explicitly here to have better determinism
-# about when they get instantiated. The burn chain is not applied
-# at this point, but only after input is read. Nuclides need to be built super early
-# because some import-time code needs them to function. Namely, Block parameter
-# collection uses them to create number density params.
+# Nuclide bases get built explicitly here to have better determinism about when they get instantiated. The burn chain is
+# not applied at this point, but only after input is read. Nuclides need to be built super early because some
+# import-time code needs them to function. Namely, Block parameter collection uses them to create number density params.
 nuclideBases.factory()

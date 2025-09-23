@@ -386,17 +386,29 @@ def expandElementals(mat, blueprint):
     armi.reactor.blueprints.Blueprints._resolveNuclides
         Sets the metadata defining this behavior.
     """
+    print("\n\n\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\n\n")
+
     elementExpansionPairs = []
     for elementToExpand in blueprint.elementsToExpand:
+        print(f"elementToExpand.symbol: {elementToExpand.symbol}")
+
         if elementToExpand.symbol not in mat.massFrac:
             continue
         nucFlags = blueprint.nuclideFlags.get(elementToExpand.symbol)
+
+        print(f"nucFlags: {nucFlags}")
+        #print(f"nuclideBases.byName: {nuclideBases.byName.keys()}")
+
         nuclidesToBecome = (
             [nuclideBases.byName[nn] for nn in nucFlags.expandTo] if (nucFlags and nucFlags.expandTo) else None
         )
+        print(nuclidesToBecome)
+
         elementExpansionPairs.append((elementToExpand, nuclidesToBecome))
 
     densityTools.expandElementalMassFracsToNuclides(mat.massFrac, elementExpansionPairs)
+    
+    print("\n\n\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\n\n")
 
 
 def insertDepletableNuclideKeys(c, blueprint):

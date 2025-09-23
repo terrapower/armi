@@ -121,8 +121,10 @@ assemblies:
         a = bp.constructAssem(cs, "assembly")
         expectedNuclides = ["B10", "B11", "C", "DUMP1"]
         unexpectedNuclides = ["U234", "U325", "U238"]
+        print(a[0][0].getNuclides())
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
+
         for nuc in unexpectedNuclides:
             self.assertNotIn(nuc, a[0][0].getNuclides())
 
