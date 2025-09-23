@@ -28,7 +28,7 @@ jobs:
         run: sudo apt-get -y install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
-      - name: Make html/pdf Docs
+      - name: Make HTML Docs
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -54,11 +54,6 @@ jobs:
           git submodule init
           git submodule update
           make html
-
-          echo "Build PDF docs..."
-          make latex
-          cd _build/latex/
-          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
@@ -75,6 +70,19 @@ jobs:
           name: html-docs
           path: doc/_build/html
           retention-days: 5
+      - name: Make PDF Docs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          echo "Cleaning out API docs from PDF..."
+          rm -rf .apidocs
+
+          echo "Build PDF docs..."
+          make latex
+          cd _build/latex/
+          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
         with:
