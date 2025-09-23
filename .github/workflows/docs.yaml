@@ -77,11 +77,11 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         run: |
           echo "Cleaning out API docs from PDF..."
-          rm -rf .apidocs
+          rm -rf doc/.apidocs
 
           echo "Build PDF docs..."
-          make latex
           cd doc/_build/latex/
+          make latex
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
