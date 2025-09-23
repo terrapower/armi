@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for elements."""
+"""Tests for Elements."""
 
 import os
 import unittest
@@ -79,8 +79,7 @@ class TestElement(unittest.TestCase):
         with mockRunLogs.BufferLog():
             nuclideBases.destroyGlobalNuclides()
             nuclideBases.factory()
-            # Ensure that the burn chain data is initialized after clearing
-            # out the nuclide data and reinitializing it.
+            # Ensure that the burn chain data is initialized after clearing out the nuclide data and reinitializing it.
             nuclideBases.burnChainImposed = False
             with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
                 nuclideBases.imposeBurnChain(burnChainStream)

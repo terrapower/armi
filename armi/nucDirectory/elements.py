@@ -288,7 +288,6 @@ def getElementZ(symbol: str = None, name: str = None) -> int:
 
 def factory():
     """Pass through to Elements.factory() for the global Elements object."""
-    print("xxxxxxxxxxxxxxxxxxxxxxxxxx Elements factory xxxxxxxxxxxxxxxxxxxxxxxxxx")
     global elements
     global byZ
     global byName

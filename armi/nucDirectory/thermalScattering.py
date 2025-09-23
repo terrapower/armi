@@ -163,6 +163,7 @@ class ThermalScattering:
             label = f"tsl-{first.z:03d}_{element.symbol.capitalize()}_{first.a:03d}.endf"
         else:
             raise ValueError(f"{self} label cannot be generated")
+
         return label
 
     def _genACELabel(self):
@@ -207,7 +208,6 @@ def factory(byName):
     armi.nucDirectory.nuclideBases.factory
         Calls this during ARMI initialization.
     """
-    print("xxxxxxxxxxxxxxxxxxxxxxxxxx Thermal Scattering factory xxxxxxxxxxxxxxxxxxxxxxxxxx")
     global byNbAndCompound
     byNbAndCompound.clear()
 

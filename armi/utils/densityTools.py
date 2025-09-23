@@ -377,8 +377,7 @@ def expandElementalNuclideMassFracs(
     massFrac : float
         Mass fraction of the initial element
     isotopicSubset : list of NuclideBases
-        Natural isotopes to include in the expansion. Useful e.g. for
-        excluding O18 from an expansion of Oxygen.
+        Natural isotopes to include in the expansion. Useful e.g. for excluding O18 from an expansion of Oxygen.
     """
     elementNucBases = element.getNaturalIsotopics()
     if isotopicSubset:

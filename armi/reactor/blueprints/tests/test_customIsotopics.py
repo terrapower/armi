@@ -353,12 +353,6 @@ assemblies:
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
         fuel = self.a[0].getComponent(Flags.FUEL)
-        print("=======================================")
-        print(fuel.p.numberDensities)
-        for b in self.a:
-            for c in b:
-                print(c.p.numberDensities)
-        print("=======================================")
         self.assertEqual(self.numUZrNuclides, len(fuel.p.numberDensities))
         # NOTE: This density does not come from the material but is based on number densities.
         self.assertAlmostEqual(15.5, fuel.density(), 0)  # i.e. it is not 19.1

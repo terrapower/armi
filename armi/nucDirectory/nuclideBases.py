@@ -1024,7 +1024,6 @@ def imposeBurnChain(burnChainStream):
 
 def factory():
     """Pass through to NuclideBases.factory() for the global NuclideBases object."""
-    print("xxxxxxxxxxxxxxxxxxxxxxxxxx NuclideBases factory xxxxxxxxxxxxxxxxxxxxxxxxxx")
     global nuclideBases
     global burnChainImposed
     global instances
@@ -1201,7 +1200,7 @@ class NuclideBases:
         missingActiveNuclides = set()
         memo = set()
         nucNames = [nucName.decode() for nucName in nuclides]
-        difference = set(numberDensities).difference(memo)
+        difference = set(nucNames).difference(memo)
         while any(difference):
             newNucs = set()
             nuclide = difference.pop()
@@ -1217,8 +1216,8 @@ class NuclideBases:
                     # Interaction nuclides can only be added to the number density dictionary if they are a part of the
                     # user-defined active nuclides
                     productNuclide = interaction.getPreferredProduct(activeNuclides)
-                    if productNuclide not in numberDensities:
-                        numberDensities[productNuclide] = 0.0
+                    if productNuclide not in nucNames:
+                        newNucs.add(productNuclide.encode())
                 except KeyError:
                     # Keep track of the first production nuclide
                     missingActiveNuclides.add(interaction.productNuclides)
