@@ -405,12 +405,12 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         if fromComp is self.c0:
             fromHeight = self.c0.height
-            self.redistirbutedMass = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
+            self.redistributedMass = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
             self.redistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / fromHeight
             self.redistributedBOLMoles = self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
         else:
             fromHeight = self.c1.height
-            self.redistirbutedMass = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
+            self.redistributedMass = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
             self.redistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / fromHeight
             self.redistributedBOLMoles = self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
 
@@ -441,13 +441,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # ensure the toComp mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
             toComp.getMass(),
-            toCompRefData.mass + self.redistirbutedMass,
+            toCompRefData.mass + self.redistributedMass,
             places=self.places,
         )
         HMfrac = toCompRefData.HMmass / toCompRefData.mass
         self.assertAlmostEqual(
             toComp.getHMMass(),
-            toCompRefData.HMmass + self.redistirbutedMass * HMfrac,
+            toCompRefData.HMmass + self.redistributedMass * HMfrac,
             places=self.places,
         )
         self.assertAlmostEqual(
@@ -475,12 +475,12 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         HMfrac = fromCompRefData.HMmass / fromCompRefData.mass
         self.assertAlmostEqual(
             fromComp.getHMMass(),
-            fromCompRefData.HMmass - self.redisributedMass * HMfrac,
+            fromCompRefData.HMmass - self.redistributedMass * HMfrac,
             places=self.places,
         )
         self.assertAlmostEqual(
             fromComp.p.massHmBOL,
-            fromCompRefData.HMmassBOL - self.redistrbutedBOLMass,
+            fromCompRefData.HMmassBOL - self.redistributedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
