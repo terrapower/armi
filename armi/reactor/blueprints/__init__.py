@@ -65,11 +65,13 @@ text representations of input and objects in the code.
 """
 
 import copy
+import io
 import math
 import pathlib
 import traceback
 import typing
 
+import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
@@ -116,19 +118,32 @@ def loadFromCs(cs, roundTrip=False):
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
-        with open(cs[CONF_LOADING_FILE], "r") as bpYaml:
-            root = pathlib.Path(cs[CONF_LOADING_FILE]).parent.absolute()
-            bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
+        bpPath = pathlib.Path(cs[CONF_LOADING_FILE])
+        if bpPath.suffix.lower() in (".h5", ".hdf5"):
+            # This is a case settings from a database so the blueprints are also in the database.
             try:
-                bp = Blueprints.load(bpYaml, roundTrip=roundTrip)
-            except yamlize.yamlizing_error.YamlizingError as err:
-                if "cross sections" in err.args[0]:
-                    runLog.error(
-                        "The loading file {} contains invalid `cross sections` input. "
-                        "Please run the `modify` entry point on this case to automatically convert."
-                        "".format(cs[CONF_LOADING_FILE])
-                    )
-                raise
+                db = h5py.File(bpPath, "r")
+                bpString = db["inputs/blueprints"].asstr()[()]
+                stream = io.StringIO(bpString)
+                stream = Blueprints.migrate(stream)
+                bp = Blueprints.load(stream)
+            except KeyError:
+                # not all reactors need to be created from blueprints, so they may not exist
+                bp = None
+        else:
+            with open(cs[CONF_LOADING_FILE], "r") as bpYaml:
+                root = bpPath.parent.absolute()
+                bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
+                try:
+                    bp = Blueprints.load(bpYaml, roundTrip=roundTrip)
+                except yamlize.yamlizing_error.YamlizingError as err:
+                    if "cross sections" in err.args[0]:
+                        runLog.error(
+                            "The loading file {} contains invalid `cross sections` input. "
+                            "Please run the `modify` entry point on this case to automatically convert."
+                            "".format(cs[CONF_LOADING_FILE])
+                        )
+                    raise
     return bp
 
 
