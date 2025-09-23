@@ -1097,7 +1097,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
+    def test_snapAxialMesViaBlockIgn(self):
+        """Snap axial mesh to a reference mesh should conserve mass based on Block igniter fuel."""
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1207,7 +1208,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
+    def test_snapAxialMeshViaBlockShield(self):
+        """Snap axial mesh to a reference mesh should conserve mass based on Block shield."""
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 

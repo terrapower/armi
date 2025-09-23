@@ -34,7 +34,6 @@ from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
-from armi.physics.fuelCycle.tests.test_fuelHandlers import addSomeDetailAssemblies
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
@@ -328,7 +327,11 @@ class SimpleRotationTests(ShuffleAndRotateTestHelper):
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         hist = self.o.getInterface("history")
         assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
-        addSomeDetailAssemblies(hist, assems)
+
+        # add some detailed assemblies
+        for a in assems:
+            hist.detailAssemblyNames.append(a.getName())
+
         b = self.o.r.core.getFirstBlock(Flags.FUEL)
         rotNum = b.getRotationNum()
         rotAlgos.simpleAssemblyRotation(fh)

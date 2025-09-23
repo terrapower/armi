@@ -1704,7 +1704,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertIsNone(self.block.getComponentByName("not the droid you are looking for"))
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
-    def test_getSortedComponentsInsideOfComponentClad(self):
+    def test_getSortedCompsInClad(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
@@ -1726,7 +1726,7 @@ class Block_TestCase(unittest.TestCase):
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
-    def test_getSortedComponentsInsideOfComponentDuct(self):
+    def test_getSortedCompsInDuct(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a duct.
