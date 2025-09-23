@@ -213,7 +213,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         initialToMassBOL = self.c1.p.massHmBOL
         initialToMolesBOL = self.c1.p.molesHmBOL
 
-        dist = RedistributeMass(fromComp=self.c0, toComp=self.c1, assemName=repr(self.a), deltaZTop=self.deltaZTop, initOnly=True)
+        dist = RedistributeMass(
+            fromComp=self.c0, toComp=self.c1, assemName=repr(self.a), deltaZTop=self.deltaZTop, initOnly=True
+        )
         dist._adjustMassParams()
         self.assertLess(self.c0.p.massHmBOL, initialFromMassBOL)
         self.assertLess(self.c0.p.molesHmBOL, initialFromMolesBOL)
@@ -486,6 +488,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             fromCompRefData.HMmolesBOL - self.redistributedBOLMoles,
             places=self.places,
         )
+
 
 class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
