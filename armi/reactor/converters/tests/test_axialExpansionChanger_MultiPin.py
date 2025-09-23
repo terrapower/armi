@@ -370,14 +370,14 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         if fromComp is self.c0:
             fromHeight = self.c0.height
-            self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
-            self.amountBeingRedistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / fromHeight
-            self.amountBeingRedistributedBOLMoles = self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
+            self.redistirbutedMass = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMoles = self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
         else:
             fromHeight = self.c1.height
-            self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
-            self.amountBeingRedistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / fromHeight
-            self.amountBeingRedistributedBOLMoles = self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
+            self.redistirbutedMass = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMoles = self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
         """Pull the reference data needed for ``fromComp`` and ``toComp``."""
@@ -406,23 +406,23 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # ensure the toComp mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
             toComp.getMass(),
-            toCompRefData.mass + self.amountBeingRedistributed,
+            toCompRefData.mass + self.redistirbutedMass,
             places=self.places,
         )
         HMfrac = toCompRefData.HMmass / toCompRefData.mass
         self.assertAlmostEqual(
             toComp.getHMMass(),
-            toCompRefData.HMmass + self.amountBeingRedistributed * HMfrac,
+            toCompRefData.HMmass + self.redistirbutedMass * HMfrac,
             places=self.places,
         )
         self.assertAlmostEqual(
             toComp.p.massHmBOL,
-            toCompRefData.HMmassBOL + self.amountBeingRedistributedBOLMass,
+            toCompRefData.HMmassBOL + self.redistributedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
             toComp.p.molesHmBOL,
-            toCompRefData.HMmolesBOL + self.amountBeingRedistributedBOLMoles,
+            toCompRefData.HMmolesBOL + self.redistributedBOLMoles,
             places=self.places,
         )
 
@@ -435,24 +435,24 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         else:
             self.assertEqual(toComp.temperatureInC, toCompRefData.temp)
 
-        # ensure the fromComp mass decreases by amountBeingRedistributed
+        # ensure the fromComp mass decreases by redisributedMass
         self.assertAlmostEqual(
-            fromComp.getMass(), fromCompRefData.mass - self.amountBeingRedistributed, places=self.places
+            fromComp.getMass(), fromCompRefData.mass - self.redistributedMass, places=self.places
         )
         HMfrac = fromCompRefData.HMmass / fromCompRefData.mass
         self.assertAlmostEqual(
             fromComp.getHMMass(),
-            fromCompRefData.HMmass - self.amountBeingRedistributed * HMfrac,
+            fromCompRefData.HMmass - self.redisributedMass * HMfrac,
             places=self.places,
         )
         self.assertAlmostEqual(
             fromComp.p.massHmBOL,
-            fromCompRefData.HMmassBOL - self.amountBeingRedistributedBOLMass,
+            fromCompRefData.HMmassBOL - self.redistrbutedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
             fromComp.p.molesHmBOL,
-            fromCompRefData.HMmolesBOL - self.amountBeingRedistributedBOLMoles,
+            fromCompRefData.HMmolesBOL - self.redistributedBOLMoles,
             places=self.places,
         )
 

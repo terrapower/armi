@@ -77,6 +77,9 @@ class AxialExpansionChanger:
     - Is designed to work with general, vertically oriented, pin-type assembly designs. It is not set up to account
       for any other assembly type.
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
+    - The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
+      conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
+      block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures.
     """
 
     linked: typing.Optional[AssemblyAxialLinkage]
@@ -338,7 +341,7 @@ class AxialExpansionChanger:
                 runLog.error(msg)
                 raise RuntimeError(msg)
 
-    def axiallyExpandAssembly(self, recalculateBurnup: typing.Optional[bool] = True):
+    def axiallyExpandAssembly(self, recalculateBurnup: bool = True):
         """Utilizes assembly linkage to do axial expansion.
 
         Parameters
