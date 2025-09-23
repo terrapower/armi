@@ -96,7 +96,9 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
         self.a = copy.deepcopy(self.aRef)
         self.axialExpChngr = AxialExpansionChanger()
         self.axialExpChngr.setAssembly(self.a)
+        self.initConservationValues()
 
+    def initConservationValues(self):
         # get original masses for conservation checks
         self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
         self.initialTotalHMMolesBOL = self.initialTotalHMMassBOL = 0.0
