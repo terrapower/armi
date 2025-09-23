@@ -171,7 +171,9 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(17, mock1.doodle)
         self.assertEqual(42, mock2.doodle)
 
-    def test_paramPropDoesNotConflictWithNoneDefault(self):
+    def test_paramPropNoConflictNoneDefault(self):
+        """Parameter property does not conflict with None default."""
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -185,7 +187,9 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(1.234, mock1.noneDefault)
         self.assertEqual(None, mock2.noneDefault)
 
-    def test_getWithoutDefaultRaisesParameterError(self):
+    def test_getNoDefaultRaisesError(self):
+        """Get without default raises parameter error."""
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -195,7 +199,9 @@ class ParameterTests(unittest.TestCase):
         with self.assertRaises(parameters.ParameterError):
             print(mock.noDefault)
 
-    def test_attemptingToSetParamWithoutSetterFails(self):
+    def test_setParamWithoutSetter(self):
+        """Attempting to set paramter without setter fails."""
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:

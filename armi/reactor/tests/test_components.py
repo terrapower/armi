@@ -653,7 +653,7 @@ class TestCircle(TestShapedComponent):
         "mult": 1.5,
     }
 
-    def test_getThermExpansFactorConsMassLinExpanPerc(self):
+    def test_circleExpansionWorks(self):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
         .. test:: Calculate thermal expansion.
