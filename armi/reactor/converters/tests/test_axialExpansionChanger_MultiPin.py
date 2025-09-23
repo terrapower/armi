@@ -436,9 +436,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             self.assertEqual(toComp.temperatureInC, toCompRefData.temp)
 
         # ensure the fromComp mass decreases by redisributedMass
-        self.assertAlmostEqual(
-            fromComp.getMass(), fromCompRefData.mass - self.redistributedMass, places=self.places
-        )
+        self.assertAlmostEqual(fromComp.getMass(), fromCompRefData.mass - self.redistributedMass, places=self.places)
         HMfrac = fromCompRefData.HMmass / fromCompRefData.mass
         self.assertAlmostEqual(
             fromComp.getHMMass(),
