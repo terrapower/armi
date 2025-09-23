@@ -28,7 +28,8 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import grids
+from armi.reactor import blueprints, grids
+from armi.reactor.blueprints import loadFromCs
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor
 from armi.testing import loadTestReactor, reduceTestReactorRings
@@ -264,7 +265,9 @@ class TestDatabaseInterface(unittest.TestCase):
         # Now load this db. It should load
         with Database("testDB2.h5", "r") as db:
             cs3 = db.loadCS()
-            r3 = db.load(0, 0, cs=cs3)
+            bp3 = loadFromCs(cs3)
+            self.assertIsInstance(bp3, blueprints.Blueprints)
+            r3 = db.load(0, 0, cs=cs3, bp=bp3)
 
         self.assertIsInstance(cs3, settings.Settings)
         self.assertIsInstance(r3, Reactor)
