@@ -1055,7 +1055,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
 
-    def test_dischargeSwapIncompatibleStationaryBlocks(self):
+    def test_dischargeSwapStationaryBlocks(self):
         """
         Test the _transferStationaryBlocks method for the case where the input assemblies have
         different numbers as well as unaligned locations of stationary blocks.

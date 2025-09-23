@@ -418,7 +418,7 @@ class TestTabulateInternal(unittest.TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_alignColumnDecimalWithThousandSeparators(self):
+    def test_alignColDecWithThousandSeps(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "1,234.5", "1e+234", "1.0e234"]
         output = _alignColumn(column, "decimal")
@@ -432,7 +432,7 @@ class TestTabulateInternal(unittest.TestCase):
         ]
         self.assertEqual(expected, output)
 
-    def test_alignColDecimalIncorrectThousandSeparators(self):
+    def test_alignColDecIncorrectThousandSeps(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "12,34.5", "1e+234", "1.0e234"]
         output = _alignColumn(column, "decimal")
@@ -473,32 +473,32 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["one line"]
         assert top == center == bottom == none == expected
 
-    def test_alignCellVertTopSingleTextMultiPad(self):
+    def test_alignCellVertTopSingleTxtMultiPad(self):
         """Internal: Align single cell text to top."""
         result = _alignCellVeritically(["one line"], 3, 8, "top")
         expected = ["one line", "        ", "        "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVertCenterSingleTextMultiPad(self):
+    def test_alignCellVertCenterSingleTxtMultiPad(self):
         """Internal: Align single cell text to center."""
         result = _alignCellVeritically(["one line"], 3, 8, "center")
         expected = ["        ", "one line", "        "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVertBottomSingleTextMultiPad(self):
+    def test_alignCellVertBottomSingleTxtMultiPad(self):
         """Internal: Align single cell text to bottom."""
         result = _alignCellVeritically(["one line"], 3, 8, "bottom")
         expected = ["        ", "        ", "one line"]
         self.assertEqual(expected, result)
 
-    def test_alignCellVertTopMultiTextMultiPad(self):
+    def test_alignCellVertTopMultiTxtMultiPad(self):
         """Internal: Align multiline celltext text to top."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "top")
         expected = ["just", "one ", "cell", "    ", "    ", "    "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVertCenterMultiTextMultiPad(self):
+    def test_alignCellVertCenterMultiTxtMultiPad(self):
         """Internal: Align multiline celltext text to center."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "center")
@@ -508,7 +508,7 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["    ", "just", "one ", "cell", "    ", "    "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVertBottomMultiTextMultiPad(self):
+    def test_alignCellVertBottomMultiTxtMultiPad(self):
         """Internal: Align multiline celltext text to bottom."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "bottom")
