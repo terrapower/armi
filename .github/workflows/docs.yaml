@@ -77,14 +77,15 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         run: |
           echo "Cleaning out API docs from PDF..."
+          set -x
           rm -rf doc/.apidocs
 
           echo "Build PDF docs..."
           pwd
-          ls
+          ls -lah
           cd doc/
           pwd
-          ls
+          ls -lah
           make latex
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
