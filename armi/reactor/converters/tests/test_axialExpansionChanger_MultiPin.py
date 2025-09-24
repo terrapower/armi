@@ -96,12 +96,70 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
         self.a = copy.deepcopy(self.aRef)
         self.axialExpChngr = AxialExpansionChanger()
         self.axialExpChngr.setAssembly(self.a)
+        self.initConservationValues()
+
+    def initConservationValues(self):
+        # get original masses for conservation checks
+        self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+        self.initialTotalHMMolesBOL = self.initialTotalHMMassBOL = 0.0
+        for _, b in self._iterFuelBlocks():
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
+                self.initialTotalHMMolesBOL += c.p.molesHmBOL
+                self.initialTotalHMMassBOL += c.p.massHmBOL
+
+    def getTotalCompMassByFlag(self, a: "HexAssembly") -> dict[TypeSpec, float]:
+        """Get the total mass of all components in the assembly, except Bond components.
+
+        Notes
+        -----
+        The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
+        conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
+        block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures. For multipin assemblies,
+        the former is generally not met for Bond components; however since there is only one coolant and intercoolant
+        component in general, the conservation of mass for these components expected if axially isothermal fluid
+        temperatures are present.
+        """
+        totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
+        for b in a:
+            for c in iterSolidComponents(b):
+                totalCMassByFlags[c.p.flags] += c.getMass()
+            for c in filter(self._isFluidButNotBond, b):
+                totalCMassByFlags[c.p.flags] += c.getMass()
+
+        return totalCMassByFlags
+
+    @staticmethod
+    def _isFluidButNotBond(c):
+        """Determine if a component is a fluid, but not Bond."""
+        return isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND)
+
+    def _iterTestFuelCompsOnBlock(self, b: "HexBlock"):
+        """Iterate over components in b that exactly contain Flags.FUEL, Flags.TEST, and Flags.DEPLETABLE."""
+        yield from b.iterChildrenWithFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exactMatch=True)
 
     def _iterFuelBlocks(self):
         """Iterate over blocks in self.a that have Flags.FUEL. Enumerator index starts at 1 to support scaling
         block-wise values.
         """
         yield from enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1)
+
+    def checkConservation(self):
+        """Conservation of axial expansion is measured by ensuring the following is the same post expansion: 1) total
+        assembly mass per component flag, 2) total assembly height, and 3) total moles heavy metal at BOL.
+        """
+        newTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+        for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
+            self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
+
+        self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
+
+        totalHMMolesBOL = totalHMMassBOL = 0
+        for _, b in self._iterFuelBlocks():
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
+                totalHMMolesBOL += c.p.molesHmBOL
+                totalHMMassBOL += c.p.massHmBOL
+        self.assertAlmostEqual(totalHMMolesBOL, self.initialTotalHMMolesBOL, places=self.places)
+        self.assertAlmostEqual(totalHMMassBOL, self.initialTotalHMMassBOL, places=self.places)
 
 
 class TestRedistributeMass(TestMultiPinConservationBase):
@@ -145,6 +203,41 @@ class TestRedistributeMass(TestMultiPinConservationBase):
                 array(["Zr90", "Zr91", "Zr92", "I131", "XE131", "U233", "U235", "NP237", "U238", "AM242", "AM242M"]),
             )
         )
+
+    def test_adjustMassParams(self):
+        self._initializeTest(1.05, fromComp=self.c0)
+
+        # component-level params
+        initialFromMassBOL = self.c0.p.massHmBOL
+        initialFromMolesBOL = self.c0.p.molesHmBOL
+        initialToMassBOL = self.c1.p.massHmBOL
+        initialToMolesBOL = self.c1.p.molesHmBOL
+
+        dist = RedistributeMass(
+            fromComp=self.c0, toComp=self.c1, assemName=repr(self.a), deltaZTop=self.deltaZTop, initOnly=True
+        )
+        dist._adjustMassParams()
+        self.assertLess(self.c0.p.massHmBOL, initialFromMassBOL)
+        self.assertLess(self.c0.p.molesHmBOL, initialFromMolesBOL)
+        self.assertGreater(self.c1.p.massHmBOL, initialToMassBOL)
+        self.assertGreater(self.c1.p.molesHmBOL, initialToMolesBOL)
+        self.assertAlmostEqual(self.c0.p.massHmBOL + self.c1.p.massHmBOL, initialFromMassBOL + initialToMassBOL)
+        self.assertAlmostEqual(self.c0.p.molesHmBOL + self.c1.p.molesHmBOL, initialFromMolesBOL + initialToMolesBOL)
+
+        # block-level params
+        initialFromMassBOL = self.b0.p.massHmBOL
+        initialFromMolesBOL = self.b0.p.molesHmBOL
+        initialToMassBOL = self.b1.p.massHmBOL
+        initialToMolesBOL = self.b1.p.molesHmBOL
+        self.axialExpChngr._recomputeBlockMassParams(self.b0)
+        self.axialExpChngr._recomputeBlockMassParams(self.b1)
+
+        self.assertLess(self.b0.p.massHmBOL, initialFromMassBOL)
+        self.assertLess(self.b0.p.molesHmBOL, initialFromMolesBOL)
+        self.assertGreater(self.b1.p.massHmBOL, initialToMassBOL)
+        self.assertGreater(self.b1.p.molesHmBOL, initialToMolesBOL)
+        self.assertAlmostEqual(self.b0.p.massHmBOL + self.b1.p.massHmBOL, initialFromMassBOL + initialToMassBOL)
+        self.assertAlmostEqual(self.b0.p.molesHmBOL + self.b1.p.molesHmBOL, initialFromMolesBOL + initialToMolesBOL)
 
     def test_shiftLinkedCompsForDelta(self):
         """Ensure that given a deltaZTop, component elevations are adjusted appropriately."""
@@ -303,13 +396,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # calculate deltaZTop to inform how much mass will be redistributed
         self.deltaZTop = self.b0.p.ztop - self.c0.ztop
 
-        # set b0 elevations to match c0
-        self.b0.p.zbottom = self.c0.zbottom
-        self.b0.p.ztop = self.c0.ztop
-        self.b0.p.height = self.b0.p.ztop - self.b0.p.zbottom
-        # clear the cache to update volume calculations
-        self.b0.clearCache()
-
         # initialize component elevations for self.b1
         for c in self.b1:
             c.zbottom = self.b1.p.zbottom
@@ -318,17 +404,15 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.b1.clearCache()
 
         if fromComp is self.c0:
-            self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / self.c0.height
-            self.amountBeingRedistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / self.b0.p.heightBOL
-            self.amountBeingRedistributedBOLMoles = (
-                self.originalC0.HMmolesBOL * abs(self.deltaZTop) / self.b0.p.heightBOL
-            )
+            fromHeight = self.c0.height
+            self.redistributedMass = self.originalC0.mass * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMoles = self.originalC0.HMmolesBOL * abs(self.deltaZTop) / fromHeight
         else:
-            self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / self.c1.height
-            self.amountBeingRedistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / self.b1.p.heightBOL
-            self.amountBeingRedistributedBOLMoles = (
-                self.originalC1.HMmolesBOL * abs(self.deltaZTop) / self.b1.p.heightBOL
-            )
+            fromHeight = self.c1.height
+            self.redistributedMass = self.originalC1.mass * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / fromHeight
+            self.redistributedBOLMoles = self.originalC1.HMmolesBOL * abs(self.deltaZTop) / fromHeight
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
         """Pull the reference data needed for ``fromComp`` and ``toComp``."""
@@ -357,23 +441,23 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # ensure the toComp mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
             toComp.getMass(),
-            toCompRefData.mass + self.amountBeingRedistributed,
+            toCompRefData.mass + self.redistributedMass,
             places=self.places,
         )
         HMfrac = toCompRefData.HMmass / toCompRefData.mass
         self.assertAlmostEqual(
             toComp.getHMMass(),
-            toCompRefData.HMmass + self.amountBeingRedistributed * HMfrac,
+            toCompRefData.HMmass + self.redistributedMass * HMfrac,
             places=self.places,
         )
         self.assertAlmostEqual(
             toComp.p.massHmBOL,
-            toCompRefData.HMmassBOL + self.amountBeingRedistributedBOLMass,
+            toCompRefData.HMmassBOL + self.redistributedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
             toComp.p.molesHmBOL,
-            toCompRefData.HMmolesBOL + self.amountBeingRedistributedBOLMoles,
+            toCompRefData.HMmolesBOL + self.redistributedBOLMoles,
             places=self.places,
         )
 
@@ -386,24 +470,22 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         else:
             self.assertEqual(toComp.temperatureInC, toCompRefData.temp)
 
-        # ensure the fromComp mass decreases by amountBeingRedistributed
-        self.assertAlmostEqual(
-            fromComp.getMass(), fromCompRefData.mass - self.amountBeingRedistributed, places=self.places
-        )
+        # ensure the fromComp mass decreases by redisributedMass
+        self.assertAlmostEqual(fromComp.getMass(), fromCompRefData.mass - self.redistributedMass, places=self.places)
         HMfrac = fromCompRefData.HMmass / fromCompRefData.mass
         self.assertAlmostEqual(
             fromComp.getHMMass(),
-            fromCompRefData.HMmass - self.amountBeingRedistributed * HMfrac,
+            fromCompRefData.HMmass - self.redistributedMass * HMfrac,
             places=self.places,
         )
         self.assertAlmostEqual(
             fromComp.p.massHmBOL,
-            fromCompRefData.HMmassBOL - self.amountBeingRedistributedBOLMass,
+            fromCompRefData.HMmassBOL - self.redistributedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
             fromComp.p.molesHmBOL,
-            fromCompRefData.HMmolesBOL - self.amountBeingRedistributedBOLMoles,
+            fromCompRefData.HMmolesBOL - self.redistributedBOLMoles,
             places=self.places,
         )
 
@@ -411,37 +493,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
         super().setUp()
-        self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
-
-    @staticmethod
-    def _isFluidButNotBond(c):
-        """Determine if a component is a fluid, but not Bond."""
-        return isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND)
-
-    def getTotalCompMassByFlag(self, a: "HexAssembly") -> dict[TypeSpec, float]:
-        """Get the total mass of all components in the assembly, except Bond components.
-
-        Notes
-        -----
-        The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
-        conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
-        block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures. For multipin assemblies,
-        the former is generally not met for Bond components; however since there is only one coolant and intercoolant
-        component in general, the conservation of mass for these components expected if axially isothermal fluid
-        temperatures are present.
-        """
-        totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
-        for b in a:
-            for c in iterSolidComponents(b):
-                totalCMassByFlags[c.p.flags] += c.getMass()
-            for c in filter(self._isFluidButNotBond, b):
-                totalCMassByFlags[c.p.flags] += c.getMass()
-
-        return totalCMassByFlags
-
-    def _iterTestFuelCompsOnBlock(self, b: "HexBlock"):
-        """Iterate over components in b that exactly contain Flags.FUEL, Flags.TEST, and Flags.DEPLETABLE."""
-        yield from b.iterChildrenWithFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exactMatch=True)
 
     def test_expandThermalBothFuel(self):
         """Perform thermal expansion on both fuel and test fuel components.
@@ -612,16 +663,6 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
-
-    def checkConservation(self):
-        """Conservation of axial expansion is measured by ensuring the total assembly mass per component flag and total
-        assembly height is the same post exapansion.
-        """
-        newTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
-        for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
-            self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
-
-        self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
 
 
 class TestExceptionForMultiPin(TestMultiPinConservationBase):
