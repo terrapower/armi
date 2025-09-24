@@ -1312,7 +1312,9 @@ class NuclideBases:
         matches = [nuc for nuc in self.instances if predicate(nuc)]
         if len(matches) != 1:
             raise IndexError(
-                f"Expected single match, but got {len(matches)} matches:\n  {'\n  '.join(str(mo) for mo in matches)}"
+                "Expected single match, but got {} matches:\n  {}".format(
+                    len(matches), "\n  ".join(str(mo) for mo in matches)
+                )
             )
 
         return matches[0]
