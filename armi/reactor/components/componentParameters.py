@@ -226,6 +226,17 @@ def getComponentParameterDefinitions():
             setter=_validatePinIndices,
         )
 
+        pb.defParam(
+            "pinIndexOffset",
+            default=None,
+            description=(
+                "Offset for compressed pin index storage format. Pin indices are always "
+                "consecutive, so the full array can be constructed from an offset "
+                "and the component multiplicity."
+            ),
+            units=units.UNITLESS,
+        )
+
     return pDefs
 
 

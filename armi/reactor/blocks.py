@@ -2183,7 +2183,7 @@ class HexBlock(Block):
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
         # Flags for components that we want to set this parameter
-        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD, Flags.SLUG, Flags.CLAD, Flags.GAP, Flags.BOND)
+        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD, Flags.SLUG, Flags.CLAD, Flags.LINER, Flags.GAP, Flags.BOND)
         self._assignPinIndices(ijGetter, allIJ, targetFlags)
 
     def _assignPinIndices(
@@ -2201,7 +2201,14 @@ class HexBlock(Block):
             else:
                 continue
             localIndices = list(map(allIJ.index, localIJ))
-            c.p.pinIndices = localIndices
+            start = localIndices[0]
+            if all(x == y for x, y in zip(localIndices, range(start, start + len(localIndices)))):
+                # this is a simple range; store a compressed format
+                c.p.pinIndexOffset = localIndices[0]
+                c.p.pinIndices = None
+            else:
+                c.p.pinIndices = localIndices
+                c.p.pinIndexOffset = None
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""

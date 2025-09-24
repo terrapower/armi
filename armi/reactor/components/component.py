@@ -1391,15 +1391,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         :meth`:armi.reactor.blocks.HexBlock.assignPinIndices`
         """
-        ix = self.p.pinIndices
-        if isinstance(ix, np.ndarray):
-            return ix
-        # Find a sibling that has pin indices and has the same spatial locator as us
-        withPinIndices = (c for c in self.parent if c is not self and c.p.pinIndices is not None)
-        for sibling in withPinIndices:
-            if sibling.spatialLocator == self.spatialLocator:
-                return sibling.p.pinIndices
-        msg = f"{self} on {self.parent} has no pin indices."
+        # expand if compressed
+        if self.p.pinIndexOffset is not None:
+            mult = int(self.getDimension("mult"))
+            return np.arange(self.p.pinIndexOffset, self.p.pinIndexOffset + mult)
+
+        if self.p.pinIndices is not None:
+            return self.p.pinIndices
+
+        msg = f"{self} has no `pinIndices` or `pinIndexOffset`."
         raise ValueError(msg)
 
     def density(self) -> float:
