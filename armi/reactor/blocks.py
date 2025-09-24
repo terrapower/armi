@@ -2183,16 +2183,8 @@ class HexBlock(Block):
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
         # Flags for components that we want to set this parameter
-        # Usually things are linked to one of these "important" flags, like
-        # a cladding component having linked dimensions to a fuel component
-        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
-        found = self._assignPinIndices(ijGetter, allIJ, targetFlags)
-        if found:
-            return
-        # If we didn't find any "important" components, but we have pins, we need to
-        # provide some information about where the pins live still. Fall back to
-        # assigning on the cladding components
-        self._assignPinIndices(ijGetter, allIJ, Flags.CLAD)
+        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD, Flags.SLUG, Flags.CLAD, Flags.GAP, Flags.BOND)
+        self._assignPinIndices(ijGetter, allIJ, targetFlags)
 
     def _assignPinIndices(
         self,
@@ -2200,7 +2192,6 @@ class HexBlock(Block):
         allIJ: tuple[int, int],
         targetFlags: Flags,
     ) -> bool:
-        found = False
         for c in self.iterChildren(predicate=lambda c: c.hasFlags(targetFlags) and isinstance(c, Circle)):
             localLocations = c.spatialLocator
             if isinstance(localLocations, grids.MultiIndexLocation):
@@ -2211,8 +2202,6 @@ class HexBlock(Block):
                 continue
             localIndices = list(map(allIJ.index, localIJ))
             c.p.pinIndices = localIndices
-            found = True
-        return found
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
