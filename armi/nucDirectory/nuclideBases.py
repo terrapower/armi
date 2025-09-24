@@ -100,20 +100,13 @@ import numpy as np
 from ruamel.yaml import YAML
 
 from armi import context, runLog
-from armi.nucDirectory import transmutations
+from armi.nucDirectory import elements, transmutations
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
-
-# Used to prevent multiple applications of burn chains, which would snowball unphysically. This is a bit of a crutch for
-# the global state that is the nuclide directory.
-burnChainImposed = False
-
-instances = []
-# The elements must be imported after the instances list is established to allow for simultaneous initialization of the
-# nuclides and elements together to maintain self-consistency.
-from armi.nucDirectory import elements  # noqa: E402
 
 # Global nuclide and nuclideBases data
 nuclideBases = None
+instances = []
+burnChainImposed = False
 byName = None
 byDBName = None
 byLabel = None
@@ -123,7 +116,6 @@ byMcc3IdEndfbVII0 = None
 byMcc3IdEndfbVII1 = None
 byMcnpId = None
 byAAAZZZSId = None
-
 
 # lookup table from https://t2.lanl.gov/nis/data/endf/endfvii-n.html
 BASE_ENDFB7_MAT_NUM = {
