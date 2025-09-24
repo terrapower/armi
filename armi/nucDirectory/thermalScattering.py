@@ -79,11 +79,9 @@ class ThermalScattering:
     ----------
     nuclideBases : INuclide or tuple of INuclide
         One or more nuclide bases whose existence would trigger the inclusion of the TSL. Generally items here will be a
-        NaturalNuclideBase like ``nb.byName["C"]`` for Carbon but it is a tuple to capture, e.g. the C and H in
-        *methane*.
+        NaturalNuclideBase like ``nb.byName["C"]`` for Carbon but it is a tuple to capture, e.g. the C and H in methane.
     compoundName : str, optional
-        Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``.
-        Can be left off for, e.g. Fe56.
+        Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``. Can be left off for, e.g. Fe56.
     endf8Label : str, optional
         Label for endf8 evaluation
     aceLabel: str, optional
@@ -137,8 +135,8 @@ class ThermalScattering:
         Several ad-hoc assumptions are made in converting this object to a ENDF/B-VIII label which may not apply in all
         cases.
 
-        It is believed that these rules cover most ENDF TSLs listed in
-        Parsons, LA-UR-18-25096, https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
+        It is believed that these rules cover most ENDF TSLs listed in Parsons, LA-UR-18-25096,
+        https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
 
         Unfortunately, the ace labels are not as easily derived.
 

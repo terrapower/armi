@@ -170,18 +170,14 @@ class Element:
             :id: I_ARMI_ND_ELEMENTS1
             :implements: R_ARMI_ND_ELEMENTS
 
-            The :py:class:`Element <armi.nucDirectory.elements.Element>` class
-            acts as a data structure for organizing information about an
-            individual element, including number of protons, name, chemical
-            symbol, phase (at STP), periodic table group, standard weight, and a
-            list of isotope
-            :py:class:`nuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instances.
+            The :py:class:`Element <armi.nucDirectory.elements.Element>` class acts as a data structure for organizing
+            information about an individual element, including number of protons, name, chemical symbol, phase (at STP),
+            periodic table group, standard weight, and a list of isotope
+            :py:class:`nuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instances.
 
-            The :py:class:`Element <armi.nucDirectory.elements.Element>` class
-            has a few methods for appending additional isotopes, checking
-            whether an isotope is naturally occurring, retrieving the natural
-            isotopic abundance, or whether the element is a heavy metal.
+            The :py:class:`Element <armi.nucDirectory.elements.Element>` class has a few methods for appending
+            additional isotopes, checking whether an isotope is naturally occurring, retrieving the natural isotopic
+            abundance, or whether the element is a heavy metal.
 
         Parameters
         ----------

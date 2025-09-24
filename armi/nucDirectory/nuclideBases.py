@@ -400,9 +400,8 @@ class INuclide(NuclideInterface):
             # Check that the burn category has only one defined burn type
             if len(nuclideBurnCategory) > 1:
                 raise ValueError(
-                    "Improperly defined ``burn-chain`` of {}. {} should be a single burn type.".format(
-                        self, nuclideBurnCategory.keys()
-                    )
+                    f"Improperly defined ``burn-chain`` of {self}. {nuclideBurnCategory.keys()} should be a single "
+                    "burn type."
                 )
             nuclideBurnType = list(nuclideBurnCategory.keys())[0]
             if nuclideBurnType == self.TRANSMUTATION:
@@ -424,13 +423,8 @@ class INuclide(NuclideInterface):
                         self.nuSF = userSpontaneousFissionYield
             else:
                 raise Exception(
-                    "Undefined Burn Data {} for {}. Expected {}, {}, or {}.".format(
-                        nuclideBurnType,
-                        self,
-                        self.TRANSMUTATION,
-                        self.DECAY,
-                        self.SPONTANEOUS_FISSION,
-                    )
+                    f"Undefined Burn Data {nuclideBurnType} for {self}. Expected {self.TRANSMUTATION}, {self.DECAY}, "
+                    f"or {self.SPONTANEOUS_FISSION}."
                 )
 
     def getDecay(self, decayType):
@@ -690,17 +684,16 @@ class NuclideBase(INuclide, IMcnpNuclide):
             and state, eg ``U-235``, ``Te-129m``,
         """
         symbol = self.element.symbol.capitalize()
-        return "{}-{}{}".format(symbol, self.a, "m" if self.state else "")
+        return f"{symbol}-{self.a}{'m' if self.state else ''}"
 
     def getEndfMatNum(self):
         """
         Gets the ENDF MAT number.
 
-        MAT numbers are defined as described in section 0.4.1 of the NJOY manual.
-        Basically, it's Z * 100 + I where I is an isotope number. I=25 is defined
-        as the lightest known stable isotope of element Z, so for Uranium,
-        Z=92 and I=25 refers to U234. The values of I go up by 3 for each
-        mass number, so U235 is 9228. This leaves room for three isomeric states of each nuclide.
+        MAT numbers are defined as described in section 0.4.1 of the NJOY manual. Basically, it's Z * 100 + I where I is
+        an isotope number. I=25 is defined as the lightest known stable isotope of element Z, so for Uranium, Z=92 and
+        I=25 refers to U234. The values of I go up by 3 for each mass number, so U235 is 9228. This leaves room for
+        three isomeric states of each nuclide.
 
         Returns
         -------
@@ -720,7 +713,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
         isotopeNum = (a - smallestStableA) * 3 + self.state + 25
         mat = z * 100 + isotopeNum
-        return "{0}".format(mat)
+        return f"{mat}"
 
 
 class NaturalNuclideBase(INuclide, IMcnpNuclide):
@@ -1319,9 +1312,7 @@ class NuclideBases:
         matches = [nuc for nuc in self.instances if predicate(nuc)]
         if len(matches) != 1:
             raise IndexError(
-                "Expected single match, but got {} matches:\n  {}".format(
-                    len(matches), "\n  ".join(str(mo) for mo in matches)
-                )
+                f"Expected single match, but got {len(matches)} matches:\n  {'\n  '.join(str(mo) for mo in matches)}"
             )
 
         return matches[0]
@@ -1518,7 +1509,7 @@ class NuclideBases:
     def __renormalizeNuclideToElementRelationship(self):
         """TODO."""
         for nuc in self.instances:
-            if nuc.element is not None:
+            if nuc.element is None:
                 nuc.element = elements.byZ[nuc.z]
                 nuc.element.append(nuc)
 
