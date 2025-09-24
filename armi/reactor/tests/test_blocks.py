@@ -2967,7 +2967,6 @@ nuclide flags:
         secondAfter = self.fuelPins[1].getPinIndices()
         assert_array_equal(secondAfter, secondBefore)
 
-
     def test_reassignOnSort(self):
         """Show the pin indices are reassigned when the block is sorted."""
         # Make sure we get new block-level pin locations or else this test is meaningless

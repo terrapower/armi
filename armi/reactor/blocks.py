@@ -2203,7 +2203,9 @@ class HexBlock(Block):
                 withPinIndices.append(c)
 
     @staticmethod
-    def _setPinIndices(c: components.Component, ijGetter: Callable[[grids.IndexLocation], tuple[int, int]], allIJ: tuple[int, int]):
+    def _setPinIndices(
+        c: components.Component, ijGetter: Callable[[grids.IndexLocation], tuple[int, int]], allIJ: tuple[int, int]
+    ):
         localLocations = c.spatialLocator
         if isinstance(localLocations, grids.MultiIndexLocation):
             localIJ = list(map(ijGetter, localLocations))
