@@ -11,7 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for elements."""
+"""Tests for elements.
+
+Notes
+-----
+These are tests of the old global nuclide logic. ARMI is currently transitioning away from such global data, so these
+tests are semi-duplicate and will only be preserved as long as global nulides are.
+"""
 
 import os
 import unittest
@@ -30,32 +36,17 @@ class TestElement(unittest.TestCase):
         self.assertEqual(numElements, len(elements.bySymbol))
 
     def test_element_elementByNameReturnsElement(self):
-        """Get elements by name.
-
-        .. test:: Get elements by name.
-            :id: T_ARMI_ND_ELEMENTS0
-            :tests: R_ARMI_ND_ELEMENTS
-        """
+        """Get elements by name."""
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byName[ee.name])
 
     def test_element_elementByZReturnsElement(self):
-        """Get elements by Z.
-
-        .. test:: Get elements by Z.
-            :id: T_ARMI_ND_ELEMENTS1
-            :tests: R_ARMI_ND_ELEMENTS
-        """
+        """Get elements by Z."""
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byZ[ee.z])
 
     def test_element_elementBySymbolReturnsElement(self):
-        """Get elements by symbol.
-
-        .. test:: Get elements by symbol.
-            :id: T_ARMI_ND_ELEMENTS2
-            :tests: R_ARMI_ND_ELEMENTS
-        """
+        """Get elements by symbol."""
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.bySymbol[ee.symbol])
 
@@ -96,10 +87,6 @@ class TestElement(unittest.TestCase):
 
         Uses RIPL definitions of naturally occurring. Protactinium is debated as naturally
         occurring. Yeah it exists as a U235 decay product but it's kind of pseudo-natural.
-
-        .. test:: Get elements by Z to show if they are naturally occurring.
-            :id: T_ARMI_ND_ELEMENTS3
-            :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
             if ee.z == 43 or ee.z == 61 or 84 <= ee.z <= 89 or ee.z >= 93:
@@ -120,12 +107,7 @@ class TestElement(unittest.TestCase):
             )
 
     def test_isHeavyMetal(self):
-        """Get elements by Z.
-
-        .. test:: Get elements by Z to show if they are heavy metals.
-            :id: T_ARMI_ND_ELEMENTS4
-            :tests: R_ARMI_ND_ELEMENTS
-        """
+        """Get elements by Z."""
         for ee in elements.byZ.values():
             if ee.z > 89:
                 self.assertTrue(ee.isHeavyMetal())
