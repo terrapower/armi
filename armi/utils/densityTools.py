@@ -60,7 +60,6 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
         atomicWeight = nuclideBases.byName[nucName].weight
         nuclides.append(nucName.encode())
         numberDensities.append(massFrac * rho / atomicWeight)
-
     return np.array(nuclides), np.array(numberDensities)
 
 
@@ -114,7 +113,6 @@ def calculateMassDensity(numberDensities):
     for nucName, nDensity in numberDensities.items():
         atomicWeight = nuclideBases.byName[nucName].weight
         rho += nDensity * atomicWeight / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-
     return rho
 
 
@@ -225,9 +223,7 @@ def formatMaterialCard(
         list of material card strings
     """
     if all(isinstance(nuc, (nuclideBases.LumpNuclideBase, nuclideBases.DummyNuclideBase)) for nuc in densities):
-        # no valid nuclides to write
-        return []
-
+        return []  # no valid nuclides to write
     if matNum >= 0:
         mCard = ["m{matNum}\n".format(matNum=matNum)]
     else:
@@ -239,9 +235,8 @@ def formatMaterialCard(
             runLog.important("The material card returned will ignore LFPs.", single=True)
             continue
         elif isinstance(nuc, nuclideBases.DummyNuclideBase):
-            runLog.info(f"Omitting dummy nuclides such as {nuc}", single=True)
+            runLog.info("Omitting dummy nuclides such as {}".format(nuc), single=True)
             continue
-
         mcnpNucName = nuc.getMcnpId()
         newEntry = ("      {nucName:5d} {ndens:." + str(sigFigs) + "e}\n").format(
             nucName=int(mcnpNucName), ndens=max(dens, minDens)
@@ -357,7 +352,7 @@ def expandElementalMassFracsToNuclides(
 
         total = sum(expandedNucs.values())
         if massFrac > 0.0 and abs(total - massFrac) / massFrac > 1e-6:
-            raise ValueError(f"Mass fractions not normalized properly {(total, massFrac)}")
+            raise ValueError("Mass fractions not normalized properly {}!".format((total, massFrac)))
 
 
 def expandElementalNuclideMassFracs(
@@ -368,7 +363,8 @@ def expandElementalNuclideMassFracs(
     """
     Return a dictionary of nuclide names to isotopic mass fractions.
 
-    If an isotopic subset is passed in, the mass fractions get scaled up s.t. the total mass fraction remains constant.
+    If an isotopic subset is passed in, the mass fractions get scaled up
+    s.t. the total mass fraction remains constant.
 
     Parameters
     ----------
@@ -377,22 +373,20 @@ def expandElementalNuclideMassFracs(
     massFrac : float
         Mass fraction of the initial element
     isotopicSubset : list of NuclideBases
-        Natural isotopes to include in the expansion. Useful e.g. for excluding O18 from an expansion of Oxygen.
+        Natural isotopes to include in the expansion. Useful e.g. for
+        excluding O18 from an expansion of Oxygen.
     """
     elementNucBases = element.getNaturalIsotopics()
     if isotopicSubset:
         expandedNucBases = [nb for nb in elementNucBases if nb in isotopicSubset]
     else:
         expandedNucBases = elementNucBases
-
     elementalWeightGperMole = sum(nb.weight * nb.abundance for nb in expandedNucBases)
     if not any(expandedNucBases):
-        raise ValueError(f"Cannot expand element `{element}` into isotopes: `{expandedNucBases}`")
-
+        raise ValueError("Cannot expand element `{}` into isotopes: `{}`".format(element, expandedNucBases))
     expanded = {}
     for nb in expandedNucBases:
         expanded[nb.name] = massFrac * nb.abundance * nb.weight / elementalWeightGperMole
-
     return expanded
 
 
@@ -426,11 +420,12 @@ def applyIsotopicsMix(material, enrichedMassFracs: Dict[str, float], fertileMass
     """
     Update material heavy metal mass fractions based on its enrichment and two nuclide feeds.
 
-    This will remix the heavy metal in a Material object based on the object's ``class1_wt_frac`` parameter and the
-    input nuclide information.
+    This will remix the heavy metal in a Material object based on the object's
+    ``class1_wt_frac`` parameter and the input nuclide information.
 
-    This can be used for inputting mixtures of two external custom isotopic feeds as well as for fabricating assemblies
-    from two  closed-cycle collections of material.
+    This can be used for inputting mixtures of two external custom isotopic feeds
+    as well as for fabricating assemblies from two  closed-cycle collections
+    of material.
 
     See Also
     --------
@@ -451,7 +446,6 @@ def applyIsotopicsMix(material, enrichedMassFracs: Dict[str, float], fertileMass
         nb = nuclideBases.byName[nucName]
         if nb.isHeavyMetal():
             hm += massFrac
-
     hmFrac = hm / total
     hmEnrich = material.class1_wt_frac
     for nucName in (

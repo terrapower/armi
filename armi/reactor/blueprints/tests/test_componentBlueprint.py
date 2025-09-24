@@ -123,14 +123,13 @@ assemblies:
         unexpectedNuclides = ["U234", "U325", "U238"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
-
         for nuc in unexpectedNuclides:
             self.assertNotIn(nuc, a[0][0].getNuclides())
 
         c = a[0][0]
 
-        # Since we didn't supply flags, we should get the DEPLETABLE flag added automatically, since this one has
-        # depletable nuclides
+        # Since we didn't supply flags, we should get the DEPLETABLE flag added
+        # automatically, since this one has depletable nuclides
         self.assertEqual(c.p.flags, Flags.DEPLETABLE)
         # More robust test, but worse unittest.py output when it fails
         self.assertTrue(c.hasFlags(Flags.DEPLETABLE))

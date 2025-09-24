@@ -1851,14 +1851,14 @@ class TestMaterialAdjustments(unittest.TestCase):
         dims = {"Tinput": 25.0, "Thot": 600.0, "od": 10.0, "id": 5.0, "mult": 1.0}
         self.fuel = Circle("fuel", "UZr", **dims)
 
-        class FakeBlock:
-            def getHeight(self):
+        class fakeBlock:
+            def getHeight(self):  # unit height
                 return 1.0
 
             def getSymmetryFactor(self):
                 return 1.0
 
-        self.fuel.parent = FakeBlock()
+        self.fuel.parent = fakeBlock()
 
     def test_setMassFrac(self):
         """Make sure we can set a mass fraction properly."""

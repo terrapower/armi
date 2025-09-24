@@ -1501,7 +1501,7 @@ class NuclideBases:
         self.byDBName[self.byName["AM242"].getDatabaseName()] = am242m
 
     def __renormalizeNuclideToElementRelationship(self):
-        """TODO."""
+        """Fill in the missing element data for each nuclide."""
         for nuc in self.instances:
             if nuc.element is None:
                 nuc.element = elements.byZ[nuc.z]
