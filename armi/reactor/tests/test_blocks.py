@@ -2950,6 +2950,23 @@ nuclide flags:
         for c in nonFuel.iterComponents(Flags.CLAD):
             self.assertIsNotNone(c.getPinIndices())
 
+    def test_fuelAndNonFuel(self):
+        """If you have fuel and non-fuel pins in the block, all pins should have indices still."""
+        firstBefore = self.fuelPins[0].getPinIndices()
+        secondBefore = self.fuelPins[1].getPinIndices()
+
+        for c in self.block:
+            c.p.pinIndices = None
+
+        self.fuelPins[1].p.flags &= ~Flags.FUEL
+
+        self.block.assignPinIndices()
+        firstAfter = self.fuelPins[0].getPinIndices()
+        assert_array_equal(firstAfter, firstBefore)
+
+        secondAfter = self.fuelPins[1].getPinIndices()
+        assert_array_equal(secondAfter, secondBefore)
+
     def test_reassignOnSort(self):
         """Show the pin indices are reassigned when the block is sorted."""
         # Make sure we get new block-level pin locations or else this test is meaningless
