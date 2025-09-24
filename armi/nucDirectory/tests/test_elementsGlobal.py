@@ -28,7 +28,7 @@ from armi.nucDirectory import elements
 from armi.tests import mockRunLogs
 
 
-class TestElement(unittest.TestCase):
+class TestElementsGlobal(unittest.TestCase):
     def test_elements_elementBulkProperties(self):
         numElements = len(elements.byZ)
         self.assertEqual(numElements, len(elements.byZ.values()))

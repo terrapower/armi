@@ -22,7 +22,7 @@ from armi.nucDirectory.elements import Element, Elements
 from armi.tests import mockRunLogs
 
 
-class TestElement(unittest.TestCase):
+class TestElements(unittest.TestCase):
     def setUp(self):
         self.elements = Elements()
 

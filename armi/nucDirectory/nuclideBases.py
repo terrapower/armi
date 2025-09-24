@@ -92,6 +92,11 @@ Retrieve U-235 by the AAAZZZS ID:
 >>> nuclideBases.byAAAZZZSId['2350920']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
+Notes
+-----
+Currently, this module contains a lot of data in the global scope. But ARMI is in the process of encapsulating this
+data, moving it out of the global scope, making it part of the reactor data model, and making it configurable via
+Settings. Pardon the mess during this transition.
 """
 
 import os
@@ -954,9 +959,9 @@ def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activ
     return nuclideBases.initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activeNuclides)
 
 
-def isotopes(z):
-    # TODO: Seems like this is in the wrong file.
-    return elements.byZ[z].nuclides
+# def isotopes(z):
+#    # TODO: Seems like this is in the wrong file.
+#    return elements.byZ[z].nuclides
 
 
 def getIsotopics(nucName):
@@ -1225,9 +1230,9 @@ class NuclideBases:
 
         raise ValueError(msg)
 
-    def isotopes(self, z: int):
-        """TODO: This seems like it's in the wrong file."""
-        return elements.byZ[z].nuclides
+    # def isotopes(self, z: int):
+    #    """TODO: This seems like it's in the wrong file."""
+    #    return elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName):
         """Expand elemental nuc name to isotopic nuc bases."""

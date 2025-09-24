@@ -123,6 +123,12 @@ Retrieve elements that are classified as actinides:
                                     tableFmt='rst'),
                            caption='List of elements',
                            label='nuclide-bases-table')
+
+Notes
+-----
+Currently, this module contains a lot of data in the global scope. But ARMI is in the process of encapsulating this
+data, moving it out of the global scope, making it part of the reactor data model, and making it configurable via
+Settings. Pardon the mess during this transition.
 """
 
 import os

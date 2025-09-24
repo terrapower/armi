@@ -22,6 +22,7 @@ import unittest
 from ruamel.yaml import YAML
 
 from armi.context import RES
+from armi.nucDirectory import elements
 from armi.nucDirectory.nuclideBases import (
     DummyNuclideBase,
     LumpNuclideBase,
@@ -49,7 +50,7 @@ class TestNuclideBases(unittest.TestCase):
 
     def test_nucBase_AllAbundancesAddToOne(self):
         for zz in range(1, 102):
-            nuclides = self.nuclideBases.isotopes(zz)
+            nuclides = elements.byZ[zz].nuclides
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
             self.assertTrue(len(nuclides) > 0, msg=f"z={zz} unexpectedly has no nuclides")
             total = sum([nn.abundance for nn in nuclides if nn.a > 0])

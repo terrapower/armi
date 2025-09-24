@@ -28,12 +28,12 @@ import unittest
 from ruamel.yaml import YAML
 
 from armi.context import RES
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory import elements, nuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 from armi.utils.units import AVOGADROS_NUMBER, CURIE_PER_BECQUEREL, SECONDS_PER_HOUR
 
 
-class TestNuclide(unittest.TestCase):
+class TestNuclideBasesGlobal(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
@@ -50,7 +50,7 @@ class TestNuclide(unittest.TestCase):
 
     def test_nucBase_AllAbundancesAddToOne(self):
         for zz in range(1, 102):
-            nuclides = nuclideBases.isotopes(zz)
+            nuclides = elements.byZ[zz].nuclides
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
             self.assertTrue(len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz))
             total = sum([nn.abundance for nn in nuclides if nn.a > 0])
