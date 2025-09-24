@@ -2183,7 +2183,16 @@ class HexBlock(Block):
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
         # Flags for components that we want to set this parameter
-        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD, Flags.SLUG, Flags.CLAD, Flags.LINER, Flags.GAP, Flags.BOND)
+        targetFlags = (
+            Flags.FUEL,
+            Flags.CONTROL,
+            Flags.SHIELD,
+            Flags.SLUG,
+            Flags.CLAD,
+            Flags.LINER,
+            Flags.GAP,
+            Flags.BOND,
+        )
         self._assignPinIndices(ijGetter, allIJ, targetFlags)
 
     def _assignPinIndices(
