@@ -1252,23 +1252,19 @@ class Component(composites.Composite, metaclass=ComponentType):
             adjustedMassFracs[baseNucName] = massFracEnrichedElement * (1 - massFraction) * frac
         self.setMassFracs(adjustedMassFracs)
 
-    def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
+    def getMgFlux(self, adjoint=False, average=False, gamma=False):
         """
         Return the multigroup neutron flux in [n/cm^2/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional group is the
-        next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the next energy group, as
+        set in the ISOTXS library.
 
         Parameters
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
         average : bool, optional
-            If True, will return average flux between latest and previous. Does not work for pin
-            detailed.
-        volume: float, optional
-            The volume-integrated flux is divided by volume before being returned. The user may
-            specify a volume here, or the function will obtain the block volume directly.
+            If True, will return average flux between latest and previous. Does not work for pin detailed.
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -1280,7 +1276,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if average:
             raise NotImplementedError("Component has no method for producing average MG flux -- tryusing blocks")
 
-        volume = volume or self.getVolume() / self.parent.getSymmetryFactor()
+        volume = self.getVolume() / self.parent.getSymmetryFactor()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
