@@ -82,7 +82,7 @@ jobs:
           ls -lah doc/_build
           ls -lah doc/_build/doctrees
           ls -lah doc/_build/html
-          rm -rf doc/.apidocs
+          rm -rf doc/_build/doctrees/.apidocs
 
           echo "Build PDF docs..."
           pwd
