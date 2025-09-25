@@ -78,6 +78,8 @@ jobs:
         run: |
           echo "Cleaning out API docs from PDF..."
           set -x
+          ls -lah doc
+          ls -lah doc/_build
           rm -rf doc/.apidocs
 
           echo "Build PDF docs..."
