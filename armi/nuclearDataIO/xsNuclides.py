@@ -225,22 +225,3 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
         pyplot.close()
     else:
         pyplot.show()
-
-
-def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
-    """Compares scatter matrices graphically between libraries."""
-    from matplotlib import pyplot
-
-    diff = scatterMatrix1 - scatterMatrix2
-
-    pyplot.imshow(diff.todense(), interpolation="nearest")
-    pyplot.grid(color="0.70")
-    pyplot.xlabel("From group")
-    pyplot.ylabel("To group")
-    pyplot.title("scattering XS difference ", fontsize=6)
-    pyplot.colorbar()
-    if fName:
-        pyplot.savefig(fName)
-        pyplot.close()
-    else:
-        pyplot.show()
