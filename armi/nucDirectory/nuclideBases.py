@@ -959,11 +959,6 @@ def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activ
     return nuclideBases.initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activeNuclides)
 
 
-# def isotopes(z):
-#    # TODO: Seems like this is in the wrong file.
-#    return elements.byZ[z].nuclides
-
-
 def getIsotopics(nucName):
     """Pass through to NuclideBases.getIsotopics() for the global NuclideBases object."""
     global nuclideBases
@@ -1229,10 +1224,6 @@ class NuclideBases:
                 msg += f"{nuc}{delimiter}"
 
         raise ValueError(msg)
-
-    # def isotopes(self, z: int):
-    #    """TODO: This seems like it's in the wrong file."""
-    #    return elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName):
         """Expand elemental nuc name to isotopic nuc bases."""
