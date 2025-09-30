@@ -425,7 +425,7 @@ class BlockAvgToCylConverter(BlockConverter):
 
     def plotConvertedBlock(self, fName=None):
         """A pass-through to preserve the API. Render an image of the converted block."""
-        return plotConvertedBlock(self._sourceBlock, self.convertedBlock, fName=None)
+        return plotConvertedBlock(self._sourceBlock, self.convertedBlock, fName)
 
 
 class HexComponentsToCylConverter(BlockAvgToCylConverter):
