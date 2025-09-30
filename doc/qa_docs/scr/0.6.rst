@@ -12,171 +12,171 @@ This was a big release. A lot of technical debt has been cleaned up (XML geom fi
 Code Changes, Features
 ^^^^^^^^^^^^^^^^^^^^^^
 
-- [PR#1995](https://github.com/terrapower/armi/pull/1995) Improving HexBlock.getFlowArea
-- [PR#2031](https://github.com/terrapower/armi/pull/2031) Providing better composite iteration methods
-- [PR#2045](https://github.com/terrapower/armi/pull/2045) Adding a check on the grid/component consistency in the BPs
-- [PR#2092](https://github.com/terrapower/armi/pull/2092) Allowing ARMI to use tmp dir on Mac/Linux
-- [PR#2105](https://github.com/terrapower/armi/pull/2105) Removing support for XML geom files
-- [PR#2106](https://github.com/terrapower/armi/pull/2106) Add Core.iterBlocks and Assembly.iterBlocks
-- [PR#2107](https://github.com/terrapower/armi/pull/2107) Handing empty string defaults better in copyInterfaceInputs
-- [PR#2109](https://github.com/terrapower/armi/pull/2109) Store number densities in numpy arrays instead of dictionary
-- [PR#2114](https://github.com/terrapower/armi/pull/2114) Allowing component area to be queried at arbitrary temp
-- [PR#2118](https://github.com/terrapower/armi/pull/2118) Adding a FilletedHexagon shape
-- [PR#2121](https://github.com/terrapower/armi/pull/2121) Supporting growing DBto full core on db load
-- [PR#2135](https://github.com/terrapower/armi/pull/2135) Retooling single-warnings report as all warnings report
-- [PR#2138](https://github.com/terrapower/armi/pull/2138) Allowing the BOL orientations to be set in the blueprints
-- [PR#2162](https://github.com/terrapower/armi/pull/2162) Make axial linking aware of block grids for axial expansion
-- [PR#2173](https://github.com/terrapower/armi/pull/2173) Improving Core.libs to look for the current cycle and node
-- [PR#2175](https://github.com/terrapower/armi/pull/2175) Blocking duplicate flags from being added
-- [PR#2198](https://github.com/terrapower/armi/pull/2198) Updating Axial Expansion Changer for improved mass redistribution
-- [PR#2199](https://github.com/terrapower/armi/pull/2199) Add 3 nuclides to getDefaultNuclideFlags
-- [PR#2202](https://github.com/terrapower/armi/pull/2202) Provide Component.pinIndices for helping understand where pins are
-- [PR#2208](https://github.com/terrapower/armi/pull/2208) Making ParamMapper symmetry-aware
-- [PR#2209](https://github.com/terrapower/armi/pull/2209) Block collection nuclides
-- [PR#2218](https://github.com/terrapower/armi/pull/2218) Adding a method to get cycle/node combinations for a time interval
-- [PR#2219](https://github.com/terrapower/armi/pull/2219) Refactoring Shuffle Logic Inputs to YAML
-- [PR#2221](https://github.com/terrapower/armi/pull/2221) Update logic for number density arrays and other cleanup
-- [PR#2223](https://github.com/terrapower/armi/pull/2223) Move the zonesFile setting to the framework and add building of zones to the interface stack
-- [PR#2225](https://github.com/terrapower/armi/pull/2225) Advancing r.p.time in the Operator
-- [PR#2227](https://github.com/terrapower/armi/pull/2227) Symmetry testing
-- [PR#2233](https://github.com/terrapower/armi/pull/2233) Remove axialPowerProfile* parameters
-- [PR#2235](https://github.com/terrapower/armi/pull/2235) Adding two geometry parameters
-- [PR#2243](https://github.com/terrapower/armi/pull/2243) Updating wetted perimeter calculation
-- [PR#2251](https://github.com/terrapower/armi/pull/2251) Comparing special formatting parameters in DBs
-- [PR#2255](https://github.com/terrapower/armi/pull/2255) Add b10NumFrac attribute to B4C class to allow for flexible setDefaultMassFracs
-- [PR#2266](https://github.com/terrapower/armi/pull/2266) Allow assembly parameters to be symmetry aware during core transformations and move operations
-- [PR#2269](https://github.com/terrapower/armi/pull/2269) Track assemblies if discharged to SFP
-- [PR#2272](https://github.com/terrapower/armi/pull/2272) Adding new Component param enrichmentBOL
-- [PR#2275](https://github.com/terrapower/armi/pull/2275) Cleaning internal state out of some materials
-- [PR#2277](https://github.com/terrapower/armi/pull/2277) Enhance fuel handler logic to support module imports
-- [PR#2278](https://github.com/terrapower/armi/pull/2278) Adding support for moving assemblies from SFP to Core in YAML shuffle input
-- [PR#2292](https://github.com/terrapower/armi/pull/2292) Support mixed Blocks for smear density calculation
-- [PR#2305](https://github.com/terrapower/armi/pull/2305) Raising error if no driverBlock is found by latticePhysicsWriter
+#. (`PR#1995 <https://github.com/terrapower/armi/pull/1995>`_) Improving HexBlock.getFlowArea
+#. (`PR#2031 <https://github.com/terrapower/armi/pull/2031>`_) Providing better composite iteration methods
+#. (`PR#2045 <https://github.com/terrapower/armi/pull/2045>`_) Adding a check on the grid/component consistency in the BPs
+#. (`PR#2092 <https://github.com/terrapower/armi/pull/2092>`_) Allowing ARMI to use tmp dir on Mac/Linux
+#. (`PR#2105 <https://github.com/terrapower/armi/pull/2105>`_) Removing support for XML geom files
+#. (`PR#2106 <https://github.com/terrapower/armi/pull/2106>`_) Add Core.iterBlocks and Assembly.iterBlocks
+#. (`PR#2107 <https://github.com/terrapower/armi/pull/2107>`_) Handing empty string defaults better in copyInterfaceInputs
+#. (`PR#2109 <https://github.com/terrapower/armi/pull/2109>`_) Store number densities in numpy arrays instead of dictionary
+#. (`PR#2114 <https://github.com/terrapower/armi/pull/2114>`_) Allowing component area to be queried at arbitrary temp
+#. (`PR#2118 <https://github.com/terrapower/armi/pull/2118>`_) Adding a FilletedHexagon shape
+#. (`PR#2121 <https://github.com/terrapower/armi/pull/2121>`_) Supporting growing DBto full core on db load
+#. (`PR#2135 <https://github.com/terrapower/armi/pull/2135>`_) Retooling single-warnings report as all warnings report
+#. (`PR#2138 <https://github.com/terrapower/armi/pull/2138>`_) Allowing the BOL orientations to be set in the blueprints
+#. (`PR#2162 <https://github.com/terrapower/armi/pull/2162>`_) Make axial linking aware of block grids for axial expansion
+#. (`PR#2173 <https://github.com/terrapower/armi/pull/2173>`_) Improving Core.libs to look for the current cycle and node
+#. (`PR#2175 <https://github.com/terrapower/armi/pull/2175>`_) Blocking duplicate flags from being added
+#. (`PR#2198 <https://github.com/terrapower/armi/pull/2198>`_) Updating Axial Expansion Changer for improved mass redistribution
+#. (`PR#2199 <https://github.com/terrapower/armi/pull/2199>`_) Add 3 nuclides to getDefaultNuclideFlags
+#. (`PR#2202 <https://github.com/terrapower/armi/pull/2202>`_) Provide Component.pinIndices for helping understand where pins are
+#. (`PR#2208 <https://github.com/terrapower/armi/pull/2208>`_) Making ParamMapper symmetry-aware
+#. (`PR#2209 <https://github.com/terrapower/armi/pull/2209>`_) Block collection nuclides
+#. (`PR#2218 <https://github.com/terrapower/armi/pull/2218>`_) Adding a method to get cycle/node combinations for a time interval
+#. (`PR#2219 <https://github.com/terrapower/armi/pull/2219>`_) Refactoring Shuffle Logic Inputs to YAML
+#. (`PR#2221 <https://github.com/terrapower/armi/pull/2221>`_) Update logic for number density arrays and other cleanup
+#. (`PR#2223 <https://github.com/terrapower/armi/pull/2223>`_) Move the zonesFile setting to the framework and add building of zones to the interface stack
+#. (`PR#2225 <https://github.com/terrapower/armi/pull/2225>`_) Advancing r.p.time in the Operator
+#. (`PR#2227 <https://github.com/terrapower/armi/pull/2227>`_) Symmetry testing
+#. (`PR#2233 <https://github.com/terrapower/armi/pull/2233>`_) Remove axialPowerProfile* parameters
+#. (`PR#2235 <https://github.com/terrapower/armi/pull/2235>`_) Adding two geometry parameters
+#. (`PR#2243 <https://github.com/terrapower/armi/pull/2243>`_) Updating wetted perimeter calculation
+#. (`PR#2251 <https://github.com/terrapower/armi/pull/2251>`_) Comparing special formatting parameters in DBs
+#. (`PR#2255 <https://github.com/terrapower/armi/pull/2255>`_) Add b10NumFrac attribute to B4C class to allow for flexible setDefaultMassFracs
+#. (`PR#2266 <https://github.com/terrapower/armi/pull/2266>`_) Allow assembly parameters to be symmetry aware during core transformations and move operations
+#. (`PR#2269 <https://github.com/terrapower/armi/pull/2269>`_) Track assemblies if discharged to SFP
+#. (`PR#2272 <https://github.com/terrapower/armi/pull/2272>`_) Adding new Component param enrichmentBOL
+#. (`PR#2275 <https://github.com/terrapower/armi/pull/2275>`_) Cleaning internal state out of some materials
+#. (`PR#2277 <https://github.com/terrapower/armi/pull/2277>`_) Enhance fuel handler logic to support module imports
+#. (`PR#2278 <https://github.com/terrapower/armi/pull/2278>`_) Adding support for moving assemblies from SFP to Core in YAML shuffle input
+#. (`PR#2292 <https://github.com/terrapower/armi/pull/2292>`_) Support mixed Blocks for smear density calculation
+#. (`PR#2305 <https://github.com/terrapower/armi/pull/2305>`_) Raising error if no driverBlock is found by latticePhysicsWriter
 
 
 Code Changes, Bugs and Fixes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- [PR#1654](https://github.com/terrapower/armi/pull/1654) Use clearer input syntax for hexagonal lattice pitch
-- [PR#1998](https://github.com/terrapower/armi/pull/1998) Fixing a couple of plots to use initial block height
-- [PR#2098](https://github.com/terrapower/armi/pull/2098) Removing the HTML reports feature
-- [PR#2102](https://github.com/terrapower/armi/pull/2102) Fixing issue in copyInterfaceInputs with one file
-- [PR#2111](https://github.com/terrapower/armi/pull/2111) fix side effects from tests
-- [PR#2115](https://github.com/terrapower/armi/pull/2115) Adding Reactor construction hook to Database.load()
-- [PR#2120](https://github.com/terrapower/armi/pull/2120) Cylindrical Cross Section model updates
-- [PR#2129](https://github.com/terrapower/armi/pull/2129) OperatorMPI doesn’t need to bcast quits if there no other workers
-- [PR#2153](https://github.com/terrapower/armi/pull/2153) Hiding duplicate warning messages
-- [PR#2160](https://github.com/terrapower/armi/pull/2160) Fixing bad Return in safeCopy
-- [PR#2163](https://github.com/terrapower/armi/pull/2163) Using gamma groups instead of neutron groups in gamiso.addDummyNuclidesToLibrary
-- [PR#2176](https://github.com/terrapower/armi/pull/2176) Using np.int32 when reading GEODST files
-- [PR#2180](https://github.com/terrapower/armi/pull/2180) Remove assert statements from FilletedHexagon instantiation
-- [PR#2186](https://github.com/terrapower/armi/pull/2186) Ensuring full core BPs aren’t converted like 1/3 core
-- [PR#2187](https://github.com/terrapower/armi/pull/2187) Fixing bug in Uranium.pseudoDensity
-- [PR#2189](https://github.com/terrapower/armi/pull/2189) Fixing bug in finding ISOTXS libraries to merge
-- [PR#2191](https://github.com/terrapower/armi/pull/2191) Fixing issue with full core BP geometry conversion
-- [PR#2195](https://github.com/terrapower/armi/pull/2195) Fixing round trip of hex lattice maps
-- [PR#2226](https://github.com/terrapower/armi/pull/2226) Fix equality of MultiIndexLocator and CoordinateLocation
-- [PR#2228](https://github.com/terrapower/armi/pull/2228) Fixing bug in Air.pseudoDensity when given Celsius T
-- [PR#2229](https://github.com/terrapower/armi/pull/2229) Change initialization of modArea for database load
-- [PR#2231](https://github.com/terrapower/armi/pull/2231) Fixing issue initial time node in previous PR
-- [PR#2236](https://github.com/terrapower/armi/pull/2236) Handle pinIndices for blocks that don’t have fuel
-- [PR#2245](https://github.com/terrapower/armi/pull/2245) Fixing invalid any() signature
-- [PR#2248](https://github.com/terrapower/armi/pull/2248) Fixing issue loading from snapshots database
-- [PR#2253](https://github.com/terrapower/armi/pull/2253) Making a unit test thread safe
-- [PR#2259](https://github.com/terrapower/armi/pull/2259) Re-assigning pin indices when sorting a Block
-- [PR#2260](https://github.com/terrapower/armi/pull/2260) Fixing compareLines so that it doesn’t trip on zeros
-- [PR#2268](https://github.com/terrapower/armi/pull/2268) Fixing Uranium enrichment calculations
-- [PR#2276](https://github.com/terrapower/armi/pull/2276) Fixing Composite.extend to correctly set the parent
-- [PR#2282](https://github.com/terrapower/armi/pull/2282) Fixing incorrect variable name in Pitch class
-- [PR#2291](https://github.com/terrapower/armi/pull/2291) Conserve molesHmBOL / massHmBOL when performing axial expansion
-- [PR#2294](https://github.com/terrapower/armi/pull/2294) Ensuring settings file can be found when writing one DB from another
-- [PR#2298](https://github.com/terrapower/armi/pull/2298) Preserve loading of CoordinateLocation in db load
-- [PR#2302](https://github.com/terrapower/armi/pull/2302) Handle pin indices for fuel + non fuel on the same grid
-- [PR#2307](https://github.com/terrapower/armi/pull/2307) Clearing out Component.p.pinIndices prior to assignment
+#. (`PR#1654 <https://github.com/terrapower/armi/pull/1654>`_) Use clearer input syntax for hexagonal lattice pitch
+#. (`PR#1998 <https://github.com/terrapower/armi/pull/1998>`_) Fixing a couple of plots to use initial block height
+#. (`PR#2098 <https://github.com/terrapower/armi/pull/2098>`_) Removing the HTML reports feature
+#. (`PR#2102 <https://github.com/terrapower/armi/pull/2102>`_) Fixing issue in copyInterfaceInputs with one file
+#. (`PR#2111 <https://github.com/terrapower/armi/pull/2111>`_) fix side effects from tests
+#. (`PR#2115 <https://github.com/terrapower/armi/pull/2115>`_) Adding Reactor construction hook to Database.load()
+#. (`PR#2120 <https://github.com/terrapower/armi/pull/2120>`_) Cylindrical Cross Section model updates
+#. (`PR#2129 <https://github.com/terrapower/armi/pull/2129>`_) OperatorMPI doesn’t need to bcast quits if there no other workers
+#. (`PR#2153 <https://github.com/terrapower/armi/pull/2153>`_) Hiding duplicate warning messages
+#. (`PR#2160 <https://github.com/terrapower/armi/pull/2160>`_) Fixing bad Return in safeCopy
+#. (`PR#2163 <https://github.com/terrapower/armi/pull/2163>`_) Using gamma groups instead of neutron groups in gamiso.addDummyNuclidesToLibrary
+#. (`PR#2176 <https://github.com/terrapower/armi/pull/2176>`_) Using np.int32 when reading GEODST files
+#. (`PR#2180 <https://github.com/terrapower/armi/pull/2180>`_) Remove assert statements from FilletedHexagon instantiation
+#. (`PR#2186 <https://github.com/terrapower/armi/pull/2186>`_) Ensuring full core BPs aren’t converted like 1/3 core
+#. (`PR#2187 <https://github.com/terrapower/armi/pull/2187>`_) Fixing bug in Uranium.pseudoDensity
+#. (`PR#2189 <https://github.com/terrapower/armi/pull/2189>`_) Fixing bug in finding ISOTXS libraries to merge
+#. (`PR#2191 <https://github.com/terrapower/armi/pull/2191>`_) Fixing issue with full core BP geometry conversion
+#. (`PR#2195 <https://github.com/terrapower/armi/pull/2195>`_) Fixing round trip of hex lattice maps
+#. (`PR#2226 <https://github.com/terrapower/armi/pull/2226>`_) Fix equality of MultiIndexLocator and CoordinateLocation
+#. (`PR#2228 <https://github.com/terrapower/armi/pull/2228>`_) Fixing bug in Air.pseudoDensity when given Celsius T
+#. (`PR#2229 <https://github.com/terrapower/armi/pull/2229>`_) Change initialization of modArea for database load
+#. (`PR#2231 <https://github.com/terrapower/armi/pull/2231>`_) Fixing issue initial time node in previous PR
+#. (`PR#2236 <https://github.com/terrapower/armi/pull/2236>`_) Handle pinIndices for blocks that don’t have fuel
+#. (`PR#2245 <https://github.com/terrapower/armi/pull/2245>`_) Fixing invalid any(>`_) signature
+#. (`PR#2248 <https://github.com/terrapower/armi/pull/2248>`_) Fixing issue loading from snapshots database
+#. (`PR#2253 <https://github.com/terrapower/armi/pull/2253>`_) Making a unit test thread safe
+#. (`PR#2259 <https://github.com/terrapower/armi/pull/2259>`_) Re-assigning pin indices when sorting a Block
+#. (`PR#2260 <https://github.com/terrapower/armi/pull/2260>`_) Fixing compareLines so that it doesn’t trip on zeros
+#. (`PR#2268 <https://github.com/terrapower/armi/pull/2268>`_) Fixing Uranium enrichment calculations
+#. (`PR#2276 <https://github.com/terrapower/armi/pull/2276>`_) Fixing Composite.extend to correctly set the parent
+#. (`PR#2282 <https://github.com/terrapower/armi/pull/2282>`_) Fixing incorrect variable name in Pitch class
+#. (`PR#2291 <https://github.com/terrapower/armi/pull/2291>`_) Conserve molesHmBOL / massHmBOL when performing axial expansion
+#. (`PR#2294 <https://github.com/terrapower/armi/pull/2294>`_) Ensuring settings file can be found when writing one DB from another
+#. (`PR#2298 <https://github.com/terrapower/armi/pull/2298>`_) Preserve loading of CoordinateLocation in db load
+#. (`PR#2302 <https://github.com/terrapower/armi/pull/2302>`_) Handle pin indices for fuel + non fuel on the same grid
+#. (`PR#2307 <https://github.com/terrapower/armi/pull/2307>`_) Clearing out Component.p.pinIndices prior to assignment
 
 
 Code Changes, Maintenance, or Trivial
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- [PR#1386](https://github.com/terrapower/armi/pull/1386) Improve “smallRun” settings names
-- [PR#2085](https://github.com/terrapower/armi/pull/2085) Dropping black formatter for ruff
-- [PR#2093](https://github.com/terrapower/armi/pull/2093) Speed up axial expansion unit tests
-- [PR#2096](https://github.com/terrapower/armi/pull/2096) Fixing spelling errors
-- [PR#2103](https://github.com/terrapower/armi/pull/2103) Fixing spelling in docs and docstrings
-- [PR#2104](https://github.com/terrapower/armi/pull/2104) Removing defunct references to Cinder
-- [PR#2110](https://github.com/terrapower/armi/pull/2110) Combining three .gitignore files into one
-- [PR#2116](https://github.com/terrapower/armi/pull/2116) Cleaning up the codeTiming reports
-- [PR#2117](https://github.com/terrapower/armi/pull/2117) Reducing the warnings from Block.autoCreateSpatialGrids
-- [PR#2123](https://github.com/terrapower/armi/pull/2123) Removing permanently skipped tests
-- [PR#2126](https://github.com/terrapower/armi/pull/2126) Removing old TODO comments from the codebase
-- [PR#2127](https://github.com/terrapower/armi/pull/2127) Removing 3 unused Settings
-- [PR#2128](https://github.com/terrapower/armi/pull/2128) Created a fast flux energy structure for calculating fast flux
-- [PR#2130](https://github.com/terrapower/armi/pull/2130) Removing unused Parameters
-- [PR#2132](https://github.com/terrapower/armi/pull/2132) Removing unused reactivity coeffs params
-- [PR#2133](https://github.com/terrapower/armi/pull/2133) Moving NeutronicsPlugin to its own file
-- [PR#2134](https://github.com/terrapower/armi/pull/2134) Removing unused Parameters
-- [PR#2136](https://github.com/terrapower/armi/pull/2136) Removing unused TH parameters
-- [PR#2139](https://github.com/terrapower/armi/pull/2139) Removing unnecessary DB load try/except
-- [PR#2140](https://github.com/terrapower/armi/pull/2140) Cleaning up Block constructor
-- [PR#2141](https://github.com/terrapower/armi/pull/2141) Changing format-style strings to f-strings
-- [PR#2142](https://github.com/terrapower/armi/pull/2142) Quieting warnings from Block.getComponent
-- [PR#2144](https://github.com/terrapower/armi/pull/2144) Improving the default value for Assembly.getArea()
-- [PR#2146](https://github.com/terrapower/armi/pull/2146) Some more fstring conversions
-- [PR#2155](https://github.com/terrapower/armi/pull/2155) Cleaning up strange counter line
-- [PR#2157](https://github.com/terrapower/armi/pull/2157) Removing overly-specific check from the Component constructor
-- [PR#2165](https://github.com/terrapower/armi/pull/2165) Removing old setting mpiTasksPerNode from ZPPR test file
-- [PR#2166](https://github.com/terrapower/armi/pull/2166) Removing commented out code
-- [PR#2167](https://github.com/terrapower/armi/pull/2167) Removing unused test code
-- [PR#2168](https://github.com/terrapower/armi/pull/2168) Removing Deprecation Warning on sortReactor setting
-- [PR#2170](https://github.com/terrapower/armi/pull/2170) Adding a collar flag
-- [PR#2171](https://github.com/terrapower/armi/pull/2171) Cleaning up Tests to have Fewer Side Effects
-- [PR#2183](https://github.com/terrapower/armi/pull/2183) Renaming old smallRun Setting to rmExternalFilesAtEOL
-- [PR#2190](https://github.com/terrapower/armi/pull/2190) Using iterators instead of getAssemblies where possible
-- [PR#2197](https://github.com/terrapower/armi/pull/2197) Using iterators more in our unit tests
-- [PR#2203](https://github.com/terrapower/armi/pull/2203) Slight refactor on b.getSmearDensity to accommodate downstream work
-- [PR#2210](https://github.com/terrapower/armi/pull/2210) Removing python-dateutil dependency
-- [PR#2211](https://github.com/terrapower/armi/pull/2211) Remove Component.p.puFrac
-- [PR#2212](https://github.com/terrapower/armi/pull/2212) Removing duplicate lines
-- [PR#2215](https://github.com/terrapower/armi/pull/2215) Removing defunct deprecation warning
-- [PR#2220](https://github.com/terrapower/armi/pull/2220) Adding a basic unit test of Block.computeSmearDensity
-- [PR#2230](https://github.com/terrapower/armi/pull/2230) Adding Composite.getFirstComponent method
-- [PR#2232](https://github.com/terrapower/armi/pull/2232) Handling BOL times better
-- [PR#2240](https://github.com/terrapower/armi/pull/2240) Cleaning trace and profile out of RunEntryPoint
-- [PR#2241](https://github.com/terrapower/armi/pull/2241) move attributes to __init__
-- [PR#2242](https://github.com/terrapower/armi/pull/2242) ParamLocation for Duct Temp/DPAs
-- [PR#2257](https://github.com/terrapower/armi/pull/2257) Improving Code Coverage for Blocks and MPIAction
-- [PR#2263](https://github.com/terrapower/armi/pull/2263) Adding tests to improve code coverage
-- [PR#2265](https://github.com/terrapower/armi/pull/2265) Removing deprecated settingsValidation file
-- [PR#2283](https://github.com/terrapower/armi/pull/2283) Removing unused debugDB setting
-- [PR#2285](https://github.com/terrapower/armi/pull/2285) Improving the error messages for invalid settings data
-- [PR#2289](https://github.com/terrapower/armi/pull/2289) Improving extensibility of mass redistribution method in axial expansion
-- [PR#2297](https://github.com/terrapower/armi/pull/2297) Reducing log spam when creating a lot of spatial grids
-- [PR#2300](https://github.com/terrapower/armi/pull/2300) Shortening our longest unit test names
+#. (`PR#1386 <https://github.com/terrapower/armi/pull/1386>`_) Improve “smallRun” settings names
+#. (`PR#2085 <https://github.com/terrapower/armi/pull/2085>`_) Dropping black formatter for ruff
+#. (`PR#2093 <https://github.com/terrapower/armi/pull/2093>`_) Speed up axial expansion unit tests
+#. (`PR#2096 <https://github.com/terrapower/armi/pull/2096>`_) Fixing spelling errors
+#. (`PR#2103 <https://github.com/terrapower/armi/pull/2103>`_) Fixing spelling in docs and docstrings
+#. (`PR#2104 <https://github.com/terrapower/armi/pull/2104>`_) Removing defunct references to Cinder
+#. (`PR#2110 <https://github.com/terrapower/armi/pull/2110>`_) Combining three .gitignore files into one
+#. (`PR#2116 <https://github.com/terrapower/armi/pull/2116>`_) Cleaning up the codeTiming reports
+#. (`PR#2117 <https://github.com/terrapower/armi/pull/2117>`_) Reducing the warnings from Block.autoCreateSpatialGrids
+#. (`PR#2123 <https://github.com/terrapower/armi/pull/2123>`_) Removing permanently skipped tests
+#. (`PR#2126 <https://github.com/terrapower/armi/pull/2126>`_) Removing old TODO comments from the codebase
+#. (`PR#2127 <https://github.com/terrapower/armi/pull/2127>`_) Removing 3 unused Settings
+#. (`PR#2128 <https://github.com/terrapower/armi/pull/2128>`_) Created a fast flux energy structure for calculating fast flux
+#. (`PR#2130 <https://github.com/terrapower/armi/pull/2130>`_) Removing unused Parameters
+#. (`PR#2132 <https://github.com/terrapower/armi/pull/2132>`_) Removing unused reactivity coeffs params
+#. (`PR#2133 <https://github.com/terrapower/armi/pull/2133>`_) Moving NeutronicsPlugin to its own file
+#. (`PR#2134 <https://github.com/terrapower/armi/pull/2134>`_) Removing unused Parameters
+#. (`PR#2136 <https://github.com/terrapower/armi/pull/2136>`_) Removing unused TH parameters
+#. (`PR#2139 <https://github.com/terrapower/armi/pull/2139>`_) Removing unnecessary DB load try/except
+#. (`PR#2140 <https://github.com/terrapower/armi/pull/2140>`_) Cleaning up Block constructor
+#. (`PR#2141 <https://github.com/terrapower/armi/pull/2141>`_) Changing format-style strings to f-strings
+#. (`PR#2142 <https://github.com/terrapower/armi/pull/2142>`_) Quieting warnings from Block.getComponent
+#. (`PR#2144 <https://github.com/terrapower/armi/pull/2144>`_) Improving the default value for Assembly.getArea()
+#. (`PR#2146 <https://github.com/terrapower/armi/pull/2146>`_) Some more fstring conversions
+#. (`PR#2155 <https://github.com/terrapower/armi/pull/2155>`_) Cleaning up strange counter line
+#. (`PR#2157 <https://github.com/terrapower/armi/pull/2157>`_) Removing overly-specific check from the Component constructor
+#. (`PR#2165 <https://github.com/terrapower/armi/pull/2165>`_) Removing old setting mpiTasksPerNode from ZPPR test file
+#. (`PR#2166 <https://github.com/terrapower/armi/pull/2166>`_) Removing commented out code
+#. (`PR#2167 <https://github.com/terrapower/armi/pull/2167>`_) Removing unused test code
+#. (`PR#2168 <https://github.com/terrapower/armi/pull/2168>`_) Removing Deprecation Warning on sortReactor setting
+#. (`PR#2170 <https://github.com/terrapower/armi/pull/2170>`_) Adding a collar flag
+#. (`PR#2171 <https://github.com/terrapower/armi/pull/2171>`_) Cleaning up Tests to have Fewer Side Effects
+#. (`PR#2183 <https://github.com/terrapower/armi/pull/2183>`_) Renaming old smallRun Setting to rmExternalFilesAtEOL
+#. (`PR#2190 <https://github.com/terrapower/armi/pull/2190>`_) Using iterators instead of getAssemblies where possible
+#. (`PR#2197 <https://github.com/terrapower/armi/pull/2197>`_) Using iterators more in our unit tests
+#. (`PR#2203 <https://github.com/terrapower/armi/pull/2203>`_) Slight refactor on b.getSmearDensity to accommodate downstream work
+#. (`PR#2210 <https://github.com/terrapower/armi/pull/2210>`_) Removing python-dateutil dependency
+#. (`PR#2211 <https://github.com/terrapower/armi/pull/2211>`_) Remove Component.p.puFrac
+#. (`PR#2212 <https://github.com/terrapower/armi/pull/2212>`_) Removing duplicate lines
+#. (`PR#2215 <https://github.com/terrapower/armi/pull/2215>`_) Removing defunct deprecation warning
+#. (`PR#2220 <https://github.com/terrapower/armi/pull/2220>`_) Adding a basic unit test of Block.computeSmearDensity
+#. (`PR#2230 <https://github.com/terrapower/armi/pull/2230>`_) Adding Composite.getFirstComponent method
+#. (`PR#2232 <https://github.com/terrapower/armi/pull/2232>`_) Handling BOL times better
+#. (`PR#2240 <https://github.com/terrapower/armi/pull/2240>`_) Cleaning trace and profile out of RunEntryPoint
+#. (`PR#2241 <https://github.com/terrapower/armi/pull/2241>`_) move attributes to __init__
+#. (`PR#2242 <https://github.com/terrapower/armi/pull/2242>`_) ParamLocation for Duct Temp/DPAs
+#. (`PR#2257 <https://github.com/terrapower/armi/pull/2257>`_) Improving Code Coverage for Blocks and MPIAction
+#. (`PR#2263 <https://github.com/terrapower/armi/pull/2263>`_) Adding tests to improve code coverage
+#. (`PR#2265 <https://github.com/terrapower/armi/pull/2265>`_) Removing deprecated settingsValidation file
+#. (`PR#2283 <https://github.com/terrapower/armi/pull/2283>`_) Removing unused debugDB setting
+#. (`PR#2285 <https://github.com/terrapower/armi/pull/2285>`_) Improving the error messages for invalid settings data
+#. (`PR#2289 <https://github.com/terrapower/armi/pull/2289>`_) Improving extensibility of mass redistribution method in axial expansion
+#. (`PR#2297 <https://github.com/terrapower/armi/pull/2297>`_) Reducing log spam when creating a lot of spatial grids
+#. (`PR#2300 <https://github.com/terrapower/armi/pull/2300>`_) Shortening our longest unit test names
 
 
 Documentation-Only Changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- [PR#2090](https://github.com/terrapower/armi/pull/2090) Adding an SCR section to the docs
-- [PR#2095](https://github.com/terrapower/armi/pull/2095) Edits to STR test report
-- [PR#2100](https://github.com/terrapower/armi/pull/2100) Adding more info to STR intro
-- [PR#2101](https://github.com/terrapower/armi/pull/2101) Fixing issue with SCR on main branch
-- [PR#2119](https://github.com/terrapower/armi/pull/2119) Adding basic documentation for axial expansion
-- [PR#2131](https://github.com/terrapower/armi/pull/2131) Update docstring for Settings class to reflect mutability
-- [PR#2137](https://github.com/terrapower/armi/pull/2137) Improving description of rateProdNet parameter
-- [PR#2143](https://github.com/terrapower/armi/pull/2143) Improving the docs-build instructions
-- [PR#2148](https://github.com/terrapower/armi/pull/2148) Adding tooling to help people build the docs locally
-- [PR#2150](https://github.com/terrapower/armi/pull/2150) Clarifying setting disableBlockTypeExclusionInXsGeneration
-- [PR#2151](https://github.com/terrapower/armi/pull/2151) Adding SQA for the SFP and cycles setting
-- [PR#2174](https://github.com/terrapower/armi/pull/2174) Remove traces of black
-- [PR#2213](https://github.com/terrapower/armi/pull/2213) Ensuring non-main branch PRs do not yield SCRs
-- [PR#2214](https://github.com/terrapower/armi/pull/2214) Fixing error in recent doc change
-- [PR#2217](https://github.com/terrapower/armi/pull/2217) Improving documentation of axial expansion
-- [PR#2222](https://github.com/terrapower/armi/pull/2222) Make a duplicated test tag unique
-- [PR#2238](https://github.com/terrapower/armi/pull/2238) Trying to speed up docs build
-- [PR#2249](https://github.com/terrapower/armi/pull/2249) Improving docs on entry points creation
-- [PR#2264](https://github.com/terrapower/armi/pull/2264) Update the description of the mcnpLibraryVersion case setting
-- [PR#2270](https://github.com/terrapower/armi/pull/2270) Fixing sphinx warnings in the doc build
-- [PR#2274](https://github.com/terrapower/armi/pull/2274) Adding user documentation of core symmetry
-- [PR#2279](https://github.com/terrapower/armi/pull/2279) Fixing the SCR table in the docs
-- [PR#2286](https://github.com/terrapower/armi/pull/2286) Improving Docs for 0.6.0 Release
+#. (`PR#2090 <https://github.com/terrapower/armi/pull/2090>`_) Adding an SCR section to the docs
+#. (`PR#2095 <https://github.com/terrapower/armi/pull/2095>`_) Edits to STR test report
+#. (`PR#2100 <https://github.com/terrapower/armi/pull/2100>`_) Adding more info to STR intro
+#. (`PR#2101 <https://github.com/terrapower/armi/pull/2101>`_) Fixing issue with SCR on main branch
+#. (`PR#2119 <https://github.com/terrapower/armi/pull/2119>`_) Adding basic documentation for axial expansion
+#. (`PR#2131 <https://github.com/terrapower/armi/pull/2131>`_) Update docstring for Settings class to reflect mutability
+#. (`PR#2137 <https://github.com/terrapower/armi/pull/2137>`_) Improving description of rateProdNet parameter
+#. (`PR#2143 <https://github.com/terrapower/armi/pull/2143>`_) Improving the docs-build instructions
+#. (`PR#2148 <https://github.com/terrapower/armi/pull/2148>`_) Adding tooling to help people build the docs locally
+#. (`PR#2150 <https://github.com/terrapower/armi/pull/2150>`_) Clarifying setting disableBlockTypeExclusionInXsGeneration
+#. (`PR#2151 <https://github.com/terrapower/armi/pull/2151>`_) Adding SQA for the SFP and cycles setting
+#. (`PR#2174 <https://github.com/terrapower/armi/pull/2174>`_) Remove traces of black
+#. (`PR#2213 <https://github.com/terrapower/armi/pull/2213>`_) Ensuring non-main branch PRs do not yield SCRs
+#. (`PR#2214 <https://github.com/terrapower/armi/pull/2214>`_) Fixing error in recent doc change
+#. (`PR#2217 <https://github.com/terrapower/armi/pull/2217>`_) Improving documentation of axial expansion
+#. (`PR#2222 <https://github.com/terrapower/armi/pull/2222>`_) Make a duplicated test tag unique
+#. (`PR#2238 <https://github.com/terrapower/armi/pull/2238>`_) Trying to speed up docs build
+#. (`PR#2249 <https://github.com/terrapower/armi/pull/2249>`_) Improving docs on entry points creation
+#. (`PR#2264 <https://github.com/terrapower/armi/pull/2264>`_) Update the description of the mcnpLibraryVersion case setting
+#. (`PR#2270 <https://github.com/terrapower/armi/pull/2270>`_) Fixing sphinx warnings in the doc build
+#. (`PR#2274 <https://github.com/terrapower/armi/pull/2274>`_) Adding user documentation of core symmetry
+#. (`PR#2279 <https://github.com/terrapower/armi/pull/2279>`_) Fixing the SCR table in the docs
+#. (`PR#2286 <https://github.com/terrapower/armi/pull/2286>`_) Improving Docs for 0.6.0 Release
