@@ -80,7 +80,7 @@ Code Changes, Bugs and Fixes
 #. (`PR#2229 <https://github.com/terrapower/armi/pull/2229>`_) Change initialization of modArea for database load
 #. (`PR#2231 <https://github.com/terrapower/armi/pull/2231>`_) Fixing issue initial time node in previous PR
 #. (`PR#2236 <https://github.com/terrapower/armi/pull/2236>`_) Handle pinIndices for blocks that don’t have fuel
-#. (`PR#2245 <https://github.com/terrapower/armi/pull/2245>`_) Fixing invalid any(>`_) signature
+#. (`PR#2245 <https://github.com/terrapower/armi/pull/2245>`_) Fixing invalid any() signature
 #. (`PR#2248 <https://github.com/terrapower/armi/pull/2248>`_) Fixing issue loading from snapshots database
 #. (`PR#2253 <https://github.com/terrapower/armi/pull/2253>`_) Making a unit test thread safe
 #. (`PR#2259 <https://github.com/terrapower/armi/pull/2259>`_) Re-assigning pin indices when sorting a Block
