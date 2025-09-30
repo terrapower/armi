@@ -26,6 +26,7 @@ import itertools
 import math
 import os
 import re
+from glob import glob
 
 import matplotlib
 import matplotlib.colors as mcolors
@@ -39,6 +40,7 @@ from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
 from ordered_set import OrderedSet
 
+import armi
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
@@ -46,7 +48,7 @@ from armi.reactor import grids
 from armi.reactor.components import Circle, DerivedShape, Helix
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
 from armi.reactor.flags import Flags
-from armi.utils import hexagon
+from armi.utils import hexagon, iterables
 
 LUMINANCE_WEIGHTS = np.array([0.3, 0.59, 0.11, 0.0])
 
@@ -898,6 +900,32 @@ def _plotBlocksInAssembly(
     return xBlockLoc, yBlockHeights, yBlockAxMesh
 
 
+def plotRadialReactorLayouts(reactor):
+    """Generate a radial layout image of the converted reactor core."""
+    bpAssems = list(reactor.blueprints.assemblies.values())
+    assemsToPlot = []
+    for bpAssem in bpAssems:
+        coreAssems = reactor.core.getAssemblies(bpAssem.p.flags)
+        if not coreAssems:
+            continue
+        assemsToPlot.append(coreAssems[0])
+
+    # Obtain the plot numbering based on the existing files so that existing plots are not overwritten.
+    start = 0
+    existingFiles = glob(f"{reactor.core.name}AssemblyTypes" + "*" + ".png")
+    # This loops over the existing files for the assembly types outputs and makes a unique integer value so that plots
+    # are not overwritten. The regular expression here captures the first integer as AssemblyTypesX and then ensures
+    # that the numbering in the next enumeration below is 1 above that.
+    for f in existingFiles:
+        newStart = int(re.search(r"\d+", f).group())
+        if newStart > start:
+            start = newStart
+
+    for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=start + 1):
+        assemPlotName = f"{reactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
+        plotAssemblyTypes(assemBatch, assemPlotName, maxAssems=6, showBlockAxMesh=True)
+
+
 def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
     """
     Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
@@ -1478,7 +1506,7 @@ def plotConvertedBlock(sourceBlock, convertedBlock, fName=None):
         innerR = circleComp.getDimension("id") / 2.0
         outerR = circleComp.getDimension("od") / 2.0
         runLog.debug("Plotting {:40s} with {:10.3f} {:10.3f} ".format(circleComp, innerR, outerR))
-        circle = patches.Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
+        circle = matplotlib.patches.Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
         patches.append(circle)
         colors.append(circleComp.density())
 
