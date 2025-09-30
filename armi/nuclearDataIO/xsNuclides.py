@@ -14,21 +14,22 @@
 
 r"""
 This module contains cross section nuclides, which are a wrapper around the
-:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects
-contain cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
+:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects contain cross section
+information from a specific calculation (e.g. neutron, or gamma cross sections).
 
-:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file
-can be reconstructed.
+:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file can be reconstructed.
 
-.. warning::
-    :py:class:`XSNuclide` objects should only be created by reading data into
-    :py:class:`~armi.nuclearDataIO.xsLibrary.XSLibrary` objects, and then retrieving them through their label
-    index (i.e. "PU39AA").
+Warning
+-------
+:py:class:`XSNuclide` objects should only be created by reading data into
+:py:class:`~armi.nuclearDataIO.xsLibrary.XSLibrary` objects, and then retrieving them through their label index (i.e.
+"PU39AA").
 """
 
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import nuclearFileMetadata, xsCollections, xsLibraries
 from armi.utils.customExceptions import warn_when_root
+from armi.utils.plotting import plotScatterMatrix  # noqa: F401
 
 
 @warn_when_root
@@ -208,20 +209,3 @@ def _mergeAttributes(this, other, attrName):
             )
         )
     return attr1 if attr1 is not None else attr2
-
-
-def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
-    """Plots a matrix to show scattering."""
-    from matplotlib import pyplot
-
-    pyplot.imshow(scatterMatrix.todense(), interpolation="nearest")
-    pyplot.grid(color="0.70")
-    pyplot.xlabel("From group")
-    pyplot.ylabel("To group")
-    pyplot.title("{0} scattering XS".format(scatterTypeLabel))
-    pyplot.colorbar()
-    if fName:
-        pyplot.savefig(fName)
-        pyplot.close()
-    else:
-        pyplot.show()

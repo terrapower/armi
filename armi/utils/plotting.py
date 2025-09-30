@@ -1386,6 +1386,22 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, f
     return os.path.abspath(fName)
 
 
+def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
+    """Plots a matrix to show scattering."""
+    plt.imshow(scatterMatrix.todense(), interpolation="nearest")
+    plt.grid(color="0.70")
+    plt.xlabel("From group")
+    plt.ylabel("To group")
+    plt.title(f"{scatterTypeLabel} scattering XS")
+    plt.colorbar()
+
+    if fName:
+        plt.savefig(fName)
+        plt.close()
+    else:
+        plt.show()
+
+
 def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None):
     """
     Generates a XS plot for a nuclide on the ISOTXS library.
@@ -1416,7 +1432,7 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
 
     See Also
     --------
-    armi.nucDirectory.nuclide.plotScatterMatrix
+    plotScatterMatrix
     """
     # convert all input to lists
     if isinstance(nucNames, str):
