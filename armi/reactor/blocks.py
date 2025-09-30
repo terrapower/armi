@@ -2170,6 +2170,11 @@ class HexBlock(Block):
         locations = self.getPinLocations()
         if not locations:
             return
+        # Clear out any previous values. If your block is built with one ordering
+        # and then sorted, things that used to have pin indices may now have invalid
+        # pin indices. Wipe them out just to be safe
+        for c in self:
+            c.p.pinIndices = None
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
         # Flags for components that we want to set this parameter

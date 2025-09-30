@@ -2950,6 +2950,17 @@ nuclide flags:
         for c in nonFuel.iterComponents(Flags.CLAD):
             self.assertIsNotNone(c.getPinIndices())
 
+    def test_assignmentChangesPreviousPinIndices(self):
+        """Show successive calls to assignPinIndices clear out previous state."""
+        # assign pin indices to something that maybe doesn't need it
+        firstFuel = self.block.getFirstComponent(Flags.FUEL)
+        firstClad = self.block.getFirstComponent(Flags.CLAD)
+        self.assertIsNone(firstClad.p.pinIndices)
+        self.assertIsNotNone(firstFuel.p.pinIndices)
+        firstClad.p.pinIndices = firstFuel.p.pinIndices
+        self.block.assignPinIndices()
+        self.assertIsNone(firstClad.p.pinIndices)
+
     def test_fuelAndNonFuel(self):
         """If you have fuel and non-fuel pins in the block, all pins should have indices still."""
         firstBefore = self.fuelPins[0].getPinIndices()
