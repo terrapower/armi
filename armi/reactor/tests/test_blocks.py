@@ -1704,7 +1704,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertIsNone(self.block.getComponentByName("not the droid you are looking for"))
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
-    def test_getSortedComponentsInsideOfComponentClad(self):
+    def test_getSortedCompsInClad(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
@@ -1726,7 +1726,7 @@ class Block_TestCase(unittest.TestCase):
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
-    def test_getSortedComponentsInsideOfComponentDuct(self):
+    def test_getSortedCompsInDuct(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a duct.
@@ -2949,6 +2949,34 @@ nuclide flags:
         self.assertTrue(nonFuel.getPinLocations())
         for c in nonFuel.iterComponents(Flags.CLAD):
             self.assertIsNotNone(c.getPinIndices())
+
+    def test_assignmentChangesPreviousPinIndices(self):
+        """Show successive calls to assignPinIndices clear out previous state."""
+        # assign pin indices to something that maybe doesn't need it
+        firstFuel = self.block.getFirstComponent(Flags.FUEL)
+        firstClad = self.block.getFirstComponent(Flags.CLAD)
+        self.assertIsNone(firstClad.p.pinIndices)
+        self.assertIsNotNone(firstFuel.p.pinIndices)
+        firstClad.p.pinIndices = firstFuel.p.pinIndices
+        self.block.assignPinIndices()
+        self.assertIsNone(firstClad.p.pinIndices)
+
+    def test_fuelAndNonFuel(self):
+        """If you have fuel and non-fuel pins in the block, all pins should have indices still."""
+        firstBefore = self.fuelPins[0].getPinIndices()
+        secondBefore = self.fuelPins[1].getPinIndices()
+
+        for c in self.block:
+            c.p.pinIndices = None
+
+        self.fuelPins[1].p.flags &= ~Flags.FUEL
+
+        self.block.assignPinIndices()
+        firstAfter = self.fuelPins[0].getPinIndices()
+        assert_array_equal(firstAfter, firstBefore)
+
+        secondAfter = self.fuelPins[1].getPinIndices()
+        assert_array_equal(secondAfter, secondBefore)
 
     def test_reassignOnSort(self):
         """Show the pin indices are reassigned when the block is sorted."""

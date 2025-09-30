@@ -17,12 +17,11 @@ import typing
 from math import isclose
 from textwrap import dedent
 
-from numpy import sum
 from scipy.optimize import brentq
 
 from armi import runLog
 from armi.reactor.flags import Flags
-from armi.utils import densityTools, units
+from armi.utils import densityTools
 
 if typing.TYPE_CHECKING:
     from armi.reactor.components.component import Component
@@ -61,8 +60,8 @@ class RedistributeMass:
         if self.compatabilityCheck():
             self.setNewToCompNDens()
             self.setNewToCompTemperature()
-            if self.fromComp.p.hmNuclidesBOL is not None and self.toComp.p.hmNuclidesBOL is not None:
-                self.updateBOLParams()
+            if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
+                self._adjustMassParams()
 
     @property
     def fromCompVolume(self):
@@ -189,46 +188,6 @@ class RedistributeMass:
         self.toComp.temperatureInC = newToCompTemp
         self.toComp.clearCache()
 
-    def updateBOLParams(self):
-        """Update the BOL molesHmBOL and massHmBOL to stay consistent with the change in mass.
-
-        Notes
-        -----
-        Unlike the non-BOL information determined in py:meth:`setNewToCompNDens` and :py:meth:`setNewToCompTemperature`,
-        a new BOL temperature is not neccessary to be calculated here since we do not compute the ``massHmBOL`` or
-        ``moledHmBOL`` information on-the-fly; this allows us to directly set the new values. However, we do need to
-        compute the number densities and manually shift mass to account for the possibility of varying temperatures
-        between toComp and fromComp at BOL.
-        """
-        # build the BOL HM NDens dictionary
-        fromCompBOLNucs = [nucName.decode() for nucName in self.fromComp.p.hmNuclidesBOL]
-        toCompBOLNucs = [nucName.decode() for nucName in self.toComp.p.hmNuclidesBOL]
-        fromCompNDensBOL = dict(zip(fromCompBOLNucs, self.fromComp.p.hmNumberDensitiesBOL))
-        toCompNDensBOL = dict(zip(toCompBOLNucs, self.toComp.p.hmNumberDensitiesBOL))
-
-        # calculate the new BOL volume
-        toCompVolBOL = self.toComp.getArea(Tc=self.toComp.p.temperatureInCBOL) * self.toComp.parent.p.heightBOL
-        fromCompVolBOL = self.fromComp.getArea(Tc=self.fromComp.p.temperatureInCBOL) * abs(self.deltaZTop)
-        newBOLVol = toCompVolBOL + fromCompVolBOL
-
-        # calculate new molesHmBOL and massHmBOL for toComp
-        newHMNDensBOL: dict[str, float] = {}
-        hmNucsBOL = self._getAllNucs(fromCompBOLNucs, toCompBOLNucs)
-        for nuc in hmNucsBOL:
-            hmMassBOLByNucFromComp = densityTools.getMassInGrams(nuc, fromCompVolBOL, fromCompNDensBOL.get(nuc, 0.0))
-            hmMassBOLByNucToComp = densityTools.getMassInGrams(nuc, toCompVolBOL, toCompNDensBOL.get(nuc, 0.0))
-            newHMNDensBOL[nuc] = densityTools.calculateNumberDensity(
-                nuc, hmMassBOLByNucFromComp + hmMassBOLByNucToComp, newBOLVol
-            )
-        self.toComp.p.molesHmBOL = (
-            sum(list(newHMNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
-        )
-        self.toComp.p.massHmBOL = densityTools.calculateMassDensity(newHMNDensBOL) * newBOLVol
-
-        # update BOL Params for fromComp
-        self.fromComp.p.molesHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
-        self.fromComp.p.massHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
-
     @staticmethod
     def _sortKey(item):
         """Break isotope string down by element, atomic weight, and metastable state for sorting. Raises a RuntimeError
@@ -261,3 +220,16 @@ class RedistributeMass:
         """
         nucsToAdd = set(nucsA).union(set(nucsB))
         return sorted(nucsToAdd, key=self._sortKey)
+
+    def _adjustMassParams(self):
+        """Adjust massHmBOL and molesHmBOL on fromComp and toComp."""
+        paramsToMove = (
+            "massHmBOL",
+            "molesHmBOL",
+        )
+        removalFrac = abs(self.deltaZTop) / self.fromComp.height
+        for paramName in paramsToMove:
+            if self.fromComp.p[paramName] is not None:
+                amountMoved = removalFrac * self.fromComp.p[paramName]
+                self.toComp.p[paramName] = self.toComp.p[paramName] + amountMoved
+                self.fromComp.p[paramName] = self.fromComp.p[paramName] - amountMoved

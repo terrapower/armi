@@ -31,7 +31,6 @@ import numpy as np
 
 from armi import nuclideBases, runLog
 from armi.bookkeeping import report
-from armi.nucDirectory import nucDir
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import (
@@ -755,9 +754,6 @@ class Block(composites.Composite):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
                 if child.p.molesHmBOL:
-                    child.p.hmNuclidesBOL = [nuc for nuc in child.p.nuclides if nucDir.isHeavyMetal(nuc.decode())]
-                    child.p.hmNumberDensitiesBOL = child.getNuclideNumberDensities(child.p.hmNuclidesBOL)
-                    child.p.temperatureInCBOL = child.temperatureInC
                     child.p.enrichmentBOL = child.getFissileMassEnrich()
 
         self.p.massHmBOL = massHmBOL
@@ -2180,39 +2176,50 @@ class HexBlock(Block):
         locations = self.getPinLocations()
         if not locations:
             return
+        # Clear out any previous values. If your block is built with one ordering
+        # and then sorted, things that used to have pin indices may now have invalid
+        # pin indices. Wipe them out just to be safe
+        for c in self:
+            c.p.pinIndices = None
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
         # Flags for components that we want to set this parameter
         # Usually things are linked to one of these "important" flags, like
         # a cladding component having linked dimensions to a fuel component
-        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
-        found = self._assignPinIndices(ijGetter, allIJ, targetFlags)
-        if found:
-            return
-        # If we didn't find any "important" components, but we have pins, we need to
-        # provide some information about where the pins live still. Fall back to
-        # assigning on the cladding components
-        self._assignPinIndices(ijGetter, allIJ, Flags.CLAD)
-
-    def _assignPinIndices(
-        self,
-        ijGetter: Callable[[grids.IndexLocation], tuple[int, int]],
-        allIJ: tuple[int, int],
-        targetFlags: Flags,
-    ) -> bool:
-        found = False
-        for c in self.iterChildren(predicate=lambda c: c.hasFlags(targetFlags) and isinstance(c, Circle)):
-            localLocations = c.spatialLocator
-            if isinstance(localLocations, grids.MultiIndexLocation):
-                localIJ = list(map(ijGetter, localLocations))
-            elif isinstance(localLocations, grids.IndexLocation):
-                localIJ = [ijGetter(localLocations)]
-            else:
+        primaryFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
+        withPinIndices: list[components.Component] = []
+        for c in self.iterChildrenWithFlags(primaryFlags):
+            if self._setPinIndices(c, ijGetter, allIJ):
+                withPinIndices.append(c)
+        # Iterate over every other thing on the grid and make sure
+        # 1) it share a lattice site with something that has pin indices, or
+        # 2) it itself declares the pin indices
+        for c in self:
+            if c.p.pinIndices is not None:
                 continue
-            localIndices = list(map(allIJ.index, localIJ))
-            c.p.pinIndices = localIndices
-            found = True
-        return found
+            # Does anything with pin indices share this lattice site?
+            if any(other.spatialLocator == c.spatialLocator for other in withPinIndices):
+                continue
+            if self._setPinIndices(c, ijGetter, allIJ):
+                withPinIndices.append(c)
+
+    @staticmethod
+    def _setPinIndices(
+        c: components.Component, ijGetter: Callable[[grids.IndexLocation], tuple[int, int]], allIJ: tuple[int, int]
+    ):
+        localLocations = c.spatialLocator
+        if isinstance(localLocations, grids.MultiIndexLocation):
+            localIJ = list(map(ijGetter, localLocations))
+        # CoordinateLocations do not live on the grid, by definition
+        elif isinstance(localLocations, grids.CoordinateLocation):
+            return False
+        elif isinstance(localLocations, grids.IndexLocation):
+            localIJ = [ijGetter(localLocations)]
+        else:
+            return False
+        localIndices = list(map(allIJ.index, localIJ))
+        c.p.pinIndices = localIndices
+        return True
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""

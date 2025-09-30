@@ -349,7 +349,7 @@ class TestConservation(AxialExpansionTestBase):
         # verify that the total assembly fluid mass is preserved through expansion
         self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
 
-    def test_prescribedExpansionContractionConservation(self):
+    def test_expansionContractionConservation(self):
         """Expand all components and then contract back to original state.
 
         .. test:: Expand all components and then contract back to original state.

@@ -77,6 +77,9 @@ class AxialExpansionChanger:
     - Is designed to work with general, vertically oriented, pin-type assembly designs. It is not set up to account
       for any other assembly type.
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
+    - The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
+      conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
+      block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures.
     """
 
     linked: typing.Optional[AssemblyAxialLinkage]
@@ -163,7 +166,7 @@ class AxialExpansionChanger:
             axialExpChanger.setAssembly(a, expandFromTinputToThot=True)
             axialExpChanger.applyColdHeightMassIncrease()
             axialExpChanger.expansionData.computeThermalExpansionFactors()
-            axialExpChanger.axiallyExpandAssembly()
+            axialExpChanger.axiallyExpandAssembly(recalculateBurnup=False)
         if not isDetailedAxialExpansion:
             for a in assems:
                 a.setBlockMesh(referenceAssembly.getAxialMesh())
@@ -172,6 +175,7 @@ class AxialExpansionChanger:
             for b in a:
                 b.p.heightBOL = b.getHeight()
                 b.completeInitialLoading()
+                axialExpChanger.recalculateBurnup(b)
 
     def performPrescribedAxialExpansion(self, a: Assembly, components: list, percents: list, setFuel=True):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
@@ -337,8 +341,13 @@ class AxialExpansionChanger:
                 runLog.error(msg)
                 raise RuntimeError(msg)
 
-    def axiallyExpandAssembly(self):
+    def axiallyExpandAssembly(self, recalculateBurnup: bool = True):
         """Utilizes assembly linkage to do axial expansion.
+
+        Parameters
+        ----------
+        recalculateBurnup
+            Optional parameter to skip the recalculate burnup step.
 
         .. impl:: Preserve the total height of an ARMI assembly, during expansion.
             :id: I_ARMI_ASSEM_HEIGHT_PRES
@@ -448,7 +457,7 @@ class AxialExpansionChanger:
                     c.height = c.ztop - c.zbottom
 
             self._checkBlockHeight(b)
-            self.recalculateBurnup(b)
+            self._recomputeBlockMassParams(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -456,6 +465,23 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+        if recalculateBurnup:
+            for b in self.linked.a.iterBlocks(Flags.FUEL):
+                self.recalculateBurnup(b)
+
+    def _recomputeBlockMassParams(self, b: "Block"):
+        """
+        After component initial mass parameters have been adjusted for expansion,
+        recompute block parameters that are derived from children.
+        """
+        paramsToMove = (
+            "massHmBOL",
+            "molesHmBOL",
+        )
+        for paramName in paramsToMove:
+            b.p[paramName] = (
+                sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None) / b.getSymmetryFactor()
+            )
 
     def recalculateBurnup(self, b: "Block"):
         """Post axial-expansion, heavy metal may have moved between blocks; recalculate burnup.
