@@ -94,6 +94,7 @@ jobs:
           ls -lah
           make latex
           cd _build/latex/
+          ls -lah
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
