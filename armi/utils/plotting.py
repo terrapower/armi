@@ -27,11 +27,13 @@ import math
 import os
 import re
 
+import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.text as mpl_text
 import numpy as np
+from matplotlib import cm
 from matplotlib.collections import PatchCollection
 from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
@@ -1461,3 +1463,36 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
         plt.close()
     elif not noShow:
         plt.show()
+
+
+def plotConvertedBlock(sourceBlock, convertedBlock, fName=None):
+    """Render an image of the converted block."""
+    runLog.extra(f"Plotting equivalent cylindrical block of {sourceBlock}")
+    fig, ax = plt.subplots()
+    fig.patch.set_visible(False)
+    ax.patch.set_visible(False)
+    ax.axis("off")
+    patches = []
+    colors = []
+    for circleComp in convertedBlock:
+        innerR = circleComp.getDimension("id") / 2.0
+        outerR = circleComp.getDimension("od") / 2.0
+        runLog.debug("Plotting {:40s} with {:10.3f} {:10.3f} ".format(circleComp, innerR, outerR))
+        circle = patches.Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
+        patches.append(circle)
+        colors.append(circleComp.density())
+
+    p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=cm.YlGn)
+    p.set_array(np.array(colors))
+    ax.add_collection(p)
+    ax.autoscale_view(True, True, True)
+    ax.set_aspect("equal")
+    fig.tight_layout()
+
+    if fName:
+        plt.savefig(fName)
+        plt.close()
+    else:
+        plt.show()
+
+    return fName
