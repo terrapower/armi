@@ -79,12 +79,12 @@ jobs:
           echo "Cleaning out API docs from PDF..."
           set -x
 
-
           rm -rf doc/.apidocs
           rm -rf doc/_build/.apidocs
           rm -rf doc/_build/_modules
           rm -rf doc/_build/_sources/.apidocs
           rm -rf doc/_build/doctrees/.apidocs
+          rm -rf doc/_build/html/.apidocs
 
           ls -lah doc
           ls -lah doc/_build
