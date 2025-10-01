@@ -168,7 +168,7 @@ class ChemicalGroup(Enum):
 class Element:
     """Represents an element defined on the Periodic Table."""
 
-    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN", skipGlobal=False):
+    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN", addToGlobal=True):
         """
         Creates an instance of an Element.
 
@@ -205,7 +205,7 @@ class Element:
         self.group = ChemicalGroup[group]
         self.standardWeight = None
         self.nuclides = []
-        if not skipGlobal:
+        if addToGlobal:
             addGlobalElement(self)
 
     def __repr__(self):
@@ -359,7 +359,7 @@ class Elements:
                 phase = lineData[3]
                 group = lineData[4]
                 standardWeight = lineData[5]
-                e = Element(z, sym, name, phase, group, skipGlobal=True)
+                e = Element(z, sym, name, phase, group, addToGlobal=False)
                 if standardWeight != "Derived":
                     e.standardWeight = float(standardWeight)
                 self.addElement(e)
@@ -380,7 +380,7 @@ class Elements:
         """
         elems = []
         if not isinstance(phase, ChemicalPhase):
-            raise ValueError(f"{phase} is not an instance of {ChemicalPhase}")
+            raise TypeError(f"{phase} is not an instance of {ChemicalPhase}")
 
         for element in self.byName.values():
             if element.phase == phase:

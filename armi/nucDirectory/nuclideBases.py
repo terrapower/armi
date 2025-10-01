@@ -328,7 +328,7 @@ class INuclide(NuclideInterface):
         mcc2id=None,
         mcc3idEndfbVII0=None,
         mcc3idEndfbVII1=None,
-        skipGlobal=False,
+        addToGlobal=True,
     ):
         """
         Create an instance of an INuclide.
@@ -364,7 +364,7 @@ class INuclide(NuclideInterface):
         self.mcc2id = mcc2id or ""
         self.mcc3idEndfbVII0 = mcc3idEndfbVII0 or ""
         self.mcc3idEndfbVII1 = mcc3idEndfbVII1 or ""
-        if not skipGlobal:
+        if addToGlobal:
             addGlobalNuclide(self)
         self.element.append(self)
 
@@ -508,7 +508,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         an AAAZZZS ID and an ENDF MAT number.
     """
 
-    def __init__(self, element, a, weight, abundance, state, halflife, skipGlobal=False):
+    def __init__(self, element, a, weight, abundance, state, halflife, addToGlobal=True):
         IMcnpNuclide.__init__(self)
         INuclide.__init__(
             self,
@@ -520,7 +520,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
             halflife=halflife,
             name=NuclideBase._createName(element, a, state),
             label=NuclideBase._createLabel(element, a, state),
-            skipGlobal=skipGlobal,
+            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -678,7 +678,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         -------
         id: str
             The ID of this nuclide based on it's elemental name, weight,
-            and state, eg ``U-235``, ``Te-129m``,
+            and state, eg ``U-235``, ``Te-129m``.
         """
         symbol = self.element.symbol.capitalize()
         return f"{symbol}-{self.a}{'m' if self.state else ''}"
@@ -710,7 +710,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
         isotopeNum = (a - smallestStableA) * 3 + self.state + 25
         mat = z * 100 + isotopeNum
-        return f"{mat}"
+        return str(mat)
 
 
 class NaturalNuclideBase(INuclide, IMcnpNuclide):
@@ -723,7 +723,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
     forced to zero here so that it does not have any interactions with the NuclideBase objects.
     """
 
-    def __init__(self, name, element, skipGlobal=False):
+    def __init__(self, name, element, addToGlobal=True):
         INuclide.__init__(
             self,
             element=element,
@@ -734,7 +734,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             halflife=np.inf,
             name=name,
             label=name,
-            skipGlobal=skipGlobal,
+            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -800,7 +800,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
                 "will not be helpful for working with ENDF/B VII.1. Try to expandElementalsToIsotopics"
             )
 
-        return f"{self.z * 100}"
+        return str(self.z * 100)
 
 
 class DummyNuclideBase(INuclide):
@@ -813,7 +813,7 @@ class DummyNuclideBase(INuclide):
     truncated.
     """
 
-    def __init__(self, name, weight, skipGlobal=False):
+    def __init__(self, name, weight, addToGlobal=True):
         INuclide.__init__(
             self,
             element=elements.byName["Dummy"],
@@ -824,7 +824,7 @@ class DummyNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label="DMP" + name[4],
-            skipGlobal=skipGlobal,
+            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -888,7 +888,7 @@ class LumpNuclideBase(INuclide):
         Describes what nuclides LumpNuclideBase is expend to.
     """
 
-    def __init__(self, name, weight, skipGlobal=False):
+    def __init__(self, name, weight, addToGlobal=True):
         INuclide.__init__(
             self,
             element=elements.byName["LumpedFissionProduct"],
@@ -899,7 +899,7 @@ class LumpNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label=name[1:],
-            skipGlobal=skipGlobal,
+            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -1277,9 +1277,7 @@ class NuclideBases:
         <NuclideBase NB95: Z:41, A:95, S:0, label:NB2N>
         <NuclideBase ZR95: Z:40, A:95, S:0, label:ZR2N>
         """
-        for nuc in self.instances:
-            if predicate(nuc):
-                yield (nuc)
+        return filter(predicate, self.instances)
 
     def single(self, predicate):
         """
@@ -1398,7 +1396,7 @@ class NuclideBases:
                 nuSF = float(lineData[8])
 
                 element = elements.bySymbol[sym]
-                nb = NuclideBase(element, a, mass, abun, state, halflife, skipGlobal=True)
+                nb = NuclideBase(element, a, mass, abun, state, halflife, addToGlobal=False)
                 nb.nuSF = nuSF
                 self.addNuclide(nb)
 
@@ -1407,7 +1405,7 @@ class NuclideBases:
         for element in elements.byZ.values():
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
-                    self.addNuclide(NaturalNuclideBase(element.symbol, element, skipGlobal=True))
+                    self.addNuclide(NaturalNuclideBase(element.symbol, element, addToGlobal=False))
 
     def __addDummyNuclideBases(self):
         """
@@ -1417,17 +1415,17 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the MC2 program.
         """
-        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, skipGlobal=True))
-        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, skipGlobal=True))
+        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, addToGlobal=False))
+        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, addToGlobal=False))
 
     def __addLumpedFissionProductNuclideBases(self):
         """Generates a set of nuclides for use as lumped fission products."""
-        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, addToGlobal=False))
+        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, addToGlobal=False))
+        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, addToGlobal=False))
+        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7, addToGlobal=False))
+        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812, addToGlobal=False))
+        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0, addToGlobal=False))
 
     def readMCCNuclideData(self):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
