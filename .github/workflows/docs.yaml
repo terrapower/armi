@@ -78,24 +78,22 @@ jobs:
         run: |
           echo "Cleaning out API docs from PDF..."
           set -x
+
           ls -lah doc
           ls -lah doc/_build
           ls -lah doc/_build/doctrees
           ls -lah doc/_build/html
+
           rm -rf doc/.apidocs
           rm -rf doc/_build/.apidocs
+          rm -rf doc/_build/_modules
           rm -rf doc/_build/_sources/.apidocs
           rm -rf doc/_build/doctrees/.apidocs
 
           echo "Build PDF docs..."
-          pwd
-          ls -lah
           cd doc/
-          pwd
-          ls -lah
           make latex
           cd _build/latex/
-          ls -lah
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
