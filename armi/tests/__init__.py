@@ -244,12 +244,11 @@ class ArmiTestHelper(unittest.TestCase):
             return False
 
         for actualWord, expectedWord in zip(actualWords, expectedWords):
-            actualVal = _tryFloat(actualWord)
-            expectedVal = _tryFloat(expectedWord)
+            actualVal = ArmiTestHelper._tryFloat(actualWord)
+            expectedVal = ArmiTestHelper._tryFloat(expectedWord)
 
             if (actualVal is None) ^ (expectedVal is None):
-                # could not coerce both words into a float, so they cannot possibly
-                # match
+                # could not coerce both words into a float, so they cannot possibly match
                 return False
 
             if actualVal is not None:
@@ -264,13 +263,13 @@ class ArmiTestHelper(unittest.TestCase):
                 if actualWord != expectedWord:
                     return False
 
-        # if we got to the end without pitching a fit, the lines should match
+        # The lines should match.
         return True
 
+    @staticmethod
+    def _tryFloat(val: str) -> Optional[float]:
+        try:
+            return float(val)
 
-def _tryFloat(val: str) -> Optional[float]:
-    try:
-        return float(val)
-
-    except ValueError:
-        return None
+        except ValueError:
+            return None
