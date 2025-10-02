@@ -13,6 +13,8 @@
 # limitations under the License.
 """Settings for generic fuel cycle code."""
 
+import importlib.util
+
 from armi.settings import setting, settingsValidation
 
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
@@ -20,6 +22,7 @@ CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
 CONF_CIRCULAR_RING_MODE = "circularRingMode"
 CONF_CIRCULAR_RING_ORDER = "circularRingOrder"
 CONF_FUEL_HANDLER_NAME = "fuelHandlerName"
+CONF_SHUFFLE_SEQUENCE_FILE = "shuffleSequenceFile"
 CONF_JUMP_RING_NUM = "jumpRingNum"
 CONF_LEVELS_PER_CASCADE = "levelsPerCascade"
 CONF_PLOT_SHUFFLE_ARROWS = "plotShuffleArrows"
@@ -73,9 +76,15 @@ def getFuelCycleSettings():
             default="",
             label="Shuffle Logic",
             description=(
-                "Python script written to handle the fuel shuffling for this case.  "
-                "This is user-defined per run as a dynamic input."
+                "Path to a Python script or dotted module path that handles the fuel shuffling "
+                "for this case. This is user-defined per run as a dynamic input."
             ),
+        ),
+        setting.Setting(
+            CONF_SHUFFLE_SEQUENCE_FILE,
+            default="",
+            label="Shuffle Sequence File",
+            description="Path to a YAML file defining a custom shuffle sequence",
         ),
         setting.Setting(
             CONF_FUEL_HANDLER_NAME,
@@ -132,6 +141,18 @@ def getFuelCycleSettingValidators(inspector):
         )
     )
 
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_SEQUENCE_FILE]),
+            "The specified shuffle sequence file '{0}' cannot be found.".format(
+                inspector.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            ),
+            "",
+            inspector.NO_ACTION,
+        )
+    )
+
     def _clearShufflingInput():
         inspector._assignCS(CONF_SHUFFLE_LOGIC, "")
         inspector._assignCS(CONF_FUEL_HANDLER_NAME, "")
@@ -139,8 +160,9 @@ def getFuelCycleSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_SHUFFLE_LOGIC]
-            and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_LOGIC]),
-            "The specified shuffle logic file '{0}' cannot be found. Shuffling will not occur.".format(
+            and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_LOGIC])
+            and importlib.util.find_spec(inspector.cs[CONF_SHUFFLE_LOGIC]) is None,
+            "The specified shuffle logic module or file '{0}' cannot be found. Shuffling will not occur.".format(
                 inspector.cs[CONF_SHUFFLE_LOGIC]
             ),
             "Clear specified file value?",

@@ -15,7 +15,7 @@
 
 import unittest
 
-from armi.materials.b4c import B4C, DEFAULT_THEORETICAL_DENSITY_FRAC
+from armi.materials.b4c import B4C
 from armi.materials.tests.test_materials import _Material_Test
 
 
@@ -39,13 +39,20 @@ class B4C_TestCase(_Material_Test, unittest.TestCase):
         ref = self.mat.pseudoDensity(500)
 
         reduced = self.B4C_theoretical_density.pseudoDensity(500)
-        self.assertAlmostEqual(ref * 0.5 / DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
+        self.assertAlmostEqual(ref * 0.5 / B4C.DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
 
         reduced = self.B4C_TD_frac.pseudoDensity(500)
-        self.assertAlmostEqual(ref * 0.4 / DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
+        self.assertAlmostEqual(ref * 0.4 / B4C.DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
 
         reduced = self.B4C_both.pseudoDensity(500)
-        self.assertAlmostEqual(ref * 0.4 / DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
+        self.assertAlmostEqual(ref * 0.4 / B4C.DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
+    def test_variousEdgeCases(self):
+        with self.assertRaises(ValueError):
+            self.mat.setNewMassFracsFromMassEnrich(-0.001)
+
+        with self.assertRaises(ValueError):
+            self.mat.setNewMassFracsFromMassEnrich(1.001)

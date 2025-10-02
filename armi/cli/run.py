@@ -23,10 +23,6 @@ class RunEntryPoint(EntryPoint):
     name = "run"
     settingsArgument = "required"
 
-    def addOptions(self):
-        self.createOptionFromSetting("profile", "-p")
-        self.createOptionFromSetting("trace", "-t")
-
     def invoke(self):
         from armi import cases
 

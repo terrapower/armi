@@ -2,12 +2,20 @@ core:
   geom: hex
   symmetry: third periodic
   lattice map: |
-         -  PC
-          IC  IC
-            IC  OC
-          IC  LA  IC
-            IC  IC  SC
-              LA  IC
-            IC  IC  OC
-              IC  IC
-            AF  IC  OC
+    SH
+      AF
+    MC  SH
+      LA
+    PC  IC
+
+twoPin:
+  geom: hex_corners_up
+  symmetry: full
+  lattice map: |
+    - - -  1 1 1 1
+      - - 1 1 2 1 1
+       - 1 1 2 2 1 1
+        1 1 2 2 2 1 1
+         1 1 2 2 1 1
+          1 1 2 1 1
+           1 1 1 1

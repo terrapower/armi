@@ -23,13 +23,16 @@ if not isConfigured():
     configure()
 
 from armi.reactor.blueprints import Blueprints
-from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
+from armi.reactor.blueprints.gridBlueprint import Grids, Pitch, saveToStream
+from armi.utils.customExceptions import InputError
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 LATTICE_BLUEPRINT = """
 control:
     geom: hex_corners_up
     symmetry: full
+    lattice pitch: 
+      hex: 1.2
     lattice map: |
        - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
         - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
@@ -50,6 +53,29 @@ control:
                        1 1 1 1 1 1 1 1 1 1 1 1
                         1 6 1 1 1 1 1 1 1 1 1
                          1 1 1 1 1 1 1 1 1 1
+pins:
+  geom: hex
+  symmetry: full
+  lattice pitch: 
+    hex: 1.3
+  lattice map: |
+    -   -   FP
+      -   FP  FP
+    -   CL  CL  CL
+      FP  FP  FP  FP
+    FP  FP  FP  FP  FP
+      CL  CL  CL  CL
+    FP  FP  FP  FP  FP
+      FP  FP  FP  FP
+    CL  CL  CL  CL  CL
+      FP  FP  FP  FP
+    FP  FP  FP  FP  FP
+      CL  CL  CL  CL
+    FP  FP  FP  FP  FP
+      FP  FP  FP  FP
+        CL  CL  CL
+          FP  FP
+            FP
 
 sfp:
     geom: cartesian
@@ -235,6 +261,59 @@ TINY_GRID = """core:
        : IF
 """
 
+BIG_FULL_HEX_CORE = """core:
+  geom: hex
+  symmetry: full
+  lattice map: |
+    -   -   -   -   -   -   SS  SS
+      -   -   -   -   SS  SS  SS  SS  SS
+    -   -   -   -   SS  DD  DD  DD  DD  SS
+      -   -   -   SS  DD  DD  DD  DD  DD  SS
+    -   -   -   SS  DD  DD  DD  DD  DD  DD  SS
+      -   -   SS  DD  DD  DD  DD  DD  DD  DD  SS
+    -   -   SS  DD  DD  DD  DD  DD  DD  DD  DD  SS
+      -   -   SS  DD  DD  DD  RB  DD  DD  DD  SS
+    -   -   SS  DD  DD  RB  RB  RB  RB  DD  DD  SS
+      -   SS  DD  DD  RB  RB  FF  RB  RB  DD  DD  SS
+    -   SS  SS  DD  RB  FF  FF  FF  FF  RB  DD  DD  SS
+      -   SS  DD  RB  FF  FF  FF  FF  FF  RB  DD  RR
+    -   SS  DD  DD  FF  FF  PC  PC  PC  FF  DD  DD  SS
+      SS  SS  DD  RB  FF  II  PC  FF  FF  RB  DD  DD  SS
+    -   SS  DD  RB  FF  SS  II  II  PC  FF  RB  DD  RR
+      SS  DD  DD  FF  II  II  II  II  II  FF  DD  DD  SS
+    -   SS  DD  RB  II  II  II  II  II  II  RB  DD  SS
+      SS  DD  RB  FF  RC  II  SS  II  II  FF  RB  DD  SS
+    SS  DD  DD  FF  II  II  II  RC  PC  II  FF  DD  DD  SS
+      SS  DD  RB  II  PC  II  II  II  PC  II  RB  DD  SS
+    SS  DD  RB  FF  II  II  II  II  II  II  FF  RB  DD  SS
+      SS  DD  FF  II  II  WW  II  II  II  II  FF  DD  SS
+    SS  DD  RB  FF  II  II  WW  XX  PC  II  FF  RB  DD  SS
+      SS  DD  FF  PC  II  BB  AA  YY  SS  DC  FF  DD  SS
+    SS  DD  RB  FF  II  RC  CC  ZZ  II  II  FF  RB  DD  SS
+      SS  DD  FF  II  II  II  II  II  II  II  FF  DD  SS
+    SS  DD  RB  FF  II  II  II  II  II  II  FF  RB  DD  SS
+      SS  DD  RB  II  II  II  II  RC  II  II  RB  DD  SS
+    SS  DD  DD  FF  PC  II  SS  II  II  PC  FF  DD  DD  SS
+      SS  DD  RB  II  II  II  II  II  II  II  RB  DD  SS
+    -   SS  DD  FF  II  PC  II  II  II  II  FF  DD  SS
+      SS  DD  RB  FF  II  II  PC  II  II  FF  RB  DD  SS
+    -   SS  DD  RB  FF  SS  II  II  PC  FF  RB  DD  SS
+      SS  SS  DD  RB  FF  II  II  II  FF  RB  DD  SS  SS
+    -   SS  DD  DD  FF  FF  II  II  FF  FF  DD  DD  SS
+      -   SS  DD  RB  FF  FF  FF  FF  FF  RB  DD  SS
+    -   SS  SS  DD  RB  FF  FF  FF  FF  RB  DD  SS  SS
+      -   SS  DD  DD  RB  RB  RB  RB  RB  DD  DD  SS
+        -   SS  DD  DD  RB  RB  RB  RB  DD  DD  SS
+          -   SS  DD  DD  DD  DD  DD  DD  DD  SS
+            SS  DD  DD  DD  DD  DD  DD  DD  DD  SS
+              SS  DD  DD  DD  DD  DD  DD  DD  SS
+                SS  DD  DD  DD  DD  DD  DD  SS
+                  SS  DD  DD  DD  DD  DD  SS
+                    SS  DD  DD  DD  DD  SS
+                      SS  SS  SS  SS  SS
+                        -   SS  SS  -
+"""
+
 
 class TestGridBPRoundTrip(unittest.TestCase):
     def setUp(self):
@@ -277,6 +356,50 @@ class TestGridBPRoundTrip(unittest.TestCase):
         self.assertIn("IF", gridBp["core"].latticeMap)
 
 
+class TestGridBPRoundTripFull(unittest.TestCase):
+    def test_fullMap(self):
+        """
+        Test that a lattice map can be defined, written, and read in from blueprint file.
+
+        .. test:: Define a lattice map in reactor core.
+            :id: T_ARMI_BP_GRID2
+            :tests: R_ARMI_BP_GRID
+        """
+        grid = Grids.load(BIG_FULL_HEX_CORE)
+        gridDesign = grid["core"]
+        _ = gridDesign.construct()
+
+        # test before the round-trip
+        self.assertEqual(gridDesign.gridContents[0, 0], "AA")
+        self.assertEqual(gridDesign.gridContents[-2, 1], "BB")
+        self.assertEqual(gridDesign.gridContents[-1, 0], "CC")
+        self.assertEqual(gridDesign.gridContents[-1, 1], "WW")
+        self.assertEqual(gridDesign.gridContents[1, 0], "XX")
+        self.assertEqual(gridDesign.gridContents[2, -1], "YY")
+        self.assertEqual(gridDesign.gridContents[1, -1], "ZZ")
+        self.assertEqual(gridDesign.gridContents[-3, 1], "RC")
+        self.assertEqual(gridDesign.gridContents[3, -1], "PC")
+
+        # perform a roundtrip
+        stream = io.StringIO()
+        saveToStream(stream, grid, full=True, tryMap=True)
+        stream.seek(0)
+        gridBp = Grids.load(stream)
+        gridDesign = gridBp["core"]
+        _ = gridDesign.construct()
+
+        # test again after the round-trip
+        self.assertEqual(gridDesign.gridContents[0, 0], "AA")
+        self.assertEqual(gridDesign.gridContents[-2, 1], "BB")
+        self.assertEqual(gridDesign.gridContents[-1, 0], "CC")
+        self.assertEqual(gridDesign.gridContents[-1, 1], "WW")
+        self.assertEqual(gridDesign.gridContents[1, 0], "XX")
+        self.assertEqual(gridDesign.gridContents[2, -1], "YY")
+        self.assertEqual(gridDesign.gridContents[1, -1], "ZZ")
+        self.assertEqual(gridDesign.gridContents[-3, 1], "RC")
+        self.assertEqual(gridDesign.gridContents[3, -1], "PC")
+
+
 class TestGridBlueprintsSection(unittest.TestCase):
     """Tests for lattice blueprint section."""
 
@@ -290,8 +413,15 @@ class TestGridBlueprintsSection(unittest.TestCase):
 
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
-        _ = gridDesign.construct()
+        grid = gridDesign.construct()
+        self.assertAlmostEqual(grid.pitch, 1.2)
         self.assertEqual(gridDesign.gridContents[-8, 0], "6")
+
+        gridDesign = self.grids["pins"]
+        grid = gridDesign.construct()
+        self.assertAlmostEqual(grid.pitch, 1.3)
+        self.assertEqual(gridDesign.gridContents[-4, 0], "FP")
+        self.assertEqual(gridDesign.gridContents[-3, 3], "CL")
 
         # Cartesian full, odd
         gridDesign2 = self.grids["sfp"]
@@ -323,6 +453,30 @@ class TestGridBlueprintsSection(unittest.TestCase):
         self.assertEqual(gridDesign4.gridContents[-3, -3], "1")
         with self.assertRaises(KeyError):
             self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
+
+    def test_pitchBasics(self):
+        # use only hex input
+        p = Pitch(123, 0, 0, 0)
+        self.assertEqual(p.hex, 123)
+        self.assertEqual(p.x, 0)
+        self.assertEqual(p.y, 0)
+        self.assertEqual(p.z, 0)
+
+        # use only X, Y, Z inputs
+        p = Pitch(0, 1, 2, 3)
+        self.assertEqual(p.hex, 1)
+        self.assertEqual(p.x, 1)
+        self.assertEqual(p.y, 2)
+        self.assertEqual(p.z, 3)
+
+    def test_pitchEdgeCases(self):
+        with self.assertRaises(InputError):
+            # cannot mix hex with x,y,z pitch
+            Pitch(1, 2, 3, 4)
+
+        with self.assertRaises(InputError):
+            # SOMETHING needs to be non-zero
+            Pitch(0, 0, 0, 0)
 
     def test_simpleReadLatticeMap(self):
         """Read lattice map and create a grid.

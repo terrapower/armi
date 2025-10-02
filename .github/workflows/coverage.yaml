@@ -31,8 +31,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.11'
-      - name: Update package index
-        run: sudo apt-get update
       - name: Install ARMI and MPI
         run: |
           sudo apt-get -y install libopenmpi-dev
@@ -47,6 +45,7 @@ jobs:
           coverage combine --rcfile=pyproject.toml --keep -a
           coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover --fail-under=90
       - name: Publish to coveralls.io
+        if: github.ref == 'refs/heads/main'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

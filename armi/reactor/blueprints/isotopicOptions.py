@@ -437,7 +437,7 @@ def getDefaultNuclideFlags():
     for boron in [10, 11]:
         nuclideFlags[f"B{boron}"] = {"burn": False, "xs": True, "expandTo": None}
 
-    for struct in ["ZR", "C", "SI", "V", "CR", "MN", "FE", "NI", "MO", "W", "NA", "HE"]:
+    for struct in ["ZR", "C", "SI", "V", "CR", "MN", "FE", "NI", "MO", "W", "NA", "HE", "AL", "CO", "NB"]:
         nuclideFlags[struct] = {"burn": False, "xs": True, "expandTo": None}
 
     return nuclideFlags

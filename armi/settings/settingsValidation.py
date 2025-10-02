@@ -340,11 +340,20 @@ class Inspector:
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         from armi import operators
+        from armi.physics.fuelCycle.settings import (
+            CONF_SHUFFLE_LOGIC,
+            CONF_SHUFFLE_SEQUENCE_FILE,
+        )
         from armi.physics.neutronics.settings import (
             CONF_BC_COEFFICIENT,
             CONF_BOUNDARIES,
             CONF_XS_KERNEL,
             CONF_XS_SCATTERING_ORDER,
+        )
+        from armi.settings.fwSettings.globalSettings import (
+            CONF_EXPLICIT_REPEAT_SHUFFLES,
+            CONF_ZONE_DEFINITIONS,
+            CONF_ZONES_FILE,
         )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
@@ -420,12 +429,35 @@ class Inspector:
             return any(fName == os.path.split(copyFile)[1] for copyFile in self.cs["copyFilesFrom"])
 
         self.addQuery(
-            lambda: self.cs["explicitRepeatShuffles"]
-            and not self._csRelativePathExists(self.cs["explicitRepeatShuffles"])
-            and not _willBeCopiedFrom(self.cs["explicitRepeatShuffles"]),
+            lambda: self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES]
+            and not self._csRelativePathExists(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES])
+            and not _willBeCopiedFrom(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES]),
             "The specified repeat shuffle file `{0}` does not exist, and won't be copied. Run will crash.".format(
-                self.cs["explicitRepeatShuffles"]
+                self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES]
             ),
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            and not self._csRelativePathExists(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])
+            and not _willBeCopiedFrom(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]),
+            "The specified shuffle sequence file `{0}` does not exist. Run will crash.".format(
+                self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            ),
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: (
+                bool(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES])
+                and (bool(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]) or bool(self.cs[CONF_SHUFFLE_LOGIC]))
+            ),
+            "explicitRepeatShuffles cannot be used together with shuffleSequenceFile or shuffleLogic. "
+            "Please specify either explicitRepeatShuffles alone, or some combination of shuffleSequenceFile"
+            "and shuffleLogic.",
             "",
             self.NO_ACTION,
         )
@@ -621,6 +653,12 @@ class Inspector:
             lambda: (self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC and self.cs[CONF_BC_COEFFICIENT]),
             f"General neutronic boundary condition was not selected, but `{CONF_BC_COEFFICIENT}` was defined. "
             f"Please enable `Generalized` neutronic boundary condition or disable `{CONF_BC_COEFFICIENT}`.",
+            "",
+            self.NO_ACTION,
+        )
+        self.addQuery(
+            lambda: (self.cs[CONF_ZONE_DEFINITIONS] and self.cs[CONF_ZONES_FILE]),
+            f"Cannot specify both {CONF_ZONE_DEFINITIONS} and {CONF_ZONES_FILE}. Please remove one and resubmit.",
             "",
             self.NO_ACTION,
         )

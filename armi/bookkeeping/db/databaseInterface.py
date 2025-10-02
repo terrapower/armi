@@ -270,8 +270,7 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        If filename is present only returns one database since specifically instructed
-        to load from that database.
+        If filename is present only returns one database since specifically instructed to load from that database.
         """
         if fileName is not None:
             # only yield 1 database if the file name is specified
@@ -291,8 +290,8 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        Will load preferentially from the ``fileName`` if passed. Otherwise will load from
-        existing database in memory or ``cs["reloadDBName"`]` in that order.
+        Will load preferentially from the ``fileName`` if passed. Otherwise will load from existing database in memory
+        or ``cs["reloadDBName"]`` in that order.
 
         Raises
         ------

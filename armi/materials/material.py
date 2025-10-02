@@ -259,8 +259,7 @@ class Material:
 
         Notes
         -----
-        For a detailed description of the linear expansion methodology, see
-        :ref:`thermalExpansion` in the documentation.
+        For a detailed description of the linear expansion methodology, see "thermalExpansion" in the documentation.
 
         Parameters
         ----------
@@ -461,7 +460,7 @@ class Material:
         dLL = self.linearExpansionPercent(Tk=Tk)
         if self.refDens is None:
             runLog.warning(
-                "{0} has no reference density".format(self),
+                f"{self} has no reference density",
                 single=True,
                 label="No refD " + self.getName(),
             )
@@ -833,9 +832,6 @@ class FuelMaterial(Material):
     class1_wt_frac = None
     class1_custom_isotopics = None
     class2_custom_isotopics = None
-    puFrac = 0.0
-    uFrac = 0.0
-    zrFrac = 0.0
 
     def applyInputParams(
         self,
@@ -908,8 +904,5 @@ class FuelMaterial(Material):
         m.class1_wt_frac = self.class1_wt_frac
         m.class1_custom_isotopics = self.class1_custom_isotopics
         m.class2_custom_isotopics = self.class2_custom_isotopics
-        m.puFrac = self.puFrac
-        m.uFrac = self.uFrac
-        m.zrFrac = self.zrFrac
 
         return m

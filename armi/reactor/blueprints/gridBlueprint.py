@@ -130,6 +130,46 @@ class Triplet(yamlize.Object):
         self.z = z
 
 
+class Pitch(yamlize.Object):
+    """A x, y, z triplet or triangular hex pitch for coordinates or lattice pitch for hexagonal grids."""
+
+    hex = yamlize.Attribute(type=float, default=0.0)
+    x = yamlize.Attribute(type=float, default=0.0)
+    y = yamlize.Attribute(type=float, default=0.0)
+    z = yamlize.Attribute(type=float, default=0.0)
+
+    def __init__(self, hexPitch=0.0, x=0.0, y=0.0, z=0.0):
+        """
+        Parameters
+        ----------
+        hex : float, optional
+            Triangular/hex lattice pitch
+        x : float, optional
+            Cartesian grid: pitch in the x direction
+            Hexagonal grid: interpreted as hex lattice pitch
+        y : float, optional
+            Cartesian grid: pitch in the y direction
+        z : float, optional
+            Pitch in the z direction
+
+        Raises
+        ------
+        InputError
+            * If a `hexPitch` and `x` or `y` pitch are provided simultaneously.
+            * If no non-zero value is provided for any parameter.
+        """
+        if hexPitch and (x or y):
+            raise InputError("Cannot mix `hex` with `x` and `y` attributes of `latticePitch`.")
+
+        if not any([hexPitch, x, y, z]):
+            raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
+
+        self.hex = hexPitch or x
+        self.x = x
+        self.y = y
+        self.z = z
+
+
 class GridBlueprint(yamlize.Object):
     """
     A grid input blueprint.
@@ -169,9 +209,9 @@ class GridBlueprint(yamlize.Object):
         The geometry of the grid (e.g. 'cartesian')
     latticeMap : str
         An asciimap representation of the lattice contents
-    latticeDimensions : Triplet
-        An x/y/z Triplet with grid dimensions in cm. This is used to specify a uniform grid, such as
-        Cartesian or Hex. Mutually exclusive with gridBounds.
+    latticeDimensions : Pitch
+        An x/y/z Triplet or hex pitch with grid dimensions in cm. This is used to specify a
+        uniform grid, such as Cartesian or Hex. Mutually exclusive with gridBounds.
     gridBounds : dict
         A dictionary containing explicit grid boundaries. Specific keys used will depend on the type
         of grid being defined. Mutually exclusive with latticeDimensions.
@@ -188,7 +228,7 @@ class GridBlueprint(yamlize.Object):
     name = yamlize.Attribute(key="name", type=str)
     geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
     latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
-    latticeDimensions = yamlize.Attribute(key="lattice pitch", type=Triplet, default=None)
+    latticeDimensions = yamlize.Attribute(key="lattice pitch", type=Pitch, default=None)
     gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
     symmetry = yamlize.Attribute(
         key="symmetry",
@@ -273,13 +313,13 @@ class GridBlueprint(yamlize.Object):
         """
         Build spatial grid.
 
-        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be
-        adjusted to the proper dimensions (often by inspection of children) at a later time.
+        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be adjusted to the proper
+        dimensions (often by inspection of children) at a later time.
         """
         symmetry = geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
         geom = self.geom
         maxIndex = self._getMaxIndex()
-        runLog.extra("Creating the spatial grid")
+        runLog.extra(f"Creating the spatial grid {self.name}", single=True)
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
                 # This check is regrettably late. It would be nice if we could validate that bounds
@@ -301,7 +341,17 @@ class GridBlueprint(yamlize.Object):
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
-            pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
+            if not self.latticeDimensions:
+                pitch = 1.0
+            else:
+                ld = self.latticeDimensions
+                if ld.hex and (ld.x or ld.y):
+                    raise InputError("Cannot mix `hex` with `x` and `y` attributes of `latticePitch`.")
+
+                if not any([ld.hex, ld.x, ld.y, ld.z]):
+                    raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
+
+                pitch = ld.hex or ld.x
             # add 2 for potential dummy assems
             spatialGrid = grids.HexGrid.fromPitch(
                 pitch,
@@ -514,6 +564,7 @@ def _filterOutsideDomain(gridBp):
                             gridBp.gridContents[symmetric],
                         )
                     )
+
         del gridBp.gridContents[idx]
 
 
@@ -521,21 +572,19 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     """
     Save the blueprints to the passed stream.
 
-    This can save either the entire blueprints, or just the `grids:` section of the blueprints,
-    based on the passed ``full`` argument. Saving just the grid blueprints can be useful when
-    cobbling blueprints together with !include flags.
+    This can save either the entire blueprints, or just the `grids:` section of the blueprints, based on the passed
+    ``full`` argument. Saving just the grid blueprints can be useful when cobbling blueprints together with !include
+    flags.
 
     .. impl:: Write a blueprint file from a blueprint object.
         :id: I_ARMI_BP_TO_DB
         :implements: R_ARMI_BP_TO_DB
 
-        First makes a copy of the blueprints that are passed in. Then modifies any grids specified
-        in the blueprints into a canonical lattice map style, if needed. Then uses the ``dump``
-        method that is inherent to all ``yamlize`` subclasses to write the blueprints to the given
-        ``stream`` object.
+        First makes a copy of the blueprints that are passed in. Then modifies any grids specified in the blueprints
+        into a canonical lattice map style, if needed. Then uses the ``dump`` method that is inherent to all ``yamlize``
+        subclasses to write the blueprints to the given ``stream`` object.
 
-        If called with the ``full`` argument, the entire blueprints is dumped. If not, only the
-        grids portion is dumped.
+        If called with the ``full`` argument, the entire blueprints is dumped. If not, only the grids portion is dumped.
 
     Parameters
     ----------
@@ -547,10 +596,9 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     tryMap : bool
         regardless of input form, attempt to output as a lattice map
     """
-    # To save, we want to try our best to output our grid blueprints in the lattice map style.
-    # However, we do not want to wreck the state that the current blueprints are in. So we make a
-    # copy and do some manipulations to try to canonicalize it and save that, leaving the original
-    # blueprints unmolested.
+    # To save, we want to try our best to output our grid blueprints in the lattice map style. However, we do not want
+    # to wreck the state that the current blueprints are in. So we make a copy and do some manipulations to try to
+    # canonicalize it and save that, leaving the original blueprints unmolested.
     bp = copy.deepcopy(bluep)
 
     if isinstance(bp, blueprints.Blueprints):
@@ -558,11 +606,11 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     elif isinstance(bp, blueprints.Grids):
         gridDesigns = bp
     else:
-        raise TypeError("Expected Blueprints or Grids, got {}".format(type(bp)))
+        raise TypeError(f"Expected Blueprints or Grids, got {type(bp)}")
 
     for gridDesignType, gridDesign in gridDesigns.items():
-        # The core equilibrium path should be put into the grid contents rather than a lattice map
-        # until we write a string-> tuple parser for reading it back in. Skip this type of grid.
+        # The core equilibrium path should be put into the grid contents rather than a lattice map until we write a
+        # string-> tuple parser for reading it back in. Skip this type of grid.
         if gridDesignType == "coreEqPath":
             continue
         _filterOutsideDomain(gridDesign)
@@ -575,20 +623,24 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
             aMap = asciimaps.asciiMapFromGeomAndDomain(gridDesign.geom, symmetry.domain)()
-            aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
             try:
-                aMap.gridContentsToAscii()
+                if gridDesign.latticeMap:
+                    # Try to use the lattice map first, it was the original source of truth.
+                    aMap.readAscii(gridDesign.latticeMap)
+                else:
+                    # If there is no original lattice map, use the current grid of data.
+                    aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
+                    aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
-                    "The `lattice map` for the current assembly arrangement cannot be written. "
-                    f"Defaulting to using the `grid contents` dictionary instead. Exception: {e}"
+                    "The `lattice map` for the current assembly arrangement cannot be written. Defaulting to using the "
+                    f"`grid contents` dictionary instead. Exception: {e}"
                 )
                 aMap = None
 
             if aMap is not None:
-                # If there is an ascii map available then use it to fill out the contents of the
-                # lattice map section of the grid design. This also clears out the grid contents so
-                # there is not duplicate data.
+                # If there is an ascii map available then use it to fill out the contents of the lattice map section of
+                # the grid design. This also clears out the grid contents so there is not duplicate data.
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)
@@ -597,8 +649,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 gridDesign.latticeMap = None
 
         else:
-            # grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap,
-            # unless it was set explicitly in code somewhere. Discard if there is one.
+            # Grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap, unless it was set
+            # explicitly in code somewhere. Discard if there is one.
             gridDesign.latticeMap = None
 
     toSave = bp if full else gridDesigns

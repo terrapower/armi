@@ -14,6 +14,8 @@
 
 """Component parameter definitions."""
 
+import numpy as np
+
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyF32Array
@@ -120,6 +122,13 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "enrichmentBOL",
+            units=units.UNITLESS,
+            description="Enrichment during fabrication (mass fraction)",
+            default=0.0,
+        )
+
+        pb.defParam(
             "massHmBOL",
             units=units.GRAMS,
             description="Mass of heavy metal at BOL",
@@ -175,11 +184,23 @@ def getComponentParameterDefinitions():
             description="Total number of moles of heavy metal at BOL.",
         )
 
+        def _validatePinIndices(self, val):
+            if val is not None:
+                # holds [0, 65_535] so at most, 65_535 pins per block
+                self._p_pinIndices = np.array(val, dtype=np.uint16)
+            else:
+                self._p_pinIndices = None
+
         pb.defParam(
-            "puFrac",
-            default=0.0,
+            "pinIndices",
+            default=None,
+            description=(
+                "Indices within data arrays where values for this component are stored. "
+                "The array is zero indexed and structured such that the j-th pin on this "
+                "component can be found at ``Block.getPinLocations()[pinIndices[j]]``. "
+            ),
             units=units.UNITLESS,
-            description="Current average Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
+            setter=_validatePinIndices,
         )
 
     return pDefs
@@ -217,6 +238,14 @@ def getHoledHexagonParameterDefinitions():
         pb.defParam("holeOD", units=units.CM, description="Diameter of interior hole(s)")
 
         pb.defParam("nHoles", units=units.UNITLESS, description="Number of interior holes")
+
+        pb.defParam(
+            "holeRadFromCenter",
+            units=units.CM,
+            description="Distance from the center of the hexagon to the center of the holes assuming the hole centers "
+            "all lie on a circle.",
+            default=None,
+        )
 
     return pDefs
 

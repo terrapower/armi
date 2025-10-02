@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.5.1"
+version = "0.6.1"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
 requires-python = ">3.8"
@@ -40,7 +40,6 @@ dependencies = [
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "python-dateutil>=2.2", # To read a datetime string more easily.
     "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
     "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below

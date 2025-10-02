@@ -61,6 +61,7 @@ from armi import context, getApp, getPluginManagerOrFail, meta, runLog, settings
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.layout import (
     DB_VERSION,
+    LOC_COORD,
     Layout,
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
@@ -390,12 +391,12 @@ class Database:
         custom Application you do not have access to, the DB may not be usable.
         """
         cs = settings.Settings()
-        cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
+        cs.path = self.fileName
         cs.loadFromString(self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids)
 
         return cs
 
-    def loadBlueprints(self):
+    def loadBlueprints(self, cs=None):
         """Attempt to load reactor blueprints from the database file.
 
         Notes
@@ -413,6 +414,12 @@ class Database:
 
         try:
             bpString = self.h5db["inputs/blueprints"].asstr()[()]
+            # Need to update the blueprint file to be the database so that its not pointing at a source
+            # that doesn't exist anymore (the original blueprints yaml).
+
+            if cs:
+                # Update the settings to point at where the file was actually read from
+                cs[CONF_LOADING_FILE] = os.path.basename(self.fileName)
         except KeyError:
             # not all reactors need to be created from blueprints, so they may not exist
             pass
@@ -469,12 +476,22 @@ class Database:
 
         if bpString is None:
             bpPath = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
-            # only store blueprints if we actually loaded from them
-            if bpPath.exists() and bpPath.is_file():
-                # Ensure that the input as stored in the DB is complete
-                bpString = resolveMarkupInclusions(pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]).read()
+            if bpPath.suffix.lower() in (".h5", ".hdf5"):
+                # The blueprints are in a database file, they need to be read
+                try:
+                    db = h5py.File(bpPath, "r")
+                    bpString = db["inputs/blueprints"].asstr()[()]
+                except KeyError:
+                    # not all reactors need to be created from blueprints, so they may not exist
+                    bpString = ""
             else:
-                bpString = ""
+                # The blueprints are a standard blueprints yaml that can be read.
+                if bpPath.exists() and bpPath.is_file():
+                    # only store blueprints if we actually loaded from them
+                    # Ensure that the input as stored in the DB is complete
+                    bpString = resolveMarkupInclusions(pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]).read()
+                else:
+                    bpString = ""
 
         self.h5db["inputs/settings"] = csString
         self.h5db["inputs/blueprints"] = bpString
@@ -708,7 +725,7 @@ class Database:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS(handleInvalids=handleInvalids)
-        bp = bp or self.loadBlueprints()
+        bp = bp or self.loadBlueprints(cs)
 
         if callReactorConstructionHook:
             getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
@@ -800,7 +817,7 @@ class Database:
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
-        comp, _, numChildren, location = next(comps)
+        comp, _, numChildren, location, locationType = next(comps)
 
         # attach the parent early, if provided; some cases need the parent attached for the rest of
         # _compose to work properly.
@@ -821,7 +838,14 @@ class Database:
         # set the spatialLocators on each component
         if location is not None:
             if parent is not None and parent.spatialGrid is not None:
-                comp.spatialLocator = parent.spatialGrid[location]
+                if locationType != LOC_COORD:
+                    # We can directly index into the spatial grid for IndexLocation
+                    # and MultiIndexLocators to get equivalent spatial locators
+                    comp.spatialLocator = parent.spatialGrid[location]
+                else:
+                    comp.spatialLocator = grids.CoordinateLocation(
+                        location[0], location[1], location[2], parent.spatialGrid
+                    )
             else:
                 comp.spatialLocator = grids.CoordinateLocation(location[0], location[1], location[2], None)
 
@@ -1022,7 +1046,7 @@ class Database:
                 data = np.array(pDef.serializer.unpack(data, dataSet.attrs[_SERIALIZER_VERSION], attrs))
 
             # nuclides are a special case where we want to keep in np.bytes_ format
-            if data.dtype.type is np.bytes_ and paramName != "nuclides":
+            if data.dtype.type is np.bytes_ and "nuclides" not in paramName.lower():
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
@@ -1462,6 +1486,55 @@ class Database:
             numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
             c.p["nuclides"] = nuclides
             c.p["numberDensities"] = numberDensities
+
+    @staticmethod
+    def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=True):
+        """Given the path to an ARMI database file and a start and end time (in years), return the full set of all time
+        nodes that correspond to that time period in the database.
+
+        Parameters
+        ----------
+        dbPath : str
+            File path to an ARMI database.
+        startTime : int
+            In years, start of the desired interval.
+        endTime : int
+            In years, end of the desired interval.
+        errorIfNotExactlyOne : boolean
+            Raise an error if more than one cycle/node combination is returned. Default is True.
+
+        Returns
+        -------
+        list of strings
+            A list of strings to the desired time interval, e.g.: ["c01n08", "c14n18EOL"]
+        """
+        # basic sanity checks
+        assert startTime >= 0.0, f"The start time cannot be negative: {startTime}."
+        assert endTime >= startTime, f"The end time ({endTime}) is not greater than the start time ({startTime})."
+
+        # open the H5 file directly
+        with h5py.File(dbPath, "r") as h5:
+            # read time steps in H5 file
+            thisTime = 0.0
+            cycleNodes = []
+            for h5Key in h5.keys():
+                if h5Key == "inputs":
+                    continue
+
+                thisTime = h5[h5Key]["Reactor"]["time"][0]
+                if thisTime >= endTime:
+                    cycleNodes.append(h5Key)
+                    break
+                elif thisTime >= startTime:
+                    cycleNodes.append(h5Key)
+
+        # more validation
+        if not cycleNodes:
+            raise ValueError(f"Provided start time ({startTime}) was greater than the modeled period: {thisTime}.")
+        elif errorIfNotExactlyOne and len(cycleNodes) != 1:
+            raise ValueError(f"Did not find exactly one cycle/node pair: {cycleNodes}")
+
+        return cycleNodes
 
 
 def packSpecialData(

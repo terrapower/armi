@@ -18,7 +18,6 @@ import copy
 import math
 import random
 import unittest
-from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose, assert_equal
@@ -654,7 +653,7 @@ class TestCircle(TestShapedComponent):
         "mult": 1.5,
     }
 
-    def test_getThermExpansFactorConsMassLinExpanPerc(self):
+    def test_circleExpansionWorks(self):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
         .. test:: Calculate thermal expansion.
@@ -687,7 +686,7 @@ class TestCircle(TestShapedComponent):
         """Test that ARMI can thermally expands a circle."""
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
-    def test_getBoundingCircleOuterDiameter(self):
+    def test_getBoundingCircleOuterDiam(self):
         ref = self._od
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
@@ -730,7 +729,7 @@ class TestCircle(TestShapedComponent):
             cur = self.component.getArea()
             self.assertAlmostEqual(cur, ref)
 
-    def test_componentInteractionsLinkingByDimensions(self):
+    def test_compInteractionsLinkingByDims(self):
         """Tests linking of Components by dimensions.
 
         The component ``gap``, representing the fuel-clad gap filled with Void, is defined with
@@ -784,7 +783,7 @@ class TestCircle(TestShapedComponent):
         with self.assertRaises(ValueError):
             _gap = Circle("gap", "Void", **gapDims)
 
-    def test_componentInteractionsLinkingBySubtraction(self):
+    def test_compInteractionsLinkingBySubt(self):
         """Tests linking of components by subtraction."""
         nPins = 217
         gapDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.0, "id": 0.9, "mult": nPins}
@@ -1086,7 +1085,7 @@ class TestRectangle(TestShapedComponent):
             negativeRectangle = Rectangle("test", "UZr", **dims)
             negativeRectangle.getArea()
 
-    def test_getBoundingCircleOuterDiameter(self):
+    def test_getBoundingCircleOuterDiam(self):
         """Get outer diameter bounding circle.
 
         .. test:: Rectangle shaped component
@@ -1104,7 +1103,7 @@ class TestRectangle(TestShapedComponent):
         cur = self.component.getArea(cold=True)
         self.assertAlmostEqual(cur, ref)
 
-    def test_getCircleInnerDiameter(self):
+    def test_getCircleInnerDiam(self):
         cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(math.sqrt(25.0), cur)
 
@@ -1152,7 +1151,7 @@ class TestSolidRectangle(TestShapedComponent):
         "mult": 1,
     }
 
-    def test_getBoundingCircleOuterDiameter(self):
+    def test_getBoundingCircleOuterDiam(self):
         """Test get bounding circle of the outer diameter."""
         ref = math.sqrt(50)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
@@ -1211,7 +1210,7 @@ class TestSquare(TestShapedComponent):
             negativeRectangle = Square("test", "UZr", **dims)
             negativeRectangle.getArea()
 
-    def test_getBoundingCircleOuterDiameter(self):
+    def test_getBoundingCircleOuterDiam(self):
         """Get bounding circle outer diameter.
 
         .. test:: Square shaped component
@@ -1227,7 +1226,7 @@ class TestSquare(TestShapedComponent):
         cur = self.component.getComponentArea(cold=True)
         self.assertAlmostEqual(cur, ref)
 
-    def test_getCircleInnerDiameter(self):
+    def test_getCircleInnerDiam(self):
         ref = math.sqrt(8.0)
         cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
@@ -1323,7 +1322,7 @@ class TestHexagon(TestShapedComponent):
     componentCls = Hexagon
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "op": 10.0, "ip": 5.0, "mult": 1}
 
-    def test_getBoundingCircleOuterDiameter(self):
+    def test_getBoundingCircleOuterDiam(self):
         ref = 2.0 * 10 / math.sqrt(3)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
@@ -2006,16 +2005,6 @@ class TestPinQuantities(unittest.TestCase):
         assert_equal(pinMgFluxes, simPinMgFluxes)
         assert_equal(pinMgFluxesAdj, simPinMgFluxesAdj)
         assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
-
-        # Mock the spatial locator of the component to raise error
-        with patch.object(fuelComponent, "spatialLocator") as mockLocator:
-            mockLocator.i = 111
-            mockLocator.j = 111
-            with self.assertRaisesRegex(
-                ValueError,
-                f"Failed to retrieve pin indices for component {fuelComponent}",
-            ):
-                fuelComponent.getPinMgFluxes()
 
         # Check assertion for adjoint gamma flux
         with self.assertRaisesRegex(ValueError, "Adjoint gamma flux is currently unsupported."):

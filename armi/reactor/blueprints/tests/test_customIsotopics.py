@@ -285,7 +285,7 @@ blocks:
             <<: *basic_fuel
             material: UraniumOxide
             isotopics: bad uranium isotopic mass fractions
-    
+
     no density uo2: &block_5
         fuel:
             <<: *basic_fuel
@@ -302,7 +302,7 @@ assemblies:
         xs types: [A, A, A]
         material modifications:
             TD_frac: ["", "", ""]
-    
+
     fuel b: &assembly_b
         specifier: IC
         blocks: [*block_0, *block_3, *block_2]
@@ -374,7 +374,7 @@ assemblies:
         keys2 = set([i for i, v in enumerate(fuel2.p.numberDensities) if v == 0.0])
         self.assertEqual(keys1, keys2)
 
-    def test_densitiesAppliedToNonCustomMaterials(self):
+    def test_densAppliedToNonCustomMats(self):
         """Ensure that a density can be set in custom isotopics for components using library materials."""
         # The template block
         fuel0 = self.a[0].getComponent(Flags.FUEL)
@@ -404,7 +404,7 @@ assemblies:
         self.assertEqual(fuel6.material.name, fuel0.material.name)
         self.assertEqual("UZr", fuel0.material.name)
 
-    def test_densitiesAppliedToNonCustomMaterialsFluid(self):
+    def test_densAppliedToNonCustomMatsFluid(self):
         """
         Ensure that a density can be set in custom isotopics for components using library materials,
         specifically in the case of a fluid component. In this case, inputHeightsConsideredHot
@@ -540,6 +540,17 @@ assemblies:
         """Make sure nuclides specified as In-Problem but not actually in any material are only natural isotopics."""
         self.assertIn("AL27", self.bp.allNuclidesInProblem)
         self.assertNotIn("AL26", self.bp.allNuclidesInProblem)
+
+    def test_getDefaultNuclideFlags(self):
+        # This is a bit of a silly test. We are checking what is essentially a hard coded dictionary
+        nucDict = isotopicOptions.getDefaultNuclideFlags()
+        entry = {"burn": True, "xs": True, "expandTo": None}
+        self.assertEqual(nucDict["DUMP1"], entry)
+        self.assertEqual(nucDict["CM244"], entry)
+        self.assertEqual(nucDict["LFP38"], entry)
+        entry = {"burn": False, "xs": True, "expandTo": None}
+        self.assertEqual(nucDict["B10"], entry)
+        self.assertEqual(nucDict["NI"], entry)
 
 
 class TestCustomIsotopics_ErrorConditions(unittest.TestCase):

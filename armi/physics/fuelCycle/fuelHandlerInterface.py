@@ -20,6 +20,7 @@ from armi.physics.fuelCycle.settings import (
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
     CONF_SHUFFLE_LOGIC,
+    CONF_SHUFFLE_SEQUENCE_FILE,
 )
 from armi.utils import plotting
 
@@ -44,16 +45,16 @@ class FuelHandlerInterface(interfaces.Interface):
         User logic is able to be executed from within the
         :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` method,
         which will use the :py:meth:`~armi.physics.fuelCycle.fuelHandlerFactory.fuelHandlerFactory`
-        to search for a Python file specified by the case setting ``shuffleLogic``.
+        to search for a Python file or importable module specified by the case setting ``shuffleLogic``.
         If it exists, the fuel handler with name specified by the user via the ``fuelHandlerName``
         case setting will be imported, and any actions in its ``outage`` method
         will be executed at the :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
         hook.
 
         If no class with the name specified by the ``fuelHandlerName`` setting is found
-        in the file with path ``shuffleLogic``, an error is returned.
+        in the module or file specified by ``shuffleLogic``, an error is returned.
 
-        See the user manual for how the custom shuffle logic file should be constructed.
+        See the user manual for how the custom shuffle logic module or file should be constructed.
     """
 
     name = "fuelHandler"
@@ -72,7 +73,7 @@ class FuelHandlerInterface(interfaces.Interface):
             cs.getSetting(settingName): [
                 cs[settingName],
             ]
-            for settingName in [CONF_SHUFFLE_LOGIC, "explicitRepeatShuffles"]
+            for settingName in [CONF_SHUFFLE_LOGIC, "explicitRepeatShuffles", CONF_SHUFFLE_SEQUENCE_FILE]
             if cs[settingName]
         }
         return files
@@ -154,30 +155,24 @@ class FuelHandlerInterface(interfaces.Interface):
             out.write("Before cycle {0}:\n".format(cycle + 1))
             movesThisCycle = self.r.core.moves.get(cycle)
             if movesThisCycle is not None:
-                for (
-                    fromLoc,
-                    toLoc,
-                    chargeEnrich,
-                    assemblyType,
-                    movingAssemName,
-                ) in movesThisCycle:
-                    enrichLine = " ".join(["{0:.8f}".format(enrich) for enrich in chargeEnrich])
-                    if fromLoc in ["ExCore", "SFP"]:
+                for move in movesThisCycle:
+                    enrichLine = " ".join(["{0:.8f}".format(enrich) for enrich in move.enrichList])
+                    if move.fromLoc in ["Delete", "SFP"]:
                         # this is a re-entering assembly. Give extra info so repeat shuffles can handle it
                         out.write(
                             "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n".format(
-                                fromLoc,
-                                toLoc,
-                                assemblyType,
+                                move.fromLoc,
+                                move.toLoc,
+                                move.assemType,
                                 enrichLine,
-                                movingAssemName,
+                                move.nameAtDischarge,
                             )
                         )
                     else:
                         # skip extra info. regular expression in readMoves will handle it just fine.
                         out.write(
                             "{0} moved to {1} with assembly type {2} with enrich list: {3}\n".format(
-                                fromLoc, toLoc, assemblyType, enrichLine
+                                move.fromLoc, move.toLoc, move.assemType, enrichLine
                             )
                         )
             out.write("\n")

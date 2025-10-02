@@ -816,7 +816,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         self.r.core.p.maxGridDpa = maxGridDose
 
     def _updateAssemblyLevelParams(self):
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             totalAbs = 0.0  # for calculating assembly average k-inf
             totalSrc = 0.0
             for b in a:

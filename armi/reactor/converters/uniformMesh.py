@@ -55,13 +55,11 @@ The mesh mapping happens as described in the figure:
 
 import collections
 import copy
-import glob
-import re
+import typing
 from timeit import default_timer as timer
 
 import numpy as np
 
-import armi
 from armi import runLog
 from armi.physics.neutronics.globalFlux import RX_ABS_MICRO_LABELS, RX_PARAM_NAMES
 from armi.reactor import grids, parameters
@@ -69,8 +67,11 @@ from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.utils import iterables, plotting
+from armi.utils import plotting
 from armi.utils.mathematics import average1DWithinTolerance
+
+if typing.TYPE_CHECKING:
+    from armi.reactor.blocks import Block
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
@@ -152,9 +153,14 @@ class UniformMeshGenerator:
         if self.minimumMeshSize is not None:
             self._decuspAxialMesh()
 
-    def _computeAverageAxialMesh(self):
+    def _computeAverageAxialMesh(self, includeSubMesh: bool = True):
         """
         Computes an average axial mesh based on the core's reference assembly.
+
+        Parameters
+        ----------
+        includeSubMesh: bool, optional
+            Whether to include the computational axial submesh in the average mesh.
 
         Notes
         -----
@@ -176,12 +182,12 @@ class UniformMeshGenerator:
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])[1:])
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=includeSubMesh)[1:])
         allMeshes = []
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
             # (typically zero).
-            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
+            aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=includeSubMesh)[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
 
@@ -512,6 +518,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
+        self.convReactor.core.zones = self._sourceReactor.core.zones
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(f"Reactor core conversion time: {completeEndTime - completeStartTime} seconds")
@@ -918,35 +925,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return cachedBlockParamData
 
     def plotConvertedReactor(self):
-        """Generate a radial layout image of the converted reactor core."""
-        bpAssems = list(self.convReactor.blueprints.assemblies.values())
-        assemsToPlot = []
-        for bpAssem in bpAssems:
-            coreAssems = self.convReactor.core.getAssemblies(bpAssem.p.flags)
-            if not coreAssems:
-                continue
-            assemsToPlot.append(coreAssems[0])
-
-        # Obtain the plot numbering based on the existing files so that existing plots
-        # are not overwritten.
-        start = 0
-        existingFiles = glob.glob(f"{self.convReactor.core.name}AssemblyTypes" + "*" + ".png")
-        # This loops over the existing files for the assembly types outputs
-        # and makes a unique integer value so that plots are not overwritten. The
-        # regular expression here captures the first integer as AssemblyTypesX and
-        # then ensures that the numbering in the next enumeration below is 1 above that.
-        for f in existingFiles:
-            newStart = int(re.search(r"\d+", f).group())
-            if newStart > start:
-                start = newStart
-        for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=start + 1):
-            assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
-            plotting.plotAssemblyTypes(
-                assemBatch,
-                assemPlotName,
-                maxAssems=6,
-                showBlockAxMesh=True,
-            )
+        """Generate a radial layout image of the converted reactor core. A pass-through to preserve the API."""
+        plotting.plotRadialReactorLayouts(self.convReactor)
 
     def reset(self):
         """Clear out stored attributes and reset the global assembly number."""
@@ -1038,7 +1018,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # Check if the source reactor has a value assigned for this
             # parameter and if so, then apply it. Otherwise, revert back to
             # the original value.
-            if sourceReactor.core.p[paramName] or paramName not in self._cachedReactorCoreParamData:
+            paramDefined = isinstance(sourceReactor.core.p[paramName], np.ndarray) or sourceReactor.core.p[paramName]
+            if paramDefined or paramName not in self._cachedReactorCoreParamData:
                 val = sourceReactor.core.p[paramName]
             else:
                 val = self._cachedReactorCoreParamData[paramName]
@@ -1388,7 +1369,7 @@ class ParamMapper:
     the same data.
     """
 
-    def __init__(self, reactorParamNames, blockParamNames, b):
+    def __init__(self, reactorParamNames: list[str], blockParamNames: list[str], b: "Block"):
         """
         Initialize the list of parameter defaults.
 
@@ -1416,8 +1397,7 @@ class ParamMapper:
         self.reactorParamNames = reactorParamNames
         self.blockParamNames = blockParamNames
 
-    @staticmethod
-    def paramSetter(block, vals, paramNames):
+    def paramSetter(self, block: "Block", vals: list, paramNames: list[str]):
         """Sets block parameter data."""
         for paramName, val in zip(paramNames, vals):
             # Skip setting None values.
@@ -1425,36 +1405,50 @@ class ParamMapper:
                 continue
 
             if isinstance(val, (tuple, list, np.ndarray)):
-                ParamMapper._arrayParamSetter(block, [val], [paramName])
+                self._arrayParamSetter(block, [val], [paramName])
             else:
-                ParamMapper._scalarParamSetter(block, [val], [paramName])
+                self._scalarParamSetter(block, [val], [paramName])
 
-    def paramGetter(self, block, paramNames):
+    def paramGetter(self, block: "Block", paramNames: list[str]):
         """Returns block parameter values as an array in the order of the parameter names given."""
         paramVals = []
+        symmetryFactor = block.getSymmetryFactor()
         for paramName in paramNames:
+            multiplier = self.getFactorSymmetry(paramName, symmetryFactor)
             val = block.p[paramName]
             # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, list, np.ndarray)):
-                paramVals.append(np.array(val) if len(val) > 0 else None)
-            else:
+            if val is None:
                 paramVals.append(val)
+            elif isinstance(val, (tuple, list, np.ndarray)):
+                paramVals.append(np.array(val) * multiplier if len(val) > 0 else None)
+            else:
+                paramVals.append(val * multiplier)
 
         return np.array(paramVals, dtype=object)
 
-    @staticmethod
-    def _scalarParamSetter(block, vals, paramNames):
+    def _scalarParamSetter(self, block: "Block", vals: list, paramNames: list[str]):
         """Assigns a set of float/integer/string values to a given set of parameters on a block."""
+        symmetryFactor = block.getSymmetryFactor()
         for paramName, val in zip(paramNames, vals):
-            block.p[paramName] = val
+            if val is None:
+                block.p[paramName] = val
+            else:
+                block.p[paramName] = val / self.getFactorSymmetry(paramName, symmetryFactor)
 
-    @staticmethod
-    def _arrayParamSetter(block, arrayVals, paramNames):
+    def _arrayParamSetter(self, block: "Block", arrayVals: list, paramNames: list[str]):
         """Assigns a set of list/array values to a given set of parameters on a block."""
+        symmetryFactor = block.getSymmetryFactor()
         for paramName, vals in zip(paramNames, arrayVals):
             if vals is None:
                 continue
-            block.p[paramName] = np.array(vals)
+            block.p[paramName] = np.array(vals) / self.getFactorSymmetry(paramName, symmetryFactor)
+
+    def getFactorSymmetry(self, paramName: str, symmetryFactor: int):
+        """Returns the symmetry factor if the parameter is volume integrated, returns 1 otherwise."""
+        if self.isVolIntegrated[paramName]:
+            return symmetryFactor
+        else:
+            return 1
 
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):

@@ -18,6 +18,7 @@ import math
 import pathlib
 import random
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -43,6 +44,7 @@ from armi.reactor.assemblies import (
     grids,
     runLog,
 )
+from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
@@ -173,7 +175,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         mat.applyInputParams(0.1, 0.0)
         self.assertAlmostEqual(
             uThZrFuel.getMass("U235") / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
-            0.1,
+            0.1111111111111111,
         )
 
 
@@ -298,6 +300,9 @@ class Assembly_TestCase(unittest.TestCase):
         ref = self.blockList
         self.assertEqual(cur, ref)
 
+        for c in self.assembly:
+            self.assertIs(c.parent, self.assembly)
+
     def test_add(self):
         a = makeTestAssembly(1, 1)
 
@@ -324,30 +329,36 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_scaleParamsWhenMoved(self):
         """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
-        blockParams = {
-            # volume integrated parameters
-            "massHmBOL": 9.0,
-            "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
-            "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
-            "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
-        }
-        for b in self.assembly.iterBlocks(Flags.FUEL):
-            b.p.update(blockParams)
+        with patch.object(self.assembly.p.paramDefs["chargeFis"], "location", ParamLocation.VOLUME_INTEGRATED):
+            # patch makes chargeFis look volume integrated
+            assemblyParams = {"chargeFis": 6.0, "chargeTime": 2}
+            blockParams = {
+                # volume integrated parameters
+                "massHmBOL": 9.0,
+                "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
+                "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
+                "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
+            }
+            self.assembly.p.update(assemblyParams)
+            for b in self.assembly.iterBlocks(Flags.FUEL):
+                b.p.update(blockParams)
 
-        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
-        locator = self.r.core.spatialGrid[i, j, 0]
-        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
-        self.assembly.moveTo(locator)
-        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
-        for b in self.assembly.iterBlocks(Flags.FUEL):
-            # float
-            assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
-            # np.ndarray
-            assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
-            # list
-            assert_allclose(np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3)
-            # string
-            self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
+            i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
+            locator = self.r.core.spatialGrid[i, j, 0]
+            self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+            self.assembly.moveTo(locator)
+            self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+            for b in self.assembly.iterBlocks(Flags.FUEL):
+                # float
+                assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
+                # np.ndarray
+                assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
+                # list
+                assert_allclose(np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3)
+                # string
+                self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
+            self.assertEqual(self.assembly.p["chargeFis"] / assemblyParams["chargeFis"], 1 / 3)
+            self.assertEqual(self.assembly.p["chargeTime"] / assemblyParams["chargeTime"], 1)
 
     def test_getName(self):
         cur = self.assembly.getName()
@@ -920,7 +931,7 @@ class Assembly_TestCase(unittest.TestCase):
             for b, temp in zip(self.assembly, [100, 200, 300]):
                 b.p.THcornTemp = [temp + iCorner for iCorner in range(6)]
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
-            self.assertTrue(np.allclose([200, 201, 202, 203, 204, 205], value))
+            self.assertTrue(np.allclose([300, 301, 302, 303, 304, 305], value))
         finally:
             percentBuDef.location = originalLoc
 
@@ -1086,7 +1097,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
+    def test_snapAxialMesViaBlockIgn(self):
+        """Snap axial mesh to a reference mesh should conserve mass based on Block igniter fuel."""
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1124,7 +1136,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterPlenumMass = b.getMass() - coolMass
 
         # expand the core to the new reference mesh
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
         # 2. check igniter mass after expansion
@@ -1160,7 +1172,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7)
 
         # Shrink the core back to the original mesh size to see if mass is conserved
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
         # 3. check igniter mass after shrink to original
@@ -1196,7 +1208,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
+    def test_snapAxialMeshViaBlockShield(self):
+        """Snap axial mesh to a reference mesh should conserve mass based on Block shield."""
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1230,7 +1243,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         shieldPlenumMass = b.getMass() - coolMass
 
         # expand the core to the new reference mesh
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
         # 2. examine mass change in radial shield after expansion
@@ -1263,7 +1276,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(shieldPlenumMass, shieldPlenumMassAfterExpand * 75.0 / 67.0, 7)
 
         # Shrink the core back to the original mesh size to see if mass is conserved
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
         # 3. examine mass change in radial shield after shrink to original

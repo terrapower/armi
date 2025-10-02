@@ -344,6 +344,7 @@ class AverageBlockCollection(BlockCollection):
             newBlock.setNumberDensities(self._getAverageNumberDensities())
 
         newBlock.p.percentBu = self._calcWeightedBurnup()
+        newBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return newBlock
 
@@ -389,11 +390,11 @@ class AverageBlockCollection(BlockCollection):
         numberDensities : dict
             nucName, ndens data (atoms/bn-cm)
         """
-        nuclides = self.allNuclidesInProblem
         blocks = self.getCandidateBlocks()
         weights = np.array([self.getWeight(b) for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        nuclides = self._getAllNucs(components)
         ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
         return dict(zip(nuclides, ndens))
 
@@ -463,6 +464,14 @@ class AverageBlockCollection(BlockCollection):
         else:
             return True
 
+    @staticmethod
+    def _getAllNucs(components):
+        """Iterate through components and get all unique nuclides."""
+        nucs = set()
+        for c in components:
+            nucs = nucs.union(c.getNuclides())
+        return sorted(list(nucs))
+
 
 def getBlockNuclideTemperature(block, nuclide):
     """Return the average temperature for 1 nuclide."""
@@ -514,7 +523,7 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     return nvt, nv
 
 
-class CylindricalComponentsAverageBlockCollection(BlockCollection):
+class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
     """
     Creates a representative block for the purpose of cross section generation with a one-
     dimensional cylindrical model.
@@ -563,20 +572,14 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
-        for c, allSimilarComponents in zip(sorted(repBlock), componentsInOrder):
+        for i, (c, allSimilarComponents) in enumerate(zip(sorted(repBlock), componentsInOrder)):
             allNucsNames, densities = self._getAverageComponentNucs(allSimilarComponents, bWeights)
             for nuc, aDensity in zip(allNucsNames, densities):
                 c.setNumberDensity(nuc, aDensity)
+            c.temperatureInC = self._getAverageComponentTemperature(i)
+        repBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return repBlock
-
-    @staticmethod
-    def _getAllNucs(components):
-        """Iterate through components and get all unique nuclides."""
-        nucs = set()
-        for c in components:
-            nucs = nucs.union(c.getNuclides())
-        return sorted(list(nucs))
 
     @staticmethod
     def _checkComponentConsistency(b, repBlock):
@@ -1415,11 +1418,15 @@ class CrossSectionGroupManager(interfaces.Interface):
         the core to get by region cross sections and flux factors.
         """
         missingBlueprintBlocks = []
+        blockList = []
         for a in self.r.blueprints.assemblies.values():
-            for b in a:
-                if b.getMicroSuffix() not in blockCollectionsByXsGroup:
-                    b2 = copy.deepcopy(b)
-                    missingBlueprintBlocks.append(b2)
+            blockList.extend(b for b in a)
+
+        self._updateEnvironmentGroups(blockList)
+        for b in blockList:
+            if b.getMicroSuffix() not in blockCollectionsByXsGroup:
+                b2 = copy.deepcopy(b)
+                missingBlueprintBlocks.append(b2)
         return missingBlueprintBlocks
 
     def makeCrossSectionGroups(self):

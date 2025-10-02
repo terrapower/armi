@@ -26,7 +26,7 @@ from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
+from armi.utils import directoryChangers, plotting
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -43,7 +43,7 @@ class TestGeometryConverters(unittest.TestCase):
         converter.ringsToAdd = 1 * ["radial shield"]
         converter.convert(self.r)
 
-        numAssems = len(self.r.core.getAssemblies())
+        numAssems = len(self.r.core)
         self.assertEqual(numAssems, 13)  # should end up with 6 reflector assemblies per 1/3rd Core
         locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(4, 1)
         shieldtype = self.r.core.childrenByLocator[locator].getType()
@@ -52,7 +52,7 @@ class TestGeometryConverters(unittest.TestCase):
         # one more test with an uneven number of rings
         converter.numFuelAssems = 8
         converter.convert(self.r)
-        numAssems = len(self.r.core.getAssemblies())
+        numAssems = len(self.r.core)
         self.assertEqual(numAssems, 19)  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
@@ -62,7 +62,7 @@ class TestGeometryConverters(unittest.TestCase):
         converter.numFuelAssems = 60
         converter.convert(self.r)
         numFuelAssems = 0
-        for assem in self.r.core.getAssemblies():
+        for assem in self.r.core:
             if assem.hasFlags(Flags.FUEL):
                 numFuelAssems += 1
         self.assertEqual(numFuelAssems, 60)
@@ -91,7 +91,7 @@ class TestGeometryConverters(unittest.TestCase):
         converter.numFuelAssems = 20
         converter.convert(self.r)
         numFuelAssems = 0
-        for assem in self.r.core.getAssemblies():
+        for assem in self.r.core:
             if assem.hasFlags(Flags.FUEL):
                 numFuelAssems += 1
         self.assertEqual(numFuelAssems, 20)
@@ -174,11 +174,11 @@ class TestHexToRZConverter(unittest.TestCase):
         self.assertEqual(geomConv._newBlockNum, 0)
 
     def _checkBlockAtMeshPoint(self, geomConv):
-        b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
+        b = plotting._getBlockAtMeshPoint(geomConv.convReactor, 0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
         self.assertTrue(b.hasFlags(Flags.FUEL))
 
     def _checkReactorMeshCoordinates(self, geomConv):
-        thetaMesh, radialMesh, axialMesh = geomConv._getReactorMeshCoordinates()
+        thetaMesh, radialMesh, axialMesh = plotting._getReactorMeshCoordinates(geomConv.convReactor)
         expectedThetaMesh = [math.pi * 2.0]
         expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 150.0, 175.0]
         expectedRadialMesh = [
@@ -265,18 +265,18 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         """
 
         def getAssemByRingPos(ringPos: tuple):
-            for a in self.r.core.getAssemblies():
+            for a in self.r.core:
                 if a.spatialLocator.getRingPos() == ringPos:
                     return a
             return None
 
-        numAssemsOrig = len(self.r.core.getAssemblies())
+        numAssemsOrig = len(self.r.core)
         # assert that there is no assembly in the (3, 4) (ring, position).
         self.assertIsNone(getAssemByRingPos((3, 4)))
         # add the assembly
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
-        numAssemsWithEdgeAssem = len(self.r.core.getAssemblies())
+        numAssemsWithEdgeAssem = len(self.r.core)
         # assert that there is an assembly in the (3, 4) (ring, position).
         self.assertIsNotNone(getAssemByRingPos((3, 4)))
         self.assertTrue(numAssemsWithEdgeAssem > numAssemsOrig)
@@ -285,7 +285,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         with mockRunLogs.BufferLog() as mock:
             converter.addEdgeAssemblies(self.r.core)
             self.assertIn("Skipping addition of edge assemblies", mock.getStdout())
-            self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core.getAssemblies()))
+            self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core))
 
         # must be added after geom transform
         for b in self.o.r.core.iterBlocks():
@@ -297,7 +297,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         # remove the assembly that was added
         converter.removeEdgeAssemblies(self.r.core)
         self.assertIsNone(getAssemByRingPos((3, 4)))
-        self.assertEqual(numAssemsOrig, len(self.r.core.getAssemblies()))
+        self.assertEqual(numAssemsOrig, len(self.r.core))
 
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
@@ -338,7 +338,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
 
         def getLTAAssems():
             aList = []
-            for a in self.r.core.getAssemblies():
+            for a in self.r.core:
                 if a.getType == "lta fuel":
                     aList.append(a)
             return aList

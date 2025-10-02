@@ -30,6 +30,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.fwSettings.globalSettings import (
@@ -60,7 +61,7 @@ class TestDatabase(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database.Database = self.dbi.database
+        self.db: Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -83,6 +84,7 @@ class TestDatabase(unittest.TestCase):
 
         grid = self.r.core.spatialGrid
 
+        t = 0
         for cycle in range(2):
             a1 = self.r.core.childrenByLocator[grid[cycle, 0, 0]]
             a2 = self.r.core.childrenByLocator[grid[0, 0, 0]]
@@ -94,12 +96,13 @@ class TestDatabase(unittest.TestCase):
             self.centralTopBlockSerialNums.append(c[-1].p.serialNum)
 
             for node in range(2):
-                self.r.p.cycle = cycle
-                self.r.p.timeNode = node
                 # something that splitDatabase won't change, so that we can make sure
                 # that the right data went to the right new groups/cycles
                 self.r.p.cycleLength = cycle
-
+                self.r.p.cycle = cycle
+                self.r.p.timeNode = node
+                t += 1.0
+                self.r.p.time = t
                 self.db.writeToDB(self.r)
 
         # add some more data that isn't written to the database to test the
@@ -123,22 +126,28 @@ class TestDatabase(unittest.TestCase):
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
 
-        # default load, should pass without error
+        # Default load, should pass without error
         _r = self.db.load(0, 0, allowMissing=True)
 
-        # show that we can use negative indices to load
+        # Show that we can use negative indices to load
         r = self.db.load(0, -2, allowMissing=True)
         self.assertEqual(r.p.timeNode, 1)
 
         with self.assertRaises(ValueError):
-            # makeShuffleHistory only populates 2 nodes, but the case settings
-            # defines 3, so we must check -4 before getting an error
+            # makeShuffleHistory only populates 2 nodes, but the case settings defines 3, so we must check -4 before
+            # getting an error
             self.db.load(0, -4, allowMissing=True)
 
+        # show we can delete a specify H5 key.
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
-        # we shouldn't be able to set the fileName if a file is open
+        # show we can delete an entire time now from the DB.
+        del self.db[0, 0, ""]
+        with self.assertRaises(KeyError):
+            self.db.load(0, 0, allowMissing=False)
+
+        # We should not be able to set the fileName if a file is open.
         with self.assertRaises(RuntimeError):
             self.db.fileName = "whatever.h5"
 
@@ -183,6 +192,10 @@ class TestDatabase(unittest.TestCase):
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
+        # test edge case: ancient DB file
+        with patch.object(self.db, "_versionMinor", 3), self.assertRaises(ValueError):
+            self.db.getHistoriesByLocation([testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)])
+
     def test_fullCoreOnDbLoad(self):
         """Test we can expand a reactor to full core when loading from DB via settings."""
         self.assertFalse(self.r.core.isFullCore)
@@ -206,6 +219,39 @@ class TestDatabase(unittest.TestCase):
             self.db.load(0, 0, cs=cs)
         mockGrow.assert_not_called()
 
+    def test_getCycleNodeAtTime(self):
+        self.makeShuffleHistory()
+        self.db.close()
+
+        # test that the math works correctly
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 0.87, False)
+        self.assertEqual(cycleNodes, ["c00n00"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0.23, 1.2, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0.001, 2.345, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01", "c01n00"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 3.123, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01", "c01n00", "c01n01"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0.123, 4.0, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01", "c01n00", "c01n01"])
+
+        # test some exceptions are correctly raised
+        with self.assertRaises(AssertionError):
+            Database.getCycleNodeAtTime(self.db.fileName, -1, 1, False)
+
+        with self.assertRaises(AssertionError):
+            Database.getCycleNodeAtTime(self.db.fileName, 3, 1, False)
+
+        with self.assertRaises(ValueError):
+            Database.getCycleNodeAtTime(self.db.fileName, 5, 6, False)
+
+        with self.assertRaises(ValueError):
+            Database.getCycleNodeAtTime(self.db.fileName, 1, 140, True)
+
 
 class TestDatabaseSmaller(unittest.TestCase):
     """Tests for the Database class, that can use a smaller test reactor."""
@@ -221,7 +267,7 @@ class TestDatabaseSmaller(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database.Database = self.dbi.database
+        self.db: Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
@@ -323,8 +369,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_DB_TIME
         """
         self.r.p.cycle = 0
+        self.r.p.cycleLength = 1
+        self.r.p.time = 0
         self.r.p.timeNode = 0
-        self.r.p.cycleLength = 0
 
         # Adding some nonsense in, to test NoDefault params
         self.r.p.availabilityFactor = parameters.NoDefault
@@ -349,16 +396,16 @@ class TestDatabaseSmaller(unittest.TestCase):
         ]
         self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
 
-        # validate availabilityFactor did not make it into the H5 file
+        # validate availabilityFactor did not make it into the H5 file, but the time parameters did
         rKeys = [
-            "maxAssemNum",
             "cycle",
             "cycleLength",
-            "flags",
-            "serialNum",
+            "time",
             "timeNode",
         ]
-        self.assertEqual(sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys))
+        h5Keys = sorted(self.db.h5db["c00n00"]["Reactor"].keys())
+        for rKey in rKeys:
+            self.assertIn(rKey, h5Keys)
 
     def test_getH5File(self):
         """
@@ -406,23 +453,23 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_mergeHistory(self):
         self.makeHistory()
 
-        # put some big data in an HDF5 attribute. This will exercise the code that pulls
-        # such attributes into a formal dataset and a reference.
+        # put some big data in an HDF5 attribute. This will exercise the code that pulls such attributes into a formal
+        # dataset and a reference.
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
         randomText = "this isn't a reference to another dataset"
-        database.Database._writeAttrs(
+        Database._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": np.eye(64),
+                "fakeBigData": np.eye(8),
                 "someString": randomText,
             },
         )
 
-        db_path = "restartDB.h5"
-        db2 = database.Database(db_path, "w")
+        dbPath = "restartDB.h5"
+        db2 = Database(dbPath, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -436,8 +483,8 @@ class TestDatabaseSmaller(unittest.TestCase):
             )
 
             # exercise the _resolveAttrs function
-            attrs = database.Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
-            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
+            attrs = Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
+            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(8)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)
@@ -489,7 +536,7 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
-        localHash = database.Database.grabLocalCommitHash()
+        localHash = Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
@@ -504,7 +551,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             return
 
         self.assertEqual(code, 0)
-        localHash = database.Database.grabLocalCommitHash()
+        localHash = Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 3. test inside a git repo with one tag
@@ -527,7 +574,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertEqual(code, 0)
 
         # test that we recover the correct commit hash
-        localHash = database.Database.grabLocalCommitHash()
+        localHash = Database.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
         # delete the .git directory
@@ -572,12 +619,13 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
-        self.assertTrue(isinstance(self.db, database.Database))
+        self.assertTrue(isinstance(self.db, Database))
         del self.db
         self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database
 
     def test_open(self):
+        self.assertTrue(self.db.isOpen())
         with self.assertRaises(ValueError):
             self.db.open()
 
@@ -639,7 +687,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
             r.core.p.power = ratedPower * cyclesSetting[cycle]["power fractions"][node]
             db.writeToDB(r)
+        self.assertTrue(db.isOpen())
         db.close()
+        self.assertFalse(db.isOpen())
 
         self.dbi.prepRestartRun()
 
@@ -674,7 +724,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             r.p.timeNode = node
             r.p.cycleLength = 2000
             db.writeToDB(r)
+        self.assertTrue(db.isOpen())
         db.close()
+        self.assertFalse(db.isOpen())
 
         with self.assertRaises(ValueError):
             self.dbi.prepRestartRun()
@@ -793,8 +845,8 @@ grids:
 
         self.o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
-        self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database.Database = self.dbi.database
+        self.dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db: Database = self.dbi.database
 
     def tearDown(self):
         self.db.close()
@@ -811,6 +863,8 @@ grids:
         self.r.p.timeNode = 0
         self.r.core.p.keff = 0.99
         b = self.r.core.getFirstBlock()
+        self.assertIsInstance(b[0].spatialLocator, MultiIndexLocation)
+        self.assertIsInstance(b[-1].spatialLocator, CoordinateLocation)
         b.p.power = 12345.6
 
         self.db.writeToDB(self.r)
@@ -831,7 +885,7 @@ grids:
         self.db.close()
 
         # open the DB and verify, the first timenode
-        with database.Database(self._testMethodName + ".h5", "r") as db:
+        with Database(self.db.fileName, "r") as db:
             r0 = db.load(0, 0, allowMissing=True)
             self.assertEqual(r0.p.cycle, 0)
             self.assertEqual(r0.p.timeNode, 0)
@@ -849,12 +903,17 @@ grids:
             b0 = r0.core.getFirstBlock()
             self.assertEqual(b0.p.power, 12345.6)
 
+            self.assertIsInstance(b0[0].spatialLocator, MultiIndexLocation)
+            np.testing.assert_array_equal(b[0].spatialLocator.indices, b0[0].spatialLocator.indices)
+            self.assertIsInstance(b0[-1].spatialLocator, CoordinateLocation)
+            np.testing.assert_array_equal(b[-1].spatialLocator.indices, b0[-1].spatialLocator.indices)
+
             # the ex-core structures should be empty
             self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)
             self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
 
         # open the DB and verify, the second timenode
-        with database.Database(self._testMethodName + ".h5", "r") as db:
+        with Database(self.db.fileName, "r") as db:
             r1 = db.load(0, 1, allowMissing=True)
             self.assertEqual(r1.p.cycle, 0)
             self.assertEqual(r1.p.timeNode, 1)
@@ -892,5 +951,25 @@ grids:
             circleGroup.create_dataset("massHmBOL", data=badData)
 
         with self.assertRaises(ValueError):
-            with database.Database(self.db.fileName, "r") as db:
+            with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
+
+
+class TestSimplestDatabaseItems(unittest.TestCase):
+    """The tests here are simple, direct tests of Database, that don't need a DatabaseInterface or Reactor."""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    def test_open(self):
+        dbPath = "test_open.h5"
+        db = Database(dbPath, "w")
+
+        self.assertFalse(db.isOpen())
+        db._permission = "mock"
+        with self.assertRaises(ValueError):
+            db.open()

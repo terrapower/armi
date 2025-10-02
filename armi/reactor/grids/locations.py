@@ -340,6 +340,17 @@ class MultiIndexLocation(IndexLocation):
         IndexLocation.__init__(self, 0, 0, 0, grid)
         self._locations = []
 
+    def __eq__(self, other):
+        """Considered equal if the grids are identical and contained locations are identical.
+
+        Two ``MultiIndexLocation`` objects with the same total collection of locations, but in
+        different orders, will not be considered equal.
+        """
+        if isinstance(other, type(self)):
+            return self.grid == other.grid and self._locations == other._locations
+        # Different objects -> let other.__eq__(self) handle it
+        return NotImplemented
+
     def __getstate__(self) -> List[IndexLocation]:
         """Used in pickling and deepcopy, this detaches the grid."""
         return self._locations
@@ -415,6 +426,18 @@ class CoordinateLocation(IndexLocation):
     """
 
     __slots__ = ()
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            # Mainly to avoid comparing against MultiIndexLocations
+            # Fuel pins may have a multi index location and the duct may
+            # have a coordinate location and we don't want them to be equal
+            return self.grid == other.grid and self.i == other.i and self.j == other.j and self.k == other.k
+        return NotImplemented
+
+    def __hash__(self):
+        """Hash based on the coordinates but not the grid."""
+        return hash((self.i, self.j, self.k))
 
     def getLocalCoordinates(self, nativeCoords=False):
         """Return x,y,z coordinates in cm within the grid's coordinate system."""

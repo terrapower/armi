@@ -31,7 +31,7 @@ from scipy import interpolate
 from armi import runLog
 from armi.materials.material import Fluid
 from armi.reactor import assemblyParameters, blocks, composites, grids
-from armi.reactor.flags import Flags
+from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool
 
@@ -220,17 +220,23 @@ class Assembly(composites.Composite):
         if scalingFactor == 1:
             return
 
-        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
+        blockVolIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         for b in self:
-            for param in volIntegratedParamsToScale:
-                name = param.name
-                if b.p[name] is None or isinstance(b.p[name], str):
-                    continue
-                elif isinstance(b.p[name], Iterable):
-                    b.p[name] = [value * scalingFactor for value in b.p[name]]
-                else:
-                    # numpy array or other
-                    b.p[name] = b.p[name] * scalingFactor
+            self._scaleParams(b, blockVolIntegratedParamsToScale, scalingFactor)
+        assemblyVolIntegratedParamsToScale = self.p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
+        self._scaleParams(self, assemblyVolIntegratedParamsToScale, scalingFactor)
+
+    @staticmethod
+    def _scaleParams(obj, params, scalingFactor):
+        for param in params:
+            name = param.name
+            if obj.p[name] is None or isinstance(obj.p[name], str):
+                continue
+            elif isinstance(obj.p[name], Iterable):
+                obj.p[name] = [value * scalingFactor for value in obj.p[name]]
+            else:
+                # numpy array or other
+                obj.p[name] = obj.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
@@ -288,9 +294,9 @@ class Assembly(composites.Composite):
         """Calculate the total assembly volume in cm^3."""
         return self.getArea() * self.getTotalHeight()
 
-    def getPinPlenumVolumeInCubicMeters(self):
+    def getPinPlenumVolumeInCubicMeters(self) -> float:
         """
-        Return the volume of the plenum for a pin in an assembly.
+        Return the total volume of the plenum for an assembly in m^3.
 
         Notes
         -----
@@ -299,12 +305,19 @@ class Assembly(composites.Composite):
         Warning
         -------
         This is a bit design-specific for pinned assemblies.
+
+        Returns
+        -------
+        float: Total plenum volume for an assembly.
         """
         plenumVolume = 0.0
         for b in self.iterChildrenWithFlags(Flags.PLENUM):
-            cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
-            plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6  # convert cm^3 to m^3
+            for c in b.iterChildrenWithFlags(Flags.CLAD):
+                cladId = c.getDimension("id")
+                plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length
+        # convert vol from cm^3 to m^3
+        plenumVolume *= 1e-6
         return plenumVolume
 
     def getAveragePlenumTemperature(self):
@@ -846,14 +859,14 @@ class Assembly(composites.Composite):
     def hasContinuousCoolantChannel(self):
         return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
-    def getFirstBlock(self, typeSpec=None, exact=False):
+    def getFirstBlock(self, typeSpec: TypeSpec = None, exact: bool = False) -> Optional[blocks.Block]:
         """Find the first block that matches the spec.
 
         Parameters
         ----------
-        typeSpec : flag or list of flags, optional
+        typeSpec
             Specification to require on the returned block.
-        exact : bool, optional
+        exact
             Require block to exactly match ``typeSpec``
 
         Returns
@@ -872,7 +885,7 @@ class Assembly(composites.Composite):
             # No items found in the iteration -> no blocks match the request
             return None
 
-    def getFirstBlockByType(self, typeName):
+    def getFirstBlockByType(self, typeName: str) -> Optional[blocks.Block]:
         blocks = filter(lambda b: b.getType() == typeName, self)
         try:
             return next(blocks)
@@ -929,7 +942,7 @@ class Assembly(composites.Composite):
                 return bIndex
         return -1  # no block index found
 
-    def getBlocksBetweenElevations(self, zLower, zUpper):
+    def getBlocksBetweenElevations(self, zLower, zUpper, eps=1e-10):
         """
         Return block(s) between two axial elevations and their corresponding heights.
 
@@ -937,7 +950,9 @@ class Assembly(composites.Composite):
         ----------
         zLower, zUpper : float
             Elevations in cm where blocks should be found.
-
+        eps : float, optional
+            Lower bound for relative block height fraction that we care about.
+            Below this bound, small slivers of overlapping block are ignored.
 
         Returns
         -------
@@ -960,40 +975,17 @@ class Assembly(composites.Composite):
         [(Block1, 25.0), (Block2, 5.0)]
 
         """
-        EPS = 1e-10
         blocksHere = []
-        allMeshPoints = set()
-
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
-                allMeshPoints.add(b.p.zbottom)
-                allMeshPoints.add(b.p.ztop)
                 # at least some of this block overlaps the window of interest
                 top = min(b.p.ztop, zUpper)
                 bottom = max(b.p.zbottom, zLower)
                 heightHere = top - bottom
 
                 # Filter out blocks that have an extremely small height fraction
-                if heightHere / b.getHeight() > EPS:
+                if heightHere / b.getHeight() > eps:
                     blocksHere.append((b, heightHere))
-
-        totalHeight = 0.0
-        allMeshPoints = sorted(allMeshPoints)
-        # The expected height snaps to the minimum height that is requested
-        expectedHeight = min(allMeshPoints[-1] - allMeshPoints[0], zUpper - zLower)
-        for _b, height in blocksHere:
-            totalHeight += height
-
-        # Verify that the heights of all the blocks are equal to the expected
-        # height for the given zUpper and zLower.
-        if abs(totalHeight - expectedHeight) > 1e-5:
-            raise ValueError(
-                f"The cumulative height of {blocksHere} is {totalHeight} cm "
-                f"and does not equal the expected height of {expectedHeight} cm.\n"
-                f"All mesh points: {allMeshPoints}\n"
-                f"Upper mesh point: {zUpper} cm\n"
-                f"Lower mesh point: {zLower} cm\n"
-            )
 
         return blocksHere
 
@@ -1222,6 +1214,9 @@ class Assembly(composites.Composite):
                     b.autoCreateSpatialGrids(parentSpatialGrid)
                 except (ValueError, NotImplementedError) as e:
                     runLog.extra(str(e), single=True)
+            # Do more grid initializations from a manual or auto created grid
+            if b.spatialGrid is not None:
+                b.assignPinIndices()
 
 
 class HexAssembly(Assembly):

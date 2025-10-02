@@ -37,7 +37,17 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import numpy as np
 
@@ -50,6 +60,9 @@ from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools, tabulate, units
 from armi.utils.densityTools import calculateNumberDensity
 from armi.utils.flags import auto
+
+if TYPE_CHECKING:
+    from armi.reactor.components.component import Component
 
 
 class FlagSerializer(parameters.Serializer):
@@ -871,7 +884,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMass(self, nuclideNames=None) -> float:
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -885,7 +898,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        nuclideNames : str, optional
+        nuclideNames
             The nuclide/element specifier to get the mass of in the object.
             If omitted, total mass is returned.
 
@@ -915,7 +928,7 @@ class ArmiObject(metaclass=CompositeModelType):
             " of composite such as Blocks or Components have the concept of micro suffixes."
         )
 
-    def _getNuclidesFromSpecifier(self, nucSpec):
+    def _getNuclidesFromSpecifier(self, nucSpec: Union[None, str, list[str]]):
         """
         Convert a nuclide specification to a list of valid nuclide/element keys.
 
@@ -1551,12 +1564,14 @@ class ArmiObject(metaclass=CompositeModelType):
             return 0.0
 
     def getUraniumNumEnrich(self):
-        """Returns U-235 number fraction."""
-        u8 = self.getNumberDensity("U238")
-        if u8 < 1e-10:
+        """Returns fissile uranium number fraction."""
+        uraniumNucs = self._getNuclidesFromSpecifier("U")
+        totalU = sum(self.getNuclideNumberDensities(uraniumNucs))
+        if totalU < 1e-10:
             return 0.0
-        u5 = self.getNumberDensity("U235")
-        return u5 / (u8 + u5)
+        fissileU = sum(self.getNuclideNumberDensities(["U233", "U235"]))
+
+        return fissileU / totalU
 
     def calcTotalParam(
         self,
@@ -1959,12 +1974,12 @@ class ArmiObject(metaclass=CompositeModelType):
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         raise NotImplementedError
 
-    def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
+    def getMgFlux(self, adjoint=False, average=False, gamma=False):
         """
         Return the multigroup neutron flux in [n/cm^2/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the next energy group, as
+        set in the ISOTXS library.
 
         On blocks, it is stored integrated over volume on <block>.p.mgFlux
 
@@ -1972,16 +1987,9 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         average : bool, optional
             If true, will return average flux between latest and previous. Doesn't work
             for pin detailed yet
-
-        volume: float, optional
-            The volume-integrated flux is divided by volume before being
-            returned. The user may specify a volume here, or the function will
-            obtain the block volume directly.
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -1995,7 +2003,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 f"{self.__class__} class has no method for producing average MG flux -- tryusing blocks"
             )
 
-        volume = volume or self.getVolume()
+        volume = self.getVolume()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
 
     def removeMass(self, nucName, mass):
@@ -2170,25 +2178,29 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return all(self.getComponents(t, exact) for t in typeSpec)
 
-    def getComponentByName(self, name):
+    def getComponentByName(self, name: str) -> "Component":
         """
         Gets a particular component from this object, based on its name.
 
         Parameters
         ----------
-        name : str
+        name
             The blueprint name of the component to return
+
+        Returns
+        -------
+        Component, c, whose c.name matches name.
         """
         components = [c for c in self.iterComponents() if c.name == name]
         nComp = len(components)
         if nComp == 0:
             return None
         elif nComp > 1:
-            raise ValueError(f"More than one component named '{self}' in {name}")
+            raise ValueError(f"More than one component named '{name}' in {self}")
         else:
             return components[0]
 
-    def getComponent(self, typeSpec: TypeSpec, exact=False, quiet=False):
+    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = False) -> Optional["Component"]:
         """
         Get a particular component from this object.
 
@@ -2208,6 +2220,10 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         Component : The component that matches the criteria or None
+
+        Raises
+        ------
+        ValueError: more than one Component matches the typeSpec
         """
         results = self.getComponents(typeSpec, exact=exact)
         if len(results) == 1:
@@ -2215,13 +2231,13 @@ class ArmiObject(metaclass=CompositeModelType):
         elif not results:
             if not quiet:
                 runLog.warning(
-                    "No component matched {0} in {1}. Returning None".format(typeSpec, self),
+                    f"No component matched {typeSpec} in {self}. Returning None",
                     single=True,
-                    label="None component returned instead of {0}".format(typeSpec),
+                    label=f"None component returned instead of {typeSpec}",
                 )
             return None
         else:
-            raise ValueError("Multiple components match in {} match typeSpec {}: {}".format(self, typeSpec, results))
+            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
 
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
@@ -2430,7 +2446,8 @@ class Composite(ArmiObject):
 
     def extend(self, seq):
         """Add a list of children to this object."""
-        self._children.extend(seq)
+        for item in seq:
+            self.add(item)
 
     def add(self, obj):
         """Add one new child."""
@@ -2635,9 +2652,47 @@ class Composite(ArmiObject):
         return list(items)
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return a list of Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        list of Component
+            items matching typeSpec and exact criteria
+        """
         return list(self.iterComponents(typeSpec, exact))
 
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
+    def getFirstComponent(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Returns a single Component object within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        Component
+            The first item matching typeSpec and exact criteria
+        """
+        try:
+            return next(self.iterComponents(typeSpec, exact))
+        except StopIteration:
+            raise ValueError(f"No component matches {typeSpec} {exact}")
+
+    def iterComponents(self, typeSpec: TypeSpec = None, exact: bool = False) -> Iterator["Component"]:
         """
         Return an iterator of armi.reactor.component.Component objects within this Composite.
 

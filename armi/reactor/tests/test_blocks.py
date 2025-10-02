@@ -15,6 +15,7 @@
 
 import copy
 import io
+import logging
 import math
 import os
 import shutil
@@ -23,7 +24,7 @@ from glob import glob
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
 from armi import materials, runLog, settings, tests
 from armi.nucDirectory import nucDir, nuclideBases
@@ -39,7 +40,8 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import loadTestReactor
-from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.testing.singleMixedAssembly import buildMixedPinAssembly
+from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import (
@@ -75,6 +77,47 @@ def buildSimpleFuelBlock():
     intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
 
     b.add(fuel)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    return b
+
+
+def buildLinkedFuelBlock():
+    """Return a simple hex block containing linked bond."""
+    b = blocks.HexBlock("fuel", height=10.0)
+
+    fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    bondDims = {
+        "Tinput": 25.0,
+        "Thot": 450,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
+    cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
+    ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    bondDims["components"] = {"clad": clad, "fuel": fuel}
+    bond = components.Circle("bond", "HT9", **bondDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
+    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(fuel)
+    b.add(bond)
     b.add(clad)
     b.add(duct)
     b.add(coolant)
@@ -362,17 +405,11 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
     def test_SFPSpatialGridExists(self):
         """Validate the spatial grid for a new SFP is not None if it was provided."""
-        _o, r = loadTestReactor(
-            os.path.join(TEST_ROOT, "smallestTestReactor"),
-            inputFileName="armiRunSmallest.yaml",
-        )
+        _o, r = loadTestReactor(os.path.join(TEST_ROOT, "smallestTestReactor"), inputFileName="armiRunSmallest.yaml")
         self.assertIsNotNone(r.excore.sfp.spatialGrid)
 
     def test_orientationBOL(self):
-        _o, r = loadTestReactor(
-            os.path.join(TEST_ROOT, "smallestTestReactor"),
-            inputFileName="armiRunSmallest.yaml",
-        )
+        _o, r = loadTestReactor(os.path.join(TEST_ROOT, "smallestTestReactor"), inputFileName="armiRunSmallest.yaml")
 
         # Test the null-case; these should all be zero.
         for a in r.core.iterChildren():
@@ -426,6 +463,113 @@ class Block_TestCase(unittest.TestCase):
             msg="Incorrect getSmearDensity with annular fuel. Got {0}. Should be {1}".format(cur, ref),
         )
 
+    def test_getSmearDensityMultipleClads(self):
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        cur = self.block.getSmearDensity()
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        ref = (fuel.getDimension("od", cold=True) ** 2 - fuel.getDimension("id", cold=True) ** 2) / liner.getDimension(
+            "id", cold=True
+        ) ** 2
+        fuelArea = fuel.getArea(cold=True)
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        self.assertAlmostEqual(cur, ref, places=10)
+
+    def test_getSmearDensityMixedPin(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        self.block.remove(fuel)
+
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": fuel.getDimension("od"),
+            "id": fuel.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("fuel annular", "UZr", **fuelDims))
+
+        # add non-annular fuel
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": 0.75,
+            "id": 0.0,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("fuel", "UZr", **fuelDims))
+
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        # calculate reference smear density
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        annularFuel = self.block.getComponent(Flags.FUEL | Flags.ANNULAR)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        fuelArea = math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
+        fuelArea += (
+            math.pi
+            / 4.0
+            * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2)
+            * annularFuel.getDimension("mult")
+        )
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        cur = self.block.getSmearDensity()
+        self.assertAlmostEqual(cur, ref, places=10)
+
     def test_getSmearDensityMultipleLiner(self):
         numLiners = sum(1 for c in self.block if "liner" in c.name and "gap" not in c.name)
         self.assertEqual(
@@ -451,6 +595,36 @@ class Block_TestCase(unittest.TestCase):
         fuel = components.Circle("fuel", "UZr", Tinput=25.0, Thot=25.0, od=0.84, id=0.6, mult=0)
         b1.add(fuel)
         self.assertEqual(b1.getSmearDensity(), 0.0)
+
+    def test_computeSmearDensity(self):
+        # test the null case
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], False)
+        self.assertEqual(smearDensity, 0.0)
+
+        # test one circle component
+        circles = self.block.getComponentsOfShape(components.Circle)
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [circles[0]], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        # use the test block
+        clads = set(self.block.getComponents(Flags.CLAD)).intersection(set(circles))
+        cladID = np.mean([clad.getDimension("id", cold=True) for clad in clads])
+        sortedCircles = self.block.getSortedComponentsInsideOfComponent(circles.pop())
+
+        fuelCompArea = sum(f.getArea(cold=True) for f in self.block.getComponents(Flags.FUEL))
+        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.block.getNumComponents(Flags.FUEL)
+        unmovableCompArea = sum(
+            c.getArea(cold=True)
+            for c in sortedCircles
+            if not c.isFuel() and not c.hasFlags([Flags.SLUG, Flags.DUMMY]) and c.containsSolidMaterial()
+        )
+
+        refSmearDensity = fuelCompArea / (innerCladdingArea - unmovableCompArea)
+        smearDensity = blocks.Block.computeSmearDensity(153.81433981516477, sortedCircles, True)
+        self.assertAlmostEqual(smearDensity, refSmearDensity, places=10)
 
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1
@@ -969,6 +1143,30 @@ class Block_TestCase(unittest.TestCase):
         cur = b.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
+    def test_getWettedPerimeterMultiPins(self):
+        assembly = buildMixedPinAssembly()
+        block = assembly.getFirstBlock(Flags.FUEL)
+        # calculate the reference value
+        wires = block.getComponents(Flags.WIRE)
+        clads = block.getComponents(Flags.CLAD)
+        ref = 0
+        for wire in wires:
+            mult = wire.getDimension("mult")
+            correctionFactor = np.hypot(
+                1.0,
+                math.pi * wire.getDimension("helixDiameter") / wire.getDimension("axialPitch"),
+            )
+            wireDiam = wire.getDimension("od") * correctionFactor
+            ref += math.pi * wireDiam * mult
+        ref += sum(math.pi * clad.getDimension("od") * clad.getDimension("mult") for clad in clads)
+
+        ipDim = block.getDim(Flags.DUCT, "ip")
+        ref += 6 * ipDim / math.sqrt(3)
+
+        # test getWettedPerimeter
+        cur = block.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
     def test_getFlowAreaPerPin(self):
         area = self.block.getComponent(Flags.COOLANT).getArea()
         nPins = self.block.getNumPins()
@@ -1160,6 +1358,8 @@ class Block_TestCase(unittest.TestCase):
             self.block.getMicroSuffix()
 
     def test_getUraniumMassEnrich(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        fuel.setNumberDensity("U234", 1.0e-4)
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
@@ -1171,13 +1371,16 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getUraniumNumEnrich(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        fuel.setNumberDensity("U234", 1.0e-4)
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
 
         u8 = self.block.getNumberDensity("U238")
         u5 = self.block.getNumberDensity("U235")
-        ref = u5 / (u8 + u5)
+        u4 = self.block.getNumberDensity("U234")
+        ref = u5 / (u8 + u5 + u4)
 
         self.assertAlmostEqual(cur, ref, places=6)
 
@@ -1185,6 +1388,25 @@ class Block_TestCase(unittest.TestCase):
         self.block.adjustUEnrich(0)
         cur = self.block.getUraniumNumEnrich()
         self.assertEqual(cur, 0.0)
+
+        self.block.setNumberDensity("U238", 0.0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
+
+    def test_getUraniumNumEnrichWith233(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        u5 = fuel.getNumberDensity("U235")
+        fuel.setNumberDensity("U233", 0.005)
+        self.block.adjustUEnrich(0.25)
+
+        cur = self.block.getUraniumNumEnrich()
+
+        u3 = self.block.getNumberDensity("U233")
+        u5 = self.block.getNumberDensity("U235")
+        u8 = self.block.getNumberDensity("U238")
+        ref = (u3 + u5) / (u3 + u5 + u8)
+
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getNumberOfAtoms(self):
         self.block.clearNumberDensities()
@@ -1344,11 +1566,14 @@ class Block_TestCase(unittest.TestCase):
                     sum(ndens for ndens in hmNDens.values()) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * c.getVolume(),
                     places=12,
                 )
+                self.assertAlmostEqual(c.p.enrichmentBOL, c.getFissileMassEnrich(), places=12)
             else:
                 self.assertEqual(c.p.massHmBOL, 0.0)
                 self.assertEqual(c.p.molesHmBOL, 0.0)
+                self.assertEqual(c.p.enrichmentBOL, 0.0)
 
         self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
+        self.assertAlmostEqual(self.block.p.enrichmentBOL, self.block.getFissileMassEnrich(), places=12)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
@@ -1361,6 +1586,27 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertIn(newComp, self.block.getComponents())
         self.block.remove(newComp)
+
+    def test_extend(self):
+        # generate a list of composites to extend onto this block
+        comps = []
+        nunComps = 3
+        for i in range(nunComps):
+            fuelDims = {"Tinput": 25.0 * i, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+            comps.append(components.Circle("fuel", "UZr", **fuelDims))
+
+        # show the composites have no parents
+        for c in comps:
+            self.assertIsNone(c.parent)
+
+        # add the composites to the block
+        lenBlock = len(self.block)
+        self.block.extend(comps)
+        self.assertEqual(len(self.block), lenBlock + nunComps)
+
+        # show all the composites in the block have the block as the parent
+        for c in self.block:
+            self.assertIs(c.parent, self.block)
 
     def test_hasComponents(self):
         self.assertTrue(self.block.hasComponents([Flags.FUEL, Flags.CLAD]))
@@ -1458,7 +1704,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertIsNone(self.block.getComponentByName("not the droid you are looking for"))
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
-    def test_getSortedComponentsInsideOfComponentClad(self):
+    def test_getSortedCompsInClad(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
@@ -1480,7 +1726,7 @@ class Block_TestCase(unittest.TestCase):
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
-    def test_getSortedComponentsInsideOfComponentDuct(self):
+    def test_getSortedCompsInDuct(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a duct.
@@ -1774,7 +2020,8 @@ class Block_TestCase(unittest.TestCase):
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
-    def test_consistentMassDensVolBetweenColdBlockAndComp(self):
+    def test_consistentMassDensVolCold(self):
+        """Consistent mass density and volume betwen cold block and component."""
         block = self.block
         expectedData = []
         actualData = []
@@ -1790,7 +2037,8 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentMassDensVolBetweenHotBlockAndComp(self):
+    def test_consistentMassDensVolHot(self):
+        """Consistent mass density and volume betwen hot block and component."""
         block = self._hotBlock
         expectedData = []
         actualData = []
@@ -1863,32 +2111,30 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_pinMgFluxes(self):
-        """
-        Test setting/getting of pin-wise fluxes.
+        """Test setting/getting of pin-wise multigroup fluxes."""
+        self.assertIsNone(self.block.p.pinMgFluxes)
+        self.assertIsNone(self.block.p.pinMgFluxesAdj)
+        self.assertIsNone(self.block.p.pinMgFluxesGamma)
 
-        .. warning:: This will likely be pushed to the component level.
-        """
-        fluxes = np.random.rand(10, 33)
-        p, g = np.random.randint(low=0, high=[10, 33])
+        nFlux = np.random.rand(10, 33)
+        aFlux = np.random.random(nFlux.shape)
+        gFlux = np.random.random(nFlux.shape)
 
-        # Test without pinLocation
-        self.block.pinLocation = None
-        self.block.setPinMgFluxes(fluxes)
-        self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
-        self.block.setPinMgFluxes(fluxes * 3, gamma=True)
-        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[p, g])
-        self.assertEqual(self.block.p.pinMgFluxesAdj.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxesAdj[p, g], fluxes[p, g] * 2)
-        self.assertEqual(self.block.p.pinMgFluxesGamma.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxesGamma[p, g], fluxes[p, g] * 3)
+        self.block.setPinMgFluxes(nFlux)
+        assert_array_equal(self.block.p.pinMgFluxes, nFlux)
+        self.assertIsNone(self.block.p.pinMgFluxesAdj)
+        self.assertIsNone(self.block.p.pinMgFluxesGamma)
 
-        # Test with pinLocation
-        self.block.setType(self.block.getType(), Flags.FUEL)
-        self.block.p.pinLocation = np.random.choice(10, size=10, replace=False) + 1
-        self.block.setPinMgFluxes(fluxes)
-        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[self.block.p.pinLocation[p] - 1, g])
+        self.block.setPinMgFluxes(aFlux, adjoint=True)
+        assert_array_equal(self.block.p.pinMgFluxesAdj, aFlux)
+        # Make sure we didn't modify anything else
+        assert_array_equal(self.block.p.pinMgFluxes, nFlux)
+        self.assertIsNone(self.block.p.pinMgFluxesGamma)
+
+        self.block.setPinMgFluxes(gFlux, gamma=True)
+        assert_array_equal(self.block.p.pinMgFluxesGamma, gFlux)
+        assert_array_equal(self.block.p.pinMgFluxesAdj, aFlux)
+        assert_array_equal(self.block.p.pinMgFluxes, nFlux)
 
     def test_getComponentsInLinkedOrder(self):
         comps = self.block.getComponentsInLinkedOrder()
@@ -1917,9 +2163,25 @@ class Block_TestCase(unittest.TestCase):
         pin = self.block.getPlenumPin()
         self.assertIsNone(pin)
 
-    def test_hasPinPitch(self):
-        hasPitch = self.block.hasPinPitch()
-        self.assertTrue(hasPitch)
+        b = copy.deepcopy(self.block)
+        b.p.flags = Flags.fromString("plenum aclp")
+        pinDims = {
+            "Tinput": 25,
+            "Thot": 250,
+            "od": 1.0,
+            "id": 0,
+            "mult": 1,
+        }
+        pin = components.Circle("plenum pin", "HT9", **pinDims)
+        pin.p.flags = Flags.fromString("gap")
+        b.add(pin)
+        pin = b.getPlenumPin()
+        self.assertTrue(pin)
+
+    def test_pinPitches(self):
+        self.assertTrue(self.block.hasPinPitch())
+        self.assertAlmostEqual(self.block.getPinPitch(cold=True), 1.15)
+        self.assertAlmostEqual(self.block.getPinPitch(cold=False), 1.15)
 
     def test_getReactionRates(self):
         block = blocks.HexBlock("HexBlock")
@@ -1946,6 +2208,19 @@ class Block_TestCase(unittest.TestCase):
             block.getReactionRates("PU39"),
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
+
+    def test_getComponentsThatAreLinkedTo(self):
+        c = self.block.getFirstComponent(Flags.FUEL)
+        linked = self.block.getComponentsThatAreLinkedTo(c, "id")
+        self.assertEqual(linked[0][1], "od")
+
+        c = self.block.getFirstComponent(Flags.CLAD)
+        linked = self.block.getComponentsThatAreLinkedTo(c, "id")
+        self.assertEqual(linked[0][1], "od")
+
+        c = self.block.getFirstComponent(Flags.DUCT)
+        linked = self.block.getComponentsThatAreLinkedTo(c, "ip")
+        self.assertEqual(len(linked), 0)
 
 
 class BlockInputHeightsTests(unittest.TestCase):
@@ -2439,6 +2714,281 @@ class HexBlock_TestCase(unittest.TestCase):
         self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
         self.assertIsNone(self.hexBlock.spatialGrid)
 
+    def test_assignPinIndicesToFullGrid(self):
+        """Ensure we can assign pin indices to fuel if it occupies the entire spatial grid."""
+        b = blocks.HexBlock("fuel")
+        fuel = components.Circle(
+            "fuel",
+            "UZr",
+            Tinput=25.0,
+            Thot=600.0,
+            od=0.76,
+            mult=169,
+        )
+        b.add(fuel)
+
+        clad = components.Circle(
+            "clad",
+            "HT9",
+            Tinput=25.0,
+            Thot=450.0,
+            id=0.77,
+            od=0.80,
+            mult=169,
+        )
+        b.add(clad)
+
+        wire = components.Helix(
+            "wire", "HT9", Tinput=25.0, Thot=600, id=0, od=0.1, axialPitch=30, helixDiameter=0.9, mult=169
+        )
+        b.add(wire)
+
+        duct = components.Hexagon("duct", "HT9", Tinput=25.0, Thot=400, ip=15.3, op=16, mult=1)
+        b.add(duct)
+
+        b.autoCreateSpatialGrids(self.r.core.spatialGrid)
+        self.assertIsNotNone(b.spatialGrid)
+
+        b.assignPinIndices()
+        self.assertIsNotNone(fuel.p.pinIndices)
+        indices = fuel.getPinIndices()
+        self.assertIsNotNone(indices)
+        np.testing.assert_allclose(indices, np.arange(169, dtype=int))
+
+    def test_pinPitches(self):
+        self.assertTrue(self.hexBlock.hasPinPitch())
+        self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=True), 0.11)
+        self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=False), 0.11)
+
+    def test_getBlocks(self):
+        self.assertEqual(len(self.hexBlock.getBlocks()), 1)
+
+    def test_getBoronMassEnrich(self):
+        self.assertAlmostEqual(self.hexBlock.getBoronMassEnrich(), 0.0)
+
+    def test_rotationNumbers(self):
+        self.assertEqual(self.hexBlock.getRotationNum(), 0.0)
+        self.hexBlock.setRotationNum(1)
+        self.assertEqual(self.hexBlock.getRotationNum(), 1.0)
+        self.hexBlock.setRotationNum(2)
+        self.assertEqual(self.hexBlock.getRotationNum(), 2.0)
+
+
+class MultiPinIndicesTests(unittest.TestCase):
+    BP_STR = """
+blocks:
+    fuel: &fuel_block
+        grid name: fuel grid
+        fuel 1: &fuel_def
+            shape: Circle
+            # Use void material because we don't need nuclides, just components with flags
+            material: Void
+            od: 0.68
+            Tinput: 25
+            Thot: 600
+            latticeIDs: [1]
+            flags: primary fuel
+        clad 1: &clad_def
+            shape: Circle
+            material: Void
+            id: 0.7
+            od: 0.71
+            Tinput: 600
+            Thot: 450
+            latticeIDs: [1]
+        # Smaller pin so it gets placed earlier in the sorting
+        fuel 2:
+            <<: *fuel_def
+            id: 0.6
+            latticeIDs: [2]
+            flags: secondary fuel
+        clad 2:
+            <<: *clad_def
+            id: 0.62
+            od: 0.65
+            latticeIDs: [2]
+        duct:
+            shape: Hexagon
+            material: Void
+            Tinput: 25
+            Thot: 450
+            ip: 15.3
+            op: 16
+assemblies:
+    fuel:
+        specifier: F
+        blocks: [*fuel_block]
+        height: [10]
+        axial mesh points: [1]
+        xs types: [A]
+grids:
+    fuel grid:
+        geom: hex_corners_up
+        symmetry: full
+        # Kind of a convoluted map but helps test a lot of edge conditions
+        lattice map: |
+            - - -  1 1 1 1
+              - - 1 1 1 1 1
+               - 1 1 2 2 1 1
+                1 1 2 1 2 1 1
+                 1 1 2 2 1 1
+                  1 1 1 1 1
+                   1 2 1 1
+nuclide flags:
+
+"""
+
+    @classmethod
+    def setUpClass(cls):
+        cs = settings.Settings()
+        bp: blueprints.Blueprints = blueprints.Blueprints.load(cls.BP_STR)
+        bp._prepConstruction(cs)
+        cls._originalBlock: blocks.HexBlock = bp.blockDesigns["fuel"].construct(cs, bp, 0, 2, 10, "A", {})
+
+    def setUp(self):
+        self.block = copy.deepcopy(self._originalBlock)
+        self.block.assignPinIndices()
+        self.allLocations = self.block.getPinLocations()
+        self.fuelPins = self.block.getComponents(Flags.FUEL)
+
+    def test_nonOverlappingIndices(self):
+        """Test pin indices are complete and non-overlapping."""
+        foundIndices: set[int] = set()
+        for fp in self.fuelPins:
+            actualIndices = fp.getPinIndices()
+            self.assertIsNotNone(actualIndices, fp)
+            overlap = foundIndices.intersection(actualIndices)
+            self.assertFalse(overlap, msg="Found overlapping indices on unique fuel pin")
+            foundIndices.update(actualIndices)
+        # Make sure we have all the indices covered
+        for i in range(len(self.allLocations)):
+            self.assertIn(i, foundIndices)
+
+    def test_consistentPinOrdering(self):
+        """Test values of pin indices on a component align with pin locations of that component within the block."""
+        for fp in self.fuelPins:
+            locations: list[grids.IndexLocation] = list(fp.spatialLocator)
+            indices = fp.getPinIndices()
+            self.assertEqual(len(locations), len(indices), msg=fp)
+            for loc, ix in zip(locations, indices):
+                indexInBlock = self.allLocations.index(loc)
+                self.assertEqual(ix, indexInBlock, msg=f"{loc=} in {fp}")
+
+    def test_noPinIndicesForHexes(self):
+        """Test we never get pin indices for hexagons."""
+        duct = self.block.getComponent(Flags.DUCT)
+        self.assertIsNone(duct.p.pinIndices)
+        with self.assertRaisesRegex(ValueError, "no pin indices"):
+            duct.getPinIndices()
+
+    def test_recoverCladIndicesFromFuel(self):
+        """Show the same indices for cladding are found for fuel that it wraps."""
+        clad = self.block.getComponents(Flags.CLAD)[0]
+        cladIndices = clad.getPinIndices()
+        fuel = self.block.getComponents(Flags.FUEL)[0]
+        fuelIndices = fuel.getPinIndices()
+        # Show not only are they equal, we get literally the same object
+        # through the dimension linking. This only works if the fuel pin
+        # is not at all the lattice sites, or else they'd both be equal
+        # equivalent to np.arange(0, N - 1) but different instances of the same data
+        self.assertIs(cladIndices, fuelIndices)
+
+    def test_locations(self):
+        """Ensure we have locations consistent with the lattice map."""
+        primary: components.Circle = self.block.getComponent(Flags.PRIMARY)
+        # Count the number of primary pins in the blueprint above
+        nPrimary = 30
+        expectedPrimaryRingPos = {
+            (1, 1),
+        }
+        # 12 and 18 pins in one-indexed rings three and four.
+        # remember that range is exclusive of the stop
+        expectedPrimaryRingPos.update((3, i) for i in range(1, 13))
+        expectedPrimaryRingPos.update((4, i) for i in range(1, 19))
+        # special pin designed to poke some edge cases
+        # remember ARMI hex positions start at 1 in the north east corner and go counterclockwise
+        trickyPin = (4, 11)
+        # drop the tricky pin in the fourth ring
+        expectedPrimaryRingPos.remove(trickyPin)
+        self._checkPinLocationsAndIndices(primary, nPrimary, expectedPrimaryRingPos)
+
+        secondary: components.Circle = self.block.getComponent(Flags.SECONDARY)
+        nSecondary = 7
+        # six pins in one-indexed ring two
+        expectedSecondaryRingPos = {(2, i) for i in range(1, 7)}
+        expectedSecondaryRingPos.add(trickyPin)
+        self._checkPinLocationsAndIndices(secondary, nSecondary, expectedSecondaryRingPos)
+
+    def _checkPinLocationsAndIndices(
+        self, pin: components.Circle, expectedNumPins: int, expectedRingPos: set[tuple[int, int]]
+    ):
+        self.assertEqual(
+            len(expectedRingPos),
+            expectedNumPins,
+            msg="Expected pins and locations differ. Your test inputs are not setup correct.",
+        )
+        self.assertEqual(pin.getDimension("mult"), expectedNumPins)
+        self.assertEqual(len(pin.spatialLocator), expectedNumPins)
+        primaryIndices = pin.getPinIndices()
+        self.assertIsNotNone(primaryIndices)
+        self.assertEqual(primaryIndices.size, expectedNumPins)
+        allLocations = self.block.getPinLocations()
+        for ix in primaryIndices:
+            loc = allLocations[ix]
+            ringPos = loc.getRingPos()
+            self.assertIn(ringPos, expectedRingPos, msg=f"{ix=} : {loc=}")
+
+    def test_nonFueledBlock(self):
+        """If we have no fuel, but we have clad, we should still have pin indices."""
+        nonFuel = copy.deepcopy(self._originalBlock)
+        # strip out fuel flags
+        for c in nonFuel.iterComponents(Flags.FUEL):
+            c.p.flags &= ~Flags.FUEL
+        nonFuel.assignPinIndices()
+        # Should still have what ARMI considers pins
+        self.assertTrue(nonFuel.getPinLocations())
+        for c in nonFuel.iterComponents(Flags.CLAD):
+            self.assertIsNotNone(c.getPinIndices())
+
+    def test_assignmentChangesPreviousPinIndices(self):
+        """Show successive calls to assignPinIndices clear out previous state."""
+        # assign pin indices to something that maybe doesn't need it
+        firstFuel = self.block.getFirstComponent(Flags.FUEL)
+        firstClad = self.block.getFirstComponent(Flags.CLAD)
+        self.assertIsNone(firstClad.p.pinIndices)
+        self.assertIsNotNone(firstFuel.p.pinIndices)
+        firstClad.p.pinIndices = firstFuel.p.pinIndices
+        self.block.assignPinIndices()
+        self.assertIsNone(firstClad.p.pinIndices)
+
+    def test_fuelAndNonFuel(self):
+        """If you have fuel and non-fuel pins in the block, all pins should have indices still."""
+        firstBefore = self.fuelPins[0].getPinIndices()
+        secondBefore = self.fuelPins[1].getPinIndices()
+
+        for c in self.block:
+            c.p.pinIndices = None
+
+        self.fuelPins[1].p.flags &= ~Flags.FUEL
+
+        self.block.assignPinIndices()
+        firstAfter = self.fuelPins[0].getPinIndices()
+        assert_array_equal(firstAfter, firstBefore)
+
+        secondAfter = self.fuelPins[1].getPinIndices()
+        assert_array_equal(secondAfter, secondBefore)
+
+    def test_reassignOnSort(self):
+        """Show the pin indices are reassigned when the block is sorted."""
+        # Make sure we get new block-level pin locations or else this test is meaningless
+        with patch.object(self.block, "assignPinIndices") as patchAssign:
+            self.block.sort()
+        newPinLocations = self.block.getPinLocations()
+        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
+        # Make sure we called it. Other tests confirm that assignPinIndices is correct.
+        # this makes sure we've called it where we want to call it
+        patchAssign.assert_called_once()
+
 
 class TestHexBlockOrientation(unittest.TestCase):
     def setUp(self):
@@ -2621,11 +3171,15 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.assertEqual({15.0}, axialOuter)
 
     def test_verifyBlockDims(self):
-        """
-        This function is currently null. It consists of a single line that returns nothing. This
-        test covers that line. If the function is ever implemented, it can be tested here.
-        """
-        self.ThRZBlock.verifyBlockDims()
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate, before debug logging
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.setVerbosity(logging.WARNING)
+            runLog.LOG.startLog("test_updateComponentDims")
+
+            # the verify method throws a ton of warnings or raises errors when there are problems
+            self.ThRZBlock.verifyBlockDims()
+            self.assertEqual("", mock.getStdout())
 
     def test_getThetaRZGrid(self):
         """Since not applicable to ThetaRZ Grids."""
@@ -2642,6 +3196,29 @@ class ThRZBlock_TestCase(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             _ = self.ThRZBlock.getHydraulicDiameter()
 
+    def test_pinPitches(self):
+        self.assertFalse(self.ThRZBlock.hasPinPitch())
+
+        with self.assertRaises(AttributeError):
+            self.ThRZBlock.getPinPitch(cold=False)
+
+        with self.assertRaises(AttributeError):
+            self.ThRZBlock.getPinPitch(cold=True)
+
+    def test_updateComponentDims(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate, before logging
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.setVerbosity(logging.WARNING)
+            runLog.LOG.startLog("test_updateComponentDims")
+
+            # if this fails, we get a warning. Here we just test the warning isn't thrown.
+            self.ThRZBlock.updateComponentDims()
+            self.assertEqual("", mock.getStdout())
+
+    def test_getBoronMassEnrich(self):
+        self.assertAlmostEqual(self.ThRZBlock.getBoronMassEnrich(), 0.0)
+
 
 class CartesianBlock_TestCase(unittest.TestCase):
     """Tests for blocks with rectangular/square outer shape."""
@@ -2649,8 +3226,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
     PITCH = 70
 
     def setUp(self):
-        caseSetting = settings.Settings()
-        self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
+        self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock")
 
         self.cartesianComponent = components.HoledSquare(
             "duct",
@@ -2738,6 +3314,23 @@ class CartesianBlock_TestCase(unittest.TestCase):
     def test_getHydraulicDiameter(self):
         with self.assertRaises(NotImplementedError):
             _ = self.cartesianBlock.getHydraulicDiameter()
+
+    def test_pinPitches(self):
+        self.assertFalse(self.cartesianBlock.hasPinPitch())
+
+        with self.assertRaises(AttributeError):
+            self.cartesianBlock.getPinPitch(cold=False)
+
+        with self.assertRaises(AttributeError):
+            self.cartesianBlock.getPinPitch(cold=True)
+
+    def test_getBoronMassEnrich(self):
+        self.assertAlmostEqual(self.cartesianBlock.getBoronMassEnrich(), 0.0)
+
+    def test_getPinCenterFlatToFlat(self):
+        r = tests.getEmptyHexReactor()
+        self.cartesianBlock.autoCreateSpatialGrids(r.core.spatialGrid)
+        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 14.0, delta=1e-6)
 
 
 class MassConservationTests(unittest.TestCase):

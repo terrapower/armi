@@ -319,6 +319,7 @@ class Layout:
             serialNum,
             numChildren,
             location,
+            locationType,
             material,
             temperatures,
             gridIndex,
@@ -328,6 +329,7 @@ class Layout:
             self.serialNum,
             self.numChildren,
             self.location,
+            self.locationType,
             self.material,
             self.temperatures,
             self.gridIndex,
@@ -343,6 +345,7 @@ class Layout:
             elif issubclass(Klass, Component):
                 # init all dimensions to 0, they will be loaded and assigned after load
                 kwargs = dict.fromkeys(Klass.DIMENSION_NAMES, 0)
+                kwargs["modArea"] = None
                 kwargs["material"] = material
                 kwargs["name"] = name
                 kwargs["Tinput"] = temperatures[0]
@@ -355,7 +358,7 @@ class Layout:
                 gridParams = self.gridParams[gridIndex]
                 comp.spatialGrid = self.gridClasses[gridParams[0]](*gridParams[1], armiObject=comp)
 
-            comps.append((comp, serialNum, numChildren, location))
+            comps.append((comp, serialNum, numChildren, location, locationType))
             groupedComps[compType].append(comp)
 
         return comps, groupedComps

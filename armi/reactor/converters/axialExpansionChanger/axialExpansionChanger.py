@@ -14,10 +14,12 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 import typing
+from textwrap import dedent
 
 from numpy import array
 
 from armi import runLog
+from armi.materials.material import Fluid
 from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
@@ -26,7 +28,13 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     ExpansionData,
     iterSolidComponents,
 )
+from armi.reactor.converters.axialExpansionChanger.redistributeMass import RedistributeMass
 from armi.reactor.flags import Flags
+from armi.utils.customExceptions import InputError
+
+if typing.TYPE_CHECKING:
+    from armi.reactor.blocks import Block
+    from armi.reactor.components.component import Component
 
 
 def getDefaultReferenceAssem(assems):
@@ -69,10 +77,25 @@ class AxialExpansionChanger:
     - Is designed to work with general, vertically oriented, pin-type assembly designs. It is not set up to account
       for any other assembly type.
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
+    - The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
+      conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
+      block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures.
     """
 
     linked: typing.Optional[AssemblyAxialLinkage]
     expansionData: typing.Optional[ExpansionData]
+    topMostBlock: typing.Optional["Block"]
+
+    # 3cm is a presumptive lower threshold for DIF3D
+    DIF3D_MIN_BLOCK_HEIGHT: float = 3.0
+    # when checking the diffference between the component and block heights, 1e-12 cm is used as a threshold to account
+    # for meaningful differences. This threshold filters out negligible differences arising from numerical precision
+    # that otherwise have a negliglble impact on the assembly post-axial expansion. Anything larger than this value is
+    # presumed to be valid of a warning that may warrant further investigation.
+    COMP_BLOCK_HEIGHT_DIFF_THRESHOLD: float = 1e-12
+
+    # Establish the class used to redistribute mass between components.
+    MASS_REDISTRIBUTOR = RedistributeMass
 
     def __init__(self, detailedAxialExpansion: bool = False):
         """
@@ -86,6 +109,7 @@ class AxialExpansionChanger:
         self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
+        self.topMostBlock = None
 
     @classmethod
     def expandColdDimsToHot(
@@ -132,7 +156,7 @@ class AxialExpansionChanger:
 
         See Also
         --------
-        :py:meth:`armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
+        :py:meth:`applyColdHeightMassIncrease`
         """
         assems = list(assems)
         if not referenceAssembly:
@@ -142,7 +166,7 @@ class AxialExpansionChanger:
             axialExpChanger.setAssembly(a, expandFromTinputToThot=True)
             axialExpChanger.applyColdHeightMassIncrease()
             axialExpChanger.expansionData.computeThermalExpansionFactors()
-            axialExpChanger.axiallyExpandAssembly()
+            axialExpChanger.axiallyExpandAssembly(recalculateBurnup=False)
         if not isDetailedAxialExpansion:
             for a in assems:
                 a.setBlockMesh(referenceAssembly.getAxialMesh())
@@ -151,6 +175,7 @@ class AxialExpansionChanger:
             for b in a:
                 b.p.heightBOL = b.getHeight()
                 b.completeInitialLoading()
+                axialExpChanger.recalculateBurnup(b)
 
     def performPrescribedAxialExpansion(self, a: Assembly, components: list, percents: list, setFuel=True):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
@@ -258,7 +283,27 @@ class AxialExpansionChanger:
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot)
+        self._checkAssemblyConstructionIsValid()
+
+    def _checkAssemblyConstructionIsValid(self):
         self._isTopDummyBlockPresent()
+        self._checkForBlocksWithoutSolids()
+
+    def _checkForBlocksWithoutSolids(self):
+        """
+        Makes sure that there aren't any blocks (other than the top-most dummy block)
+        that consist entirely of fluid components. The expansion changer doesn't know
+        what to do with such assemblies.
+        """
+        # skip top most dummy block since that is, by design, all fluid
+        for b in self.linked.a[:-1]:
+            if all(isinstance(c.material, Fluid) for c in b.iterComponents()):
+                raise InputError(
+                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer "
+                    f"as block, {b}, consists of exclusively fluid component(s). If this is not a mistake, consider "
+                    "using the 'assemFlagsToSkipAxialExpansion' case setting to bypass performing axial expansion "
+                    "on this assembly."
+                )
 
     def applyColdHeightMassIncrease(self):
         """
@@ -271,7 +316,7 @@ class AxialExpansionChanger:
         called when the setting `inputHeightsConsideredHot` is used. This adjusts
         the expansion factor applied during applyMaterialMassFracsToNumberDensities.
         """
-        for c in self.linked.a.getComponents():
+        for c in self.linked.a.iterComponents():
             axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(c.temperatureInC, c.inputTemperatureInC)
             c.changeNDensByFactor(axialExpansionFactor)
 
@@ -284,8 +329,8 @@ class AxialExpansionChanger:
         - If false, the top most block in the assembly is artificially chopped
           to preserve the assembly height. A runLog.Warning also issued.
         """
-        top = self.linked.a[-1]
-        if not top.hasFlags(Flags.DUMMY):
+        self.topMostBlock = self.linked.a[-1]
+        if not self.topMostBlock.hasFlags(Flags.DUMMY):
             runLog.warning(
                 f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
@@ -296,8 +341,13 @@ class AxialExpansionChanger:
                 runLog.error(msg)
                 raise RuntimeError(msg)
 
-    def axiallyExpandAssembly(self):
+    def axiallyExpandAssembly(self, recalculateBurnup: bool = True):
         """Utilizes assembly linkage to do axial expansion.
+
+        Parameters
+        ----------
+        recalculateBurnup
+            Optional parameter to skip the recalculate burnup step.
 
         .. impl:: Preserve the total height of an ARMI assembly, during expansion.
             :id: I_ARMI_ASSEM_HEIGHT_PRES
@@ -309,53 +359,105 @@ class AxialExpansionChanger:
             top-most Block is is then updated to reflect any expansion/contraction.
         """
         mesh = [0.0]
-        numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
             f"for each block in assembly {self.linked.a}."
         )
+        # expand all of the components
+        for b in self.linked.a:
+            for c in iterSolidComponents(b):
+                growFrac = self.expansionData.getExpansionFactor(c)
+                # component ndens and component heights are scaled to their respective growth factor
+                c.changeNDensByFactor(1.0 / growFrac)
+                c.zbottom = b.p.zbottom
+                c.height = growFrac * b.getHeight()
+                c.ztop = c.zbottom + c.height
+
+        # align blocks on target components
         for ib, b in enumerate(self.linked.a):
-            runLog.debug(msg=f"  Block {b}")
-            blockHeight = b.getHeight()
-            # set bottom of block equal to top of block below it
-            # if ib == 0, leave block bottom = 0.0
-            if ib > 0:
-                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-            isDummyBlock = ib == (numOfBlocks - 1)
-            if not isDummyBlock:
-                for c in iterSolidComponents(b):
-                    growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    c.height = growFrac * blockHeight
-                    # align linked components
-                    if ib == 0:
-                        c.zbottom = 0.0
-                    else:
-                        if self.linked.linkedComponents[c].lower is not None:
-                            # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c].lower.ztop
-                        else:
-                            # otherwise there aren't any linked components
-                            # so just set the bottom of the component to
-                            # the top of the block below it
-                            c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-                    c.ztop = c.zbottom + c.height
-                    # update component number densities
-                    c.changeNDensByFactor(1.0 / growFrac)
-                    # redistribute block boundaries if on the target component
-                    if self.expansionData.isTargetComponent(c):
-                        b.p.ztop = c.ztop
-                        b.p.height = b.p.ztop - b.p.zbottom
-            else:
+            if b is not self.topMostBlock:
+                targetComp = self.expansionData.getTargetComponent(b)
+                # redefine block bounds based on target component
+                b.p.zbottom = targetComp.zbottom
+                b.p.ztop = targetComp.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
+                b.clearCache()
+                b.p.z = b.p.zbottom + b.getHeight() / 2.0
+                cLinkedAbove = self.linked.linkedComponents[targetComp].upper
+                if cLinkedAbove is not None:
+                    if self.expansionData.isTargetComponent(cLinkedAbove):
+                        # the linked component in the block above is the target component for that block. e.g., fuel to
+                        # fuel. Shift this linked target component up (expansion) or down (contraction) without changing
+                        # its height. In this case, component mass is conserved for both target components.
+                        cLinkedAbove.zbottom = targetComp.ztop
+                        cLinkedAbove.ztop = cLinkedAbove.height + cLinkedAbove.zbottom
+                    else:
+                        # the current target component type continues in the block above, but the target component in
+                        # the block above is different. e.g., the transition from stationary duct to control material in
+                        # a typical pin-based reactor control assembly design. Shift the target component in the block
+                        # above up (expansion) or down (contraction) without changing its height. In this case,
+                        # component mass is conserved for both target components.
+                        for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
+                            c.zbottom = targetComp.ztop
+                            c.ztop = c.height + c.zbottom
 
-            b.p.z = b.p.zbottom + b.getHeight() / 2.0
+                else:
+                    bAbove = self.linked.linkedBlocks[b].upper
+                    if bAbove is self.topMostBlock:
+                        if not bAbove.hasFlags(Flags.DUMMY):
+                            for c in iterSolidComponents(bAbove):
+                                c.zbottom = b.p.ztop
+                                c.ztop = c.zbottom + c.height
+                    else:
+                        targetCompAbove = self.expansionData.getTargetComponent(bAbove)
+                        # shift the bounds of the target component in the block above to align with the bounds of the
+                        # current block.
+                        targetCompAbove.zbottom = b.p.ztop
+                        targetCompAbove.ztop = targetCompAbove.zbottom + targetCompAbove.height
 
-            _checkBlockHeight(b)
-            # Call Component.clearCache to update the Component volume, and therefore the masses,
-            # of all components.
-            for c in b:
-                c.clearCache()
+                # deal with non-target components
+                for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
+                    if self.linked.linkedComponents[c].lower is None:
+                        # this component is not axially linked to anything below and needs to shift with its
+                        # respective parent block.
+                        c.zbottom = b.p.zbottom
+                        c.ztop = c.zbottom + c.height
+
+                    cAbove = self.linked.linkedComponents[c].upper
+                    if cAbove is not None:
+                        # align components
+                        cAbove.zbottom = c.ztop
+                        cAbove.ztop = cAbove.zbottom + cAbove.height
+
+                        # redistribute mass
+                        deltaZTop = b.p.ztop - c.ztop
+                        self._checkComponentHeight(c)
+                        if deltaZTop > 0.0:
+                            self.MASS_REDISTRIBUTOR(
+                                fromComp=cAbove, toComp=c, assemName=repr(self.linked.a), deltaZTop=deltaZTop
+                            )
+                        elif deltaZTop < 0.0:
+                            self.MASS_REDISTRIBUTOR(
+                                fromComp=c, toComp=cAbove, assemName=repr(self.linked.a), deltaZTop=deltaZTop
+                            )
+
+                        # realign components based on deltaZTop
+                        self._shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
+            else:
+                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
+                b.p.height = b.p.ztop - b.p.zbottom
+                b.p.z = b.p.zbottom + b.getHeight() / 2.0
+                b.clearCache()
+                # If the self.topMostBlock is a dummy block, the following is meaningless as there are no solid
+                # components. However, if it is not a dummy block, we need to adjust the solid components within it in
+                # order to keep their elevation information consistent with the block.
+                for c in iterSolidComponents(b):
+                    c.zbottom = b.p.zbottom
+                    c.ztop = b.p.ztop
+                    c.height = c.ztop - c.zbottom
+
+            self._checkBlockHeight(b)
+            self._recomputeBlockMassParams(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -363,6 +465,40 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+        if recalculateBurnup:
+            for b in self.linked.a.iterBlocks(Flags.FUEL):
+                self.recalculateBurnup(b)
+
+    def _recomputeBlockMassParams(self, b: "Block"):
+        """
+        After component initial mass parameters have been adjusted for expansion,
+        recompute block parameters that are derived from children.
+        """
+        paramsToMove = (
+            "massHmBOL",
+            "molesHmBOL",
+        )
+        for paramName in paramsToMove:
+            b.p[paramName] = (
+                sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None) / b.getSymmetryFactor()
+            )
+
+    def recalculateBurnup(self, b: "Block"):
+        """Post axial-expansion, heavy metal may have moved between blocks; recalculate burnup.
+
+        Notes
+        -----
+        Since burnup can be calculated differently, this is meant to be populated in a downstream application subclass.
+        """
+        pass
+
+    def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
+        # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
+        c.height += deltaZTop
+        c.ztop += deltaZTop
+        # the height of cAbove grows and zbottom moves downwards (-deltaZTop) or shrinks and moves upward (+deltaZTop)
+        cAbove.height -= deltaZTop
+        cAbove.zbottom += deltaZTop
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
@@ -391,23 +527,53 @@ class AxialExpansionChanger:
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
+    def _checkComponentHeight(self, c):
+        if c.zbottom > c.ztop:
+            msg = f"""
+            {c} has a negative height. This is unphysical.
+                Assembly: {self.linked.a}
+                    Block: {c.parent}
+                Component: {c}
 
-def _checkBlockHeight(b):
-    """
-    Do some basic block height validation.
+                Component Height = {c.ztop} - {c.zbottom} = {c.height}.
+            """
+            raise ArithmeticError(dedent(msg))
 
-    Notes
-    -----
-    3cm is a presumptive lower threshold for DIF3D
-    """
-    if b.getHeight() < 3.0:
-        runLog.debug(
-            "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.getHeight()
-            )
-        )
+    def _checkBlockHeight(self, b):
+        """Do some basic block height validation."""
+        if b.getHeight() < self.DIF3D_MIN_BLOCK_HEIGHT:
+            runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
 
-    if b.getHeight() < 0.0:
-        raise ArithmeticError(
-            "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(b.name, str(b.p.flags), b.getHeight())
-        )
+        if b.getHeight() < 0.0:
+            raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height. ({b.getHeight():.12e})")
+
+        for c in iterSolidComponents(b):
+            if c.height - b.getHeight() > self.COMP_BLOCK_HEIGHT_DIFF_THRESHOLD:
+                diff = c.height - b.getHeight()
+                expectedChange = "increase" if diff < 0.0 else "decrease"
+                if c.hasFlags(Flags.FUEL) or c.hasFlags(Flags.CONTROL):
+                    msg = f"""
+                    The height of {c} has gone out of sync with its parent block!
+                        Assembly: {self.linked.a}
+                            Block: {b}
+                        Component: {c}
+
+                            Block Height = {b.getHeight()}
+                        Component Height = {c.height}
+
+                    The difference in height is {diff} cm. This difference will result in an artificial {expectedChange}
+                    in the mass of {c}. This is indicative that there are multiple axial component terminations in {b}.
+                    Per the ARMI User Manual, to preserve mass there can only be one axial component termination
+                    per block.
+                    """
+                    runLog.warning(dedent(msg), label="Component height different.")
+
+        if self.linked.linkedBlocks[b].lower:
+            lowerBlock = self.linked.linkedBlocks[b].lower
+            if lowerBlock.p.ztop != b.p.zbottom:
+                runLog.warning(
+                    "Block heights have gone out of sync!\n"
+                    f"\t{lowerBlock.getType()}: {lowerBlock.p.ztop}\n"
+                    f"\t{b.getType()}: {b.p.zbottom}",
+                    single=True,
+                )

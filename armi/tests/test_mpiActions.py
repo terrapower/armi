@@ -14,6 +14,8 @@
 """Tests for MPI actions."""
 
 import unittest
+from collections import defaultdict
+from unittest.mock import patch
 
 from armi import context
 from armi.mpiActions import (
@@ -28,6 +30,38 @@ from armi.mpiActions import (
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 from armi.utils import iterables
+
+
+class MockMpiComm:
+    """Mock MPI Communication library."""
+
+    def allgather(self, name):
+        return ["1", "2", "3", "4"]
+
+    def bcast(self, data, root=0):
+        return defaultdict(int)
+
+    def Get_rank(self):
+        return 1
+
+    def Get_size(self):
+        return 4
+
+    def scatter(self, actions, root=0):
+        return None
+
+    def Split(self, num):
+        return self
+
+
+class MockMpiAction(MpiAction):
+    """Mock MPI Action, to simplify tests."""
+
+    def broadcast(self, obj=None):
+        return 3
+
+    def invoke(self, o, r, cs):
+        return 7
 
 
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
@@ -90,8 +124,7 @@ class MpiIterTests(unittest.TestCase):
     def test_excessProcesses(self):
         """Test load balancing when numProcs exceeds numObjects.
 
-        In this case, some processes should receive a single object and the
-        rest should receive no objects
+        In this case, some processes should receive a single object and the rest should receive no objects.
         """
         numObjs, numProcs = 5, 25
         allObjs = list(range(numObjs))
@@ -108,8 +141,7 @@ class MpiIterTests(unittest.TestCase):
     def test_typicalBalancing(self):
         """Test load balancing for typical case (numProcs < numObjs).
 
-        In this case, the total imbalance should be 1 (except for the perfectly
-        balanced case).
+        In this case, the total imbalance should be 1 (except for the perfectly balanced case).
         """
         numObjs, numProcs = 25, 6
         allObjs = list(range(numObjs))
@@ -121,37 +153,46 @@ class MpiIterTests(unittest.TestCase):
         self.assertLessEqual(imbalance, 1)
         self.assertEqual(iterables.flatten(objs), allObjs)
 
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
     def test_runActionsDistributionAction(self):
-        numObjs, numProcs = 25, 5
-        allObjs = list(range(numObjs))
-        objs = self._distributeObjects(allObjs, numProcs)
-
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributionAction([self.action])
-        act.invokeHook = passer
-        results = runActions(objs, r, o.cs, [act])
+        results = runActions(o, r, o.cs, [act])
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
+        o.cs["verbosity"] = "debug"
+        res = act.invokeHook()
+        self.assertIsNone(res)
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
     def test_runActionsDistributeStateAction(self):
-        numObjs, numProcs = 25, 5
-        allObjs = list(range(numObjs))
-        objs = self._distributeObjects(allObjs, numProcs)
-
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
-        act = DistributeStateAction([self.action])
 
-        act.invokeHook = passer
-        results = runActions(objs, r, o.cs, [act])
+        act = DistributeStateAction([self.action])
+        results = runActions(o, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runActionsDistStateActionParallel(self):
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        act = DistributeStateAction([self.action])
+        results = runActions(o, r, o.cs, [act])
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
     def test_diagnosePickleErrorTestReactor(self):
         """Run _diagnosePickleError() on the test reactor.
 
-        We expect this to run all the way through the pickle diagnoser,
-        because the test reactor should be easily picklable.
+        We expect this to run all the way through the pickle diagnoser, because the test reactor should be easily
+        picklable.
         """
         o, _ = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
@@ -168,6 +209,10 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Scanning all blocks", mock.getStdout())
             self.assertIn("Scanning blocks by name", mock.getStdout())
             self.assertIn("Scanning the ISOTXS library", mock.getStdout())
+
+    def test_invokeAsMaster(self):
+        """Verify that calling invokeAsMaster calls invoke."""
+        self.assertEqual(7, MockMpiAction.invokeAsMaster(1, 2, 3))
 
 
 class QueueActionsTests(unittest.TestCase):
@@ -230,8 +275,3 @@ class QueueActionsTests(unittest.TestCase):
                 self.assertFalse(action.runActionExclusive)
             self.assertGreaterEqual(action.priority, lastPriority)
             lastPriority = action.priority
-
-
-def passer():
-    """Helper function, to do nothing, for unit tests."""
-    pass

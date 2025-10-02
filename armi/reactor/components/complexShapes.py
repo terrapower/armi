@@ -32,7 +32,7 @@ class HoledHexagon(basicShapes.Hexagon):
         method.
     """
 
-    THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
+    THERMAL_EXPANSION_DIMS = {"op", "holeOD", "holeRadFromCenter"}
 
     pDefs = componentParameters.getHoledHexagonParameterDefinitions()
 
@@ -45,6 +45,7 @@ class HoledHexagon(basicShapes.Hexagon):
         op,
         holeOD,
         nHoles,
+        holeRadFromCenter=None,
         mult=1.0,
         modArea=None,
         isotopics=None,
@@ -61,7 +62,15 @@ class HoledHexagon(basicShapes.Hexagon):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea)
+        self._linkAndStoreDimensions(
+            components,
+            op=op,
+            holeOD=holeOD,
+            nHoles=nHoles,
+            holeRadFromCenter=holeRadFromCenter,
+            mult=mult,
+            modArea=modArea,
+        )
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the hexagon with n number of circular holes in cm^2."""
@@ -173,8 +182,6 @@ class FilletedHexagon(basicShapes.Hexagon):
             components=components,
         )
         self._linkAndStoreDimensions(components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea)
-        assert oR <= op / 2, f"The outer radius of curvature is too large: {oR} > {op / 2}."
-        assert iR <= ip / 2, f"The inner radius of curvature is too large: {iR} > {ip / 2}."
 
     @staticmethod
     def _area(D, r):

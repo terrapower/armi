@@ -18,6 +18,9 @@ import copy
 import os
 import random
 import unittest
+from unittest.mock import Mock
+
+import numpy as np
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
@@ -39,7 +42,6 @@ class DummyFluxOptions:
 class TestConverterFactory(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
-        reduceTestReactorRings(self.r, self.o.cs, 2)
 
         self.dummyOptions = DummyFluxOptions(self.o.cs)
 
@@ -62,7 +64,6 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     def setUp(self):
         self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
-        reduceTestReactorRings(self.r, self.o.cs, 2)
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
@@ -81,7 +82,8 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
 
         prevB = None
-        for newB, sourceB in zip(newAssem, sourceAssem):
+        for newB in newAssem:
+            sourceB = sourceAssem.getBlockAtElevation(newB.p.z)
             if newB.isFuel() and sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif not newB.isFuel() and not sourceB.isFuel():
@@ -124,7 +126,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         sourceHeights = [b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)]
         self.assertListEqual(newHeights, sourceHeights)
 
-    def test_makeAssemUniformMeshParamMappingSameMesh(self):
+    def test_makeAssemUniformMeshParams(self):
         """Tests creating a uniform mesh assembly while mapping both number densities and specified parameters."""
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
         for b in sourceAssem:
@@ -385,6 +387,14 @@ class TestUniformMesh(unittest.TestCase):
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs, calcReactionRates=True)
 
+        # reactor parameters
+        self.r.core.p.beta = 700
+        self.r.core.p.betaComponents = [100, 150, 150, 100, 100, 100]
+        self.r.core.p.power = 10
+        self.reactorParamNames = ["beta", "betaComponents", "power", "keff", "keffUnc"]
+        self.converter._cachedReactorCoreParamData = {"powerDensity": 1.0}
+        self.paramMapper = uniformMesh.ParamMapper(self.reactorParamNames, [], self.r.core.getFirstBlock())
+
     def test_convertNumberDensities(self):
         """
         Test the reactor mass before and after conversion.
@@ -464,6 +474,14 @@ class TestUniformMesh(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateAbs)
                 self.assertTrue(b.p.rateCap)
+
+        # reactor parameters
+        self.assertEqual(self.r.core.p.power, 10)
+        self.assertEqual(self.r.core.p.beta, 700)
+        self.assertEqual(self.r.core.p.powerDensity, 1.0)
+        self.assertEqual(self.r.core.p.keff, 1.0)
+        self.assertEqual(self.r.core.p.keffUnc, 0.0)
+        self.assertListEqual(self.r.core.p.betaComponents, [100, 150, 150, 100, 100, 100])
 
 
 class TestCalcReationRates(unittest.TestCase):
@@ -715,3 +733,56 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateCap)
                 self.assertTrue(b.p.rateAbs)
+
+
+class TestParamMapper(unittest.TestCase):
+    """Test how the ParamMapper maps params."""
+
+    def setUp(self):
+        sourceAssem, destinationAssem = test_assemblies.buildTestAssemblies()[2:]
+        self.sourceBlock = sourceAssem.getBlocks()[0]
+        self.destinationBlock = destinationAssem.getBlocks()[0]
+
+        # volume integrated parameters
+        self.sourceBlock.p.power = 2.0
+        self.sourceBlock.p.mgFlux = np.array([2.0, 2.0, 2.0])
+        self.volumeIntegratedParameterNames = ["power", "mgFlux"]
+        # non-volume integrated parameters
+        self.sourceBlock.p.rateFis = 2.0
+        self.sourceBlock.p.linPowByPin = np.array([2.0, 2.0, 2.0])
+        self.regularParameterNames = ["rateFis", "linPowByPin"]
+        self.allParameterNames = self.volumeIntegratedParameterNames + self.regularParameterNames
+
+        self.sourceBlock.getSymmetryFactor = Mock()
+        self.destinationBlock.getSymmetryFactor = Mock()
+
+    def mappingTestHelper(self, expectedRatioVolumeIntegrated):
+        """
+        Test helper to run block comparison when mapping parameters.
+
+        Parameters
+        ----------
+        expectedRatioVolumeIntegrated : int, float
+            The ratio expected for volume integrated parameters when dividing the destination value by the source value.
+        """
+        paramMapper = uniformMesh.ParamMapper([], self.allParameterNames, self.sourceBlock)
+        sourceValues = paramMapper.paramGetter(self.sourceBlock, self.allParameterNames)
+        paramMapper.paramSetter(self.destinationBlock, sourceValues, self.allParameterNames)
+        for paramName in self.volumeIntegratedParameterNames:
+            ratio = self.destinationBlock.p[paramName] / self.sourceBlock.p[paramName]
+            np.testing.assert_equal(ratio, expectedRatioVolumeIntegrated)
+        for paramName in self.regularParameterNames:
+            ratio = self.destinationBlock.p[paramName] / self.sourceBlock.p[paramName]
+            np.testing.assert_equal(ratio, 1)
+
+    def test_mappingSameSymmetry(self):
+        """Test mapping parameters between blocks with similar and dissimilar symmetry factors."""
+        self.sourceBlock.getSymmetryFactor.return_value = 3
+        self.destinationBlock.getSymmetryFactor.return_value = 3
+        self.mappingTestHelper(1)
+
+    def test_mappingDifferentSymmetry(self):
+        """Test mapping parameters between blocks with similar and dissimilar symmetry factors."""
+        self.sourceBlock.getSymmetryFactor.return_value = 3
+        self.destinationBlock.getSymmetryFactor.return_value = 1
+        self.mappingTestHelper(3)

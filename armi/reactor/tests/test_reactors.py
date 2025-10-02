@@ -438,7 +438,8 @@ class HexReactorTests(ReactorTests):
         blockMesh = self.r.core.getFirstAssembly(Flags.FUEL).spatialGrid._bounds[2]
         assert_allclose(blockMesh, mesh)
 
-    def test_findAllAxialMeshPoints_wSubmesh(self):
+    def test_findAxialMeshsSubmesh(self):
+        """Find all axial mesh points with a provided sub-mesh."""
         referenceMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
         mesh = self.r.core.findAllAxialMeshPoints(assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True)
         self.assertListEqual(referenceMesh, mesh)
@@ -574,7 +575,7 @@ class HexReactorTests(ReactorTests):
     def test_genAssembliesAddedThisCycle(self):
         allAssems = self.r.core.getAssemblies()
         self.assertTrue(all(a1 is a2 for a1, a2 in zip(allAssems, self.r.core.genAssembliesAddedThisCycle())))
-        a = self.r.core.getAssemblies()[0]
+        a = self.r.core.getFirstAssembly()
         newA = copy.deepcopy(a)
         newA.name = None
         self.r.p.cycle = 1
@@ -586,13 +587,15 @@ class HexReactorTests(ReactorTests):
     def test_getAssemblyPitch(self):
         self.assertEqual(self.r.core.getAssemblyPitch(), 16.75)
 
-    def test_getNumAssembliesWithAllRingsFilledOut(self):
+    def test_getNumAssemsAllRingsFilled(self):
+        """Basic test of getNumAssembliesWithAllRingsFilledOut."""
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
     @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
-    def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
+    def test_getNumAssemsWithAllRingsBipass(self):
+        """Test edge case in getNumAssembliesWithAllRingsFilledOut by bypassing some of the logic."""
         nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
         self.assertEqual(19, nAssems)
 
@@ -643,13 +646,13 @@ class HexReactorTests(ReactorTests):
             :tests: R_ARMI_SFP
         """
         # where are we starting
-        numCoreStart = len(self.r.core.getAssemblies())
+        numCoreStart = len(self.r.core)
         numTotalStart = len(self.r.core.getAssemblies(includeSFP=True))
 
         # remove one assembly and confirm behavior
         for i in range(1, 5):
             self.r.core.removeAssembly(self.r.core.getFirstAssembly())
-            self.assertEqual(len(self.r.core.getAssemblies()), numCoreStart - i)
+            self.assertEqual(len(self.r.core), numCoreStart - i)
             self.assertEqual(len(self.r.core.getAssemblies(includeSFP=True)), numTotalStart)
 
     def test_restoreReactor(self):
@@ -659,7 +662,7 @@ class HexReactorTests(ReactorTests):
             :id: T_ARMI_THIRD_TO_FULL_CORE1
             :tests: R_ARMI_THIRD_TO_FULL_CORE
         """
-        numOfAssembliesOneThird = len(self.r.core.getAssemblies())
+        numOfAssembliesOneThird = len(self.r.core)
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
             self.r.core.symmetry,
@@ -668,17 +671,17 @@ class HexReactorTests(ReactorTests):
         # grow to full core
         converter = self.r.core.growToFullCore(self.o.cs)
         self.assertTrue(self.r.core.isFullCore)
-        self.assertGreater(len(self.r.core.getAssemblies()), numOfAssembliesOneThird)
+        self.assertGreater(len(self.r.core), numOfAssembliesOneThird)
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         # restore back to 1/3 core
         converter.restorePreviousGeometry(self.r)
-        self.assertEqual(numOfAssembliesOneThird, len(self.r.core.getAssemblies()))
+        self.assertEqual(numOfAssembliesOneThird, len(self.r.core))
         self.assertEqual(
             self.r.core.symmetry,
             geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
         self.assertFalse(self.r.core.isFullCore)
-        self.assertEqual(numOfAssembliesOneThird, len(self.r.core.getAssemblies()))
+        self.assertEqual(numOfAssembliesOneThird, len(self.r.core))
         self.assertEqual(
             self.r.core.symmetry,
             geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
@@ -971,7 +974,7 @@ class HexReactorTests(ReactorTests):
         aNew = self.r.core.createFreshFeed(cs=self.o.cs)
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
-    def test_createAssemblyOfTypeExpandedCore(self):
+    def test_createAssemOfTypeExpandCore(self):
         """Test creation of new assemblies in an expanded core."""
         # change the mesh of inner blocks
         mesh = self.r.core.p.referenceBlockAxialMesh[1:]
@@ -1032,7 +1035,7 @@ class HexReactorTests(ReactorTests):
         heights = [b.p.height for b in a]
         self.assertEqual(originalHeights, heights)
 
-    def test_applyThermalExpansion_CoreConstruct(self):
+    def test_applyThermalExpanCoreConst(self):
         r"""Test that assemblies in core are correctly expanded.
 
         Notes
