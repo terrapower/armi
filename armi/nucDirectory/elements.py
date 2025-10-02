@@ -320,13 +320,24 @@ class Elements:
     A container for all the elements information in the simulation.
 
     By design, you would only expect to have one instance of this object in memory during a simulation.
+
+    Attributes
+    ----------
+    byZ: dict[int, Element]
+        A dictionary to find Element objects by atomic number (integer Z).
+    byName: dict[str, Element]
+        A dictionary to find Element objects by unique string identifier ("C", "PU239", "U235", etc).
+    bySymbol: dict[str, Element]
+        A dictionary to find Element objects by atomic symbol ("C", "N", "PU", etc).
+    elementsFile: str
+        File path to the custom ARMI "elements.dat" file.
     """
 
     def __init__(self):
-        self.byZ = {}
-        self.byName = {}
-        self.bySymbol = {}
-        self.elementsFile = os.path.join(context.RES, "elements.dat")
+        self.byZ: dict[int, Element] = {}
+        self.byName: dict[str, Element] = {}
+        self.bySymbol: dict[str, Element] = {}
+        self.elementsFile: str = os.path.join(context.RES, "elements.dat")
 
     def clear(self):
         """Empty all the data in this collection."""
