@@ -818,10 +818,7 @@ class Block(composites.Composite):
 
     @staticmethod
     def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
-        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a better fit.
-        # We don't want to remove the plotFlux function in the Block namespace yet in case client
-        # code is depending on this function existing here. This is just a simple pass-through
-        # function that passes the arguments along to the actual implementation in its new location.
+        """A simple pass-through method to a utils plotting function. This is here to preserve the API."""
         plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):

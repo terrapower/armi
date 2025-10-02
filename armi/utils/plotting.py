@@ -26,17 +26,21 @@ import itertools
 import math
 import os
 import re
+from glob import glob
 
+import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.text as mpl_text
 import numpy as np
+from matplotlib import cm
 from matplotlib.collections import PatchCollection
 from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
 from ordered_set import OrderedSet
 
+import armi
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
@@ -44,7 +48,7 @@ from armi.reactor import grids
 from armi.reactor.components import Circle, DerivedShape, Helix
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
 from armi.reactor.flags import Flags
-from armi.utils import hexagon
+from armi.utils import hexagon, iterables, units
 
 LUMINANCE_WEIGHTS = np.array([0.3, 0.59, 0.11, 0.0])
 
@@ -896,6 +900,32 @@ def _plotBlocksInAssembly(
     return xBlockLoc, yBlockHeights, yBlockAxMesh
 
 
+def plotRadialReactorLayouts(reactor):
+    """Generate a radial layout image of the converted reactor core."""
+    bpAssems = list(reactor.blueprints.assemblies.values())
+    assemsToPlot = []
+    for bpAssem in bpAssems:
+        coreAssems = reactor.core.getAssemblies(bpAssem.p.flags)
+        if not coreAssems:
+            continue
+        assemsToPlot.append(coreAssems[0])
+
+    # Obtain the plot numbering based on the existing files so that existing plots are not overwritten.
+    start = 0
+    existingFiles = glob(f"{reactor.core.name}AssemblyTypes" + "*" + ".png")
+    # This loops over the existing files for the assembly types outputs and makes a unique integer value so that plots
+    # are not overwritten. The regular expression here captures the first integer as AssemblyTypesX and then ensures
+    # that the numbering in the next enumeration below is 1 above that.
+    for f in existingFiles:
+        newStart = int(re.search(r"\d+", f).group())
+        if newStart > start:
+            start = newStart
+
+    for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=start + 1):
+        assemPlotName = f"{reactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
+        plotAssemblyTypes(assemBatch, assemPlotName, maxAssems=6, showBlockAxMesh=True)
+
+
 def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
     """
     Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
@@ -1386,6 +1416,22 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, f
     return os.path.abspath(fName)
 
 
+def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
+    """Plots a matrix to show scattering."""
+    plt.imshow(scatterMatrix.todense(), interpolation="nearest")
+    plt.grid(color="0.70")
+    plt.xlabel("From group")
+    plt.ylabel("To group")
+    plt.title(f"{scatterTypeLabel} scattering XS")
+    plt.colorbar()
+
+    if fName:
+        plt.savefig(fName)
+        plt.close()
+    else:
+        plt.show()
+
+
 def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None):
     """
     Generates a XS plot for a nuclide on the ISOTXS library.
@@ -1416,7 +1462,7 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
 
     See Also
     --------
-    armi.nucDirectory.nuclide.plotScatterMatrix
+    plotScatterMatrix
     """
     # convert all input to lists
     if isinstance(nucNames, str):
@@ -1445,3 +1491,176 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
         plt.close()
     elif not noShow:
         plt.show()
+
+
+def plotConvertedBlock(sourceBlock, convertedBlock, fName=None):
+    """Render an image of the converted block."""
+    runLog.extra(f"Plotting equivalent cylindrical block of {sourceBlock}")
+    fig, ax = plt.subplots()
+    fig.patch.set_visible(False)
+    ax.patch.set_visible(False)
+    ax.axis("off")
+    patches = []
+    colors = []
+    for circleComp in convertedBlock:
+        innerR = circleComp.getDimension("id") / 2.0
+        outerR = circleComp.getDimension("od") / 2.0
+        runLog.debug("Plotting {:40s} with {:10.3f} {:10.3f} ".format(circleComp, innerR, outerR))
+        circle = matplotlib.patches.Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
+        patches.append(circle)
+        colors.append(circleComp.density())
+
+    p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=cm.YlGn)
+    p.set_array(np.array(colors))
+    ax.add_collection(p)
+    ax.autoscale_view(True, True, True)
+    ax.set_aspect("equal")
+    fig.tight_layout()
+
+    if fName:
+        plt.savefig(fName)
+        plt.close()
+    else:
+        plt.show()
+
+    return fName
+
+
+def plotConvertedRZTReactor(reactor, fNameBase=None):
+    """
+    Generate plots for the converted RZT reactor.
+
+    Parameters
+    ----------
+    fNameBase : str, optional
+        A name that will form the basis of the N plots that are generated by this method. Will get split on extension
+        and have numbers added. Should be like ``coreMap.png``.
+    """
+    runLog.info(f"Generating plot(s) of the converted {str(reactor.core.geomType).upper()} reactor")
+    figs = []
+    colConv = matplotlib.colors.ColorConverter()
+    colGen = colorGenerator(5)
+    blockColors = {}
+    thetaMesh, radialMesh, axialMesh = _getReactorMeshCoordinates(reactor)
+    innerTheta = 0.0
+    for i, outerTheta in enumerate(thetaMesh):
+        fig, ax = plt.subplots(figsize=(12, 12))
+        innerRadius = 0.0
+        for outerRadius in radialMesh:
+            innerAxial = 0.0
+            for outerAxial in axialMesh:
+                b = _getBlockAtMeshPoint(
+                    reactor,
+                    innerTheta,
+                    outerTheta,
+                    innerRadius,
+                    outerRadius,
+                    innerAxial,
+                    outerAxial,
+                )
+                blockType = b.getType()
+                blockColor = _getBlockColor(colConv, colGen, blockColors, blockType)
+                if blockColor is not None:
+                    blockColors[blockType] = blockColor
+                blockPatch = matplotlib.patches.Rectangle(
+                    (innerRadius, innerAxial),
+                    (outerRadius - innerRadius),
+                    (outerAxial - innerAxial),
+                    facecolor=blockColors[blockType],
+                    linewidth=0,
+                    alpha=0.7,
+                )
+                ax.add_patch(blockPatch)
+                innerAxial = outerAxial
+            innerRadius = outerRadius
+        ax.set_title(
+            "{} Core Map from {} to {:.4f} revolutions".format(
+                str(reactor.core.geomType).upper(),
+                innerTheta * units.RAD_TO_REV,
+                outerTheta * units.RAD_TO_REV,
+            ),
+            y=1.03,
+        )
+        ax.set_xticks([0.0] + radialMesh)
+        ax.set_yticks([0.0] + axialMesh)
+        ax.tick_params(axis="both", which="major", labelsize=11, length=0, width=0)
+        ax.grid()
+        labels = ax.get_xticklabels()
+        for label in labels:
+            label.set_rotation(270)
+        handles = []
+        labels = []
+        for blockType, blockColor in blockColors.items():
+            line = matplotlib.lines.Line2D([], [], color=blockColor, markersize=15, label=blockType)
+            handles.append(line)
+            labels.append(line.get_label())
+
+        ax.set_xlabel("RADIAL MESH (CM)", labelpad=20)
+        ax.set_ylabel("AXIAL MESH (CM)", labelpad=20)
+        if fNameBase:
+            root, ext = os.path.splitext(fNameBase)
+            fName = root + f"{i}" + ext
+            plt.savefig(fName)
+            plt.close()
+        else:
+            figs.append(fig)
+        innerTheta = outerTheta
+
+    return figs
+
+
+def _getReactorMeshCoordinates(reactor):
+    """A helper for plotConvertedRZTReactor."""
+    thetaMesh, radialMesh, axialMesh = reactor.core.findAllMeshPoints(applySubMesh=False)
+    thetaMesh.remove(0.0)
+    radialMesh.remove(0.0)
+    axialMesh.remove(0.0)
+    return thetaMesh, radialMesh, axialMesh
+
+
+def _getBlockAtMeshPoint(reactor, innerTheta, outerTheta, innerRadius, outerRadius, innerAxial, outerAxial):
+    """A helper for plotConvertedRZTReactor."""
+    for b in reactor.core.iterBlocks():
+        blockMidTh, blockMidR, blockMidZ = b.spatialLocator.getGlobalCoordinates(nativeCoords=True)
+        if (blockMidTh >= innerTheta) and (blockMidTh <= outerTheta):
+            if (blockMidR >= innerRadius) and (blockMidR <= outerRadius):
+                if (blockMidZ >= innerAxial) and (blockMidZ <= outerAxial):
+                    return b
+
+    raise ValueError(
+        "No block found between ({}, {}), ({}, {}), ({}, {})\nLast block had TRZ= {} {} {}".format(
+            innerTheta,
+            outerTheta,
+            innerRadius,
+            outerRadius,
+            innerAxial,
+            outerAxial,
+            blockMidTh,
+            blockMidR,
+            blockMidZ,
+        )
+    )
+
+
+def _getBlockColor(colConverter, colGenerator, blockColors, blockType):
+    """A helper for plotConvertedRZTReactor."""
+    nextColor = None
+    if blockType not in blockColors:
+        if "fuel" in blockType:
+            nextColor = "tomato"
+        elif "structure" in blockType:
+            nextColor = "lightgrey"
+        elif "radial shield" in blockType:
+            nextColor = "lightgrey"
+        elif "duct" in blockType:
+            nextColor = "grey"
+        else:
+            while True:
+                try:
+                    nextColor = next(colGenerator)
+                    colConverter.to_rgba(nextColor)
+                    break
+                except ValueError:
+                    continue
+
+    return nextColor
