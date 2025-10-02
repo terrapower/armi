@@ -13,26 +13,22 @@
 # limitations under the License.
 
 """
-This module provides fundamental element information to be used throughout the framework
-and applications.
+This module provides fundamental element information to be used throughout the framework and applications.
 
 .. impl:: A tool for querying basic data for elements of the periodic table.
     :id: I_ARMI_ND_ELEMENTS0
     :implements: R_ARMI_ND_ELEMENTS
 
     The :py:mod:`elements <armi.nucDirectory.elements>` module defines the
-    :py:class:`Element <armi.nucDirectory.elements.Element>` class which acts as
-    a data structure for organizing information about an individual element,
-    including number of protons, name, chemical symbol, phase (at STP), periodic
-    table group, standard weight, and a list of isotope :py:class:`nuclideBase
-    <armi.nucDirectory.nuclideBases.NuclideBase>` instances. The module includes
-    a factory that generates the :py:class:`Element
-    <armi.nucDirectory.elements.Element>` instances by reading from the
-    ``elements.dat`` file stored in the ARMI resources folder.  When an
-    :py:class:`Element <armi.nucDirectory.elements.Element>` instance is
-    initialized, it is added to a set of global dictionaries that are keyed by
-    number of protons, element name, and element symbol. The module includes
-    several helper functions for querying these global dictionaries.
+    :py:class:`Element <armi.nucDirectory.elements.Element>` class which acts as a data structure for organizing
+    information about an individual element, including number of protons, name, chemical symbol, phase (at STP),
+    periodic table group, standard weight, and a list of isotope
+    :py:class:`nuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instances. The module includes a factory that
+    generates the :py:class:`Element <armi.nucDirectory.elements.Element>` instances by reading from the
+    ``elements.dat`` file stored in the ARMI resources folder. When an
+    :py:class:`Element <armi.nucDirectory.elements.Element>` instance is initialized, it is added to a set of global
+    dictionaries that are keyed by number of protons, element name, and element symbol. The module includes several
+    helper functions for querying these global dictionaries.
 
 The element class structure is outlined :ref:`here <elements-class-diagram>`.
 
@@ -127,6 +123,12 @@ Retrieve elements that are classified as actinides:
                                     tableFmt='rst'),
                            caption='List of elements',
                            label='nuclide-bases-table')
+
+Notes
+-----
+Currently, this module contains a lot of data in the global scope. But ARMI is in the process of encapsulating this
+data, moving it out of the global scope, making it part of the reactor data model, and making it configurable via
+Settings. Pardon the mess during this transition.
 """
 
 import os
@@ -136,9 +138,10 @@ from typing import List
 from armi import context
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
-byZ = {}
-byName = {}
-bySymbol = {}
+elements = None
+byZ = None
+byName = None
+bySymbol = None
 
 
 class ChemicalPhase(Enum):
@@ -165,7 +168,7 @@ class ChemicalGroup(Enum):
 class Element:
     """Represents an element defined on the Periodic Table."""
 
-    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
+    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN", addToGlobal=True):
         """
         Creates an instance of an Element.
 
@@ -173,18 +176,14 @@ class Element:
             :id: I_ARMI_ND_ELEMENTS1
             :implements: R_ARMI_ND_ELEMENTS
 
-            The :py:class:`Element <armi.nucDirectory.elements.Element>` class
-            acts as a data structure for organizing information about an
-            individual element, including number of protons, name, chemical
-            symbol, phase (at STP), periodic table group, standard weight, and a
-            list of isotope
-            :py:class:`nuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instances.
+            The :py:class:`Element <armi.nucDirectory.elements.Element>` class acts as a data structure for organizing
+            information about an individual element, including number of protons, name, chemical symbol, phase (at STP),
+            periodic table group, standard weight, and a list of isotope
+            :py:class:`nuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instances.
 
-            The :py:class:`Element <armi.nucDirectory.elements.Element>` class
-            has a few methods for appending additional isotopes, checking
-            whether an isotope is naturally occurring, retrieving the natural
-            isotopic abundance, or whether the element is a heavy metal.
+            The :py:class:`Element <armi.nucDirectory.elements.Element>` class has a few methods for appending
+            additional isotopes, checking whether an isotope is naturally occurring, retrieving the natural isotopic
+            abundance, or whether the element is a heavy metal.
 
         Parameters
         ----------
@@ -206,7 +205,8 @@ class Element:
         self.group = ChemicalGroup[group]
         self.standardWeight = None
         self.nuclides = []
-        addGlobalElement(self)
+        if addToGlobal:
+            addGlobalElement(self)
 
     def __repr__(self):
         return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
@@ -241,8 +241,7 @@ class Element:
 
         Notes
         -----
-        This method will filter out any NaturalNuclideBases from the `nuclides`
-        attribute.
+        This method will filter out any NaturalNuclideBases from the `nuclides` attribute.
         """
         return [nuc for nuc in self.nuclides if nuc.abundance > 0.0 and nuc.a > 0]
 
@@ -252,193 +251,269 @@ class Element:
 
         Notes
         -----
-        Heavy metal in this instance is not related to an exact weight or density
-        cut-off, but rather is designated for nuclear fuel burn-up evaluations, where
-        the initial heavy metal mass within a component should be tracked. It is typical
-        to include any element/nuclide above Actinium.
+        Heavy metal in this instance is not related to an exact weight or density cut-off, but rather is designated for
+        nuclear fuel burn-up evaluations, where the initial heavy metal mass within a component should be tracked. It is
+        typical to include any element/nuclide above Actinium.
         """
         return self.z > HEAVY_METAL_CUTOFF_Z
 
 
 def getElementsByChemicalPhase(phase: ChemicalPhase) -> List[Element]:
-    """
-    Returns all elements that are of the given chemical phase.
-
-    Parameters
-    ----------
-    phase: ChemicalPhase
-        This should be one of the valid options from the `ChemicalPhase` class.
-
-    Returns
-    -------
-    elems : List[Element]
-        A list of elements that are associated with the given chemical phase.
-    """
-    elems = []
-    if not isinstance(phase, ChemicalPhase):
-        raise ValueError(f"{phase} is not an instance of {ChemicalPhase}")
-    for element in byName.values():
-        if element.phase == phase:
-            elems.append(element)
-    return elems
+    """Pass through to Elements.getElementsByChemicalPhase() for the global Elements object."""
+    global elements
+    return elements.getElementsByChemicalPhase(phase)
 
 
 def getElementsByChemicalGroup(group: ChemicalGroup) -> List[Element]:
-    """
-    Returns all elements that are of the given chemical group.
-
-    Parameters
-    ----------
-    group: ChemicalGroup
-        This should be one of the valid options from the `ChemicalGroup` class.
-
-    Returns
-    -------
-    elems : List[Element]
-        A list of elements that are associated with the given chemical group.
-    """
-    elems = []
-    if not isinstance(group, ChemicalGroup):
-        raise ValueError(f"{group} is not an instance of {ChemicalGroup}")
-    for element in byName.values():
-        if element.group == group:
-            elems.append(element)
-    return elems
+    """Pass through to Elements.getElementsByChemicalGroup() for the global Elements object."""
+    global elements
+    return elements.getElementsByChemicalGroup(group)
 
 
 def getName(z: int = None, symbol: str = None) -> str:
-    r"""
-    Returns element name.
-
-    Parameters
-    ----------
-    z : int
-        Atomic number
-    symbol : str
-        Element abbreviation e.g. 'Zr'
-
-    Examples
-    --------
-    >>> elements.getName(10)
-    'Neon'
-    >>> elements.getName(symbol='Ne')
-    'Neon'
-    """
-    element = None
-    if z:
-        element = byZ[z]
-    else:
-        element = byName[symbol.upper()]
-    return element.name
+    """Pass through to Elements.getName() for the global Elements object."""
+    global elements
+    return elements.getName(z, symbol)
 
 
 def getSymbol(z: int = None, name: str = None) -> str:
-    r"""
-    Returns element abbreviation given atomic number Z.
-
-    Parameters
-    ----------
-    z : int
-        Atomic number
-    name : str
-        Element name E.g. Zirconium
-
-    Examples
-    --------
-    >>> elements.getSymbol(10)
-    'Ne'
-    >>> elements.getSymbol(name='Neon')
-    'Ne'
-
-    """
-    element = None
-    if z:
-        element = byZ[z]
-    else:
-        element = byName[name.lower()]
-    return element.symbol
+    """Pass through to Elements.getSymbol() for the global Elements object."""
+    global elements
+    return elements.getSymbol(z, name)
 
 
 def getElementZ(symbol: str = None, name: str = None) -> int:
-    """
-    Get element atomic number given a symbol or name.
-
-    Parameters
-    ----------
-    symbol : str
-        Element symbol e.g. 'Zr'
-    name : str
-        Element name e.g. 'Zirconium'
-
-    Examples
-    --------
-    >>> elements.getZ('Zr')
-    40
-    >>> elements.getZ(name='Zirconium')
-    40
-
-    Notes
-    -----
-    Element Z is stored in elementZBySymbol, indexed by upper-case element symbol.
-    """
-    if not symbol and not name:
-        return None
-    element = None
-    if symbol:
-        element = bySymbol[symbol.upper()]
-    else:
-        element = byName[name.lower()]
-    return element.z
+    """Pass through to Elements.getElementZ() for the global Elements object."""
+    global elements
+    return elements.getElementZ(symbol, name)
 
 
 def factory():
-    """
-    Generate the :class:`Elements <Element>` instances.
-
-    .. warning::
-        This method gets called by default when loading the module, so don't call it
-        unless you know what you're doing.
-        Any existing :class:`Nuclides <armi.nucDirectory.nuclide.Nuclide>`
-        may lose their reference to the underlying :class:`Element`.
-    """
-    destroyGlobalElements()
-    with open(os.path.join(context.RES, "elements.dat"), "r") as f:
-        for line in f:
-            # Skip header lines
-            if line.startswith("#") or line.startswith("Z"):
-                continue
-            # read z, symbol, name, phase, and chemical group
-            lineData = line.split()
-            z = int(lineData[0])
-            sym = lineData[1].upper()
-            name = lineData[2]
-            phase = lineData[3]
-            group = lineData[4]
-            standardWeight = lineData[5]
-            e = Element(z, sym, name, phase, group)
-            if standardWeight != "Derived":
-                e.standardWeight = float(standardWeight)
-
-
-def addGlobalElement(element: Element):
-    """Add an element to the global dictionaries."""
-    if element.z in byZ or element.name in byName or element.symbol in bySymbol:
-        raise ValueError(f"{element} has already been added and cannot be duplicated.")
-
-    byZ[element.z] = element
-    byName[element.name] = element
-    bySymbol[element.symbol] = element
-
-
-def destroyGlobalElements():
-    """Delete all global elements."""
+    """Pass through to Elements.factory() for the global Elements object."""
+    global elements
     global byZ
     global byName
     global bySymbol
 
-    byZ.clear()
-    byName.clear()
-    bySymbol.clear()
+    elements = Elements()
+    elements.factory()
+
+    byZ = elements.byZ
+    byName = elements.byName
+    bySymbol = elements.bySymbol
+
+
+def addGlobalElement(element: Element):
+    """Pass through to Elements.addElement() for the global Elements object."""
+    global elements
+    elements.addElement(element)
+
+
+def destroyGlobalElements():
+    """Pass through to Elements.clear() for the global Elements object."""
+    global elements
+    elements.clear()
+
+
+class Elements:
+    """
+    A container for all the elements information in the simulation.
+
+    By design, you would only expect to have one instance of this object in memory during a simulation.
+
+    Attributes
+    ----------
+    byZ: dict[int, Element]
+        A dictionary to find Element objects by atomic number (integer Z).
+    byName: dict[str, Element]
+        A dictionary to find Element objects by unique string identifier ("C", "PU239", "U235", etc).
+    bySymbol: dict[str, Element]
+        A dictionary to find Element objects by atomic symbol ("C", "N", "PU", etc).
+    elementsFile: str
+        File path to the custom ARMI "elements.dat" file.
+    """
+
+    def __init__(self):
+        self.byZ: dict[int, Element] = {}
+        self.byName: dict[str, Element] = {}
+        self.bySymbol: dict[str, Element] = {}
+        self.elementsFile: str = os.path.join(context.RES, "elements.dat")
+
+    def clear(self):
+        """Empty all the data in this collection."""
+        self.byZ.clear()
+        self.byName.clear()
+        self.bySymbol.clear()
+
+    def addElement(self, element: Element):
+        """Add an element to this collection.
+
+        Raises
+        ------
+        ValueError
+            If the element already exists in the collection.
+        """
+        if element.z in self.byZ or element.name in self.byName or element.symbol in self.bySymbol:
+            raise ValueError(f"{element} has already been added and cannot be duplicated.")
+
+        self.byZ[element.z] = element
+        self.byName[element.name] = element
+        self.bySymbol[element.symbol] = element
+
+    def factory(self):
+        """Generate the :class:`Elements <Element>` instances."""
+        self.clear()
+        with open(self.elementsFile, "r") as f:
+            for line in f:
+                # Skip header lines
+                if line.startswith("#") or line.startswith("Z"):
+                    continue
+                # read z, symbol, name, phase, and chemical group
+                lineData = line.split()
+                z = int(lineData[0])
+                sym = lineData[1].upper()
+                name = lineData[2]
+                phase = lineData[3]
+                group = lineData[4]
+                standardWeight = lineData[5]
+                e = Element(z, sym, name, phase, group, addToGlobal=False)
+                if standardWeight != "Derived":
+                    e.standardWeight = float(standardWeight)
+                self.addElement(e)
+
+    def getElementsByChemicalPhase(self, phase: ChemicalPhase) -> List[Element]:
+        """
+        Returns all elements that are of the given chemical phase.
+
+        Parameters
+        ----------
+        phase: ChemicalPhase
+            This should be one of the valid options from the `ChemicalPhase` class.
+
+        Returns
+        -------
+        elems : List[Element]
+            A list of elements that are associated with the given chemical phase.
+        """
+        elems = []
+        if not isinstance(phase, ChemicalPhase):
+            raise TypeError(f"{phase} is not an instance of {ChemicalPhase}")
+
+        for element in self.byName.values():
+            if element.phase == phase:
+                elems.append(element)
+
+        return elems
+
+    def getElementsByChemicalGroup(self, group: ChemicalGroup) -> List[Element]:
+        """
+        Returns all elements that are of the given chemical group.
+
+        Parameters
+        ----------
+        group: ChemicalGroup
+            This should be one of the valid options from the `ChemicalGroup` class.
+
+        Returns
+        -------
+        elems : List[Element]
+            A list of elements that are associated with the given chemical group.
+        """
+        elems = []
+        if not isinstance(group, ChemicalGroup):
+            raise ValueError(f"{group} is not an instance of {ChemicalGroup}")
+
+        for element in self.byName.values():
+            if element.group == group:
+                elems.append(element)
+
+        return elems
+
+    def getName(self, z: int = None, symbol: str = None) -> str:
+        r"""
+        Returns element name.
+
+        Parameters
+        ----------
+        z : int
+            Atomic number
+        symbol : str
+            Element abbreviation e.g. 'Zr'
+
+        Examples
+        --------
+        >>> elements.getName(10)
+        'Neon'
+        >>> elements.getName(symbol='Ne')
+        'Neon'
+        """
+        element = None
+        if z:
+            element = self.byZ[z]
+        else:
+            element = self.byName[symbol.upper()]
+
+        return element.name
+
+    def getSymbol(self, z: int = None, name: str = None) -> str:
+        r"""
+        Returns element abbreviation given atomic number Z.
+
+        Parameters
+        ----------
+        z : int
+            Atomic number
+        name : str
+            Element name E.g. Zirconium
+
+        Examples
+        --------
+        >>> elements.getSymbol(10)
+        'Ne'
+        >>> elements.getSymbol(name='Neon')
+        'Ne'
+
+        """
+        element = None
+        if z:
+            element = self.byZ[z]
+        else:
+            element = self.byName[name.lower()]
+
+        return element.symbol
+
+    def getElementZ(self, symbol: str = None, name: str = None) -> int:
+        """
+        Get element atomic number given a symbol or name.
+
+        Parameters
+        ----------
+        symbol : str
+            Element symbol e.g. 'Zr'
+        name : str
+            Element name e.g. 'Zirconium'
+
+        Examples
+        --------
+        >>> elements.getZ('Zr')
+        40
+        >>> elements.getZ(name='Zirconium')
+        40
+
+        Notes
+        -----
+        Element Z is stored in elementZBySymbol, indexed by upper-case element symbol.
+        """
+        if not symbol and not name:
+            return None
+
+        element = None
+        if symbol:
+            element = self.bySymbol[symbol.upper()]
+        else:
+            element = self.byName[name.lower()]
+
+        return element.z
 
 
 factory()
