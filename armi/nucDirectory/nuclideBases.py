@@ -798,10 +798,10 @@ class DummyNuclideBase(INuclide):
     truncated.
     """
 
-    def __init__(self, name, weight, addToGlobal=True):
+    def __init__(self, element, name, weight, addToGlobal=True):
         INuclide.__init__(
             self,
-            element=elements.byName["Dummy"],
+            element=element,
             a=0,
             state=0,
             weight=weight,
@@ -873,10 +873,10 @@ class LumpNuclideBase(INuclide):
         Describes what nuclides LumpNuclideBase is expend to.
     """
 
-    def __init__(self, name, weight, addToGlobal=True):
+    def __init__(self, element, name, weight, addToGlobal=True):
         INuclide.__init__(
             self,
-            element=elements.byName["LumpedFissionProduct"],
+            element=element,
             a=0,
             state=0,
             weight=weight,
@@ -1105,6 +1105,7 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1: dict[str, INuclide] = {}
         self.byMcnpId: dict[int, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
+        self.elements = []  # TODO: Document me
         self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
         self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
         self.factory()
@@ -1136,6 +1137,7 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+        self.elements = []
 
         # reset the globals
         instances = self.instances
@@ -1169,7 +1171,7 @@ class NuclideBases:
         if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
             self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
-    def factory(self):
+    def factory(self, nuclidesFile: str = None, mccNuclidesFile: str = None, elementsFile: str = None):
         """
         Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
 
@@ -1177,6 +1179,10 @@ class NuclideBases:
         fills in the class attibues: instances, byName, byLabel, byMcc3IdEndfbVII0, and byMcc3IdEndfbVII1. This method
         is automatically run upon initializing the class, hence it is not usually necessary to re-run it unless there is
         a change to the data files, which should not happen during run time, or a *bad* :py:class`INuclide` is created.
+
+        Parameters
+        ----------
+        TODO: Document me
 
         Notes
         -----
@@ -1189,19 +1195,31 @@ class NuclideBases:
                 "first."
             )
 
-        self.addNuclideBases()
+        # grab the default data files, if none were provided
+        if nuclidesFile:
+            self.nuclidesFile = nuclidesFile
+
+        if mccNuclidesFile:
+            self.mccNuclidesFile = mccNuclidesFile
+
+        # load the fundamental elements library
+        self.elements = elements.Elements()
+        self.elements.factory(elementsFile)
+
+        # load the isotopes and isomers library
+        self.addNuclideBases(self.nuclidesFile)
         self.__addNaturalNuclideBases()
         self.__addDummyNuclideBases()
         self.__addLumpedFissionProductNuclideBases()
         self.updateNuclideBasesForSpecialCases()
-        self.readMCCNuclideData()
+        self.readMCCNuclideData(self.mccNuclidesFile)
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
         # reload the thermal scattering library with the new nuclideBases too
         from armi.nucDirectory import thermalScattering
 
-        thermalScattering.factory(self.byName)
+        self.byNbAndCompound = thermalScattering.factory(self.byName)
 
     def initReachableActiveNuclidesThroughBurnChain(self, nuclides, numberDensities, activeNuclides):
         """
@@ -1302,7 +1320,7 @@ class NuclideBases:
 
         Returns an iterator of :py:class:`INuclides <INuclide>` matching the specified condition.
 
-        Attributes
+        Parameters
         ----------
         predicate: lambda
             A lambda, or function, accepting a :py:class:`INuclide` as a parameter
@@ -1395,7 +1413,7 @@ class NuclideBases:
             # think of this protected stuff as "module level protection" rather than class.
             nuclide._processBurnData(burnInfo)
 
-    def addNuclideBases(self):
+    def addNuclideBases(self, nuclidesFile: str):
         """
         Read natural abundances of any natural nuclides.
 
@@ -1410,8 +1428,12 @@ class NuclideBases:
             symbol, atomic mass, natural abundance, half-life, and spontaneous fission yield. The data in
             ``nuclides.dat`` have been collected from multiple different sources; the references are given in comments
             at the top of that file.
+
+        Parameters
+        ----------
+        TODO
         """
-        with open(self.nuclidesFile, "r") as f:
+        with open(nuclidesFile, "r") as f:
             for line in f:
                 # Skip header lines
                 if line.startswith("#") or line.startswith("Z"):
@@ -1451,19 +1473,47 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the MC2 program.
         """
-        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, addToGlobal=False))
-        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, addToGlobal=False))
+        self.addNuclide(
+            DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP1", weight=10.0, addToGlobal=False)
+        )
+        self.addNuclide(
+            DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP2", weight=240.0, addToGlobal=False)
+        )
 
     def __addLumpedFissionProductNuclideBases(self):
         """Generates a set of nuclides for use as lumped fission products."""
-        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0, addToGlobal=False))
+        self.addNuclide(
+            LumpNuclideBase(
+                element=self.elements.byName["LumpedFissionProduct"], name="LFP35", weight=233.273, addToGlobal=False
+            )
+        )
+        self.addNuclide(
+            LumpNuclideBase(
+                element=self.elements.byName["LumpedFissionProduct"], name="LFP38", weight=235.78, addToGlobal=False
+            )
+        )
+        self.addNuclide(
+            LumpNuclideBase(
+                element=self.elements.byName["LumpedFissionProduct"], name="LFP39", weight=236.898, addToGlobal=False
+            )
+        )
+        self.addNuclide(
+            LumpNuclideBase(
+                element=self.elements.byName["LumpedFissionProduct"], name="LFP40", weight=237.7, addToGlobal=False
+            )
+        )
+        self.addNuclide(
+            LumpNuclideBase(
+                element=self.elements.byName["LumpedFissionProduct"], name="LFP41", weight=238.812, addToGlobal=False
+            )
+        )
+        self.addNuclide(
+            LumpNuclideBase(
+                element=self.elements.byName["LumpedFissionProduct"], name="LREGN", weight=1.0, addToGlobal=False
+            )
+        )
 
-    def readMCCNuclideData(self):
+    def readMCCNuclideData(self, mccNuclidesFile):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
 
         .. impl:: Separating MCC data from code.
@@ -1477,7 +1527,7 @@ class NuclideBases:
             read, and the global dictionaries ``byMcc2Id`` ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated
             with the nuclide bases keyed by their corresponding ID for each code.
         """
-        with open(self.mccNuclidesFile, "r") as f:
+        with open(mccNuclidesFile, "r") as f:
             yaml = YAML(typ="rt")
             nuclides = yaml.load(f)
 

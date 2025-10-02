@@ -333,11 +333,13 @@ class Elements:
         File path to the custom ARMI "elements.dat" file.
     """
 
-    def __init__(self):
+    DEFAULT_ELEMENTS_FILE = os.path.join(context.RES, "elements.dat")
+
+    def __init__(self, elementsFile: str = None):
         self.byZ: dict[int, Element] = {}
         self.byName: dict[str, Element] = {}
         self.bySymbol: dict[str, Element] = {}
-        self.elementsFile: str = os.path.join(context.RES, "elements.dat")
+        self.elementsFile: str = elementsFile if elementsFile else self.DEFAULT_ELEMENTS_FILE
 
     def clear(self):
         """Empty all the data in this collection."""
@@ -360,9 +362,14 @@ class Elements:
         self.byName[element.name] = element
         self.bySymbol[element.symbol] = element
 
-    def factory(self):
+    def factory(self, elementsFile: str = None):
         """Generate the :class:`Elements <Element>` instances."""
         self.clear()
+
+        # if no input file is provided, use the default
+        if elementsFile:
+            self.elementsFile = elementsFile
+
         with open(self.elementsFile, "r") as f:
             for line in f:
                 # Skip header lines
