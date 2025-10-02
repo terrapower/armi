@@ -852,7 +852,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         """Test that we can create the representative blocks for a reactor.
 
         .. test:: Build representative blocks for a reactor.
-            :id: T_ARMI_XSGM_CREATE_XS_GROUPS
+            :id: T_ARMI_XSGM_CREATE_XS_GROUPS0
             :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
         """
         _o, r = test_reactors.loadTestReactor(TEST_ROOT)
@@ -1112,6 +1112,12 @@ class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
         self.csm.interactBOL()
 
     def test_updateEnvironmentGroups(self):
+        """Test creation of a cross section groups with temperature grouping.
+
+        .. test:: Create representative blocks using temperature groups.
+            :id: T_ARMI_XSGM_CREATE_XS_GROUPS1
+            :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
+        """
         self.csm.createRepresentativeBlocks()
         BL = self.blockList
         loners = [BL[1], BL[3]]
