@@ -267,3 +267,5 @@ def factory(byName: dict):
     if "ZR" in byName:
         zr = byName["ZR"]
         byNbAndCompound[zr, ZRH] = ThermalScattering(zr, ZRH)
+
+    return byNbAndCompound

@@ -1106,6 +1106,7 @@ class NuclideBases:
         self.byMcnpId: dict[int, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
         self.elements = []  # TODO: Document me
+        self.byNbAndCompound = {}  # TODO: Document me
         self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
         self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
         self.factory()
