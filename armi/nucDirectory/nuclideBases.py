@@ -1061,22 +1061,54 @@ class NuclideBases:
     A container for all the nuclide information in the simulation.
 
     By design, you would only expect to have one instance of this object in memory during a simulation.
+
+    Attributes
+    ----------
+    burnChainImposed: bool
+        Have we applied transmutation and decay data to each nuclide?
+    instances: list[INuclide]
+        A simple list of the nuclides in this class.
+    byName: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by name, e.g., "U235".
+    byDBName: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by database name, e.g., "nU235".
+    byLabel: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by label, e.g., "U235".
+    byMcc2Id: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by MC2-2 ID, e.g., "U-2355".
+    byMcc3Id: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
+        (This exists for backwards compat. Identical to byMcc3IdEndfbVII1.)
+    byMcc3IdEndfbVII0: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
+    byMcc3IdEndfbVII1: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
+    byMcnpId: dict[int, INuclide]
+        A dictionary of the nuclides in this class, keyed by MCNP ID, e.g., 92235.
+    byAAAZZZSId: dict[int, INuclide]
+        A dictionary of the nuclides in this class, keyed by AAAZZZS, e.g., 2350920.
+    nuclidesFile: str
+        File path to the custom ARMI "nuclides.dat" file, containing a plain text description of all the nuclides to be
+        modeled including: Z, number of neutrons, mass number, amu, natural abundance, half life and nu-bar and more.
+    mccNuclidesFile: str
+        File path to the "mcc-nuclides.yaml" file, containing nuclides defined by the MC2-2 and MC2-3 codes, with
+        various ENDF/B-V mappings.
     """
 
     def __init__(self):
-        self.burnChainImposed = False
-        self.instances = []
-        self.byName = {}
-        self.byDBName = {}
-        self.byLabel = {}
-        self.byMcc2Id = {}
-        self.byMcc3Id = {}  # for backwards compat. Identical to byMcc3IdEndfbVII1
-        self.byMcc3IdEndfbVII0 = {}
-        self.byMcc3IdEndfbVII1 = {}
-        self.byMcnpId = {}
-        self.byAAAZZZSId = {}
-        self.nuclidesFile = os.path.join(context.RES, "nuclides.dat")
-        self.mccNuclidesFile = os.path.join(context.RES, "mcc-nuclides.yaml")
+        self.burnChainImposed: bool = False
+        self.instances: list[INuclide] = []
+        self.byName: dict[str, INuclide] = {}
+        self.byDBName: dict[str, INuclide] = {}
+        self.byLabel: dict[str, INuclide] = {}
+        self.byMcc2Id: dict[str, INuclide] = {}
+        self.byMcc3Id: dict[str, INuclide] = {}
+        self.byMcc3IdEndfbVII0: dict[str, INuclide] = {}
+        self.byMcc3IdEndfbVII1: dict[str, INuclide] = {}
+        self.byMcnpId: dict[int, INuclide] = {}
+        self.byAAAZZZSId: dict[int, INuclide] = {}
+        self.nuclidesFile: str = os.path.join(context.RES, "nuclides.dat")
+        self.mccNuclidesFile: str = os.path.join(context.RES, "mcc-nuclides.yaml")
         self.factory()
 
     def clear(self):
@@ -1117,10 +1149,9 @@ class NuclideBases:
         Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
 
         Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`. Also clears and
-        fills in the :py:data:`~armi.nucDirectory.nuclideBases.instances`, :py:data:`byName`, :py:attr:`byLabel`,
-        :py:data:`byMcc3IdEndfbVII0`, and :py:data:`byMcc3IdEndfbVII1` module attributes. This method is automatically
-        run upon loading the module, hence it is not usually necessary to re-run it unless there is a change to the data
-        files, which should not happen during run time, or a *bad* :py:class`INuclide` is created.
+        fills in the class attibues: instances, byName, byLabel, byMcc3IdEndfbVII0, and byMcc3IdEndfbVII1. This method
+        is automatically run upon initializing the class, hence it is not usually necessary to re-run it unless there is
+        a change to the data files, which should not happen during run time, or a *bad* :py:class`INuclide` is created.
 
         Notes
         -----
