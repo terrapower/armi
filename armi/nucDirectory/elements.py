@@ -346,7 +346,13 @@ class Elements:
         self.bySymbol.clear()
 
     def addElement(self, element: Element):
-        """Add an element to this collection."""
+        """Add an element to this collection.
+
+        Raises
+        ------
+        ValueError
+            If the element already exists in the collection.
+        """
         if element.z in self.byZ or element.name in self.byName or element.symbol in self.bySymbol:
             raise ValueError(f"{element} has already been added and cannot be duplicated.")
 

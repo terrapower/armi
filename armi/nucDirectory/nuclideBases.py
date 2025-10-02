@@ -281,33 +281,22 @@ class INuclide(NuclideInterface):
     ----------
     z : int
         Number of protons.
-
     a : int
         Number of nucleons.
-
     state : int
         Indicates excitement, 1 is more excited than 0.
-
     abundance : float
-        Isotopic fraction of a naturally occurring nuclide. The sum of all nuclide
-        abundances for a naturally occurring element should be 1.0. This is atom
-        fraction, not mass fraction.
-
+        Isotopic fraction of a naturally occurring nuclide. The sum of all nuclide abundances for a naturally occurring
+        element should be 1.0. This is atom fraction, not mass fraction.
     name : str
         ARMI's unique name for the given nuclide.
-
     label : str
-        ARMI's unique 4 character label for the nuclide.
-        These are not human readable, but do not lose any information.
-        The label is effectively the
-        :attr:`Element.symbol `armi.nucDirectory.elements.Element.symbol`
-        padded to two characters, plus the mass number (A) in base-26 (0-9, A-Z).
-        Additional support for meta-states is provided by adding 100 * the state
-        to the mass number (A).
-
+        ARMI's unique 4 character label for the nuclide. These are not human readable, but do not lose any information.
+        The label is effectively the :py:attr:`Element.symbol <armi.nucDirectory.elements.Element.symbol>` padded to two
+        characters, plus the mass number (A) in base-26 (0-9, A-Z). Additional support for meta-states is provided by
+        adding 100 * the state to the mass number (A).
     nuSF : float
-        Neutrons released per spontaneous fission.
-        This should probably be moved at some point.
+        Neutrons released per spontaneous fission. This should probably be moved at some point.
     """
 
     fissile = ["U235", "PU239", "PU241", "AM242M", "CM244", "U233"]
