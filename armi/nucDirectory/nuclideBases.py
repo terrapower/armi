@@ -985,9 +985,8 @@ def changeLabel(nuclideBase, newLabel):
 
 
 def getDepletableNuclides(activeNuclides, obj):
-    """Pass through to NuclideBases.getDepletableNuclides() for the global NuclideBases object."""
-    global nuclideBases
-    return nuclideBases.getDepletableNuclides(activeNuclides, obj)
+    """Get nuclides in this object that are in the burn chain."""
+    return sorted(set(activeNuclides) & set(obj.getNuclides()))
 
 
 def imposeBurnChain(burnChainStream):
@@ -1362,10 +1361,6 @@ class NuclideBases:
         """
         nuclideBase.label = newLabel
         self.byLabel[newLabel] = nuclideBase
-
-    def getDepletableNuclides(self, activeNuclides, obj):
-        """Get nuclides in this object that are in the burn chain."""
-        return sorted(set(activeNuclides) & set(obj.getNuclides()))
 
     def imposeBurnChain(self, burnChainStream):
         """
