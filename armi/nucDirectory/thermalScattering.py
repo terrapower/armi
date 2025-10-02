@@ -193,13 +193,18 @@ class ThermalScattering:
         return label
 
 
-def factory(byName):
+def factory(byName: dict):
     """
     Generate the :class:`ThermalScattering` instances.
 
     The logic for these is a bit complex so we skip reading a text file and code it up here.
 
     This is called by the nuclideBases factory since it must ALWAYS be re-run when the nuclideBases are rebuilt.
+
+    Parameters
+    ----------
+    byName: dict[str, INuclide]
+        A dictionary of the nuclides in this class, keyed by name, e.g., "U235".
 
     See Also
     --------
