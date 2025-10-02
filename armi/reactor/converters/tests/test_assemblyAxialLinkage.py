@@ -316,10 +316,9 @@ class TestCheckOverlap(AxialExpansionTestBase):
         }
         self.runTest(componentTypesToTest, self.assertTrue)
 
-    def test_thinAnnularPinOverlappingWithThickAnnulus(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
-        }
+    def test_thinPinOverlapThickAnnulus(self):
+        """Thin annular Pin overlapping with this annulus."""
+        componentTypesToTest = {Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}]}
         self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_AnnularHexOverlappingThickAnnularHex(self):
