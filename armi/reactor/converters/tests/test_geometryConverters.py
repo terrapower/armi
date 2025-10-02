@@ -26,7 +26,7 @@ from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
+from armi.utils import directoryChangers, plotting
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -174,11 +174,11 @@ class TestHexToRZConverter(unittest.TestCase):
         self.assertEqual(geomConv._newBlockNum, 0)
 
     def _checkBlockAtMeshPoint(self, geomConv):
-        b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
+        b = plotting._getBlockAtMeshPoint(geomConv.convReactor, 0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
         self.assertTrue(b.hasFlags(Flags.FUEL))
 
     def _checkReactorMeshCoordinates(self, geomConv):
-        thetaMesh, radialMesh, axialMesh = geomConv._getReactorMeshCoordinates()
+        thetaMesh, radialMesh, axialMesh = plotting._getReactorMeshCoordinates(geomConv.convReactor)
         expectedThetaMesh = [math.pi * 2.0]
         expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 150.0, 175.0]
         expectedRadialMesh = [

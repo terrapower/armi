@@ -17,15 +17,10 @@
 import copy
 import math
 
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Wedge
-
 from armi import runLog
 from armi.reactor import blocks, components, grids
 from armi.reactor.flags import Flags
+from armi.utils.plotting import plotConvertedBlock
 
 SIN60 = math.sin(math.radians(60.0))
 
@@ -429,36 +424,8 @@ class BlockAvgToCylConverter(BlockConverter):
         )
 
     def plotConvertedBlock(self, fName=None):
-        """Render an image of the converted block."""
-        runLog.extra("Plotting equivalent cylindrical block of {}".format(self._sourceBlock))
-        fig, ax = plt.subplots()
-        fig.patch.set_visible(False)
-        ax.patch.set_visible(False)
-        ax.axis("off")
-        patches = []
-        colors = []
-        for circleComp in self.convertedBlock:
-            innerR, outerR = (
-                circleComp.getDimension("id") / 2.0,
-                circleComp.getDimension("od") / 2.0,
-            )
-            runLog.debug("Plotting {:40s} with {:10.3f} {:10.3f} ".format(circleComp, innerR, outerR))
-            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
-            patches.append(circle)
-            colors.append(circleComp.density())
-        colorMap = matplotlib.cm
-        p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.YlGn)
-        p.set_array(np.array(colors))
-        ax.add_collection(p)
-        ax.autoscale_view(True, True, True)
-        ax.set_aspect("equal")
-        fig.tight_layout()
-        if fName:
-            plt.savefig(fName)
-            plt.close()
-        else:
-            plt.show()
-        return fName
+        """A pass-through to preserve the API. Render an image of the converted block."""
+        return plotConvertedBlock(self._sourceBlock, self.convertedBlock, fName)
 
 
 class HexComponentsToCylConverter(BlockAvgToCylConverter):
@@ -468,8 +435,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     Notes
     -----
     This is intended to capture heterogeneous effects while generating cross sections in
-    MCC3. The resulting 1D cylindrical block will not be used in subsequent core
-    calculations.
+    MCC3. The resulting 1D cylindrical block will not be used in subsequent core calculations.
 
     Repeated pins/coolant rings will be built, followed by the non-pins like
     duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
