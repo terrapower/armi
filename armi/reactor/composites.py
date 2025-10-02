@@ -1564,12 +1564,14 @@ class ArmiObject(metaclass=CompositeModelType):
             return 0.0
 
     def getUraniumNumEnrich(self):
-        """Returns U-235 number fraction."""
-        u8 = self.getNumberDensity("U238")
-        if u8 < 1e-10:
+        """Returns fissile uranium number fraction."""
+        uraniumNucs = self._getNuclidesFromSpecifier("U")
+        totalU = sum(self.getNuclideNumberDensities(uraniumNucs))
+        if totalU < 1e-10:
             return 0.0
-        u5 = self.getNumberDensity("U235")
-        return u5 / (u8 + u5)
+        fissileU = sum(self.getNuclideNumberDensities(["U233", "U235"]))
+
+        return fissileU / totalU
 
     def calcTotalParam(
         self,
@@ -1972,12 +1974,12 @@ class ArmiObject(metaclass=CompositeModelType):
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         raise NotImplementedError
 
-    def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
+    def getMgFlux(self, adjoint=False, average=False, gamma=False):
         """
         Return the multigroup neutron flux in [n/cm^2/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the next energy group, as
+        set in the ISOTXS library.
 
         On blocks, it is stored integrated over volume on <block>.p.mgFlux
 
@@ -1985,16 +1987,9 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         average : bool, optional
             If true, will return average flux between latest and previous. Doesn't work
             for pin detailed yet
-
-        volume: float, optional
-            The volume-integrated flux is divided by volume before being
-            returned. The user may specify a volume here, or the function will
-            obtain the block volume directly.
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -2008,7 +2003,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 f"{self.__class__} class has no method for producing average MG flux -- tryusing blocks"
             )
 
-        volume = volume or self.getVolume()
+        volume = self.getVolume()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
 
     def removeMass(self, nucName, mass):
@@ -2451,7 +2446,8 @@ class Composite(ArmiObject):
 
     def extend(self, seq):
         """Add a list of children to this object."""
-        self._children.extend(seq)
+        for item in seq:
+            self.add(item)
 
     def add(self, obj):
         """Add one new child."""

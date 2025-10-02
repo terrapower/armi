@@ -220,17 +220,23 @@ class Assembly(composites.Composite):
         if scalingFactor == 1:
             return
 
-        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
+        blockVolIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         for b in self:
-            for param in volIntegratedParamsToScale:
-                name = param.name
-                if b.p[name] is None or isinstance(b.p[name], str):
-                    continue
-                elif isinstance(b.p[name], Iterable):
-                    b.p[name] = [value * scalingFactor for value in b.p[name]]
-                else:
-                    # numpy array or other
-                    b.p[name] = b.p[name] * scalingFactor
+            self._scaleParams(b, blockVolIntegratedParamsToScale, scalingFactor)
+        assemblyVolIntegratedParamsToScale = self.p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
+        self._scaleParams(self, assemblyVolIntegratedParamsToScale, scalingFactor)
+
+    @staticmethod
+    def _scaleParams(obj, params, scalingFactor):
+        for param in params:
+            name = param.name
+            if obj.p[name] is None or isinstance(obj.p[name], str):
+                continue
+            elif isinstance(obj.p[name], Iterable):
+                obj.p[name] = [value * scalingFactor for value in obj.p[name]]
+            else:
+                # numpy array or other
+                obj.p[name] = obj.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
@@ -948,7 +954,6 @@ class Assembly(composites.Composite):
             Lower bound for relative block height fraction that we care about.
             Below this bound, small slivers of overlapping block are ignored.
 
-
         Returns
         -------
         blockInfo : list
@@ -971,12 +976,8 @@ class Assembly(composites.Composite):
 
         """
         blocksHere = []
-        allMeshPoints = set()
-
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
-                allMeshPoints.add(b.p.zbottom)
-                allMeshPoints.add(b.p.ztop)
                 # at least some of this block overlaps the window of interest
                 top = min(b.p.ztop, zUpper)
                 bottom = max(b.p.zbottom, zLower)
@@ -985,24 +986,6 @@ class Assembly(composites.Composite):
                 # Filter out blocks that have an extremely small height fraction
                 if heightHere / b.getHeight() > eps:
                     blocksHere.append((b, heightHere))
-
-        totalHeight = 0.0
-        allMeshPoints = sorted(allMeshPoints)
-        # The expected height snaps to the minimum height that is requested
-        expectedHeight = min(allMeshPoints[-1] - allMeshPoints[0], zUpper - zLower)
-        for _b, height in blocksHere:
-            totalHeight += height
-
-        # Verify that the heights of all the blocks are equal to the expected
-        # height for the given zUpper and zLower.
-        if abs(totalHeight - expectedHeight) / expectedHeight > 10.0 * eps:
-            raise ValueError(
-                f"The cumulative height of {blocksHere} is {totalHeight} cm "
-                f"and does not equal the expected height of {expectedHeight} cm.\n"
-                f"All mesh points: {allMeshPoints}\n"
-                f"Upper mesh point: {zUpper} cm\n"
-                f"Lower mesh point: {zLower} cm\n"
-            )
 
         return blocksHere
 

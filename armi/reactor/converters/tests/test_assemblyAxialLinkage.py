@@ -234,11 +234,10 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
 class TestCheckOverlap(AxialExpansionTestBase):
     """Test axial linkage between components via the AssemblyAxialLinkage._checkOverlap."""
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         """Contains common dimensions for all component class types."""
-        super().setUp(cls)
-        cls.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+        super().setUp()
+        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
 
     def runTest(
         self,
@@ -317,10 +316,9 @@ class TestCheckOverlap(AxialExpansionTestBase):
         }
         self.runTest(componentTypesToTest, self.assertTrue)
 
-    def test_thinAnnularPinOverlappingWithThickAnnulus(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
-        }
+    def test_thinPinOverlapThickAnnulus(self):
+        """Thin annular Pin overlapping with this annulus."""
+        componentTypesToTest = {Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}]}
         self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_AnnularHexOverlappingThickAnnularHex(self):

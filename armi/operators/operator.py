@@ -458,8 +458,6 @@ class Operator:
         interactMethodName = "interact{}".format(interactionName)
 
         printMemUsage = self.cs["verbosity"] == "debug" and self.cs["debugMem"]
-        if self.cs["debugDB"]:
-            self._debugDB(interactionName, "start", 0)
 
         halt = False
 
@@ -479,9 +477,6 @@ class Operator:
             with self.timer.getTimer(interactionMessage):
                 interactMethod = getattr(interface, interactMethodName)
                 halt = halt or interactMethod(*args)
-
-            if self.cs["debugDB"]:
-                self._debugDB(interactionName, interface.name, statePointIndex)
 
             if printMemUsage:
                 memAfter = memoryProfiler.PrintSystemMemoryUsageAction()
@@ -544,39 +539,6 @@ class Operator:
             )
 
         return cycleNodeInfo
-
-    def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
-        """
-        Write state to DB with a unique "statePointName", or label.
-
-        Notes
-        -----
-        Used within _interactAll to write details between each physics interaction when cs['debugDB'] is enabled.
-
-        Parameters
-        ----------
-        interactionName : str
-            name of the interaction (e.g. BOL, BOC, EveryNode)
-        interfaceName : str
-            name of the interface that is interacting (e.g. globalflux, lattice, th)
-        statePointIndex : int (optional)
-            used as a counter to make labels that increment throughout an _interactAll call. The result should be fed
-            into the next call to ensure labels increment.
-        """
-        dbiForDetailedWrite = self.getInterface("database")
-        db = dbiForDetailedWrite.database if dbiForDetailedWrite is not None else None
-
-        if db is not None and db.isOpen():
-            # looks something like "c00t00-BOL-01-main"
-            statePointName = "c{:2<0}t{:2<0}-{}-{:2<0}-{}".format(
-                self.r.p.cycle,
-                self.r.p.timeNode,
-                interactionName,
-                statePointIndex,
-                interfaceName,
-            )
-
-            db.writeToDB(self.r, statePointName=statePointName)
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""

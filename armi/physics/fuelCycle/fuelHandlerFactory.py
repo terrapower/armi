@@ -14,6 +14,9 @@
 
 """factory for the FuelHandler."""
 
+import importlib
+from pathlib import Path
+
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME, CONF_SHUFFLE_LOGIC
 from armi.utils import directoryChangers, pathTools
@@ -41,7 +44,11 @@ def fuelHandlerFactory(operator):
     # from the input directory.
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         try:
-            module = pathTools.importCustomPyModule(fuelHandlerModulePath)
+            modulePath = Path(fuelHandlerModulePath)
+            if modulePath.exists() and modulePath.suffix == ".py":
+                module = pathTools.importCustomPyModule(modulePath)
+            else:
+                module = importlib.import_module(fuelHandlerModulePath)
 
             if not hasattr(module, fuelHandlerClassName):
                 raise KeyError(
@@ -63,7 +70,7 @@ def fuelHandlerFactory(operator):
                 # The __get__ pulls the actual function out from the descriptor.
                 fuelHandler.getFactorList = staticmethod(module.getFactorList).__get__(fuelHandlerCls)
 
-        except IOError:
+        except (IOError, ImportError):
             raise ValueError(
                 "Either the file specified in the `shuffleLogic` setting ({}) or the "
                 "fuel handler class name specified in the `fuelHandlerName` setting ({}) "

@@ -122,6 +122,13 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "enrichmentBOL",
+            units=units.UNITLESS,
+            description="Enrichment during fabrication (mass fraction)",
+            default=0.0,
+        )
+
+        pb.defParam(
             "massHmBOL",
             units=units.GRAMS,
             description="Mass of heavy metal at BOL",

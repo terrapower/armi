@@ -106,7 +106,8 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         del aa[aa.nuclideLabels[0]]
         self.assertFalse(xsLibraries.compare(aa, self.isotxsAA))
 
-    def test_compareDifferentComponentsOfAnXSLibrary(self):
+    def test_compareComponentsOfXSLibrary(self):
+        """Compare different components of a XS library."""
         self.assertTrue(xsLibraries.compare(self.isotxsAA, self.isotxsAA))
         self.assertTrue(xsLibraries.compare(self.pmatrxAA, self.pmatrxAA))
         aa = isotxs.readBinary(ISOTXS_AA)
@@ -327,7 +328,8 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
     def getLibLumpedPath(self):
         raise NotImplementedError()
 
-    def test_cannotMergeXSLibWithSameNuclideNames(self):
+    def test_mergeXSLibSameNucNames(self):
+        """Cannot merge XS libraries with the same nuclide names."""
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
         with self.assertRaises(AttributeError):
@@ -337,14 +339,16 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
-    def test_cannotMergeXSLibxWithDiffGroupStructure(self):
+    def test_mergeXSLibxDiffGroupStructure(self):
+        """Cannot merge XS libraries with different group structure."""
         dummyXsLib = xsLibraries.IsotxsLibrary()
         dummyXsLib.neutronEnergyUpperBounds = np.array([1, 2, 3])
         dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
-    def test_mergeEmptyXSLibWithOtherClonesTheOther(self):
+    def test_mergeEmptyXSLibWithClones(self):
+        """Merge empty XS libraries with clones of others."""
         emptyXSLib = xsLibraries.IsotxsLibrary()
         emptyXSLib.merge(self.libAA)
         self.libAA = None

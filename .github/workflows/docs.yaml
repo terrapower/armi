@@ -46,6 +46,9 @@ jobs:
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
           python doc/.static/cleanup_test_results.py test_results.xml
 
+          echo "Git magic so the SCR will build on GitHub Actions..."
+          git fetch --depth=2000
+
           echo "Build HTML docs..."
           cd doc
           git submodule init

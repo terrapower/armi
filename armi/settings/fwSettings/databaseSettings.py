@@ -17,7 +17,6 @@
 from armi.settings import setting
 
 CONF_DB = "db"
-CONF_DEBUG_DB = "debugDB"
 CONF_RELOAD_DB_NAME = "reloadDBName"
 CONF_LOAD_FROM_DB_EVERY_NODE = "loadFromDBEveryNode"
 CONF_SYNC_AFTER_WRITE = "syncDbAfterWrite"
@@ -32,12 +31,6 @@ def defineSettings():
             default=True,
             label="Activate Database",
             description="Write the state information to a database at every timestep",
-        ),
-        setting.Setting(
-            CONF_DEBUG_DB,
-            default=False,
-            label="Debug Database",
-            description="Write state to DB with a unique timestamp or label.",
         ),
         setting.Setting(
             CONF_RELOAD_DB_NAME,
