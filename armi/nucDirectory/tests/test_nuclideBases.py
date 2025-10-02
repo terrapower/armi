@@ -52,7 +52,7 @@ class TestNuclideBases(unittest.TestCase):
         for zz in range(1, 102):
             nuclides = elements.byZ[zz].nuclides
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
-            self.assertTrue(len(nuclides) > 0, msg=f"z={zz} unexpectedly has no nuclides")
+            self.assertGreater(len(nuclides), 0, msg=f"z={zz} unexpectedly has no nuclides")
             total = sum([nn.abundance for nn in nuclides if nn.a > 0])
             self.assertAlmostEqual(
                 any([nn.abundance > 0 for nn in nuclides]),
@@ -66,7 +66,7 @@ class TestNuclideBases(unittest.TestCase):
     def test_nucBases_AllLabelsAreUnique(self):
         labels = []
         for nn in self.nuclideBases.instances:
-            self.assertTrue(nn.label not in labels, f"Label already exists: {nn.label}")
+            self.assertNotIn(nn.label, labels, f"Label already exists: {nn.label}")
             labels.append(nn.label)
 
     def test_nucBases_NegativeZRaisesException(self):
@@ -135,9 +135,9 @@ class TestNuclideBases(unittest.TestCase):
         count = 0
         for nuc in self.nuclideBases.where(lambda nn: nn.name == nn.label):
             count += 1
-            self.assertEqual(nuc, self.nuclideBases.byName[nuc.name])
-            self.assertEqual(nuc, self.nuclideBases.byDBName[nuc.getDatabaseName()])
-            self.assertEqual(nuc, self.nuclideBases.byLabel[nuc.label])
+            self.assertIs(nuc, self.nuclideBases.byName[nuc.name])
+            self.assertIs(nuc, self.nuclideBases.byDBName[nuc.getDatabaseName()])
+            self.assertIs(nuc, self.nuclideBases.byLabel[nuc.label])
         self.assertGreater(count, 10)
 
     def test_nucBases_imposeBurnChainDecayBulkStats(self):
@@ -240,15 +240,15 @@ class TestNuclideBases(unittest.TestCase):
             :tests: R_ARMI_ND_ISOTOPES
         """
         am242m = self.nuclideBases.byName["AM242"]
-        self.assertEqual(am242m, self.nuclideBases.byName["AM242M"])
+        self.assertIs(am242m, self.nuclideBases.byName["AM242M"])
         self.assertEqual("nAm242m", am242m.getDatabaseName())
-        self.assertEqual(am242m, self.nuclideBases.byDBName["nAm242"])
+        self.assertIs(am242m, self.nuclideBases.byDBName["nAm242"])
         self.assertAlmostEqual(am242m.weight, 242.059601666)
 
         am242g = self.nuclideBases.byName["AM242G"]
-        self.assertEqual(am242g, self.nuclideBases.byName["AM242G"])
+        self.assertIs(am242g, self.nuclideBases.byName["AM242G"])
         self.assertEqual("nAm242g", am242g.getDatabaseName())
-        self.assertEqual(am242g, self.nuclideBases.byDBName["nAm242g"])
+        self.assertIs(am242g, self.nuclideBases.byDBName["nAm242g"])
 
     def test_nucBases_isHeavyMetal(self):
         for nb in self.nuclideBases.where(lambda nn: nn.z <= 89):
