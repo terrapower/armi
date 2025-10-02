@@ -439,6 +439,16 @@ class ArmiObject(metaclass=CompositeModelType):
         """Return a list of all children in this and another object."""
         return self.getChildren() + other.getChildren()
 
+    @property
+    def nuclideBases(self):
+        from armi.reactor.reactors import Reactor
+
+        r = self.getAncestor(lambda c: isinstance(c, Reactor))
+        if r:
+            return r.nuclideBases
+        else:
+            return None
+
     def duplicate(self):
         """
         Make a clean copy of this object.
