@@ -326,10 +326,6 @@ class INuclide(NuclideInterface):
         -------
         Do not call this constructor directly; use the factory instead.
         """
-        if element not in elements.byName.values():
-            raise ValueError(
-                f"Error in initializing nuclide {name}. Element {element} does not exist in the global element list."
-            )
         if state < 0:
             raise ValueError(
                 f"Error in initializing nuclide {name}. An invalid state {state} is provided. The state must be a "
