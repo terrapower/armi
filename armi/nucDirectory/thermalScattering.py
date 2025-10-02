@@ -235,8 +235,6 @@ def factory(byName):
 
     if "H2" in byName:
         h = byName["H"]
-
-    if "H2" in byName:
         d = byName["H2"]
         byNbAndCompound[d, D2O] = ThermalScattering(d, D2O, f"tsl-Din{D2O}.endf", "d-d2o")
         byNbAndCompound[h, H2O] = ThermalScattering(h, H2O)
