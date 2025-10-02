@@ -255,9 +255,10 @@ class ComponentBlueprint(yamlize.Object):
             raise ValueError("A zero or negative density was specified in the custom isotopics for a component")
         elif len(matMods):
             runLog.warning(
-                "Custom isotopics and material modifications have both been defined for {self.material}. Please "
-                "consider carefully if these are in conflict.",
+                f"Custom isotopics and material modifications have both been defined for {self.material} for component"
+                f"{comp}. Please consider carefully if these are in conflict.",
                 single=True,
+                label=f"custom iso + mat mods {self.material} {comp}",
             )
 
         mat = materials.resolveMaterialClassByName(self.material)()
