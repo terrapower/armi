@@ -1094,7 +1094,10 @@ class NuclideBases:
         various ENDF/B-V mappings.
     """
 
-    def __init__(self):
+    DEFAULT_NUCLIDES_FILE = os.path.join(context.RES, "nuclides.dat")
+    DEFAULT_MCC_NUCLIDES_FILE = os.path.join(context.RES, "mcc-nuclides.yaml")
+
+    def __init__(self, nuclidesFile=None, mccNuclidesFile=None):
         self.burnChainImposed: bool = False
         self.instances: list[INuclide] = []
         self.byName: dict[str, INuclide] = {}
@@ -1106,8 +1109,8 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1: dict[str, INuclide] = {}
         self.byMcnpId: dict[int, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
-        self.nuclidesFile: str = os.path.join(context.RES, "nuclides.dat")
-        self.mccNuclidesFile: str = os.path.join(context.RES, "mcc-nuclides.yaml")
+        self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
+        self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
         self.factory()
 
     def clear(self):
