@@ -1374,11 +1374,6 @@ class NuclideBases:
         burn chains mid-run re-arises, then a better nuclideBase-level burnchain cleanup should be implemented so the
         objects don't have to change identity.
 
-        Notes
-        -----
-        We believe the transmutation information would probably be better stored on a less fundamental place (e.g. not
-        on the NuclideBase).
-
         See Also
         --------
         armi.nucDirectory.transmutations : describes file format
