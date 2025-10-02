@@ -1113,6 +1113,20 @@ class NuclideBases:
 
     def clear(self):
         """Empty all the data containers in this object."""
+        # grab all the globals
+        global burnChainImposed
+        global instances
+        global byName
+        global byDBName
+        global byLabel
+        global byMcc2Id
+        global byMcc3Id
+        global byMcc3IdEndfbVII0
+        global byMcc3IdEndfbVII1
+        global byMcnpId
+        global byAAAZZZSId
+
+        # reset the class attributes
         self.burnChainImposed = False
         self.instances = []
         self.byName = {}
@@ -1124,6 +1138,19 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+
+        # reset the globals
+        instances = self.instances
+        burnChainImposed = self.burnChainImposed
+        byName = self.byName
+        byDBName = self.byDBName
+        byLabel = self.byLabel
+        byMcc2Id = self.byMcc2Id
+        byMcc3Id = self.byMcc3Id
+        byMcc3IdEndfbVII0 = self.byMcc3IdEndfbVII0
+        byMcc3IdEndfbVII1 = self.byMcc3IdEndfbVII1
+        byMcnpId = self.byMcnpId
+        byAAAZZZSId = self.byAAAZZZSId
 
     def addNuclide(self, nuclide: INuclide):
         """Add an element to the dictionaries in this class."""
