@@ -84,9 +84,12 @@ class Reactor(composites.Composite):
 
     @property
     def nuclideBases(self):
-        from armi.nucDirectory.nuclideBases import nuclideBases
+        from armi.nucDirectory import nuclideBases
 
-        return nuclideBases
+        if nuclideBases.nuclideBases is None:
+            nuclideBases.factory()
+
+        return nuclideBases.nuclideBases
 
     def add(self, container):
         composites.Composite.add(self, container)
