@@ -675,7 +675,27 @@ class TestBadName(unittest.TestCase):
 class TestStandardFollowOn(unittest.TestCase):
     """Tests related to doing restart runs (loading from DB with Standard operator)."""
 
-    def _getOperatorThatChangesVariables(self, cs):
+    @classmethod
+    def setUpClass(cls):
+        cls.td = directoryChangers.TemporaryDirectoryChanger()
+        cls.td.__enter__()
+        # make DB to load from
+        o = cls._getOperatorThatChangesVariables(settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml")))
+        with o:
+            o.operate()
+            cls.FIRST_END_TIME = o.r.p.time
+            if cls.FIRST_END_TIME == 0:
+                # Can't use self.assertEqual in the class method but we still need this information
+                raise RuntimeError("Time should have advanced by the end of the run.")
+        cls.LOAD_DB_PATH = "loadFrom.h5"
+        os.rename("armiRun.h5", cls.LOAD_DB_PATH)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.td.__exit__(None, None, None)
+
+    @staticmethod
+    def _getOperatorThatChangesVariables(cs):
         """
         Return an operator that advances time so that restart runs can be tested.
 
@@ -700,34 +720,26 @@ class TestStandardFollowOn(unittest.TestCase):
         return o
 
     def test_standardRestart(self):
-        self.td = directoryChangers.TemporaryDirectoryChanger()
-        with self.td:
-            # make DB to load from
-            o = self._getOperatorThatChangesVariables(settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml")))
-            with o:
-                o.operate()
-                firstEndTime = o.r.p.time
-                self.assertNotEqual(firstEndTime, 0, "Time should have advanced by the end of the run.")
+        o = self._getRestartOperator()
 
-            # run standard restart case
-            loadDB = "loadFrom.h5"
-            os.rename("armiRun.h5", loadDB)
-            cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            newSettings = {}
-            newSettings["loadStyle"] = "fromDB"
-            newSettings["reloadDBName"] = loadDB
-            newSettings["startCycle"] = 0
-            newSettings["startNode"] = 1
-            cs = cs.modified(newSettings=newSettings)
-            o = self._getOperatorThatChangesVariables(cs)
+        # the interact BOL has historically failed due to trying to write inputs
+        # which are already in the DB from the _mergeStandardRunDB call
+        with o:
+            o.operate()
+            self.assertEqual(
+                self.FIRST_END_TIME,
+                o.r.p.time,
+                "End time should have been the same for the restart run.\n"
+                "First end time: {},\nSecond End time: {}".format(self.FIRST_END_TIME, o.r.p.time),
+            )
 
-            # the interact BOL has historically failed due to trying to write inputs
-            # which are already in the DB from the _mergeStandardRunDB call
-            with o:
-                o.operate()
-                self.assertEqual(
-                    firstEndTime,
-                    o.r.p.time,
-                    "End time should have been the same for the restart run.\n"
-                    "First end time: {},\nSecond End time: {}".format(firstEndTime, o.r.p.time),
-                )
+    def _getRestartOperator(self):
+        cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+        newSettings = {}
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["reloadDBName"] = self.LOAD_DB_PATH
+        newSettings["startCycle"] = 0
+        newSettings["startNode"] = 1
+        cs = cs.modified(newSettings=newSettings)
+        o = self._getOperatorThatChangesVariables(cs)
+        return o
