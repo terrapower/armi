@@ -126,16 +126,16 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def setDefaultMassFracs(self) -> None:
         """UO2 mass fractions. Using Natural Uranium without U234."""
-        u235 = nb.byName["U235"]
-        u238 = nb.byName["U238"]
-        oxygen = nb.byName["O"]
+        u235Weight = 235.043929425
+        u238Weight = 238.050788298
+        oxygenWeight = 15.999304875697801
+        u235Abundance = 0.007204
+        u238Abundance = 1.0 - u235Abundance  # neglect U234 and keep U235 at natural level
+        gramsIn1Mol = 2 * oxygenWeight + u235Abundance * u235Weight + u238Abundance * u238Weight
 
-        u238Abundance = 1.0 - u235.abundance  # neglect U234 and keep U235 at natural level
-        gramsIn1Mol = 2 * oxygen.weight + u235.abundance * u235.weight + u238Abundance * u238.weight
-
-        self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
-        self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
-        self.setMassFrac("O", 2 * oxygen.weight / gramsIn1Mol)
+        self.setMassFrac("U235", u235Weight * u235Abundance / gramsIn1Mol)
+        self.setMassFrac("U238", u238Weight * u238Abundance / gramsIn1Mol)
+        self.setMassFrac("O", 2 * oxygenWeight / gramsIn1Mol)
 
     def meltingPoint(self):
         """
