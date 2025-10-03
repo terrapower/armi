@@ -129,6 +129,7 @@ from armi.utils import flags
 if TYPE_CHECKING:
     from armi.reactor.composites import Composite
     from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+    from armi.operators.operator import Operator
 
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
@@ -697,6 +698,22 @@ class ArmiPlugin:
         ...
         ...         return BespokeAxialExpansion
 
+        """
+
+    @staticmethod
+    @HOOKSPEC
+    def prepRestart(o: "Operator", startTime: tuple[int, int], previousTime: tuple[int, int]):
+        """Perform any actions for a restart run.
+
+        Parameters
+        ----------
+        o
+            Current operator
+        startTime
+            Time for which the user has requested the restart to being. These are the
+            ``startCycle`` and ``startNode`` entries from the settings
+        previousTime
+            Time node that immediately preceeds ``startTime``
         """
 
 
