@@ -28,7 +28,7 @@ import re
 import time
 from typing import Tuple
 
-from armi import context, interfaces, runLog
+from armi import context, interfaces, runLog, getPluginManagerOrFail
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
@@ -53,6 +53,7 @@ from armi.utils import (
     getMaxBurnSteps,
     getPowerFractions,
     getStepLengths,
+    getPreviousTimeNode,
     pathTools,
     units,
 )
@@ -352,6 +353,11 @@ class Operator:
 
     def _mainOperate(self):
         """Main loop for a standard ARMI run. Steps through time interacting with the interfaces."""
+        dbi = self.getInterface("database")
+        if dbi.enabled():
+            dbi.initDB()
+        if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != RunTypes.SNAPSHOTS:
+            self._onRestart()
         self.interactAllBOL()
         startingCycle = self.r.p.cycle  # may be starting at t != 0 in restarts
         for cycle in range(startingCycle, self.cs["nCycles"]):
@@ -359,6 +365,23 @@ class Operator:
             if not keepGoing:
                 break
         self.interactAllEOL()
+
+    def _onRestart(self):
+        startCycle = self.cs["startCycle"]
+        startNode = self.cs["startNode"]
+        prevTimeNode = getPreviousTimeNode(startCycle, startNode, self.cs)
+
+        pm = getPluginManagerOrFail()
+
+        pm.hook.prepRestart(o=self, startTime=(startCycle, startNode), previousTime=prevTimeNode)
+
+        if startNode == 0:
+            runLog.important("Calling `o.interactAllEOC` due to loading the last time node of the previous cycle.")
+            self.interactAllEOC(self.r.p.cycle)
+
+        # advance time time since we loaded the previous time step
+        self.r.p.cycle = startCycle
+        self.r.p.timeNode = startNode
 
     def _cycleLoop(self, cycle, startingCycle):
         """Run the portion of the main loop that happens each cycle."""
