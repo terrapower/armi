@@ -383,7 +383,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         if executeXSGen and not idsChangedBurnup:
             executeXSGen = False
 
-        if self.r.core._lib is not None:
+        if self.r.core.hasLib():
             # justification=r.core.lib property can raise exception or load pre-generated
             # ISOTXS, but the interface should have responsibility of loading
             # XS's have already generated for this cycle (maybe during fuel management). Should we update due to
@@ -391,21 +391,21 @@ class LatticePhysicsInterface(interfaces.Interface):
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)
             if missing and not executeXSGen:
                 runLog.info(
-                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
+                    f"Although a XS library {self.r.core.lib} exists on {self.r.core}, "
                     f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
                     "is not enabled, but will be run to generate these missing cross sections."
                 )
                 executeXSGen = True
             elif missing:
                 runLog.info(
-                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
+                    f"Although a XS library {self.r.core.lib} exists on {self.r.core}, "
                     f"there are missing XS IDs {missing} required. These will be generated "
                     f"on cycle {cycle}."
                 )
                 executeXSGen = True
             else:
                 runLog.info(
-                    f"A XS library {self.r.core._lib} exists on {self.r.core} and contains "
+                    f"A XS library {self.r.core.lib} exists on {self.r.core} and contains "
                     f"the required XS data for XS IDs {self.r.core.lib.xsIDs}. The generation "
                     "of XS will be skipped."
                 )
