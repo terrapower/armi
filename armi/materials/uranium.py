@@ -24,7 +24,6 @@ from numpy import interp
 
 from armi import runLog
 from armi.materials.material import FuelMaterial
-from armi.nucDirectory import nuclideBases as nb
 from armi.utils.units import getTk
 
 
@@ -224,14 +223,14 @@ class Uranium(FuelMaterial):
         return interp(Tk, self._heatCapacityTableK, self._heatCapacityTable)
 
     def setDefaultMassFracs(self) -> None:
-        u235 = nb.byLabel["U235"]
-        u238 = nb.byLabel["U238"]
+        u235Weight = 235.043929425
+        u238Weight = 238.050788298
+        u235Abundance = 0.007204
+        u238Abundance = 1.0 - u235Abundance  # neglect U234 and keep U235 at natural level
+        gramsIn1Mol = u235Abundance * u235Weight + u238Abundance * u238Weight
 
-        u238Abundance = 1.0 - u235.abundance  # neglect U234 and keep U235 at natural level
-        gramsIn1Mol = u235.abundance * u235.weight + u238Abundance * u238.weight
-
-        self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
-        self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
+        self.setMassFrac("U235", u235Weight * u235Abundance / gramsIn1Mol)
+        self.setMassFrac("U238", u238Weight * u238Abundance / gramsIn1Mol)
 
         self.refDens = 19.07
 
