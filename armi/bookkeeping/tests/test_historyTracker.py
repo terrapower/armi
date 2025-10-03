@@ -93,12 +93,11 @@ class TestHistoryTracker(ArmiTestHelper):
         self.o = case2.initializeOperator()
         self.r = self.o.r
 
-        self.o.getInterface("main").interactBOL()
-
         dbi = self.o.getInterface("database")
         # Get to the database state at the end of stack of time node 1.
         # The end of the interface stack is when history tracker tends to run.
-        dbi.loadState(0, 1)
+        dbi.initDB()
+        dbi.prepRestartRun()
 
     def tearDown(self):
         self.o.getInterface("database").database.close()
