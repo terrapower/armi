@@ -354,7 +354,7 @@ class Operator:
     def _mainOperate(self):
         """Main loop for a standard ARMI run. Steps through time interacting with the interfaces."""
         dbi = self.getInterface("database")
-        if dbi.enabled():
+        if dbi is not None and dbi.enabled():
             dbi.initDB()
         if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != RunTypes.SNAPSHOTS:
             self._onRestart()
