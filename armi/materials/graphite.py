@@ -15,7 +15,6 @@
 """Graphite is often used as a moderator in gas-cooled nuclear reactors."""
 
 from armi.materials.material import Material
-from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 
@@ -29,7 +28,7 @@ class Graphite(Material):
         https://www.osti.gov/biblio/1330693
     """
 
-    thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["C"], tsl.GRAPHITE_10P],)
+    thermalScatteringLaws = (tsl.fromNameAndCompound("C", tsl.GRAPHITE_10P),)
 
     def setDefaultMassFracs(self):
         """
