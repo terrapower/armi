@@ -99,5 +99,5 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         from armi.bookkeeping.db import DatabaseInterface
 
         dbi: DatabaseInterface = o.getInterface("database")
-        if dbi.enabled():
+        if dbi is not None and dbi.enabled():
             dbi.prepRestartRun()
