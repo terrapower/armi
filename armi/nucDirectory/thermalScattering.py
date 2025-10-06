@@ -37,15 +37,15 @@ from dataclasses import dataclass
 # strings that users might want to reference downstream
 BE_METAL = "Be-metal"
 BEO = "BeO"
-SIC = "SiC"
+CRYSTALLINE_GRAPHITE = "crystalline-graphite"
 D2O = "D2O"
+GRAPHITE_10P = "reactor-graphite-10P"
+GRAPHITE_30P = "reactor-graphite-30P"
 H2O = "H2O"
+SIC = "SiC"
 UN = "UN"
 UO2 = "UO2"
 ZRH = "ZrH"
-CRYSTALLINE_GRAPHITE = "crystalline-graphite"
-GRAPHITE_10P = "reactor-graphite-10P"
-GRAPHITE_30P = "reactor-graphite-30P"
 
 # thermal scattering label data
 BY_NAME_AND_COMPOUND = {
