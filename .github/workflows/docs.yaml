@@ -92,7 +92,7 @@ jobs:
           ls -lah doc
           ls -lah doc/_build
           ls -lah doc/_build/doctrees
-          ls -lah doc/_build/html
+          ls -lah doc/_build/html/_sources/
 
 
           echo "Build PDF docs..."
