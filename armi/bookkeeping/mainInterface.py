@@ -23,7 +23,7 @@ import itertools
 import os
 import re
 
-from armi import context, interfaces, operators, runLog, utils
+from armi import context, interfaces, runLog, utils
 from armi.bookkeeping.db.database import Database
 from armi.settings.fwSettings.globalSettings import (
     CONF_COPY_FILES_FROM,

@@ -28,7 +28,7 @@ import re
 import time
 from typing import Tuple
 
-from armi import context, interfaces, runLog, getPluginManagerOrFail
+from armi import context, getPluginManagerOrFail, interfaces, runLog
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
@@ -52,8 +52,8 @@ from armi.utils import (
     getCycleNames,
     getMaxBurnSteps,
     getPowerFractions,
-    getStepLengths,
     getPreviousTimeNode,
+    getStepLengths,
     pathTools,
     units,
 )

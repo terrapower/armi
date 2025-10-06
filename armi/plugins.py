@@ -127,9 +127,9 @@ from armi import pluginManager
 from armi.utils import flags
 
 if TYPE_CHECKING:
+    from armi.operators.operator import Operator
     from armi.reactor.composites import Composite
     from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
-    from armi.operators.operator import Operator
 
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
