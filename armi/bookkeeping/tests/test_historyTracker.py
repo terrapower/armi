@@ -32,11 +32,13 @@ from armi.cases import case
 from armi.context import ROOT
 from armi.reactor import blocks, grids
 from armi.reactor.flags import Flags
-from armi.tests import ArmiTestHelper
+from armi.tests import TEST_ROOT, ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 CASE_TITLE = "anl-afci-177"
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
+CASE_SETTINGS_FILE = os.path.join(TEST_ROOT, "anl-afci-177", "anl-afci-177.yaml")
+assert os.path.exists(CASE_SETTINGS_FILE), CASE_SETTINGS_FILE
 TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 
 
@@ -50,8 +52,8 @@ def runTutorialNotebook():
     ep.preprocess(nb, {})
 
 
-class TestHistoryTracker(ArmiTestHelper):
-    """History tracker tests that require a Reactor Model."""
+class TestTutorials(ArmiTestHelper):
+    """Run the data_model tutorial."""
 
     @classmethod
     def setUpClass(cls):
@@ -68,14 +70,26 @@ class TestHistoryTracker(ArmiTestHelper):
             shutil.copyfile(filePath, outFile)
 
         os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
+
+    def test_tutorialNotebook(self):
         runTutorialNotebook()
+
+
+class TestHistoryTracker(ArmiTestHelper):
+    """History tracker tests that require a Reactor Model."""
+
+    @classmethod
+    def setUpClass(cls):
+        # Do this work in a temp dir, to avoid race conditions.
+        cls.BASE_SETTINGS = settings.Settings(CASE_SETTINGS_FILE)
+        cls.dirChanger = TemporaryDirectoryChanger()
+        cls.dirChanger.__enter__()
 
     @classmethod
     def tearDownClass(cls):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 2
@@ -83,7 +97,7 @@ class TestHistoryTracker(ArmiTestHelper):
         newSettings["loadStyle"] = "fromDB"
         newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         newSettings["startNode"] = 1
-        cs = cs.modified(newSettings=newSettings)
+        cs = self.BASE_SETTINGS.modified(newSettings=newSettings)
 
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
