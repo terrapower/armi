@@ -387,7 +387,7 @@ class Operator:
 
         if startNode == 0:
             runLog.important("Calling `o.interactAllEOC` due to loading the last time node of the previous cycle.")
-            self.interactAllEOC(self.r.p.cycle)
+            self.interactAllEOC(prevTimeNode[0])
 
         # advance time time since we loaded the previous time step
         self.r.p.cycle = startCycle
