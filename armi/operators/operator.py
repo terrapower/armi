@@ -367,6 +367,16 @@ class Operator:
         self.interactAllEOL()
 
     def _onRestart(self):
+        """Prepare for a restart simulation.
+
+        Some steps are necessary to be taken after interfaces are constructed but before we
+        start the real simulation. Crucially, we need to load the previous time point from the
+        database. The previous time node is chosen because that is the last point where we are
+        certain we have valid data and can safely recover.
+
+        If restarting at BOC, trigger the EOC actions from the previous cycle. This is necessary to
+        perform any fuel management operations that would have happened at the end of the previous cycle.
+        """
         startCycle = self.cs["startCycle"]
         startNode = self.cs["startNode"]
         prevTimeNode = getPreviousTimeNode(startCycle, startNode, self.cs)
