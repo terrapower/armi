@@ -349,7 +349,7 @@ class Material:
             New mass fraction to achieve.
         """
         if massFraction > 1.0 or massFraction < 0.0:
-            raise ValueError("Cannot enrich to massFraction of {}, must be between 0 and 1".format(massFraction))
+            raise ValueError(f"Cannot enrich to massFraction of {massFraction}, must be between 0 and 1")
 
         nucsNames = list(self.massFrac)
 
@@ -368,15 +368,13 @@ class Material:
                 nuclideBases.byName[nuclideName], nuclideBases.NaturalNuclideBase
             ) or nuclideBases.isMonoIsotopicElement(nuclideName):
                 # If there are not any other nuclides, assume we are enriching an entire element.
-                # Consequently, allIndicesUpdated is no longer the element's indices, but the
-                # materials indices
+                # Consequently, allIndicesUpdated is no longer the element's indices, but the materials indices
                 allIndicesUpdated = range(len(nucsNames))
             else:
                 raise ValueError(  # could be warning if problematic
-                    "Nuclide {} was to be enriched in material {}, but there were no other "
-                    "isotopes of that element. Could not assume the enrichment of the entire "
-                    "element as there were other possible isotopes that did not exist in this "
-                    "material.".format(nuclideName, self)
+                    f"Nuclide {nuclideName} was to be enriched in material {self}, but there were no other isotopes of "
+                    "that element. Could not assume the enrichment of the entire element as there were other possible "
+                    "isotopes that did not exist in this material."
                 )
 
         if massFraction == 1.0:
@@ -388,8 +386,8 @@ class Material:
                 onlyOneOtherFracToDetermine = len(allIndicesUpdated) == 2
                 if not onlyOneOtherFracToDetermine:
                     raise ValueError(
-                        "Material {} has too many masses set to zero. cannot enrich {} to {}. "
-                        "Current mass fractions: {}".format(self, nuclideName, massFraction, self.massFrac)
+                        f"Material {self} has too many masses set to zero. cannot enrich {nuclideName} to "
+                        f"{massFraction}. Current mass fractions: {self.massFrac}"
                     )
                 # massDensities get normalized later when conserving atoms; these are just ratios
                 massDensities[allIndicesUpdated] = 1 - massFraction  # there is only one other.

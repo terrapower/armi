@@ -29,7 +29,6 @@ from numpy import interp
 
 from armi import runLog
 from armi.materials import material
-from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils.units import getTk
 
