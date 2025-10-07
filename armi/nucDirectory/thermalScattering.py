@@ -71,7 +71,7 @@ BY_NAME_AND_COMPOUND = {
 }
 
 
-@dataclass
+@dataclass(frozen=True)
 class ThermalScatteringLabels:
     """Container for the labels for a particular nuclide/compound combination.
 
