@@ -1106,7 +1106,6 @@ class NuclideBases:
         self.byMcnpId: dict[int, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
         self.elements = []  # TODO: Document me
-        self.byNbAndCompound = {}  # TODO: Document me  # TODO: JOHN, Sure say "thermal Scattering"
         self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
         self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
         self.factory()
@@ -1216,11 +1215,6 @@ class NuclideBases:
         self.readMCCNuclideData(self.mccNuclidesFile)
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
-
-        # reload the thermal scattering library with the new nuclideBases too
-        from armi.nucDirectory import thermalScattering
-
-        self.byNbAndCompound = thermalScattering.factory(self.byName)
 
     def initReachableActiveNuclidesThroughBurnChain(self, nuclides, numberDensities, activeNuclides):
         """

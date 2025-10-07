@@ -64,10 +64,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         "heat capacity": "ORNL/TM-2000/351",
     }
 
-    thermalScatteringLaws = (
-        tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
-        tsl.byNbAndCompound[nb.byName["O"], tsl.UO2],
-    )
+    thermalScatteringLaws = (tsl.fromNameAndCompound("U", tsl.UO2), tsl.fromNameAndCompound("O", tsl.UO2))
 
     # Thermal conductivity values taken from:
     # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama.
