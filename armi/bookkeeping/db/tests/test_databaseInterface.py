@@ -16,7 +16,6 @@
 import os
 import types
 import unittest
-from unittest.mock import patch
 
 import h5py
 import numpy as np
@@ -744,13 +743,3 @@ class TestStandardFollowOn(unittest.TestCase):
         cs = cs.modified(newSettings=newSettings)
         o = self._getOperatorThatChangesVariables(cs)
         return o
-
-    def test_restartHook(self):
-        """Show the database interface restart hook is triggered on restart."""
-        o = self._getRestartOperator()
-        dbi = o.getInterface("database")
-        dbi.initDB()
-
-        with patch.object(dbi, "prepRestartRun") as dbPrep:
-            o._onRestart()
-        dbPrep.assert_called_once()

@@ -26,10 +26,10 @@ import collections
 import os
 import re
 import time
-from typing import Tuple
+from typing import Optional, Tuple
 
-from armi import context, getPluginManagerOrFail, interfaces, runLog
-from armi.bookkeeping import memoryProfiler
+from armi import context, interfaces, runLog
+from armi.bookkeeping import db, memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
@@ -357,7 +357,7 @@ class Operator:
         if dbi is not None and dbi.enabled():
             dbi.initDB()
         if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != RunTypes.SNAPSHOTS:
-            self._onRestart()
+            self.interactAllRestart(dbi)
         self.interactAllBOL()
         startingCycle = self.r.p.cycle  # may be starting at t != 0 in restarts
         for cycle in range(startingCycle, self.cs["nCycles"]):
@@ -366,7 +366,7 @@ class Operator:
                 break
         self.interactAllEOL()
 
-    def _onRestart(self):
+    def interactAllRestart(self, dbi: Optional[db.DatabaseInterface]):
         """Prepare for a restart simulation.
 
         Some steps are necessary to be taken after interfaces are constructed but before we
@@ -381,9 +381,13 @@ class Operator:
         startNode = self.cs["startNode"]
         prevTimeNode = getPreviousTimeNode(startCycle, startNode, self.cs)
 
-        pm = getPluginManagerOrFail()
+        if dbi is not None:
+            dbi.prepRestartRun()
+        else:
+            raise ValueError("No database interface means nothing is responsible for restarting from DB")
 
-        pm.hook.prepRestart(o=self, startTime=(startCycle, startNode), previousTime=prevTimeNode)
+        activeInterfaces = self.getActiveInterfaces("Restart", excludedInterfaceNames=("database",))
+        self._interactAll("Restart", activeInterfaces, (startCycle, startNode), prevTimeNode)
 
         if startNode == 0:
             runLog.important("Calling `o.interactAllEOC` due to loading the last time node of the previous cycle.")
@@ -945,7 +949,7 @@ class Operator:
         if excludedInterfaceNames is None:
             excludedInterfaceNames = ()
 
-        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled"):
+        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled", "Restart"):
             raise ValueError(f"{interactState} is an unknown interaction state!")
 
         # Ensure the interface is enabled.

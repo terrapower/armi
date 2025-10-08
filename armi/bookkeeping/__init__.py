@@ -92,12 +92,3 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                     return False
 
         return True
-
-    @staticmethod
-    @plugins.HOOKIMPL(tryfirst=True)
-    def prepRestart(o, startTime, previousTime):
-        from armi.bookkeeping.db import DatabaseInterface
-
-        dbi: DatabaseInterface = o.getInterface("database")
-        if dbi is not None and dbi.enabled():
-            dbi.prepRestartRun()
