@@ -92,7 +92,7 @@ Retrieve elements that are classified as actinides:
     :ref:`nuclide bases summary table <nuclide-bases-table>`.
 
     .. exec::
-        from armi.nucDirectory import elements
+        from armi.nucDirectory.elements import Elements
         from armi.utils.tabulate import tabulate
         from dochelpers import createTable
 
@@ -117,6 +117,8 @@ Retrieve elements that are classified as actinides:
                 f'``{len(element.nuclides)}``',
             ]
 
+        elements = Elements()
+        elements.factory()
         sortedElements = sorted(elements.byZ.values())
         return createTable(tabulate(data=[getAttributes(elem) for elem in sortedElements],
                                     headers=attributes,
