@@ -447,7 +447,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if r:
             return r.nuclideBases
         else:
-            return None
+            return nuclideBases.nuclideBases
 
     def duplicate(self):
         """
