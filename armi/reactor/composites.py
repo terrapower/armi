@@ -52,7 +52,7 @@ from typing import (
 import numpy as np
 
 from armi import context, runLog, utils
-from armi.nucDirectory import elements, nucDir, nuclideBases
+from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
@@ -969,7 +969,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 # has no natural isotopics!
                 nucs = [
                     nb.name
-                    for nb in elements.bySymbol[nucName].nuclides
+                    for nb in self.nuclideBases.elements.bySymbol[nucName].nuclides
                     if not isinstance(nb, nuclideBases.NaturalNuclideBase)
                 ]
                 convertedNucNames.extend(nucs)
@@ -1321,7 +1321,7 @@ class ArmiObject(metaclass=CompositeModelType):
             lfpMass = sum(
                 dens
                 for name, dens in numberDensities.items()
-                if isinstance(nuclideBases.byName[name], nuclideBases.LumpNuclideBase)
+                if isinstance(self.nuclideBases.byName[name], nuclideBases.LumpNuclideBase)
             )
             if lfpMass:
                 raise RuntimeError(
@@ -1867,6 +1867,7 @@ class ArmiObject(metaclass=CompositeModelType):
         for nucName in self.getNuclides():
             if nucDir.isHeavyMetal(nucName):
                 nucs.append(nucName)
+
         mass = self.getMass(nucs)
         return mass
 
@@ -1912,18 +1913,20 @@ class ArmiObject(metaclass=CompositeModelType):
         """A print out of some pertinent constituent information."""
         from armi.utils import iterables
 
+        elementz = self.nuclideBases.elements
+
         rows = [["Constituent", "HMFrac", "FuelFrac"]]
         columns = [-1, self.getHMMass(), self.getFuelMass()]
 
         for base_ele in ["U", "PU"]:
-            total = sum([self.getMass(nuclide.name) for nuclide in elements.bySymbol[base_ele]])
+            total = sum([self.getMass(nuclide.name) for nuclide in elementz.bySymbol[base_ele]])
             rows.append([base_ele, total, total])
 
         fp_total = self.getFPMass()
         rows.append(["FP", fp_total, fp_total])
 
         ma_nuclides = iterables.flatten(
-            [ele.nuclides for ele in [elements.byZ[key] for key in elements.byZ.keys() if key > 94]]
+            [ele.nuclides for ele in [elementz.byZ[key] for key in elementz.byZ.keys() if key > 94]]
         )
         ma_total = sum([self.getMass(nuclide.name) for nuclide in ma_nuclides])
         rows.append(["MA", ma_total, ma_total])
@@ -1955,13 +1958,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numerator = 0.0
         denominator = 0.0
-
         numDensities = self.getNumberDensities()
 
         for nucName, nDen in numDensities.items():
-            atomicWeight = nuclideBases.byName[nucName].weight
+            atomicWeight = self.nuclideBases.byName[nucName].weight
             numerator += atomicWeight * nDen
             denominator += nDen
+
         return numerator / denominator
 
     def getMasses(self):
@@ -2275,7 +2278,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
-        for elemental in nuclideBases.where(
+        for elemental in self.nuclideBases.where(
             lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
         ):
             self.expandElementalToIsotopics(elemental)
@@ -2942,7 +2945,7 @@ class Composite(ArmiObject):
 
         # ruff: noqa: SIM110
         for nucName in nuclides:
-            if isinstance(nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
+            if isinstance(self.nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
                 return True
 
         return False
@@ -3128,7 +3131,7 @@ class Composite(ArmiObject):
 
     def getPuMoles(self):
         """Returns total number of moles of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        nucNames = [nuc.name for nuc in self.nuclideBases.elements.byZ[94].nuclides]
         puN = np.sum(self.getNuclideNumberDensities(nucNames))
 
         return puN / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
