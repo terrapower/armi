@@ -16,7 +16,6 @@
 import math
 
 from armi.materials.material import Fluid
-from armi.nucDirectory import elements
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
@@ -61,8 +60,7 @@ class Water(Fluid):
     ALPHA_0 = 1000
     PHI_0 = ALPHA_0 / TEMPERATURE_CRITICAL_K
 
-    # coefficients for auxiliary quantity for enthalpy and entropy
-    # kept as d to match original source
+    # coefficients for auxiliary quantity for enthalpy and entropy kept as d to match original source
     d = {
         1: -5.65134998e-08,
         2: 2690.66631,
@@ -74,8 +72,8 @@ class Water(Fluid):
     }
 
     def setDefaultMassFracs(self) -> None:
-        massHydrogen = elements.bySymbol["H"].standardWeight
-        massOxygen = elements.bySymbol["O"].standardWeight
+        massHydrogen = 1.007976004510346
+        massOxygen = 15.999304715704756
         totalMass = 2 * massHydrogen + massOxygen
         massFrac = {"H": 2.0 * massHydrogen / totalMass, "O": massOxygen / totalMass}
         for nucName, mfrac in massFrac.items():
@@ -89,8 +87,8 @@ class Water(Fluid):
         """
         Returns 1 - temperature normalized to the critical temperature.
 
-        Note
-        ----
+        Notes
+        -----
         thermophysical correlations are give in Tau rather than Tk or Tc
         """
         return 1.0 - self.theta(Tc=Tc, Tk=Tk)
