@@ -288,7 +288,7 @@ def getElementZ(symbol: str = None, name: str = None) -> int:
     return elements.getElementZ(symbol, name)
 
 
-def factory():
+def factory(elementsFile: str = None):
     """Pass through to Elements.factory() for the global Elements object."""
     global elements
     global byZ
@@ -296,7 +296,7 @@ def factory():
     global bySymbol
 
     elements = Elements()
-    elements.factory()
+    elements.factory(elementsFile)
 
     byZ = elements.byZ
     byName = elements.byName

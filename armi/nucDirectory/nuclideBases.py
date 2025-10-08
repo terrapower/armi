@@ -1206,8 +1206,8 @@ class NuclideBases:
             self.mccNuclidesFile = mccNuclidesFile
 
         # load the fundamental elements library
-        self.elements = elements.Elements()
-        self.elements.factory(elementsFile)
+        elements.factory(elementsFile)
+        self.elements = elements.elements
 
         # load the isotopes and isomers library
         self.addNuclideBases(self.nuclidesFile)
@@ -1453,14 +1453,14 @@ class NuclideBases:
                     halflife = float(halflife)
                 nuSF = float(lineData[8])
 
-                element = elements.bySymbol[sym]  # TODO: JOHN still global
+                element = self.elements.bySymbol[sym]
                 nb = NuclideBase(element, a, mass, abun, state, halflife, addToGlobal=False)
                 nb.nuSF = nuSF
                 self.addNuclide(nb)
 
     def __addNaturalNuclideBases(self):
         """Generates a complete set of nuclide bases for each naturally occurring element."""
-        for element in elements.byZ.values():  # TODO: JOHN still global
+        for element in self.elements.byZ.values():
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
                     self.addNuclide(NaturalNuclideBase(element.symbol, element, addToGlobal=False))
