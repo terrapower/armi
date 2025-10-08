@@ -17,7 +17,6 @@ import math
 
 from armi.materials.material import Fluid
 from armi.nucDirectory import elements
-from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
@@ -42,7 +41,7 @@ class Water(Fluid):
     power industry
     """
 
-    thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["H"], tsl.H2O],)
+    thermalScatteringLaws = (tsl.fromNameAndCompound("H", tsl.H2O),)
     references = {
         "vapor pressure": _REF_SR1_86,
         "enthalpy (saturated water)": _REF_SR1_86,
