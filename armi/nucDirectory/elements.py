@@ -317,7 +317,7 @@ def destroyGlobalElements():
 
 class Elements:
     """
-    A container for all the elements information in the simulation.
+    A container for all the atomics elements information in the simulation.
 
     By design, you would only expect to have one instance of this object in memory during a simulation.
 

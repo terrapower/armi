@@ -31,7 +31,7 @@ atomic elements. This information is loaded from a data file within ARMI; elemen
 :py:class:`Elements <armi.nucDirectory.elements.Element>` are mainly used as a building block of the nuclide objects
 , as discussed below. If you need to grab an element there are three available dictionaries provided for rapid access.::
 
-    >>> r = Reactor("testReactor", bp)
+    >>> r = Reactor("ExampleReactor", bp)
     >>> elements = r.nuclideBases.elements
     >>> uranium = elements.byZ[92]
     >>> uranium.name
@@ -73,7 +73,7 @@ After construction, they contain basic information, such as Z, A, and atomic wei
 :py:class:`Elements <armi.nucDirectory.elements.Element>`, the information is loaded from a series of data files within
 ARMI. The data is originally from [NIST]_::
 
-    >>> r = Reactor("testReactor", bp)
+    >>> r = Reactor("ExampleReactor", bp)
     >>> u235= r.nuclideBases.byName['U235']
     >>> u235.z
     92

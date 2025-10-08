@@ -2976,7 +2976,7 @@ class Composite(ArmiObject):
 
     def _getReactionRates(self, nucName, nDensity=None):
         """
-        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+        Wrapper around logic to get reaction rates for a certain nuclide, to handle any errors.
 
         Parameters
         ----------
@@ -3026,7 +3026,7 @@ class Composite(ArmiObject):
 
     def _getReactionRateDict(self, nucName, lib, xsSuffix, mgFlux, nDens):
         """
-        TODO: John.
+        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
 
         Parameters
         ----------
