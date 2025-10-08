@@ -945,10 +945,8 @@ class ArmiObject(metaclass=CompositeModelType):
         nucSpec : nuclide specifier
             Can be a string name of a nuclide or element, or a list of such strings.
 
-        This might get Zr isotopes when ZR is passed in if they exist, or it will get
-        elemental ZR if that exists. When expanding elements, all known nuclides are
-        returned, not just the natural ones.
-
+        This might get Zr isotopes when ZR is passed in if they exist, or it will get elemental ZR if that exists. When
+        expanding elements, all known nuclides are returned, not just the natural ones.
         """
         allNuclidesHere = self.getNuclides()
         if nucSpec is None:
@@ -1048,6 +1046,7 @@ class ArmiObject(metaclass=CompositeModelType):
             if nucName in oldMassFracs:
                 del oldMassFracs[nucName]
             totalFracSet += massFrac
+
         totalOther = sum(oldMassFracs.values())
         if totalOther:
             # we normalize the remaining mass fractions so their concentrations relative
@@ -1146,8 +1145,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         # determine which nuclides we're adjusting.
         # Rather than calling this material's getNuclides method, we call the
-        # nucDirectory to do this. this way, even zeroed-out nuclides will get in the
-        # mix
+        # nucDirectory to do this. this way, even zeroed-out nuclides will get in the mix
         adjustNuclides = set(
             nucDir.getNuclideNames(nucName=nuclideToAdjust, elementSymbol=elementToAdjust)
         ).intersection(nuclides)
@@ -1421,7 +1419,6 @@ class ArmiObject(metaclass=CompositeModelType):
         If the nuclide doesn't exist in any of the children, then that's actually an
         error. This would only happen if some unnatural nuclide like Pu239 built up in
         fresh UZr. That should be anticipated and dealt with elsewhere.
-
         """
         activeChildren = self.getChildrenWithNuclides({nucName})
         if not activeChildren:
@@ -1450,7 +1447,6 @@ class ArmiObject(metaclass=CompositeModelType):
         -----
         We'd like to not have to call setNumberDensity for each nuclide because we don't
         want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
-
         """
         numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
         self.updateNumberDensities(numberDensities)
