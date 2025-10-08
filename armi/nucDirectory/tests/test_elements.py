@@ -13,13 +13,9 @@
 # limitations under the License.
 """Tests for Elements."""
 
-import os
 import unittest
 
-from armi import nuclideBases
-from armi.context import RES
 from armi.nucDirectory.elements import Element, Elements
-from armi.tests import mockRunLogs
 
 
 class TestElements(unittest.TestCase):
@@ -75,14 +71,6 @@ class TestElements(unittest.TestCase):
         self.assertIn("bacon", self.elements.byName)
         self.assertIn(999, self.elements.byZ)
         self.assertIn("BZ", self.elements.bySymbol)
-        # re-initialize the elements
-        with mockRunLogs.BufferLog():
-            nuclideBases.destroyGlobalNuclides()
-            nuclideBases.factory()
-            # Ensure that the burn chain data is initialized after clearing out the nuclide data and reinitializing it.
-            nuclideBases.burnChainImposed = False
-            with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
-                nuclideBases.imposeBurnChain(burnChainStream)
 
     def test_elementGetNatIsosOnlyRetrievesAbund(self):
         for ee in self.elements.byZ.values():
