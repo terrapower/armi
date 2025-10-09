@@ -139,8 +139,8 @@ Sidebar: Speed up Test Reactor Tests
 Maybe you do need an entire reactor for your unit test, but you don't need a very large one. In that case, ARMI comes with a few standard tools:
 
 #. ``from armi.testing import reduceTestReactorRings`` - Reduce the size of the test reactor you are using.
-#. ``from armi.tests import getEmptyCartesianReactor`` - Provides a test cartesian reactor with no assemblies or blocks inside.
-#. ``from armi.tests import getEmptyHexReactor`` - Provides a test hex reactor with no assemblies or blocks inside.
+#. ``from armi.testing import getEmptyCartesianReactor`` - Provides a test cartesian reactor with no assemblies or blocks inside.
+#. ``from armi.testing import getEmptyHexReactor`` - Provides a test hex reactor with no assemblies or blocks inside.
 
 
 Test Blocks and Assemblies
