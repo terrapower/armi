@@ -61,13 +61,13 @@ class TestElements(unittest.TestCase):
     def test_element_addExistingElementFails(self):
         for ee in self.elements.byZ.values():
             with self.assertRaises(ValueError):
-                self.elements.Element(ee.z, ee.symbol, ee.name, addToGlobal=False)
+                self.elements.Element(ee.z, ee.symbol, ee.name)
 
     def test_addedElementAppearsInElementList(self):
         self.assertNotIn("bacon", self.elements.byName)
         self.assertNotIn(999, self.elements.byZ)
         self.assertNotIn("BZ", self.elements.bySymbol)
-        self.elements.addElement(Element(999, "BZ", "bacon", addToGlobal=False))
+        self.elements.addElement(Element(999, "BZ", "bacon"))
         self.assertIn("bacon", self.elements.byName)
         self.assertIn(999, self.elements.byZ)
         self.assertIn("BZ", self.elements.bySymbol)

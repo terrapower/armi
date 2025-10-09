@@ -170,7 +170,7 @@ class ChemicalGroup(Enum):
 class Element:
     """Represents an element defined on the Periodic Table."""
 
-    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN", addToGlobal=True):
+    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
         """
         Creates an instance of an Element.
 
@@ -207,8 +207,6 @@ class Element:
         self.group = ChemicalGroup[group]
         self.standardWeight = None
         self.nuclides = []
-        if addToGlobal:
-            addGlobalElement(self)
 
     def __repr__(self):
         return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
@@ -385,7 +383,7 @@ class Elements:
                 phase = lineData[3]
                 group = lineData[4]
                 standardWeight = lineData[5]
-                e = Element(z, sym, name, phase, group, addToGlobal=False)
+                e = Element(z, sym, name, phase, group)
                 if standardWeight != "Derived":
                     e.standardWeight = float(standardWeight)
                 self.addElement(e)
