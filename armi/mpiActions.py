@@ -359,15 +359,15 @@ def runActionsPreBatch(o, r, cs, actionsByNode, serial=False):
 
     # determine which ranks will run the actionse
     numAssigned = {nodeName: 0 for nodeName in nodes}
+    useForComputation = [True] * len(context.MPI_NODENAMES)
     for rank, nodeName in enumerate(context.MPI_NODENAMES):
         # if we have more processors than tasks, disable the extra
         useForComputation[rank] = numAssigned[nodeName] < numToRunOnThisNode[nodeName]
         numAssigned[nodeName] += 1
         
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
-    runLog.extra(f"Running {len(totalActions)} MPI actions in parallel over on {len(actionsByNode)} nodes.")
+    runLog.extra(f"Running {totalActions} MPI actions in parallel over on {len(actionsByNode)} nodes.")
 
-    # queue, numBatches = _makeQueue(actions, useForComputation)
     results = []
     actionsThisRound = []
     nodeIndex = {nodeName: i for i, nodeName in enumerate(nodes)}
