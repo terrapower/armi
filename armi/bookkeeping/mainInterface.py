@@ -23,7 +23,7 @@ import itertools
 import os
 import re
 
-from armi import context, interfaces, operators, runLog, utils
+from armi import context, interfaces, runLog, utils
 from armi.bookkeeping.db.database import Database
 from armi.settings.fwSettings.globalSettings import (
     CONF_COPY_FILES_FROM,
@@ -60,49 +60,7 @@ class MainInterface(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
-        self._activateDBPrepRestart()
         self._moveFiles()
-
-    def _activateDBPrepRestart(self):
-        """
-        Instantiate the database state, and add previous time nodes for restart run.
-
-        Notes
-        -----
-        This happens here rather than on the database interface, as the database interacts near the
-        end of the stack. Some interactBOL methods may be dependent on having data in the database,
-        such as calls to history tracker during a restart run.
-        """
-        dbi = self.o.getInterface("database")
-        if not dbi.enabled():
-            return
-        dbi.initDB()
-        if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != operators.RunTypes.SNAPSHOTS:
-            # load case before going forward with normal cycle
-            runLog.important("MainInterface loading DB history for restart.")
-
-            # Load the database from the point just before start cycle and start node as the run
-            # will continue at the beginning of start cycle and start node, and the database contains
-            # the values from the run at the end of the interface stack, which are what the start
-            # start cycle and start node should begin with.
-
-            # NOTE: this should be the responsibility of the database, but cannot because the
-            # database is last in the stack and the MainInterface is first
-            dbi.prepRestartRun()
-
-            if self.cs["startNode"] == 0:
-                # DB interface loaded the previous time step (last time node of previous cycle), but
-                # this is BEFORE the EOC interactions have happened.
-                # so here we explicitly call the EOC interactions now and then proceed with normal
-                # BOL interactions for the cycle we are starting
-                runLog.important(
-                    "MainInterface calling `o.interactAllEOC` due to loading the last time node of the previous cycle."
-                )
-                self.o.interactAllEOC(self.r.p.cycle)
-
-            # advance time time since we loaded the previous time step
-            self.r.p.cycle = self.cs["startCycle"]
-            self.r.p.timeNode = self.cs["startNode"]
 
     def _moveFiles(self):
         """
