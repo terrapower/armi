@@ -132,7 +132,7 @@ So many interfaces and methods require an operator or a reactor, and ``loadTestR
     # grab a pinned fuel block
     b = r.core.getFirstBlock(Flags.FUEL)
 
-If you need a full reactor for a unit test, always try to start with the `smallestTestReactor.yaml` shown above first. Your tests will run faster if you pick the smallest possible reactor that meets your needs. Less is more.
+If you need a full reactor for a unit test, always try to start with the ``smallestTestReactor.yaml`` shown above first. Your tests will run faster if you pick the smallest possible reactor that meets your needs. Less is more.
 
 Sidebar: Speed up Test Reactor Tests
 ------------------------------------
