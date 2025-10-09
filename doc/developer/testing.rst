@@ -12,9 +12,9 @@ Testing with runLog
 
 Use Case: Test code that prints to stdout
 
-While there are some other mocking examples in ARMI, none are as heavily used as mockRunLogs. mockRunLogs.BufferLog() is used to capture the runLog output instead of printing it.
+While there are some other mocking examples in ARMI, none are as heavily used as ``mockRunLogs``. ``mockRunLogs.BufferLog()`` is used to capture the ``runLog`` output instead of printing it.
 
-In `test_comparedb3.py <https://github.com/terrapower/armi/blob/49f357b2a92aaffaf883642f7b86fbe21b0e0272/armi/bookkeeping/db/tests/test_comparedb3.py>`_, there is a (simplified here) use case. A portion of the test for _diffSpecialData wants to confirm the below printout has happened, so it uses the ``getStdout()`` method to check that the expected printout exists.
+In `test_comparedb3.py <https://github.com/terrapower/armi/blob/49f357b2a92aaffaf883642f7b86fbe21b0e0272/armi/bookkeeping/db/tests/test_comparedb3.py>`_, there is a (simplified here) use case. A portion of the test for ``_diffSpecialData`` wants to confirm the below printout has happened, so it uses the ``getStdout()`` method to check that the expected printout exists.
 
 Example of ``mockRunLogs``:
 
@@ -35,7 +35,7 @@ Example of ``mockRunLogs``:
                     self.assertEqual(dr.nDiffs(), 0)
                     self.assertIn("Special formatting parameters for", mock.getStdout())
 
-There are examples of this throughout ARMI, but sparsely (so far) in plugins. Search for BufferLog or getStdout in the code to find examples.
+There are examples of this throughout ARMI. Search for ``BufferLog`` or ``getStdout`` in the code to find examples.
 
 
 Self-Cleaning Directories
@@ -82,7 +82,7 @@ Two main uses of this class in testing:
              txt = open(fileName, "r").read() 
              self.assertIn("Rubber", txt) 
 
-Note that sometimes it's necessary to give the temporary directory change object a non-default root path:
+Note that sometimes it is necessary to give the temporary directory change object a non-default root path:
 
 .. code-block:: python
 
@@ -101,10 +101,10 @@ Load a Test Reactor
 Use Case: You need a full reactor for a unit test
 
 .. warning::
-    This is computationally expensive, and possibly over-used for unit tests. Consider whether mocking or BYO components (below) can be used instead.
+    This is computationally expensive, and historically over-used for unit tests. Consider whether mocking or BYO components (below) can be used instead.
 
 
-To get the bog-standard ARMI test reactor, import this:
+To get the standard ARMI test reactor, import this:
 
 .. code-block:: python
 
@@ -132,14 +132,15 @@ So many interfaces and methods require an operator or a reactor, and ``loadTestR
     # grab a pinned fuel block
     b = r.core.getFirstBlock(Flags.FUEL)
 
+If you need a full reactor for a unit test, always try to start with the ``smallestTestReactor.yaml`` shown above first. Your tests will run faster if you pick the smallest possible reactor that meets your needs. Less is more.
 
 Sidebar: Speed up Test Reactor Tests
 ------------------------------------
 Maybe you do need an entire reactor for your unit test, but you don't need a very large one. In that case, ARMI comes with a few standard tools:
 
 #. ``from armi.testing import reduceTestReactorRings`` - Reduce the size of the test reactor you are using.
-#. ``from armi.testing import getEmptyCartesianReactor`` - Provides a test cartesian reactor with no assemblies or blocks inside.
-#. ``from armi.testing import getEmptyHexReactor`` - Provides a test hex reactor with no assemblies or blocks inside.
+#. ``from armi.tests import getEmptyCartesianReactor`` - Provides a test cartesian reactor with no assemblies or blocks inside.
+#. ``from armi.tests import getEmptyHexReactor`` - Provides a test hex reactor with no assemblies or blocks inside.
 
 
 Test Blocks and Assemblies

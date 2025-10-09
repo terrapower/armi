@@ -251,6 +251,15 @@ class Core(composites.Composite):
         runLog.extra(f"Updating cross section library on {self}.\nInitial: {self._lib}\nUpdated: {value}.")
         self._lib = value
 
+    def hasLib(self):
+        """Check if the microscopic cross section library is set.
+
+        Since the property ``lib`` will attempt to auto-load from a given ISOTXS file
+        in the working directory, checking ``r.core.lib is not None`` may result in unexpected
+        behavior. Use this instead.
+        """
+        return self._lib is not None
+
     @property
     def isFullCore(self):
         """Return True if reactor is full core, otherwise False."""

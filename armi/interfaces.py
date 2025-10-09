@@ -25,7 +25,7 @@ armi.plugins : Register various interfaces
 """
 
 import copy
-from typing import Dict, List, NamedTuple, Union
+from typing import Dict, List, NamedTuple, Tuple, Union
 
 import numpy as np
 from numpy.linalg import norm
@@ -498,6 +498,25 @@ class Interface:
     def interactDistributeState(self):
         """Called after this interface is copied to a different (non-primary) MPI node."""
         pass
+
+    def interactRestart(self, startNode: Tuple[int, int], previousNode: Tuple[int, int]):
+        """Perform any actions prior to simulating a restart.
+
+        Interfaces may want to restore some state that would have existed at the start of
+        ``startNode`` prior to calling :meth:`interactBOL` for the desired start point.
+        The database interface will be used prior to any interfaces calling this method,
+        so you can assume the reactor state has been correctly loaded from the database
+        from the ``previousNode``. This helps ensure that interfaces restart at e.g.,
+        ``(cycle, node)=(4, 3)`` would see the same data compared to the nominal simulation
+        without a restart.
+
+        Parameters
+        ----------
+        startNode
+            Pair of ``(cycle, node)`` for the requested restart point.
+        previousNode
+            Pair of ``(cycle, node)`` for the time node immediately preceeding ``startNode``.
+        """
 
     def isRequestedDetailPoint(self, cycle=None, node=None):
         """
