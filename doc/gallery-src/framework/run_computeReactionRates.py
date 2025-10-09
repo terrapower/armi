@@ -15,18 +15,16 @@
 Computing Reaction Rates on a Block.
 ====================================
 
-In this example, a set of 1-group reaction rates (in #/s) are evaluated
-for a dummy fuel block containing UZr fuel, HT9 structure, and
-sodium coolant. A dummy multigroup flux is applied.
+In this example, a set of 1-group reaction rates (in #/s) are evaluated for a dummy fuel block containing UZr fuel, HT9
+structure, and sodium coolant. A dummy multigroup flux is applied.
 
-This example also demonstrates how to build a reactor model from code alone
-rather than relying upon input files.
+This example also demonstrates how to build a reactor model from code alone rather than relying upon input files.
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from armi import configure, nuclideBases, settings
+from armi import configure, settings
 from armi.materials import ht9, sodium, uZr
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
@@ -107,7 +105,7 @@ r = createDummyReactor()
 r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
 b = r.core.getFirstBlock(Flags.FUEL)
-b.expandElementalToIsotopics(nuclideBases.byName["NA"])
+b.expandElementalToIsotopics(r.nuclideBases.byName["NA"])
 
 # Iterate over a few nuclides/elements in the XS library
 # and collect the total reaction rates in #/s.
