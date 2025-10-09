@@ -335,6 +335,61 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 
     return results
 
+def runActionsPreBatch(o, r, cs, actionsByNode, serial=False):
+    """Run a series of MpiActions in parallel, or in series if :code:`serial=True`.
+
+    Notes
+    -----
+    This method takes a set of actions that have been batched by the user beforehand.
+
+    This is useful for heterogeneous work packages where some tasks have significantly larger 
+    or smaller memory requirements. The user can place an appropriate amount of work on each node.
+    """
+    if not context.MPI_DISTRIBUTABLE or serial:
+        actions = []
+        for _node, nodeActions in actionsByNode.items():
+            actions.extend(nodeActions)
+        return runActionsInSerial(o, r, cs, actions)
+
+    # count how many actions will run on each node
+    nodes = list(set(context.MPI_NODENAMES))
+    numToRunOnThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
+    for i, nodeName in enumerate(nodes):
+        numToRunOnThisNode[nodeName] = len(actionsByNode[i])
+
+    # determine which ranks will run the actionse
+    numAssigned = {nodeName: 0 for nodeName in nodes}
+    for rank, nodeName in enumerate(context.MPI_NODENAMES):
+        # if we have more processors than tasks, disable the extra
+        useForComputation[rank] = numAssigned[nodeName] < numToRunOnThisNode[nodeName]
+        numAssigned[nodeName] += 1
+        
+    totalActions = sum(len(actions) for node, actions in actionsByNode.items())
+    runLog.extra(f"Running {len(totalActions)} MPI actions in parallel over on {len(actionsByNode)} nodes.")
+
+    # queue, numBatches = _makeQueue(actions, useForComputation)
+    results = []
+    actionsThisRound = []
+    nodeIndex = {nodeName: i for i, nodeName in enumerate(nodes)}
+    for rank, nodeName in enumerate(context.MPI_NODENAMES):
+        queue = actionsByNode[nodeIndex[nodeName]]
+        actionsThisRound.append(queue.pop(0) if useForComputation[rank] and queue else None)
+    useForComputation = _disableForExclusiveTasks(actionsThisRound, useForComputation)
+    realActions = [
+        (context.MPI_NODENAMES[rank], rank, act) for rank, act in enumerate(actionsThisRound) if act is not None
+    ]
+    runLog.extra(
+        "Distributing {} MPI actions for parallel processing:\n{}".format(
+            len(realActions),
+            tabulate.tabulate(realActions, headers=["Nodename", "Rank", "Action"]),
+        )
+    )
+    distrib = DistributionAction(actionsThisRound)
+    distrib.broadcast()
+    results.append(distrib.invoke(o, r, cs))
+
+    return results
+
 
 def _disableForExclusiveTasks(actionsThisRound, useForComputation):
     # disable processors that are exclusive for next
