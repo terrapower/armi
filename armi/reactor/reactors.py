@@ -15,6 +15,7 @@
 """Reactor objects represent the highest level in the hierarchy of structures that compose the system to be modeled."""
 
 import copy
+import os
 
 from armi import getPluginManagerOrFail, runLog
 from armi.reactor import composites, reactorParameters
@@ -152,6 +153,36 @@ class Reactor(composites.Composite):
         return ind
 
 
+def initBurnChain(r, cs):
+    """
+    Apply the burn chain setting to the nucDir.
+
+    Parameters
+    ----------
+    r: Reactor
+        The reactor object for this case.
+    cs: Settings
+        Settings object to use.
+
+    Notes
+    -----
+    This is admittedly an odd place for this but the burn chain info must be applied sometime after user-input has
+    been loaded (for custom burn chains) but not long after (because users need it).
+    """
+    if not cs["initializeBurnChain"]:
+        runLog.info("Skipping burn-chain initialization since `initializeBurnChain` setting is disabled.")
+        return
+
+    if not os.path.exists(cs["burnChainFileName"]):
+        raise ValueError(
+            f"The burn-chain file {cs['burnChainFileName']} does not exist. The data cannot be loaded. Fix "
+            "this path or disable burn-chain initialization using the `initializeBurnChain` setting."
+        )
+
+    with open(cs["burnChainFileName"]) as burnChainStream:
+        r.nuclideBases.imposeBurnChain(burnChainStream)
+
+
 def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
@@ -178,6 +209,7 @@ def factory(cs, bp) -> Reactor:
     getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
     r = Reactor(cs.caseTitle, bp)
+    initBurnChain(r, cs)
 
     # For now, ARMI will create a default Spent Fuel Pool and add it to every reactor.
     if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
