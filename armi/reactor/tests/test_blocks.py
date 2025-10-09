@@ -27,7 +27,8 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
 from armi import materials, runLog, settings, tests
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
@@ -1912,7 +1913,8 @@ class Block_TestCase(unittest.TestCase):
         """Tests the expand to elementals capability."""
         initialN = {}
         initialM = {}
-        elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
+        byName = NuclideBases().byName
+        elementals = [byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
         for elemental in elementals:
             initialN[elemental] = self.block.getNumberDensity(elemental.name)  # homogenized
             initialM[elemental] = self.block.getMass(elemental.name)
@@ -1944,7 +1946,8 @@ class Block_TestCase(unittest.TestCase):
         """Tests the expand all elementals simlutaneously capability."""
         initialN = {}
         initialM = {}
-        elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
+        byName = NuclideBases().byName
+        elementals = [byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
         for elemental in elementals:
             initialN[elemental] = self.block.getNumberDensity(elemental.name)  # homogenized
             initialM[elemental] = self.block.getMass(elemental.name)
