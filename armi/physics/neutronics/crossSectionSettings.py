@@ -209,7 +209,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_DUCT_HETEROGENEOUS): bool,
         vol.Optional(CONF_TRACE_ISOTOPE_THRESHOLD): vol.Coerce(float),
         vol.Optional(CONF_XS_TEMP_ISOTOPE): str,
-        vol.Optional(CONF_MEMORY_REQUIREMENT): float,
+        vol.Optional(CONF_MEMORY_REQUIREMENT): vol.Coerce(float),
     }
 )
 
