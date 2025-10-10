@@ -335,7 +335,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 
     return results
 
-def runActionsPreBatch(o, r, cs, actionsByNode, serial=False):
+def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     """Run a series of MpiActions in parallel, or in series if :code:`serial=True`.
 
     Notes
@@ -357,7 +357,7 @@ def runActionsPreBatch(o, r, cs, actionsByNode, serial=False):
     for i, nodeName in enumerate(nodes):
         numToRunOnThisNode[nodeName] = len(actionsByNode[i])
 
-    # determine which ranks will run the actionse
+    # determine which ranks will run the actions
     numAssigned = {nodeName: 0 for nodeName in nodes}
     useForComputation = [True] * len(context.MPI_NODENAMES)
     for rank, nodeName in enumerate(context.MPI_NODENAMES):
@@ -366,7 +366,7 @@ def runActionsPreBatch(o, r, cs, actionsByNode, serial=False):
         numAssigned[nodeName] += 1
         
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
-    runLog.extra(f"Running {totalActions} MPI actions in parallel over on {len(actionsByNode)} nodes.")
+    runLog.extra(f"Running {totalActions} MPI actions in parallel over {len(actionsByNode)} nodes.")
 
     results = []
     actionsThisRound = []
