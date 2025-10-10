@@ -335,6 +335,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 
     return results
 
+
 def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     """Run a series of MpiActions in parallel, or in series if :code:`serial=True`.
 
@@ -342,7 +343,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     -----
     This method takes a set of actions that have been batched by the user beforehand.
 
-    This is useful for heterogeneous work packages where some tasks have significantly larger 
+    This is useful for heterogeneous work packages where some tasks have significantly larger
     or smaller memory requirements. The user can place an appropriate amount of work on each node.
     """
     if not context.MPI_DISTRIBUTABLE or serial:
@@ -364,7 +365,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
         # if we have more processors than tasks, disable the extra
         useForComputation[rank] = numAssigned[nodeName] < numToRunOnThisNode[nodeName]
         numAssigned[nodeName] += 1
-        
+
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
     runLog.extra(f"Running {totalActions} MPI actions in parallel over {len(actionsByNode)} nodes.")
 
