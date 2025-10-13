@@ -1116,7 +1116,7 @@ class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
 
         .. test:: Create representative blocks using temperature groups.
             :id: T_ARMI_XSGM_CREATE_XS_GROUPS1
-            :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
+            :tests: R_ARMI_XSGM_CREATE_XS_GROUPS, R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
         self.csm.createRepresentativeBlocks()
         BL = self.blockList
