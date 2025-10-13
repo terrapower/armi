@@ -316,7 +316,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         actionsThisRound = []
         batchNum += 1
         runLog.extra(
-            "MPI actions, batch {} of {}:\n{}".format(
+            "MPI actions, batch {} of {}:\n".format(
                 batchNum,
                 numBatches,
             )
