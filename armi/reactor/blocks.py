@@ -236,7 +236,11 @@ class Block(composites.Composite):
         return self.computeSmearDensity(innerCladdingArea, sortedCompsInsideClad, cold)
 
     @staticmethod
-    def computeSmearDensity(innerCladdingArea: float, sortedCompsInsideClad: list[components.Component], cold: bool):
+    def computeSmearDensity(
+        innerCladdingArea: float,
+        sortedCompsInsideClad: list[components.Component],
+        cold: bool,
+    ):
         """Compute the smear density for a sorted list of components.
 
         Parameters
@@ -1856,8 +1860,6 @@ class HexBlock(Block):
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
-        if self.p.orientation is None:
-            self.p.orientation = np.array([0.0, 0.0, 0.0])
         self.p.orientation[2] += rotNum * 60.0
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
@@ -2196,7 +2198,9 @@ class HexBlock(Block):
 
     @staticmethod
     def _setPinIndices(
-        c: components.Component, ijGetter: Callable[[grids.IndexLocation], tuple[int, int]], allIJ: tuple[int, int]
+        c: components.Component,
+        ijGetter: Callable[[grids.IndexLocation], tuple[int, int]],
+        allIJ: tuple[int, int],
     ):
         localLocations = c.spatialLocator
         if isinstance(localLocations, grids.MultiIndexLocation):
