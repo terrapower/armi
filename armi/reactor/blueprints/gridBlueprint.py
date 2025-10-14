@@ -103,7 +103,6 @@ Examples
 
 import copy
 import itertools
-import math
 from io import StringIO
 from typing import Tuple
 
@@ -419,9 +418,11 @@ class GridBlueprint(yamlize.Object):
             angle = 360.0 / (len(equivs) + 1)
             for count, idx2 in enumerate(equivs):
                 newContents[idx2] = contents
-                if idx in self.orientationBOL:
-                    newOrientation = self.orientationBOL[idx] + (count + 1) * angle
-                    newOrientations[idx2] = newOrientation % 360.0
+                loc = grid.indicesToRingPos(*idx)
+                if loc in self.orientationBOL:
+                    loc2 = grid.indicesToRingPos(*idx2)
+                    newOrientation = self.orientationBOL[loc] + (count + 1) * angle
+                    newOrientations[loc2] = newOrientation % 360.0
 
         self.gridContents = newContents
         self.orientationBOL = newOrientations
