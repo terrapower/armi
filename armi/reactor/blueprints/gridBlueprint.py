@@ -103,6 +103,7 @@ Examples
 
 import copy
 import itertools
+import math
 from io import StringIO
 from typing import Tuple
 
@@ -412,12 +413,18 @@ class GridBlueprint(yamlize.Object):
         grid = self.construct()
 
         newContents = copy.copy(self.gridContents)
+        newOrientations = copy.copy(self.orientationBOL)
         for idx, contents in self.gridContents.items():
             equivs = grid.getSymmetricEquivalents(idx)
-            for idx2 in equivs:
+            angle = 360.0 / (len(equivs) + 1)
+            for count, idx2 in enumerate(equivs):
                 newContents[idx2] = contents
+                if idx in self.orientationBOL:
+                    newOrientation = self.orientationBOL[idx] + (count + 1) * angle
+                    newOrientations[idx2] = newOrientation % 360.0
 
         self.gridContents = newContents
+        self.orientationBOL = newOrientations
 
         # set the grid symmetry
         split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
