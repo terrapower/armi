@@ -410,24 +410,15 @@ class GridBlueprint(yamlize.Object):
 
         # fill the new grid contents
         grid = self.construct()
+        self._expandToFullOrientationBOL(grid)
 
         newContents = copy.copy(self.gridContents)
-        if self.orientationBOL is not None:
-            newOrientations = copy.copy(self.orientationBOL)
         for idx, contents in self.gridContents.items():
             equivs = grid.getSymmetricEquivalents(idx)
-            angle = 360.0 / (len(equivs) + 1)
-            for count, idx2 in enumerate(equivs):
+            for idx2 in equivs:
                 newContents[idx2] = contents
-                loc = grid.indicesToRingPos(*idx)
-                if self.orientationBOL is not None and loc in self.orientationBOL:
-                    loc2 = grid.indicesToRingPos(*idx2)
-                    newOrientation = self.orientationBOL[loc] + (count + 1) * angle
-                    newOrientations[loc2] = newOrientation % 360.0
 
         self.gridContents = newContents
-        if self.orientationBOL is not None:
-            self.orientationBOL = newOrientations
 
         # set the grid symmetry
         split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
@@ -438,6 +429,31 @@ class GridBlueprint(yamlize.Object):
                 throughCenterAssembly=split,
             )
         )
+
+    def _expandToFullOrientationBOL(self, grid):
+        """Set the orientationBOL parameter during expandToFulLCore().
+
+        Parameters
+        ----------
+        grid : Grid
+            Spatial grid for the current ARMI object.
+        """
+        if self.orientationBOL is None:
+            return
+
+        newOrientations = copy.copy(self.orientationBOL)
+
+        for idx, contents in self.gridContents.items():
+            equivs = grid.getSymmetricEquivalents(idx)
+            angle = 360.0 / (len(equivs) + 1)
+            for count, idx2 in enumerate(equivs):
+                loc = grid.indicesToRingPos(*idx)
+                if loc in self.orientationBOL:
+                    loc2 = grid.indicesToRingPos(*idx2)
+                    newOrientation = self.orientationBOL[loc] + (count + 1) * angle
+                    newOrientations[loc2] = newOrientation % 360.0
+
+        self.orientationBOL = newOrientations
 
     def _readGridContents(self):
         """
