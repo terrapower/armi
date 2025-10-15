@@ -412,20 +412,22 @@ class GridBlueprint(yamlize.Object):
         grid = self.construct()
 
         newContents = copy.copy(self.gridContents)
-        newOrientations = copy.copy(self.orientationBOL)
+        if self.orientationBOL is not None:
+            newOrientations = copy.copy(self.orientationBOL)
         for idx, contents in self.gridContents.items():
             equivs = grid.getSymmetricEquivalents(idx)
             angle = 360.0 / (len(equivs) + 1)
             for count, idx2 in enumerate(equivs):
                 newContents[idx2] = contents
                 loc = grid.indicesToRingPos(*idx)
-                if loc in self.orientationBOL:
+                if self.orientationBOL is not None and loc in self.orientationBOL:
                     loc2 = grid.indicesToRingPos(*idx2)
                     newOrientation = self.orientationBOL[loc] + (count + 1) * angle
                     newOrientations[loc2] = newOrientation % 360.0
 
         self.gridContents = newContents
-        self.orientationBOL = newOrientations
+        if self.orientationBOL is not None:
+            self.orientationBOL = newOrientations
 
         # set the grid symmetry
         split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
