@@ -44,6 +44,7 @@ class TestCrossSectionSettings(unittest.TestCase):
             geometry="0D",
             criticalBuckling=True,
             blockRepresentation="Median",
+            requiredRAM=20.0,
         )
         self.assertEqual("AA", xsModel.xsID)
         self.assertEqual("0D", xsModel.geometry)
@@ -51,6 +52,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertFalse(xsModel.fluxIsPregenerated)
         self.assertFalse(xsModel.xsIsPregenerated)
         self.assertTrue(xsModel.criticalBuckling)
+        self.assertEqual(20.0, xsModel.requiredRAM)
 
     def test_pregeneratedCrossSections(self):
         cs = settings.Settings()
@@ -123,6 +125,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
         self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
         self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
+        self.assertEqual(xsModel["YA"].requiredRAM, 0.0)
 
     def test_setDefSettingsByLowestEnvGroupHomog(self):
         # Initialize some micro suffix in the cross sections
