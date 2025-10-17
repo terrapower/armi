@@ -181,7 +181,10 @@ class MpiIterTests(unittest.TestCase):
     def test_runBatchedActions(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
-        actionsByNode = {0: [MockMpiAction(invokeResult=1)], 1: [MockMpiAction(invokeResult=5), MockMpiAction(invokeResult=11)]}
+        actionsByNode = {
+            0: [MockMpiAction(invokeResult=1)],
+            1: [MockMpiAction(invokeResult=5), MockMpiAction(invokeResult=11)],
+        }
 
         # run in serial
         with mockRunLogs.BufferLog() as mock:
