@@ -37,7 +37,6 @@ from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
-CONF_MEMORY_REQUIREMENT = "requiredRAM"
 CONF_BLOCKTYPES = "validBlockTypes"
 CONF_BUCKLING = "criticalBuckling"
 CONF_DRIVER = "driverID"
@@ -209,7 +208,6 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_DUCT_HETEROGENEOUS): bool,
         vol.Optional(CONF_TRACE_ISOTOPE_THRESHOLD): vol.Coerce(float),
         vol.Optional(CONF_XS_TEMP_ISOTOPE): str,
-        vol.Optional(CONF_MEMORY_REQUIREMENT): vol.Coerce(float),
     }
 )
 
@@ -466,11 +464,8 @@ class XSModelingOptions:
         for isotopes to be considered "trace". If no value is provided, the default is 0.0.
 
     xsTempIsotope: str
-        The isotope whose temperature is interrogated when placing a block in a temperature cross section group.
-        See `tempGroups`. "U238" is default since it tends to be dominant doppler isotope in most reactors.
-
-    requiredRAM: float
-        The amount of available memory needed to run this cross section model.
+            The isotope whose temperature is interrogated when placing a block in a temperature cross section group.
+            See `tempGroups`. "U238" is default since it tends to be dominant doppler isotope in most reactors.
 
     Notes
     -----
@@ -507,7 +502,6 @@ class XSModelingOptions:
         ductHeterogeneous=False,
         traceIsotopeThreshold=0.0,
         xsTempIsotope="U238",
-        requiredRAM=0.0,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -537,7 +531,6 @@ class XSModelingOptions:
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
         self.xsTempIsotope = xsTempIsotope
-        self.requiredRAM = requiredRAM
 
     def __repr__(self):
         if self.xsIsPregenerated:
@@ -726,7 +719,6 @@ class XSModelingOptions:
         defaults[CONF_XS_EXECUTE_EXCLUSIVE] = False
         defaults[CONF_XS_PRIORITY] = 5
         defaults[CONF_COMPONENT_AVERAGING] = False
-        defaults[CONF_MEMORY_REQUIREMENT] = 40.0
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
