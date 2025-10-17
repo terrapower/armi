@@ -19,6 +19,7 @@ import io
 import os
 import sys
 import unittest
+from contextlib import contextmanager
 from unittest.mock import patch
 
 from armi import settings
@@ -585,3 +586,85 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
                 f"{'{0:.2f}'.format(self.r.p.time)} - iteration {self.r.core.p.coupledIteration}"
             ),
         )
+
+
+class OperatorRestartTests(unittest.TestCase):
+    """Tests on the behavior of the interactAllRestart hook."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.START_CYCLE = 4
+        cls.START_NODE = 2
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            customSettings={
+                "loadStyle": "fromDB",
+                "startCycle": cls.START_CYCLE,
+                "startNode": cls.START_NODE,
+                # Need more cycles than we're restarting
+                "nCycles": cls.START_CYCLE + 3,
+            },
+        )
+
+    def setUp(self):
+        self.dbi: DatabaseInterface = self.o.getInterface("database")
+        self.assertIsNotNone(self.dbi, msg="Database interface required for test.")
+
+    def test_nominalRestart(self):
+        """Make sure the database interface is uniquely called and the interactRestart is not called for DB.
+
+        We need to make sure the database interface loads the reactor before every other interface goes first.
+        But then, when all the interfaces get their chance to ``interactRestart``, the database interface
+        does not. Since it did it's work already.
+        """
+        mainInterface: Interface = self.o.getInterface(name="main")
+        self.assertIsNotNone(mainInterface)
+        with (
+            patch.object(self.dbi, "interactRestart") as dbInteractRestart,
+            patch.object(self.dbi, "prepRestartRun") as dbPrepRestart,
+            patch.object(mainInterface, "interactRestart") as mainIfcRestart,
+        ):
+            self.o.interactAllRestart(self.dbi)
+        dbPrepRestart.assert_called_once()
+        # Skip DatabaseInterface.interactRestart since we jumped ahead and "restarted" with prepRestartRun
+        dbInteractRestart.assert_not_called()
+
+        # Ensure we called other interfaces restarts at the previous node
+        mainIfcRestart.assert_called_once_with(
+            (self.START_CYCLE, self.START_NODE), (self.START_CYCLE, self.START_NODE - 1)
+        )
+        self.assertEqual(self.o.r.p.cycle, self.START_CYCLE)
+        self.assertEqual(self.o.r.p.timeNode, self.START_NODE)
+
+    @contextmanager
+    def patchCS(self, **kwargs):
+        """Patch the case settings, restoring at the end of the context block.
+
+        Kwargs are key: value pairs for settings to be modified.
+
+        Can't use ``patch.dict`` because case settings don't have at least a ``.copy``
+        method that ``patch.dict`` expects.
+        """
+        cs = self.o.cs
+        old = {k: cs[k] for k in kwargs}
+        for k, v in kwargs.items():
+            cs[k] = v
+        yield
+        for k, v in old.items():
+            cs[k] = v
+
+    def test_callPreviousEOC(self):
+        """When restarting at the start of the cycle, make sure we call the previous interactEOC for all interfaces."""
+        with (
+            self.patchCS(startNode=0),
+            patch.object(self.o, "interactAllEOC") as patchEOC,
+            # Don't want to attempt to load a ficticious DB
+            patch.object(self.dbi, "prepRestartRun"),
+        ):
+            self.o.interactAllRestart(self.dbi)
+        patchEOC.assert_called_once_with(self.START_CYCLE - 1)
+
+    def test_noDatabaseNoRestart(self):
+        """Ensure there must be a database interface responsible for loading from database."""
+        with self.assertRaisesRegex(ValueError, "No database interface"):
+            self.o.interactAllRestart(None)

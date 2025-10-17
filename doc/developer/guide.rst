@@ -228,9 +228,11 @@ hooks include:
 * :py:meth:`interactCoupled <armi.interfaces.Interface.interactCoupled>` -- Happens
   after every node step/flux calculation, if tight physics coupling is active.
 
+* :meth:`~armi.interfaces.Interface.interactRestart` -- Happens when restarting from a
+  previous run. Called prior to :meth:`~armi.interfaces.Interface.interactBOL`
+
 These interaction points are optional in every interface, and you may override one or
-more of them to suit your needs. You should not change the arguments to the hooks,
-which are integers.
+more of them to suit your needs. You should not change the arguments to the hooks.
 
 Each interface has a ``enabled`` flag. If this is set to ``False``, then the interface's
 hook code will not be called even though the interface exists in the problem. This is
