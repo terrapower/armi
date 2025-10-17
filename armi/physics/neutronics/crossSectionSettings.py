@@ -726,7 +726,7 @@ class XSModelingOptions:
         defaults[CONF_XS_EXECUTE_EXCLUSIVE] = False
         defaults[CONF_XS_PRIORITY] = 5
         defaults[CONF_COMPONENT_AVERAGING] = False
-        defaults[CONF_MEMORY_REQUIREMENT] = 40.0
+        defaults[CONF_MEMORY_REQUIREMENT] = 0.0
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
