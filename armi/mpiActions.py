@@ -349,7 +349,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     nodes = list(set(context.MPI_NODENAMES))
     numToRunOnThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
     for i, nodeName in enumerate(nodes):
-        numToRunOnThisNode[nodeName] = len(actionsByNode[i])
+        numToRunOnThisNode[nodeName] = len(actionsByNode.get(i, []))
 
     # determine which ranks will run the actions
     numAssigned = {nodeName: 0 for nodeName in nodes}
@@ -366,7 +366,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     actionsThisRound = []
     nodeIndex = {nodeName: i for i, nodeName in enumerate(nodes)}
     for rank, nodeName in enumerate(context.MPI_NODENAMES):
-        queue = actionsByNode[nodeIndex[nodeName]]
+        queue = actionsByNode.get(nodeIndex[nodeName], [])
         actionsThisRound.append(queue.pop(0) if useForComputation[rank] and queue else None)
 
     distrib = distributeActions(actionsThisRound, useForComputation)
