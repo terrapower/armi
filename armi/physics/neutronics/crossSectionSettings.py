@@ -470,7 +470,7 @@ class XSModelingOptions:
         See `tempGroups`. "U238" is default since it tends to be dominant doppler isotope in most reactors.
 
     requiredRAM: float
-        The amount of available memory needed by MC2 to run this cross section model.
+        The amount of available memory needed to run this cross section model.
 
     Notes
     -----
@@ -507,7 +507,7 @@ class XSModelingOptions:
         ductHeterogeneous=False,
         traceIsotopeThreshold=0.0,
         xsTempIsotope="U238",
-        requiredRAM=40.0,
+        requiredRAM=0.0,
     ):
         self.xsID = xsID
         self.geometry = geometry
