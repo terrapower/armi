@@ -315,12 +315,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
     while queue:
         actionsThisRound = []
         batchNum += 1
-        runLog.extra(
-            "MPI actions, batch {} of {}:\n".format(
-                batchNum,
-                numBatches,
-            )
-        )
+        runLog.extra(f"MPI actions, batch {batchNum} of {numBatches}:\n")
         for useRank in useForComputation:
             actionsThisRound.append(queue.pop(0) if useRank and queue else None)
         distrib = distributeActions(actionsThisRound, useForComputation)
@@ -381,12 +376,8 @@ def distributeActions(actionsThisRound, useForComputation):
     realActions = [
         (context.MPI_NODENAMES[rank], rank, act) for rank, act in enumerate(actionsThisRound) if act is not None
     ]
-    runLog.extra(
-        "Distributing {} MPI actions for parallel processing:\n{}".format(
-            len(realActions),
-            tabulate.tabulate(realActions, headers=["Nodename", "Rank", "Action"]),
-        )
-    )
+    tableText = tabulate.tabulate(realActions, headers=["Nodename", "Rank", "Action"]),
+    runLog.extra(f"Distributing {len(realActions)} MPI actions for parallel processing:\n{tableText}")
     return DistributionAction(actionsThisRound)
 
 
