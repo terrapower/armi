@@ -376,7 +376,7 @@ def distributeActions(actionsThisRound, useForComputation):
     realActions = [
         (context.MPI_NODENAMES[rank], rank, act) for rank, act in enumerate(actionsThisRound) if act is not None
     ]
-    tableText = tabulate.tabulate(realActions, headers=["Nodename", "Rank", "Action"]),
+    tableText = tabulate.tabulate(realActions, headers=["Nodename", "Rank", "Action"])
     runLog.extra(f"Distributing {len(realActions)} MPI actions for parallel processing:\n{tableText}")
     return DistributionAction(actionsThisRound)
 
