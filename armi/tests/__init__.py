@@ -14,37 +14,70 @@
 """
 General framework-wide testing functions and files.
 
-This package contains some input files that can be used across a wide variety of unit tests in other lower-level
-subpackages.
+This package contains some input files that can be used across
+a wide variety of unit tests in other lower-level subpackages.
 """
 
 import datetime
 import itertools
 import os
+import re
+import shutil
 import unittest
 from typing import Optional
 
-from armi import runLog
-from armi.testing import (  # noqa: F401
-    ARMI_RUN_PATH,
-    COMPXS_PATH,
-    ISOAA_PATH,
-    getEmptyCartesianReactor,
-    getEmptyHexReactor,
-)
+from armi import context, runLog
+from armi.reactor import geometry, grids, reactors
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
-TESTING_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "testing")
+ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")
+ISOAA_PATH = os.path.join(TEST_ROOT, "ISOAA")
+COMPXS_PATH = os.path.join(TEST_ROOT, "COMPXS.ascii")
+
+
+def getEmptyHexReactor():
+    """Make an empty hex reactor used in some tests."""
+    from armi.reactor import blueprints
+
+    bp = blueprints.Blueprints()
+    reactor = reactors.Reactor("Reactor", bp)
+    reactor.add(reactors.Core("Core"))
+    reactor.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
+    reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
+    reactor.core.spatialGrid.geomType = geometry.HEX
+    reactor.core.spatialGrid.armiObject = reactor.core
+    return reactor
+
+
+def getEmptyCartesianReactor(pitch=(10.0, 16.0)):
+    """Return an empty Cartesian reactor used in some tests."""
+    from armi.reactor import blueprints
+
+    bp = blueprints.Blueprints()
+    reactor = reactors.Reactor("Reactor", bp)
+    reactor.add(reactors.Core("Core"))
+    reactor.core.spatialGrid = grids.CartesianGrid.fromRectangle(*pitch)
+    reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.QUARTER_CORE,
+        geometry.BoundaryType.REFLECTIVE,
+        throughCenterAssembly=True,
+    )
+    reactor.core.spatialGrid.geomType = geometry.CARTESIAN
+    reactor.core.spatialGrid.armiObject = reactor.core
+    return reactor
 
 
 class Fixture:
     """
     Fixture for presenting a consistent data source for testing.
 
-    A Fixture is a class that wraps a function which generates resources needed by one or more tests that does not need
-    to be updated every time tests are run.
+    A Fixture is a class that wraps a function which generates resources needed by one
+    or more tests that doesn't need to be updated every time tests are run.
 
-    Do not use this class directly, instead use the :code:`@fixture` and :code:`@requires_fixture` decorators.
+    Do not use this class directly, instead use the :code:`@fixture` and :code:`@requires_fixture`
+    decorators.
     """
 
     def __init__(self, refDirectory, targets, dependencies, function):
@@ -65,7 +98,7 @@ class Fixture:
         self.status = None
 
     def __repr__(self):
-        return f"{self._function.__module__}.{self.__name__}"
+        return "{}.{}".format(self._function.__module__, self.__name__)
 
     def __call__(self):
         if self._error is not None:
@@ -103,16 +136,15 @@ class Fixture:
                         )
                     )
             if needToUpdate:
-                runLog.important(f"Running test fixture: {self}")
+                runLog.important("Running test fixture: {}".format(self))
                 try:
                     self._function()
                 except Exception as ee:
                     self._error = ee
                     raise
             else:
-                runLog.important(f"Skipping test fixture: {self}")
-
-        runLog.important(f"Fixture is up to date: {self}")
+                runLog.important("Skipping test fixture: {}".format(self))
+        runLog.important("Fixture is up to date: {}".format(self))
         self._success = True
 
 
@@ -125,8 +157,10 @@ def fixture(refDirectory=None, targets=None, dependencies=None):
     refDirectory : str
         String reference directory for all targets/dependencies. This makes it possible to simplify file paths.
         If ``os.path.abspath(<path>) == <path>``, then refDirectory is not used.
+
     targets : iterable(str)
         List of targets that the function generates.
+
     dependencies : iterable(str)
         List of dependencies that the ``targets`` require.
     """
@@ -144,8 +178,8 @@ def requires_fixture(fixtureFunction):
     Parameters
     ----------
     fixtureFunction : function without any parameters
-        Fixture function is a function that has been decorated with fixture and is called prior to running the decorated
-        function.
+        Fixture function is a function that has been decorated with fixture and is called prior to running
+        the decorated function.
 
     Notes
     -----
@@ -171,14 +205,17 @@ class ArmiTestHelper(unittest.TestCase):
 
         .. warning:: The file located at actualFilePath will be deleted if they do match.
 
-        Some tests write text files that should be compared line-by-line with reference files. This method performs the
-        comparison.
+        Some tests write text files that should be compared line-by-line with reference files.
+        This method performs the comparison.
 
-        This class of test is not ideal but does cover a lot of functionality quickly. To assist in the maintenance
-        burden, the following standards are expected and enforced:
+        This class of test is not ideal but does cover a lot of functionality quickly. To assist
+        in the maintenance burden, the following standards are expected and enforced:
 
         * The reference file compared against will be called either ``[name]-ref.[ext]`` or ``[name].expected``.
         * The file that the test creates will be called ``[name]-test.[ext]`` or ``[name]``.
+
+        Rebaselining the reference files upon large, expected, hand-verified changes is accommodated by
+        :py:meth:`rebaselineTextComparisons`.
 
         Parameters
         ----------
@@ -187,11 +224,12 @@ class ArmiTestHelper(unittest.TestCase):
         actualFilePath: str
             Path to the file that will be compared to ``expectedFilePath``
         falseNegList: None or Iterable
-            Optional argument. If two lines are not equal, then check if any values from ``falseNegList`` are in this
-            line. If so, do not fail the test.
+            Optional argument. If two lines are not equal, then check if any values
+            from ``falseNegList`` are in this line. If so, do not fail the test.
         eps: float, optional
-            If provided, try to determine if the only difference between compared lines is in the value of something
-            that can be parsed into a float, and the relative difference between the two floats is below the passed eps.
+            If provided, try to determine if the only difference between compared lines
+            is in the value of something that can be parsed into a float, and the
+            relative difference between the two floats is below the passed epsilon.
         """
         if falseNegList is None:
             falseNegList = []
@@ -222,9 +260,10 @@ class ArmiTestHelper(unittest.TestCase):
         """
         Impl of line comparison for compareFilesLineByLine.
 
-        If rstripped lines are equal -> Good. Otherwise, split on whitespace and try to parse element pairs as floats.
-        If they are both parsable, compare with relative eps, if provided. A side effect of the epsilon comparison is
-        that differing whitespace between words is treated as irrelevant.
+        if rstripped lines are equal -> Good. Otherwise, split on whitespace and try to
+        parse element pairs as floats. if they are both parsable, compare with relative
+        eps, if provided. A side effect of the epsilon comparison is that differing
+        whitespace **between** words is treated as irrelevant.
         """
         actual = actual.rstrip()
         expected = expected.rstrip()
@@ -244,11 +283,12 @@ class ArmiTestHelper(unittest.TestCase):
             return False
 
         for actualWord, expectedWord in zip(actualWords, expectedWords):
-            actualVal = ArmiTestHelper._tryFloat(actualWord)
-            expectedVal = ArmiTestHelper._tryFloat(expectedWord)
+            actualVal = _tryFloat(actualWord)
+            expectedVal = _tryFloat(expectedWord)
 
             if (actualVal is None) ^ (expectedVal is None):
-                # could not coerce both words into a float, so they cannot possibly match
+                # could not coerce both words into a float, so they cannot possibly
+                # match
                 return False
 
             if actualVal is not None:
@@ -263,13 +303,56 @@ class ArmiTestHelper(unittest.TestCase):
                 if actualWord != expectedWord:
                     return False
 
-        # The lines should match.
+        # if we got to the end without pitching a fit, the lines should match
         return True
 
-    @staticmethod
-    def _tryFloat(val: str) -> Optional[float]:
-        try:
-            return float(val)
 
-        except ValueError:
-            return None
+def _tryFloat(val: str) -> Optional[float]:
+    try:
+        return float(val)
+
+    except ValueError:
+        return None
+
+
+def rebaselineTextComparisons(root):
+    """
+    Rebaseline test line-by-line comparison files.
+
+    This scans the source tree for failed unit test file comparisons
+    (indicated by the presence of, for example, a ``-test.inp`` and a ``-ref.inp`` file)
+    and moves the test one to the reference one. The work done can be reviewed/approved
+    in source management.
+
+    This is convenient when a large-scope change is made, such as updating the properties
+    of a commonly-used material.
+    """
+    runLog.info(f"Rebaselining all unit test file comparisons under {root}...")
+    for dirname, _dirs, files in os.walk(root):
+        if "tests" not in dirname:
+            continue
+        for refFileName in files:
+            match = re.search(r"^(\S+?)-ref\.(\S+)$", refFileName)
+            if refFileName.endswith(".expected"):
+                testFileName = refFileName.replace(".expected", "")
+            elif match:
+                testFileName = match.group(1) + "-test." + match.group(2)
+            else:
+                continue
+            refFileName = os.path.join(dirname, refFileName)
+            testFileName = os.path.join(dirname, testFileName)
+            if not os.path.exists(testFileName):
+                testFileName += ".inp"  # cover some edge cases
+            if os.path.exists(testFileName):
+                runLog.info("Overwriting {} with {}".format(refFileName, testFileName))
+                shutil.move(testFileName, refFileName)
+
+
+if __name__ == "__main__":
+    # Calling this directly runs the test rebaseline function (could/should be an entrypoint)
+    import sys
+
+    if len(sys.argv) == 1:
+        rebaselineTextComparisons(context.ROOT)
+    else:
+        rebaselineTextComparisons(sys.argv[1])
