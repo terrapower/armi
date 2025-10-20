@@ -13,8 +13,7 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI
-``Component``.
+This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
 
 Special logic is required for handling component links.
 """
@@ -42,10 +41,10 @@ class ComponentDimension(yamlize.Object):
         self.value = value
         if isinstance(value, str):
             if not components.COMPONENT_LINK_REGEX.search(value):
-                raise ValueError("Bad component link `{}`, must be in form `name.dimension`".format(value))
+                raise ValueError(f"Bad component link `{value}`, must be in form `name.dimension`")
 
     def __repr__(self):
-        return "<ComponentDimension value: {}>".format(self.value)
+        return f"<ComponentDimension value: {self.value}>"
 
     @classmethod
     def from_yaml(cls, loader, node, _rtd=None):
@@ -65,11 +64,11 @@ class ComponentDimension(yamlize.Object):
     @classmethod
     def to_yaml(cls, dumper, self, _rtd=None):
         """
-        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end
-        up with a ``{value: ...}`` dictionary.
+        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end up with a
+        ``{value: ...}`` dictionary.
 
-        This allows someone to programmatically edit the component dimensions without using the
-        ``ComponentDimension`` class.
+        This allows someone to programmatically edit the component dimensions without using the ``ComponentDimension``
+        class.
         """
         if not isinstance(self, cls):
             self = cls(self)
@@ -113,36 +112,34 @@ class ComponentDimension(yamlize.Object):
 
 class ComponentBlueprint(yamlize.Object):
     """
-    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to
-    enable serialization to and from YAML.
+    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization
+    to and from YAML.
 
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
         :implements: R_ARMI_BP_COMP
 
-        Defines a yaml construct that allows the user to specify attributes of a component from
-        within their blueprints file, including a name, flags, shape, material and/or isotopic
-        vector, input temperature, corresponding component dimensions, and ID for placement in a
-        block lattice (see :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`).
-        Component dimensions that can be defined for a given component are dependent on the
-        component's ``shape`` attribute, and the dimensions defining each shape can be found in the
-        :py:mod:`~armi.reactor.components` module.
+        Defines a yaml construct that allows the user to specify attributes of a component from within their blueprints
+        file, including a name, flags, shape, material and/or isotopic vector, input temperature, corresponding
+        component dimensions, and ID for placement in a block lattice (see
+        :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`). Component dimensions that can be defined
+        for a given component are dependent on the component's ``shape`` attribute, and the dimensions defining each
+        shape can be found in the :py:mod:`~armi.reactor.components` module.
 
-        Limited validation on the inputs is performed to ensure that the component shape corresponds
-        to a valid shape defined by the ARMI application.
+        Limited validation on the inputs is performed to ensure that the component shape corresponds to a valid shape
+        defined by the ARMI application.
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
-        files, serialization, and internal storage of the data.
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text files, serialization,
+        and internal storage of the data.
 
-        Is implemented as part of a blueprints file by being imported and used as an attribute
-        within the larger :py:class:`~armi.reactor.blueprints.Blueprints` class. Can also be used
-        within the :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint` class to
-        enable specification of components directly within the "blocks" portion of the blueprint
-        file.
+        Is implemented as part of a blueprints file by being imported and used as an attribute within the larger
+        :py:class:`~armi.reactor.blueprints.Blueprints` class. Can also be used within the
+        :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint` class to enable specification of components
+        directly within the "blocks" portion of the blueprint file.
 
         Includes a ``construct`` method, which instantiates an instance of
-        :py:class:`~armi.reactor.components.component.Component` with the characteristics specified
-        in the blueprints (see :need:`I_ARMI_MAT_USER_INPUT1`).
+        :py:class:`~armi.reactor.components.component.Component` with the characteristics specified in the blueprints
+        (see :need:`I_ARMI_MAT_USER_INPUT1`).
     """
 
     name = yamlize.Attribute(type=str)
@@ -152,8 +149,8 @@ class ComponentBlueprint(yamlize.Object):
     def name(self, name):
         """Validate component names."""
         if name == "cladding":
-            # many users were mixing cladding and clad and it caused issues downstream
-            # where physics plugins checked for clad.
+            # many users were mixing cladding and clad and it caused issues downstream where physics plugins checked for
+            # clad.
             raise ValueError(f"Cannot set ComponentBlueprint.name to {name}. Prefer 'clad'.")
 
     shape = yamlize.Attribute(type=str)
@@ -181,31 +178,26 @@ class ComponentBlueprint(yamlize.Object):
             :id: I_ARMI_MAT_USER_INPUT1
             :implements: R_ARMI_MAT_USER_INPUT
 
-            Allows for user input to impact a component's materials by applying
-            the "material modifications" section of a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`)
-            to the material during construction. This takes place during lower
-            calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``,
-            which operate using the component blueprint and associated material
-            modifications from the component's block.
+            Allows for user input to impact a component's materials by applying the "material modifications" section of
+            a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`) to the material during construction. This takes place
+            during lower calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``, which operate using
+            the component blueprint and associated material modifications from the component's block.
 
-            Within ``_constructMaterial()``, the material class is resolved into a material
-            object by calling :py:func:`~armi.materials.resolveMaterialClassByName`.
-            The ``applyInputParams()`` method of that material class is then called,
-            passing in the associated material modifications data, which the material
-            class can then use to modify the isotopics as necessary.
+            Within ``_constructMaterial()``, the material class is resolved into a material object by calling
+            :py:func:`~armi.materials.resolveMaterialClassByName`. The ``applyInputParams()`` method of that material
+            class is then called, passing in the associated material modifications data, which the material class can
+            then use to modify the isotopics as necessary.
 
         Parameters
         ----------
         blueprint : Blueprints
             Blueprints object containing various detailed information, such as nuclides to model
-
         matMods : dict
             Material modifications to apply to the component.
-
         inputHeightsConsideredHot : bool
             See the case setting of the same name.
         """
-        runLog.debug("Constructing component {}".format(self.name))
+        runLog.debug(f"Constructing component {self.name}")
         kwargs = self._conformKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
         if shape == COMPONENT_GROUP_SHAPE:
@@ -232,6 +224,12 @@ class ComponentBlueprint(yamlize.Object):
             matMods,
             inputHeightsConsideredHot,
         )
+
+        if hasattr(constructedObject, "material") and "Custom" in str(constructedObject.material):
+            if len(constructedObject.material.massFrac) > 0:
+                msg = "Custom material does not have isotopics: {self}"
+                runLog.error(msg, single=True)
+                raise IOError(msg)
 
         return constructedObject
 
@@ -327,8 +325,8 @@ class ComponentBlueprint(yamlize.Object):
             else:
                 value = attr.get_value(self)
 
-            # Keep digging until the actual value is found. This is a bit of a hack to get around an
-            # issue in yamlize/ComponentDimension where Dimensions can end up chained.
+            # Keep digging until the actual value is found. This is a bit of a hack to get around an issue in
+            # yamlize/ComponentDimension where Dimensions can end up chained.
             while isinstance(value, ComponentDimension):
                 value = value.value
 
@@ -346,8 +344,8 @@ class ComponentBlueprint(yamlize.Object):
             # the input mods have the final word
             blueprint.customIsotopics.apply(mat, self.isotopics)
 
-        # add mass fraction custom isotopics info, since some material modifications need
-        # to see them e.g. in the base Material.applyInputParams
+        # add mass fraction custom isotopics info, since some material modifications need to see them e.g. in the base
+        # Material.applyInputParams
         matMods.update({"customIsotopics": {k: v.massFracs for k, v in blueprint.customIsotopics.items()}})
         if len(matMods) > 1:
             # don't apply if only customIsotopics is in there
@@ -363,8 +361,7 @@ class ComponentBlueprint(yamlize.Object):
                 else:
                     raise ValueError(
                         f"Something went wrong in applying the material modifications {matMods} "
-                        f"to component {self.name}.\n"
-                        f"Error message is: \n{errorMessage}."
+                        f"to component {self.name}.\nError message is: \n{errorMessage}."
                     )
 
         expandElementals(mat, blueprint)
@@ -373,9 +370,9 @@ class ComponentBlueprint(yamlize.Object):
 
         if missing:
             raise ValueError(
-                "The nuclides {} are present in material {} by compositions, but are not "
-                "specified in the `nuclide flags` section of the input file. "
-                "They need to be added, or custom isotopics need to be applied.".format(missing, mat)
+                f"The nuclides {missing} are present in material {mat} by compositions, but are not specified in the "
+                "`nuclide flags` section of the input file. They need to be added, or custom isotopics need to be "
+                "applied."
             )
 
         return mat
@@ -455,8 +452,8 @@ class ComponentKeyedList(yamlize.KeyedList):
 
     This is used within the ``components:`` main entry of the blueprints.
 
-    This is *not* (yet) used when components are defined within a block blueprint. That is handled
-    in the blockBlueprint construct method.
+    This is *not* (yet) used when components are defined within a block blueprint. That is handled in the blockBlueprint
+    construct method.
     """
 
     item_type = ComponentBlueprint
@@ -503,11 +500,9 @@ class ComponentGroups(yamlize.KeyedList):
     item_type = ComponentGroup
 
 
-# This import-time magic requires all possible components
-# be imported before this module imports. The intent
-# was to make registration basically automatic. This has proven
-# to be quite problematic and will be replaced with an
-# explicit plugin-level component registration system.
+# This import-time magic requires all possible components be imported before this module imports. The intent was to make
+# registration basically automatic. This has proven to be quite problematic and will be replaced with an explicit
+# plugin-level component registration system.
 for dimName in set([kw for cType in components.ComponentType.TYPES.values() for kw in cType.DIMENSION_NAMES]):
     setattr(
         ComponentBlueprint,
@@ -518,15 +513,13 @@ for dimName in set([kw for cType in components.ComponentType.TYPES.values() for 
 
 def _setComponentFlags(component, flags, blueprint):
     """Update component flags based on user input in blueprint."""
-    # the component __init__ calls setType(), which gives us our initial guess at
-    # what the flags should be.
+    # The component __init__ calls setType(), which gives us our initial guess at what the flags should be.
     if flags is not None:
         # override the flags from __init__ with the ones from the blueprint
         component.p.flags = Flags.fromString(flags)
     else:
-        # potentially add the DEPLETABLE flag. Don't do this if we set flags
-        # explicitly. WARNING: If you add flags explicitly, it will
-        # turn off depletion so be sure to add depletable to your list of flags
-        # if you expect depletion
+        # Potentially add the DEPLETABLE flag. Don't do this if we set flags explicitly.
+        # WARNING: If you add flags explicitly, it will turn off depletion so be sure to add depletable to your list of
+        # flags if you expect depletion
         if any(nuc in blueprint.activeNuclides for nuc in component.getNuclides()):
             component.p.flags |= Flags.DEPLETABLE
