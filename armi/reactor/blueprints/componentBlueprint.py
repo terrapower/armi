@@ -226,7 +226,7 @@ class ComponentBlueprint(yamlize.Object):
         )
 
         if hasattr(constructedObject, "material") and "Custom" in str(constructedObject.material):
-            if len(constructedObject.material.massFrac) > 0:
+            if len(constructedObject.material.massFrac) == 0:
                 msg = "Custom material does not have isotopics: {self}"
                 runLog.error(msg, single=True)
                 raise IOError(msg)
