@@ -69,7 +69,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
 
     if isPickeledReactor and _TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
-        o, r, assemNum = pickle.loads(_TEST_REACTOR)
+        o, r = pickle.loads(_TEST_REACTOR)
         o.reattach(r, o.cs)
         return o, r
 
@@ -92,7 +92,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     if isPickeledReactor:
         # cache it for fast load for other future tests protocol=2 allows for classes with __slots__ but not
         # __getstate__ to be pickled
-        _TEST_REACTOR = pickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
+        _TEST_REACTOR = pickle.dumps((o, o.r), protocol=2)
 
     return o, o.r
 
