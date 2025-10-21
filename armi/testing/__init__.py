@@ -65,7 +65,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     global _TEST_REACTOR
     fName = os.path.join(inputFilePath, inputFileName)
     customSettings = customSettings or {}
-    isPickeledReactor = os.path.realpath(fName) == os.path.realpath(ARMI_RUN_PATH) and customSettings == {}
+    isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
 
     if isPickeledReactor and _TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
