@@ -28,7 +28,7 @@ import pickle
 from armi import runLog
 from armi.reactor import geometry, grids, reactors
 
-TEST_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests")
+TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))
 ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")
 COMPXS_PATH = os.path.join(TEST_ROOT, "COMPXS.ascii")
