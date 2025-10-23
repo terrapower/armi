@@ -414,7 +414,9 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
         # Test the null-case; these should all be zero.
         for a in r.core.iterChildren():
-            self.assertIsNone(a.p.orientation)
+            self.assertEqual(a.p.orientation[0], 0.0)
+            self.assertEqual(a.p.orientation[1], 0.0)
+            self.assertEqual(a.p.orientation[2], 0.0)
 
 
 class Block_TestCase(unittest.TestCase):
@@ -1593,7 +1595,13 @@ class Block_TestCase(unittest.TestCase):
         comps = []
         nunComps = 3
         for i in range(nunComps):
-            fuelDims = {"Tinput": 25.0 * i, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+            fuelDims = {
+                "Tinput": 25.0 * i,
+                "Thot": 600,
+                "od": 0.76,
+                "id": 0.00,
+                "mult": 127.0,
+            }
             comps.append(components.Circle("fuel", "UZr", **fuelDims))
 
         # show the composites have no parents
@@ -2742,7 +2750,15 @@ class HexBlock_TestCase(unittest.TestCase):
         b.add(clad)
 
         wire = components.Helix(
-            "wire", "HT9", Tinput=25.0, Thot=600, id=0, od=0.1, axialPitch=30, helixDiameter=0.9, mult=169
+            "wire",
+            "HT9",
+            Tinput=25.0,
+            Thot=600,
+            id=0,
+            od=0.1,
+            axialPitch=30,
+            helixDiameter=0.9,
+            mult=169,
         )
         b.add(wire)
 
@@ -2923,7 +2939,10 @@ nuclide flags:
         self._checkPinLocationsAndIndices(secondary, nSecondary, expectedSecondaryRingPos)
 
     def _checkPinLocationsAndIndices(
-        self, pin: components.Circle, expectedNumPins: int, expectedRingPos: set[tuple[int, int]]
+        self,
+        pin: components.Circle,
+        expectedNumPins: int,
+        expectedRingPos: set[tuple[int, int]],
     ):
         self.assertEqual(
             len(expectedRingPos),
@@ -2987,7 +3006,11 @@ nuclide flags:
         with patch.object(self.block, "assignPinIndices") as patchAssign:
             self.block.sort()
         newPinLocations = self.block.getPinLocations()
-        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
+        self.assertNotEqual(
+            newPinLocations,
+            self.allLocations,
+            msg="Test requires new pin locations post-sort.",
+        )
         # Make sure we called it. Other tests confirm that assignPinIndices is correct.
         # this makes sure we've called it where we want to call it
         patchAssign.assert_called_once()

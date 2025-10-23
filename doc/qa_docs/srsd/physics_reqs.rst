@@ -137,14 +137,14 @@ Functional Requirements
     :acceptance_criteria: Initiate the cross-section group manager by the same setting that initiates calculating cross sections. And ensure the cross-section group manager always runs before cross sections are calculated.
     :status: accepted
 
-.. req:: The cross-section group manager package shall create separate collections of blocks for each combination of user-specified XS type and burnup group.
+.. req:: The cross-section group manager package shall create separate collections of blocks for each combination of user-specified XS type and burnup and/or temperature group.
     :id: R_ARMI_XSGM_CREATE_XS_GROUPS
     :subtype: functional
     :basis: This helps improve the performance of downstream cross section calculations.
     :acceptance_criteria: Create cross section groups and their representative blocks.
     :status: accepted
 
-.. req:: The cross-section group manager package shall provide routines to create representative blocks for each collection based on user-specified XS type and burnup group.
+.. req:: The cross-section group manager package shall provide routines to create representative blocks for each collection based on user-specified XS type and burnup and/or temperature group.
     :id: R_ARMI_XSGM_CREATE_REPR_BLOCKS
     :subtype: functional
     :basis: The Lattice Physics Interface needs a representative block from which to generate a lattice physics input file.

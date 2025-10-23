@@ -52,7 +52,7 @@ Here is an excerpt from a settings file:
 
 .. literalinclude:: ../../armi/tests/armiRun.yaml
     :language: yaml
-    :lines: 3-15
+    :lines: 1-14
 
 A full listing of settings available in the framework may be found in the
 :ref:`Table of all global settings <settings-report>` .
@@ -156,12 +156,13 @@ In addition, one may optionally use the ``powerFractions`` setting to change the
 
 .. code-block:: yaml
 
-       power: 1000000
-       nCycles: 3
-       burnSteps: 2
-       cycleLengths: [100, R2]
-       powerFractions: [1.0, 0.5, 1.0]
-       availabilityFactors: [0.9, 0.3, 0.93]
+    settings:
+        power: 1000000
+        nCycles: 3
+        burnSteps: 2
+        cycleLengths: [100, R2]
+        powerFractions: [1.0, 0.5, 1.0]
+        availabilityFactors: [0.9, 0.3, 0.93]
 
 Note the use of the special shorthand list notation, where repeated values in a list can be specified using an "R" followed by the number of times the value is to be repeated.
 
@@ -188,22 +189,23 @@ An example detailed cycle history employing all of these fields could look like
 
 .. code-block:: yaml
 
-       power: 1000000
-       nCycles: 4
-       cycles:
-         - name: A
-           step days: [1, 1, 98]
-           power fractions: [0.1, 0.2, 1]
-           availability factor: 0.1
-         - name: B
-           cumulative days: [2, 72, 78, 86]
-           power fractions: [0.2, 1.0, 0.95, 0.93]
-         - name: C
-           step days: [5, R5]
-           power fractions: [1, R5]
-         - cycle length: 100
-           burn steps: 2
-           availability factor: 0.9
+    settings:
+        power: 1000000
+        nCycles: 4
+        cycles:
+          - name: A
+            step days: [1, 1, 98]
+            power fractions: [0.1, 0.2, 1]
+            availability factor: 0.1
+          - name: B
+            cumulative days: [2, 72, 78, 86]
+            power fractions: [0.2, 1.0, 0.95, 0.93]
+          - name: C
+            step days: [5, R5]
+            power fractions: [1, R5]
+          - cycle length: 100
+            burn steps: 2
+            availability factor: 0.9
 
 Note that repeated values in a list may be again be entered using the shorthand notation for ``step days``, ``power fractions``, and ``availability factors`` (though not ``cumulative days`` because entries must be monotonically increasing).
 
@@ -270,143 +272,141 @@ A few examples of restart cases:
     - Restarting a calculation at a specific cycle/node and continuing for the remainder of the originally-specified cycle history:
         .. code-block:: yaml
 
-               # old settings
-               nCycles: 2
-               burnSteps: 2
-               cycleLengths: [100, 100]
-               runType: Standard
-               loadStyle: fromInput
-               loadingFile: my-blueprints.yaml
+            # old settings
+            settings:
+                nCycles: 2
+                burnSteps: 2
+                cycleLengths: [100, 100]
+                runType: Standard
+                loadStyle: fromInput
+                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
 
-               # restart settings
-               nCycles: 2
-               burnSteps: 2
-               cycleLengths: [100, 100]
-               runType: Standard
-               loadStyle: fromDB
-               startCycle: 1
-               startNode: 0
-               reloadDBName: my-original-results.h5
+            # restart settings
+            settings:
+                nCycles: 2
+                burnSteps: 2
+                cycleLengths: [100, 100]
+                runType: Standard
+                loadStyle: fromDB
+                startCycle: 1
+                startNode: 0
+                reloadDBName: my-original-results.h5
 
     - Add an additional cycle to the end of a case:
         .. code-block:: yaml
 
-               # old settings
-               nCycles: 1
-               burnSteps: 2
-               cycleLengths: [100]
-               runType: Standard
-               loadStyle: fromInput
-               loadingFile: my-blueprints.yaml
+            # old settings
+            settings:
+                nCycles: 1
+                burnSteps: 2
+                cycleLengths: [100]
+                runType: Standard
+                loadStyle: fromInput
+                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
 
-               # restart settings
-               nCycles: 2
-               burnSteps: 2
-               cycleLengths: [100, 100]
-               runType: Standard
-               loadStyle: fromDB
-               startCycle: 0
-               startNode: -1
-               reloadDBName: my-original-results.h5
+            # restart settings
+            settings:
+                nCycles: 2
+                burnSteps: 2
+                cycleLengths: [100, 100]
+                runType: Standard
+                loadStyle: fromDB
+                startCycle: 0
+                startNode: -1
+                reloadDBName: my-original-results.h5
 
     - Restart but cut the reactor history short:
         .. code-block:: yaml
 
-               # old settings
-               nCycles: 3
-               burnSteps: 2
-               cycleLengths: [100, 100, 100]
-               runType: Standard
-               loadStyle: fromInput
-               loadingFile: my-blueprints.yaml
+            # old settings
+            settings:
+                nCycles: 3
+                burnSteps: 2
+                cycleLengths: [100, 100, 100]
+                runType: Standard
+                loadStyle: fromInput
+                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
 
-               # restart settings
-               nCycles: 2
-               burnSteps: 2
-               cycleLengths: [100, 100]
-               runType: Standard
-               loadStyle: fromDB
-               startCycle: 1
-               startNode: 0
-               reloadDBName: my-original-results.h5
+            # restart settings
+            settings:
+                nCycles: 2
+                burnSteps: 2
+                cycleLengths: [100, 100]
+                runType: Standard
+                loadStyle: fromDB
+                startCycle: 1
+                startNode: 0
+                reloadDBName: my-original-results.h5
 
     - Restart with a different number of steps in the third cycle using the detailed ``cycles`` setting:
         .. code-block:: yaml
 
-               # old settings
-               nCycles: 3
-               burnSteps: 2
-               cycleLengths: [100, 100, 100]
-               runType: Standard
-               loadStyle: fromInput
-               loadingFile: my-blueprints.yaml
+            # old settings
+            settings:
+                nCycles: 3
+                burnSteps: 2
+                cycleLengths: [100, 100, 100]
+                runType: Standard
+                loadStyle: fromInput
+                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
 
-               # restart settings
-               nCycles: 3
-               cycles:
-                 - cycle length: 100
-                   burn steps: 2
-                 - cycle length: 100
-                   burn steps: 2
-                 - cycle length: 100
-                   burn steps: 4
-               runType: Standard
-               loadStyle: fromDB
-               startCycle: 2
-               startNode: 0
-               reloadDBName: my-original-results.h5
+            # restart settings
+            settings:
+                nCycles: 3
+                cycles:
+                  - cycle length: 100
+                    burn steps: 2
+                  - cycle length: 100
+                    burn steps: 2
+                  - cycle length: 100
+                    burn steps: 4
+                runType: Standard
+                loadStyle: fromDB
+                startCycle: 2
+                startNode: 0
+                reloadDBName: my-original-results.h5
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 
 Fuel Shuffling
 ^^^^^^^^^^^^^^
 
-.. note:: The ``explicitRepeatShuffles`` setting points to a ``*-SHUFFLES.txt``
-          file that records moves from a previous run for exact repetition.
+.. note:: The ``explicitRepeatShuffles`` setting points to a ``*-SHUFFLES.txt`` file that records moves from a previous
+          run for exact repetition.
 
-Users may also define a custom shuffle plan in a YAML file referenced by the
-``shuffleSequenceFile`` setting. The YAML format organizes data by cycle in a
-``sequence`` mapping. Keys are the cycle where the shuffling should occur during 
-the beginning-of-cycle step. The first available cycle where shuffling will occur 
-is cycle 1. Each cycle contains a list of high-level actions. An action is a 
-mapping containing one of the keys ``cascade``, ``misloadSwap``,
-or ``extraRotations``. ``cascade`` chains describe a sequence of assembly
-displacements beginning with a fresh fuel assembly and ending with the final
-location's assembly being discharged. Optional ``fuelEnrichment`` lists
-specify the U235 weight fraction enrichment for each axial block in the fresh
-assembly, from bottom to top, including zeroes for non-fuel blocks.
-``misloadSwap`` swaps the assemblies at two locations after all cascades are
-processed. ``extraRotations`` map final location labels to relative
-counterclockwise angles in degrees and are applied after all cascades,
-misload swaps, and any algorithmic rotation routines defined with the
-``assemblyRotationAlgorithm`` setting. The angle is relative to the
-assembly's current orientation and whatever assembly ends up at the given
-location is rotated. Valid angles depend on the assembly's geometry.
+Users may also define a custom shuffle plan in a YAML file referenced by the ``shuffleSequenceFile`` setting. The YAML
+format organizes data by cycle in a ``sequence`` mapping. Keys are the cycle where the shuffling should occur during
+the beginning-of-cycle step. The first available cycle where shuffling will occur is cycle 1. Each cycle contains a
+list of high-level actions. An action is a  mapping containing one of the keys ``cascade``, ``misloadSwap``, or
+``extraRotations``. ``cascade`` chains describe a sequence of assembly displacements beginning with a fresh fuel
+assembly and ending with the final location's assembly being discharged. Optional ``fuelEnrichment`` lists specify the
+U235 weight fraction enrichment for each axial block in the fresh assembly, from bottom to top, including zeroes for
+non-fuel blocks. ``misloadSwap`` swaps the assemblies at two locations after all cascades are processed.
+``extraRotations`` map final location labels to relative counterclockwise angles in degrees and are applied after all
+cascades, misload swaps, and any algorithmic rotation routines defined with the ``assemblyRotationAlgorithm`` setting.
+The angle is relative to the assembly's current orientation and whatever assembly ends up at the given location is
+rotated. Valid angles depend on the assembly's geometry.
 
 Extra rotations therefore:
 
-* apply to whatever assembly resides at the specified location once all
-    cascades and misload swaps are complete;
+* apply to whatever assembly resides at the specified location once all cascades and misload swaps are complete;
 * rotate the assembly relative to its current orientation; and
 * execute after any algorithmic rotation routines.
 
-A cascade with no final destination defaults to deleting the assembly. 
-Assemblies can be retained in the model by ending the cascade with
-``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the
-spent fuel pool even if the ``trackAssems`` setting is ``False``; ``Delete``
-always removes the assembly from the model.
+A cascade with no final destination defaults to deleting the assembly. Assemblies can be retained in the model by
+ending the cascade with ``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the spent fuel pool
+even if the ``trackAssems`` setting is ``False``; ``Delete`` always removes the assembly from the model.
 
-Assemblies may also be re-inserted from the spent fuel pool by starting a
-cascade with ``SFP`` and providing an ``assemblyName`` for the assembly to
-load. No assembly type is required in this case. The cascade then proceeds as
+Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing an
+``assemblyName`` for the assembly to load. No assembly type is required in this case. The cascade then proceeds as
 normal from the destination location. For example
    
 ..  code:: yaml
@@ -430,9 +430,8 @@ A cascade that loads an assembly from the SFP may look like::
            - cascade: ["SFP", "005-003", "SFP"]
              assemblyName: "A0073"
 
-This example retrieves assembly ``A0073`` from the spent fuel pool and places it
-in location ``005-003`` while sending the previous occupant of ``005-003`` 
-to the pool.
+This example retrieves assembly ``A0073`` from the spent fuel pool and places it in location ``005-003`` while sending
+the previous occupant of ``005-003``  to the pool.
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 
@@ -533,22 +532,19 @@ We will start with a component, and then define the whole ``blocks:`` input. The
             component name 2:
                 ...
 
-.. note:: You can also define components at the top level of the blueprints file under
-    the ``components:`` top level section, but bringing anything defined there into
-    the reactor model must currently be done programmatically. We are currently
-    developing additional input capabilities to use these more flexibly.
+.. note:: You can also define components at the top level of the blueprints file under the ``components:`` top level
+    section, but bringing anything defined there into the reactor model must currently be done programmatically. We are
+    currently developing additional input capabilities to use these more flexibly.
 
-    Associated with this is a ``component groups:`` section which can collect
-    different free components with different volume fractions. This also
-    is not fully implemented yet.
+    Associated with this is a ``component groups:`` section which can collect different free components with different
+    volume fractions. This also is not fully implemented yet.
 
 Defining a Component
 ^^^^^^^^^^^^^^^^^^^^
-The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane
-dimensions (axial dimensions are defined in the :ref:`assemblies` input) and the material makeups of
-each :py:mod:`Component <armi.reactor.components>`. :py:mod:`Blocks <armi.reactor.blocks>` are
-defined here as collections of geometric components that have specific temperatures, dimensions,
-material properties, and isotopic compositions.
+The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane dimensions (axial
+dimensions are defined in the :ref:`assemblies` input) and the material makeups of each
+:py:mod:`Component <armi.reactor.components>`. :py:mod:`Blocks <armi.reactor.blocks>` are defined here as collections
+of geometric components that have specific temperatures, dimensions, material properties, and isotopic compositions.
 
 An component may be defined as::
 
@@ -604,9 +600,9 @@ od
 
 Component Types
 ^^^^^^^^^^^^^^^
-Each component has a variety of dimensions to define the shape and composition. All dimensions are
-in cm. The following is a list of included component shapes and their dimension inputs. Again,
-additional/custom components with arbitrary dimensions may be provided by the user via plugins.
+Each component has a variety of dimensions to define the shape and composition. All dimensions are in cm. The following
+is a list of included component shapes and their dimension inputs. Again, additional/custom components with arbitrary
+dimensions may be provided by the user via plugins.
 
 .. exec::
     from armi.reactor.components import ComponentType
@@ -618,18 +614,17 @@ additional/custom components with arbitrary dimensions may be provided by the us
 
     return createListTable(rows, widths=[25, 65], klass="longtable")
 
-When a ``DerivedShape`` is specified as the final component in a block, its area is inferred from
-the difference between the area of the block and the sum of the areas
-comprised by the other components in the block. This is useful for complex shapes like coolant surrounding
-a lattice of pins.
+When a ``DerivedShape`` is specified as the final component in a block, its area is inferred from the difference
+between the area of the block and the sum of the areas comprised by the other components in the block. This is useful
+for complex shapes like coolant surrounding a lattice of pins.
 
 .. _componentLinks:
 
 Component Links
 ^^^^^^^^^^^^^^^
-Dimensions of a component may depend on the dimensions of a previously-defined component in the same
-block. For instance, the sodium bond between fuel and cladding. The format is simply
-``<componentName>.<dimensionName>``. The dimension names are available in the table above.
+Dimensions of a component may depend on the dimensions of a previously-defined component in the same block. For
+instance, the sodium bond between fuel and cladding. The format is simply ``<componentName>.<dimensionName>``. The
+dimension names are available in the table above.
 
 ::
 
@@ -671,9 +666,8 @@ change.
 
 Pin lattices
 ^^^^^^^^^^^^
-Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input
-section. A block may assigned a grid name, and then each component may be assigned one or more
-grid specifiers.
+Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input section. A
+block may assigned a grid name, and then each component may be assigned one or more grid specifiers.
 
 For example, the following input section specifies that fuel pins will occupy all grid positions
 marked with a ``1`` and cladding components will occupy all grid positions marked with either
@@ -740,16 +734,15 @@ used to infer as many flags as possible. In the above example, the ``clad`` comp
 will get the ``CLAD`` flag from its name.
 
 .. note::
-    Additional flags may be specified from plugins, but this should be done with care;
-    see the :py:mod:`armi.reactor.flags` module and
-    :py:meth:`armi.plugins.ArmiPlugin.defineFlags` plugin hook for more details.
+    Additional flags may be specified from plugins, but this should be done with care; see the
+    :py:mod:`armi.reactor.flags` module and :py:meth:`armi.plugins.ArmiPlugin.defineFlags` plugin hook for more details.
 
 .. _assemblies:
 
 Assemblies
 ----------
-Once components and blocks are defined, Assemblies can be created as extruded stacks of blocks from
-bottom to top. The assemblies use YAML anchors to refer to the blocks defined in the previous section.
+Once components and blocks are defined, Assemblies can be created as extruded stacks of blocks from bottom to top. The
+assemblies use YAML anchors to refer to the blocks defined in the previous section.
 
 .. note:: We aren't happy with the use of anchors to refer to blocks, and plan to change it (back) to just using the
    block names directly. However, the use of anchors for input to be applied to multiple assemblies (e.g. heights) is
@@ -781,8 +774,8 @@ A complete definition of an inner-core assembly may be seen below::
         heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then
         be expanded to its hot dimensions upon construction.
 
-For many cases, a shared height and axial mesh point definition is sufficient. These can be included
-globally as shown above and linked with anchors, or specified explicitly.
+For many cases, a shared height and axial mesh point definition is sufficient. These can be included globally as shown
+above and linked with anchors, or specified explicitly.
 
 
 specifier
@@ -911,17 +904,14 @@ material modifications
                             Zr_wt_frac: [0.02]
                     U235_wt_frac: [0.30]
 
-  Material modifications specified on the ``material modifications`` level are
-  referred to as "block default" values and apply to all components on the block not
-  associated with a by-component value.
-  This example would apply an enrichment of 20% to the ``fuel1`` component and an
-  enrichment of 30% to all other components in the block that accept the ``U235_wt_frac``
-  material modification.
+  Material modifications specified on the ``material modifications`` level are referred to as "block default" values
+  and apply to all components on the block not associated with a by-component value. This example would apply an
+  enrichment of 20% to the ``fuel1`` component and an enrichment of 30% to all other components in the block that
+  accept the ``U235_wt_frac`` material modification.
 
-  All by-component material modifications override any block default material modifications
-  of the same type. In addition, any by-component entries omitted for a given axial block
-  will revert to the block default (or material class default, if no block default value is provided and a material class
-  default exists) value::
+  All by-component material modifications override any block default material modifications of the same type. In
+  addition, any by-component entries omitted for a given axial block will revert to the block default (or material
+  class default, if no block default value is provided and a material class default exists) value::
 
         blocks:
             fuel: &block_fuel
@@ -956,8 +946,7 @@ material modifications
                             Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
                     U235_wt_frac: [0.30, 0.30]
 
-The first block listed is defined at the bottom of the core. This is typically a grid plate or some
-other structure.
+The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
 
 .. _systems:
 
@@ -982,17 +971,16 @@ A complete reactor structure with a core and a SFP may be seen below::
                 y: 12.1
                 z: 1.1
 
-The ``origin`` defines the point of origin in global space
-in units of cm. This allows you to define the relative position of the various structures.
-The ``grid name`` inputs are string mappings to the grid definitions described below.
+The ``origin`` defines the point of origin in global space in units of cm. This allows you to define the relative
+position of the various structures. The ``grid name`` inputs are string mappings to the grid definitions described
+below.
 
 Plugin Behavior
 ^^^^^^^^^^^^^^^
 
-The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided by plugins to
-control how ARMI converts the ``systems`` section into ``Composite``\ s to be modeled. By default,
-the ``type`` field is used to determine what object is created. The default
-:class:`armi.reactor.ReactorPlugin` provides the following mapping:
+The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided by plugins to control how ARMI converts
+the ``systems`` section into ``Composite``\ s to be modeled. By default, the ``type`` field is used to determine what
+object is created. The default :class:`armi.reactor.ReactorPlugin` provides the following mapping:
 
 ==================  ======================================================
 ``type`` Value      Builds
@@ -1002,8 +990,7 @@ the ``type`` field is used to determine what object is created. The default
 ``sfp``             :class:`~armi.reactor.spentFuelPool.SpentFuelPool`
 ==================  ======================================================
 
-Plugins are able to provide a superset (e.g., ``core``, ``excore``, and ``sfp``) and new mappings of
-values to builders.
+Plugins are able to provide a superset (e.g., ``core``, ``excore``, and ``sfp``) and new mappings of values to builders.
 
 .. _grids:
 

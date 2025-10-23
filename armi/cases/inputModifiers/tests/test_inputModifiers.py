@@ -234,3 +234,23 @@ class TestFullCoreModifier(unittest.TestCase):
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
         case, case.bp = mod(case, case.bp)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
+
+    def test_fullCoreConversionWithOrientation(self):
+        """Tests modifying a reactor to full core that includes beginning of life orientations."""
+        cs = settings.Settings(os.path.join(test_reactors.TEST_ROOT, "armiRun.yaml"))
+        case = cases.Case(cs=cs)
+        mod = inputModifiers.FullCoreModifier()
+        self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
+
+        # Add beginning of life orientations
+        case.bp.gridDesigns["core"].orientationBOL = {(2, 1): 30.0}
+
+        # Modify to full core
+        case, case.bp = mod(case, case.bp)
+
+        # Check results
+        self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
+        self.assertIn((2, 3), case.bp.gridDesigns["core"].orientationBOL)
+        self.assertEqual(150.0, case.bp.gridDesigns["core"].orientationBOL[(2, 3)])
+        self.assertIn((2, 5), case.bp.gridDesigns["core"].orientationBOL)
+        self.assertEqual(270.0, case.bp.gridDesigns["core"].orientationBOL[(2, 5)])
