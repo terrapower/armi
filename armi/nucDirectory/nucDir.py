@@ -24,7 +24,6 @@ This may be deprecated. Consider using the appropriate instance methods availabl
 
 import re
 
-# TODO: JOHN A lot of global stuff here.
 from armi.nucDirectory import elements, nuclideBases
 
 nuclidePattern = re.compile(r"([A-Za-z]+)-?(\d{0,3})(\d*)(\S*)")
