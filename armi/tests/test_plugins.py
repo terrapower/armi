@@ -142,7 +142,7 @@ class TestPluginRegistration(unittest.TestCase):
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
         try:
-            o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml", skipPickle=True)
+            o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml", useCache=False)
             self.assertTrue(o.cs.beforeReactorConstructionFlag)
 
             # Check that hook is called for database loading

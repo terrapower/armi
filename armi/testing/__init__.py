@@ -36,7 +36,7 @@ ISOAA_PATH = os.path.join(TEST_ROOT, "ISOAA")
 _TEST_REACTORS = {}  # dictionary of pickled string of test reactors (for fast caching)
 
 
-def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml", skipPickle=False):
+def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
     """
     Loads a test reactor. Can be used in other test modules.
 
@@ -49,7 +49,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
         given in customSettings for that key.
     inputFileName : str, default="armiRun.yaml"
         Name of the input file to run.
-    skipPickle : bool, default=False
+    useCache : bool, default=True
         Do not bother pickling this reactor or looking for a pickled reactor. (This is useful for reactors where you are
         sure there will only be one test using this test reactor.)
 
@@ -70,7 +70,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     customSettings = customSettings or {}
     reactorHash = hash(fName + str(customSettings))
 
-    if not skipPickle and reactorHash in _TEST_REACTORS:
+    if useCache and reactorHash in _TEST_REACTORS:
         # return test reactor only if no custom settings are needed.
         o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
@@ -90,7 +90,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     o.initializeInterfaces(r)
     o.r.core.regenAssemblyLists()
 
-    if not skipPickle:
+    if useCache:
         # cache it for fast load for other future tests protocol=2 allows for classes with __slots__ but not
         # __getstate__ to be pickled
         _TEST_REACTORS[reactorHash] = pickle.dumps((o, o.r), protocol=2)
