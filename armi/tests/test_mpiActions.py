@@ -218,7 +218,6 @@ class MpiIterTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 runBatchedActions(o, r, o.cs, actionsByNode)
             self.assertIn("There are more actions (3) than ranks available (2) on node1!", mock.getStdout())
-            print(mock.getStdout())
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
