@@ -182,8 +182,8 @@ class MpiIterTests(unittest.TestCase):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         actionsByNode = {
-            0: [MockMpiAction(invokeResult=1)],
-            1: [MockMpiAction(invokeResult=5), MockMpiAction(invokeResult=11)],
+            "node0": [MockMpiAction(invokeResult=1)],
+            "node1": [MockMpiAction(invokeResult=5), MockMpiAction(invokeResult=11)],
         }
 
         # run in serial
@@ -199,6 +199,25 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Running 3 MPI actions in parallel over 2 nodes.", mock.getStdout())
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
+    @patch("armi.context.MPI_NODENAMES", ["node0", "node0", "node1", "node1"])
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runBatchedActionsOverload(self):
+        """Test that an error is thrown if the number of tasks exceeds number of ranks."""
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        actionsByNode = {
+            "node0": [MockMpiAction()],
+            "node1": [MockMpiAction(), MockMpiAction(), MockMpiAction()],
+        }
+
+        # run in parallel
+        with mockRunLogs.BufferLog() as mock:
+            with self.assertRaises(ValueError):
+                runBatchedActions(o, r, o.cs, actionsByNode)
+            self.assertIn("There are more actions (3) than ranks available (2) on node1!", mock.getStdout())
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
