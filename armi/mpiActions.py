@@ -359,7 +359,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     for nodeName in nodes:
         if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
             msg = (
-                f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available"
+                f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available "
                 f"({numAssigned[nodeName]}) on {nodeName}!"
             )
             runLog.error(msg)
