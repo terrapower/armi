@@ -355,7 +355,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
         if useForComputation[rank]:
             numAssigned[nodeName] += 1
 
-    totalActions = sum(len(actions) for node, actions in actionsByNode.items())
+    # check that we do not request more tasks than processors on a node
     for nodeName in nodes:
         if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
             msg = (
@@ -365,6 +365,7 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
             runLog.error(msg)
             raise ValueError(msg)
 
+    totalActions = sum(len(actions) for node, actions in actionsByNode.items())
     runLog.extra(f"Running {totalActions} MPI actions in parallel over {len(actionsByNode)} nodes.")
 
     results = []
