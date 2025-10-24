@@ -50,7 +50,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     inputFileName : str, default="armiRun.yaml"
         Name of the input file to run.
     useCache : bool, default=True
-        Do not bother pickling this reactor or looking for a pickled reactor. (This is useful for reactors where you are
+        Look for a copy of this Reactor in the cache, if not in the cache, put it there. (Set to False when you are
         sure there will only be one test using this test reactor.)
 
     Notes
@@ -71,7 +71,7 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     reactorHash = hash(fName + str(customSettings))
 
     if useCache and reactorHash in _TEST_REACTORS:
-        # return test reactor only if no custom settings are needed.
+        # return test reactor from cache
         o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
         return o, r
