@@ -349,20 +349,19 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     # determine which ranks will run the actions
     numAssigned = {nodeName: 0 for nodeName in nodes}
     useForComputation = [True] * len(context.MPI_NODENAMES)
-    print(numToRunOnThisNode)
     for rank, nodeName in enumerate(context.MPI_NODENAMES):
         # if we have more processors than tasks, disable the extra
         useForComputation[rank] = numAssigned[nodeName] < numToRunOnThisNode[nodeName]
         if useForComputation[rank]:
             numAssigned[nodeName] += 1
 
-    print(useForComputation)
-
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
-    print(numAssigned)
     for nodeName in nodes:
         if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
-            msg = f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available ({numAssigned[nodeName]}) on {nodeName}!"
+            msg = (
+                f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available"
+                f"({numAssigned[nodeName]}) on {nodeName}!"
+            )
             runLog.error(msg)
             raise ValueError(msg)
 
