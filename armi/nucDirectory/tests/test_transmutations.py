@@ -18,8 +18,8 @@ import random
 import string
 import unittest
 
-from armi import nuclideBases
 from armi.nucDirectory import transmutations
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 
 def randomString(length):
@@ -27,16 +27,20 @@ def randomString(length):
 
 
 class TransmutationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.nuclideBases = NuclideBases()
+
     def test_Transmutation_validReactionTypes(self):
         data = {"products": [""]}
         for rxn in transmutations.TRANSMUTATION_TYPES:
             data["type"] = rxn
-            temp = transmutations.Transmutation(nuclideBases.byName["AM242M"], data)
+            temp = transmutations.Transmutation(self.nuclideBases.byName["AM242M"], data)
             self.assertEqual(temp.type, rxn)
             self.assertEqual(temp.productParticle, transmutations.PRODUCT_PARTICLES.get(temp.type))
 
     def test_Transmutation_productParticle(self):
-        temp = transmutations.Transmutation(nuclideBases.byName["AM242M"], {"products": [""], "type": "nalph"})
+        temp = transmutations.Transmutation(self.nuclideBases.byName["AM242M"], {"products": [""], "type": "nalph"})
         self.assertEqual(temp.productParticle, "HE4")
 
     def test_Transmutation_invalidReactionTypes(self):
@@ -46,20 +50,24 @@ class TransmutationTests(unittest.TestCase):
             rxn = randomString(3)
             data["type"] = rxn
             if rxn in transmutations.TRANSMUTATION_TYPES:
-                self.assertIsNotNone(transmutations.Transmutation(nuclideBases.byName["AM242M"], data))
+                self.assertIsNotNone(transmutations.Transmutation(self.nuclideBases.byName["AM242M"], data))
             else:
                 with self.assertRaises(KeyError):
                     errorCount += 1
-                    transmutations.Transmutation(nuclideBases.byName["AM242M"], data)
+                    transmutations.Transmutation(self.nuclideBases.byName["AM242M"], data)
         self.assertGreater(errorCount, 2)
 
 
 class DecayModeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.nuclideBases = NuclideBases()
+
     def test_DecayMode_validReactionTypes(self):
         data = {"products": [""], "branch": 1.0, "halfLifeInSeconds": 1.0}
         for rxn in transmutations.DECAY_MODES:
             data["type"] = rxn
-            decay = transmutations.DecayMode(nuclideBases.byName["AM242M"], data)
+            decay = transmutations.DecayMode(self.nuclideBases.byName["AM242M"], data)
             self.assertEqual(decay.type, rxn)
 
     def test_DecayMode_invalidReactionTypes(self):
@@ -68,7 +76,7 @@ class DecayModeTests(unittest.TestCase):
             rxn = randomString(3)
             data["type"] = rxn
             if rxn in transmutations.DECAY_MODES:
-                self.assertIsNotNone(transmutations.DecayMode(nuclideBases.byName["AM242M"], data))
+                self.assertIsNotNone(transmutations.DecayMode(self.nuclideBases.byName["AM242M"], data))
             else:
                 with self.assertRaises(KeyError):
-                    transmutations.DecayMode(nuclideBases.byName["AM242M"], data)
+                    transmutations.DecayMode(self.nuclideBases.byName["AM242M"], data)

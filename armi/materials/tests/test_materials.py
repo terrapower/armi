@@ -22,7 +22,6 @@ from numpy import testing
 
 from armi import context, materials, settings
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
-from armi.nucDirectory import nuclideBases
 from armi.reactor import blueprints
 from armi.tests import mockRunLogs
 from armi.utils import units
@@ -631,9 +630,9 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.UraniumOxide
 
     def test_adjustMassEnrichment(self):
-        o16 = nuclideBases.byName["O"].weight
-        u235 = nuclideBases.byName["U235"].weight
-        u238 = nuclideBases.byName["U238"].weight
+        o16 = 15.999304875697801
+        u235 = 235.043929425
+        u238 = 238.050788298
         self.mat.adjustMassEnrichment(0.02)
 
         gPerMol = 2 * o16 + 0.02 * u235 + 0.98 * u238
@@ -653,8 +652,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_meltingPoint(self):
         cur = self.mat.meltingPoint()
-        ref = 3123.0
-        self.assertEqual(cur, ref)
+        self.assertEqual(cur, 3123.0)
 
     def test_density(self):
         # Reference data taken from ORNL/TM-2000/351. "Thermophysical Properties of MOX and UO2

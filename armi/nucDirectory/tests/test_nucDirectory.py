@@ -16,7 +16,8 @@
 
 import unittest
 
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 
 class TestNucDirectory(unittest.TestCase):
@@ -45,7 +46,8 @@ class TestNucDirectory(unittest.TestCase):
             self.assertIsNotNone(nucDir.getNuclideFromName(oldName))
 
     def test_nucDir_getNucFromNucNameReturnsNuc(self):
-        for nuc in nuclideBases.instances:
+        nb = NuclideBases()
+        for nuc in nb.instances:
             self.assertEqual(nuc, nucDir.getNuclideFromName(nuc.name))
 
     def test_nucDir_getNuclidesFromForBadName(self):

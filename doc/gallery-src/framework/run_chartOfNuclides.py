@@ -21,12 +21,12 @@ Use the nuclide directory of ARMI to plot a chart of the nuclides coloring the s
 import matplotlib.pyplot as plt
 
 from armi import configure
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 configure(permissive=True)
 
 xyc = []
-for name, base in nuclideBases.byName.items():
+for name, base in NuclideBases().byName.items():
     if not base.a:
         continue
     xyc.append((base.a - base.z, base.z, base.abundance or 0.5))
