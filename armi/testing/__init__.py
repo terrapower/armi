@@ -33,10 +33,10 @@ TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))
 ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")
 COMPXS_PATH = os.path.join(TEST_ROOT, "COMPXS.ascii")
 ISOAA_PATH = os.path.join(TEST_ROOT, "ISOAA")
-_TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
+_TEST_REACTORS = {}  # dictionary of pickled string of test reactors (for fast caching)
 
 
-def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"):
+def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
     """
     Loads a test reactor. Can be used in other test modules.
 
@@ -49,6 +49,9 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
         given in customSettings for that key.
     inputFileName : str, default="armiRun.yaml"
         Name of the input file to run.
+    useCache : bool, default=True
+        Look for a copy of this Reactor in the cache, if not in the cache, put it there. (Set to False when you are
+        sure there will only be one test using this test reactor.)
 
     Notes
     -----
@@ -62,37 +65,35 @@ def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName=
     """
     from armi import operators, settings
 
-    global _TEST_REACTOR
-    fName = os.path.join(inputFilePath, inputFileName)
+    global _TEST_REACTORS
+    fName = os.path.abspath(os.path.join(inputFilePath, inputFileName))
     customSettings = customSettings or {}
-    isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
+    reactorHash = hash(fName + str(customSettings))
 
-    if isPickeledReactor and _TEST_REACTOR:
-        # return test reactor only if no custom settings are needed.
-        o, r, assemNum = pickle.loads(_TEST_REACTOR)
+    if useCache and reactorHash in _TEST_REACTORS:
+        # return test reactor from cache
+        o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
         return o, r
 
-    cs = settings.Settings(fName=fName)
-
     # Overwrite settings if desired
+    cs = settings.Settings(fName=fName)
     if customSettings:
         cs = cs.modified(newSettings=customSettings)
 
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
 
-    cs = cs.modified(newSettings={})
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
 
     o.initializeInterfaces(r)
     o.r.core.regenAssemblyLists()
 
-    if isPickeledReactor:
+    if useCache:
         # cache it for fast load for other future tests protocol=2 allows for classes with __slots__ but not
         # __getstate__ to be pickled
-        _TEST_REACTOR = pickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
+        _TEST_REACTORS[reactorHash] = pickle.dumps((o, o.r), protocol=2)
 
     return o, o.r
 
