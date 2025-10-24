@@ -341,27 +341,37 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
         return runActionsInSerial(o, r, cs, actions)
 
     # count how many actions will run on each node
-    nodes = list(set(context.MPI_NODENAMES))
+    nodes = set(context.MPI_NODENAMES)
     numToRunOnThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
-    for i, nodeName in enumerate(nodes):
-        numToRunOnThisNode[nodeName] = len(actionsByNode.get(i, []))
+    for nodeName in nodes:
+        numToRunOnThisNode[nodeName] = len(actionsByNode.get(nodeName, []))
 
     # determine which ranks will run the actions
     numAssigned = {nodeName: 0 for nodeName in nodes}
     useForComputation = [True] * len(context.MPI_NODENAMES)
+    print(numToRunOnThisNode)
     for rank, nodeName in enumerate(context.MPI_NODENAMES):
         # if we have more processors than tasks, disable the extra
         useForComputation[rank] = numAssigned[nodeName] < numToRunOnThisNode[nodeName]
-        numAssigned[nodeName] += 1
+        if useForComputation[rank]:
+            numAssigned[nodeName] += 1
+
+    print(useForComputation)
 
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
+    print(numAssigned)
+    for nodeName in nodes:
+        if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
+            msg = f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available ({numAssigned[nodeName]}) on {nodeName}!"
+            runLog.error(msg)
+            raise ValueError(msg)
+
     runLog.extra(f"Running {totalActions} MPI actions in parallel over {len(actionsByNode)} nodes.")
 
     results = []
     actionsThisRound = []
-    nodeIndex = {nodeName: i for i, nodeName in enumerate(nodes)}
     for rank, nodeName in enumerate(context.MPI_NODENAMES):
-        queue = actionsByNode.get(nodeIndex[nodeName], [])
+        queue = actionsByNode.get(nodeName, [])
         actionsThisRound.append(queue.pop(0) if useForComputation[rank] and queue else None)
 
     distrib = distributeActions(actionsThisRound, useForComputation)
