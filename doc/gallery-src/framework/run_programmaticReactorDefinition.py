@@ -77,6 +77,7 @@ def buildComponents():
     fuel.shape = "Circle"
     fuel.mult = 217
     fuel.material = "Custom"
+    fuel.isotopics = "steel"
     fuel.Tinput = ISOTHERMAL_TEMPERATURE_IN_C
     fuel.Thot = ISOTHERMAL_TEMPERATURE_IN_C
     fuel.id = 0.0
