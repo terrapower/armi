@@ -449,6 +449,55 @@ For cycle 1 above, the actions execute in the following order:
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
 
+Zones
+^^^^^
+
+Zones are a collection of assemblies that share some similar characteristics. A zone might be those assemblies with
+a similar orrificing pattern or a some subset of fuel assemblies. Some codes may wish to study behavior by lumping the
+reactor into a few channels with bulk or aggregated properties. Users can collect assemblies in each of these channels
+through the :attr:`~armi.reactor.cores.Core.zones` attribute on the core. See also the
+:class:`~armi.reactor.zones.Zones` class.
+
+Users can define these zones with the ``zonesFile`` setting. It must point to YAML file that contains the high-level key
+``customZonesMap`` containing a map of ``location: zone`` maps.
+
+.. code:: yaml
+
+    customZonesMap:
+      001-001: primary control
+      002-001: fuel z0
+      003-001: fuel z0
+      004-001: fuel z1
+      004-002: secondary control
+
+The ``location`` keys are the ARMI ring-position assembly identifier. It is not required to have every assembly
+be inside a zone. But assemblies not listed will not be added to any zone, i.e., there is no default zone.
+
+This example would produce four zones:
+
+1. ``primary control`` containing the center assembly at ``001-001``,
+2. ``fuel z0`` containing two fuel assemblies: ``002-001`` and ``003-001``,
+3. ``fuel z1`` containing one fuel assembly: ``004-001``, and
+4. ``secondary control`` containing the assembly at ``004-002``.
+
+An alternative method is with the ``zoneDefinitions`` setting in the primary settings file. This contains a list of
+zone names and the assemblies that make up that zone. The following would create an identical zone structure as above.
+
+.. code:: yaml
+
+    settings:
+      zoneDefinitions:
+        - "primary control: 001-001"
+        - "fuel z0: 002-001, 003-001"
+        - "fuel z1: 004-001"
+        - "secondary control: 004-002"
+
+.. note::
+
+    These are list of strings, not additional maps. Wrapping in quotations is required to process the zone definitions.
+
+These zones will be populated according to the :meth:`~armi.reactor.cores.Core.buildManualZones` core method.
+
 .. _bp-input-file:
 
 The Blueprints Input File
