@@ -376,8 +376,12 @@ A few examples of restart cases:
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 
-Fuel Shuffling
-^^^^^^^^^^^^^^
+.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
+
+.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
+
+Shuffling
+^^^^^^^^^
 
 .. note:: The ``explicitRepeatShuffles`` setting points to a ``*-SHUFFLES.txt`` file that records moves from a previous
           run for exact repetition.
@@ -408,7 +412,7 @@ even if the ``trackAssems`` setting is ``False``; ``Delete`` always removes the 
 Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing an
 ``assemblyName`` for the assembly to load. No assembly type is required in this case. The cascade then proceeds as
 normal from the destination location. For example
-   
+
 ..  code:: yaml
 
        sequence:
@@ -444,12 +448,6 @@ For cycle 1 above, the actions execute in the following order:
    5. The assembly now at ``009-045`` is rotated an additional 60 degrees counterclockwise.
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
-
-.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
-
-.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
-
-.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
 
 .. _bp-input-file:
 
@@ -795,8 +793,8 @@ xs types
   Representing xsType by a single capital letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
   will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
-  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this 
-  should only be done when working on a case-sensitive file system. On a case-insensitive file system 
+  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this
+  should only be done when working on a case-sensitive file system. On a case-insensitive file system
   (Windows, and some MacOS systems) this could cause unpredictable errors.
 
 axial mesh points
