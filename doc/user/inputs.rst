@@ -480,6 +480,22 @@ This example would produce four zones:
 3. ``fuel z1`` containing one fuel assembly: ``004-001``, and
 4. ``secondary control`` containing the assembly at ``004-002``.
 
+An alternative method is with the ``zoneDefinitions`` setting in the primary settings file. This contains a list of
+zone names and the assemblies that make up that zone. The following would create an identical zone structure as above.
+
+.. code:: yaml
+
+    settings:
+      zoneDefinitions:
+        - "primary control: 001-001"
+        - "fuel z0: 002-001, 003-001"
+        - "fuel z1: 004-001"
+        - "secondary control: 004-002"
+
+.. note::
+
+    These are list of strings, not additional maps. Wrapping in quotations is required to process the zone definitions.
+
 These zones will be populated according to the :meth:`~armi.reactor.cores.Core.buildManualZones` core method.
 
 .. _bp-input-file:
