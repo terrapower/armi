@@ -30,6 +30,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.fwSettings.globalSettings import (
@@ -125,22 +126,28 @@ class TestDatabase(unittest.TestCase):
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
 
-        # default load, should pass without error
+        # Default load, should pass without error
         _r = self.db.load(0, 0, allowMissing=True)
 
-        # show that we can use negative indices to load
+        # Show that we can use negative indices to load
         r = self.db.load(0, -2, allowMissing=True)
         self.assertEqual(r.p.timeNode, 1)
 
         with self.assertRaises(ValueError):
-            # makeShuffleHistory only populates 2 nodes, but the case settings
-            # defines 3, so we must check -4 before getting an error
+            # makeShuffleHistory only populates 2 nodes, but the case settings defines 3, so we must check -4 before
+            # getting an error
             self.db.load(0, -4, allowMissing=True)
 
+        # show we can delete a specify H5 key.
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
-        # we shouldn't be able to set the fileName if a file is open
+        # show we can delete an entire time now from the DB.
+        del self.db[0, 0, ""]
+        with self.assertRaises(KeyError):
+            self.db.load(0, 0, allowMissing=False)
+
+        # We should not be able to set the fileName if a file is open.
         with self.assertRaises(RuntimeError):
             self.db.fileName = "whatever.h5"
 
@@ -184,6 +191,10 @@ class TestDatabase(unittest.TestCase):
         hist = self.dbi.getHistory(self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True)
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
+
+        # test edge case: ancient DB file
+        with patch.object(self.db, "_versionMinor", 3), self.assertRaises(ValueError):
+            self.db.getHistoriesByLocation([testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)])
 
     def test_fullCoreOnDbLoad(self):
         """Test we can expand a reactor to full core when loading from DB via settings."""
@@ -442,8 +453,8 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_mergeHistory(self):
         self.makeHistory()
 
-        # put some big data in an HDF5 attribute. This will exercise the code that pulls
-        # such attributes into a formal dataset and a reference.
+        # put some big data in an HDF5 attribute. This will exercise the code that pulls such attributes into a formal
+        # dataset and a reference.
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
@@ -452,13 +463,13 @@ class TestDatabaseSmaller(unittest.TestCase):
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": np.eye(64),
+                "fakeBigData": np.eye(8),
                 "someString": randomText,
             },
         )
 
-        db_path = "restartDB.h5"
-        db2 = Database(db_path, "w")
+        dbPath = "restartDB.h5"
+        db2 = Database(dbPath, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -473,7 +484,7 @@ class TestDatabaseSmaller(unittest.TestCase):
 
             # exercise the _resolveAttrs function
             attrs = Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
-            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
+            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(8)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)
@@ -614,6 +625,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.db = self.dbi.database
 
     def test_open(self):
+        self.assertTrue(self.db.isOpen())
         with self.assertRaises(ValueError):
             self.db.open()
 
@@ -675,7 +687,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
             r.core.p.power = ratedPower * cyclesSetting[cycle]["power fractions"][node]
             db.writeToDB(r)
+        self.assertTrue(db.isOpen())
         db.close()
+        self.assertFalse(db.isOpen())
 
         self.dbi.prepRestartRun()
 
@@ -710,7 +724,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             r.p.timeNode = node
             r.p.cycleLength = 2000
             db.writeToDB(r)
+        self.assertTrue(db.isOpen())
         db.close()
+        self.assertFalse(db.isOpen())
 
         with self.assertRaises(ValueError):
             self.dbi.prepRestartRun()
@@ -847,6 +863,8 @@ grids:
         self.r.p.timeNode = 0
         self.r.core.p.keff = 0.99
         b = self.r.core.getFirstBlock()
+        self.assertIsInstance(b[0].spatialLocator, MultiIndexLocation)
+        self.assertIsInstance(b[-1].spatialLocator, CoordinateLocation)
         b.p.power = 12345.6
 
         self.db.writeToDB(self.r)
@@ -884,6 +902,11 @@ grids:
             self.assertEqual(len(r0.core.getChildren()), 1)
             b0 = r0.core.getFirstBlock()
             self.assertEqual(b0.p.power, 12345.6)
+
+            self.assertIsInstance(b0[0].spatialLocator, MultiIndexLocation)
+            np.testing.assert_array_equal(b[0].spatialLocator.indices, b0[0].spatialLocator.indices)
+            self.assertIsInstance(b0[-1].spatialLocator, CoordinateLocation)
+            np.testing.assert_array_equal(b[-1].spatialLocator.indices, b0[-1].spatialLocator.indices)
 
             # the ex-core structures should be empty
             self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)
@@ -930,3 +953,23 @@ grids:
         with self.assertRaises(ValueError):
             with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
+
+
+class TestSimplestDatabaseItems(unittest.TestCase):
+    """The tests here are simple, direct tests of Database, that don't need a DatabaseInterface or Reactor."""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    def test_open(self):
+        dbPath = "test_open.h5"
+        db = Database(dbPath, "w")
+
+        self.assertFalse(db.isOpen())
+        db._permission = "mock"
+        with self.assertRaises(ValueError):
+            db.open()

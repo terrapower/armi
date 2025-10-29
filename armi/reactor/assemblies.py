@@ -74,6 +74,7 @@ class Assembly(composites.Composite):
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
         self.lastLocationLabel = self.LOAD_QUEUE
+        self.p.orientation = np.array((0.0, 0.0, 0.0))
 
     def __repr__(self):
         msg = "<{typeName} Assembly {name} at {loc}>".format(
@@ -954,7 +955,6 @@ class Assembly(composites.Composite):
             Lower bound for relative block height fraction that we care about.
             Below this bound, small slivers of overlapping block are ignored.
 
-
         Returns
         -------
         blockInfo : list
@@ -977,12 +977,8 @@ class Assembly(composites.Composite):
 
         """
         blocksHere = []
-        allMeshPoints = set()
-
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
-                allMeshPoints.add(b.p.zbottom)
-                allMeshPoints.add(b.p.ztop)
                 # at least some of this block overlaps the window of interest
                 top = min(b.p.ztop, zUpper)
                 bottom = max(b.p.zbottom, zLower)
@@ -991,24 +987,6 @@ class Assembly(composites.Composite):
                 # Filter out blocks that have an extremely small height fraction
                 if heightHere / b.getHeight() > eps:
                     blocksHere.append((b, heightHere))
-
-        totalHeight = 0.0
-        allMeshPoints = sorted(allMeshPoints)
-        # The expected height snaps to the minimum height that is requested
-        expectedHeight = min(allMeshPoints[-1] - allMeshPoints[0], zUpper - zLower)
-        for _b, height in blocksHere:
-            totalHeight += height
-
-        # Verify that the heights of all the blocks are equal to the expected
-        # height for the given zUpper and zLower.
-        if abs(totalHeight - expectedHeight) / expectedHeight > 10.0 * eps:
-            raise ValueError(
-                f"The cumulative height of {blocksHere} is {totalHeight} cm "
-                f"and does not equal the expected height of {expectedHeight} cm.\n"
-                f"All mesh points: {allMeshPoints}\n"
-                f"Upper mesh point: {zUpper} cm\n"
-                f"Lower mesh point: {zLower} cm\n"
-            )
 
         return blocksHere
 
@@ -1210,10 +1188,6 @@ class Assembly(composites.Composite):
         rad : float
             number (in radians) specifying the angle of counter clockwise rotation
         """
-        # handle the orientation parameter
-        if self.p.orientation is None:
-            self.p.orientation = np.array([0.0, 0.0, 0.0])
-
         self.p.orientation[2] += math.degrees(rad)
 
         for b in self:

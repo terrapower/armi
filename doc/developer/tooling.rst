@@ -151,18 +151,22 @@ release a version of ARMI, you will need admin privileges to multiple TerraPower
 Every release should follow this process:
 
 1. Ensure all unit tests pass and the documentation is building correctly.
-2. Bump the ``version`` string in ``pyproject.toml``.
-3. Now that the release is done, just hard-copy the SCR information into the last releases RST file, so we don't keep regenerating it: ``doc/qa_docs/scr/last.release.rst``.
-4. Tag the commit after it goes into the repo:
+2. Create a release PR:
+
+    - Bump the ``version`` string in ``pyproject.toml``.
+    - Now that the release is done, hard-copy the SCR information into the last releases RST file, so we don't keep regenerating it: ``doc/qa_docs/scr/x.y.rst``.
+    - Update the commit in ``doc/qa_docs/scr/latest_scr.rst`` to the release commit.
+
+3. Tag the commit after it goes into the repo:
 
     - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``
     - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
     - Pushing to the repo: ``git push origin 1.0.0``
     - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
 
-5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
-6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to archive the new documentation.
-7. Tell everyone!
+4. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
+5. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to archive the new documentation.
+6. Tell everyone!
 
 Logging with runLog
 ===================

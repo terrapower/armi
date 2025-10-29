@@ -175,7 +175,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         mat.applyInputParams(0.1, 0.0)
         self.assertAlmostEqual(
             uThZrFuel.getMass("U235") / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
-            0.1,
+            0.1111111111111111,
         )
 
 
@@ -299,6 +299,9 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.assembly.getBlocks()
         ref = self.blockList
         self.assertEqual(cur, ref)
+
+        for c in self.assembly:
+            self.assertIs(c.parent, self.assembly)
 
     def test_add(self):
         a = makeTestAssembly(1, 1)
@@ -1094,7 +1097,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
+    def test_snapAxialMesViaBlockIgn(self):
+        """Snap axial mesh to a reference mesh should conserve mass based on Block igniter fuel."""
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1204,7 +1208,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
+    def test_snapAxialMeshViaBlockShield(self):
+        """Snap axial mesh to a reference mesh should conserve mass based on Block shield."""
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 

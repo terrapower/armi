@@ -413,7 +413,9 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
         # Test the null-case; these should all be zero.
         for a in r.core.iterChildren():
-            self.assertIsNone(a.p.orientation)
+            self.assertEqual(a.p.orientation[0], 0.0)
+            self.assertEqual(a.p.orientation[1], 0.0)
+            self.assertEqual(a.p.orientation[2], 0.0)
 
 
 class Block_TestCase(unittest.TestCase):
@@ -462,6 +464,113 @@ class Block_TestCase(unittest.TestCase):
             places=places,
             msg="Incorrect getSmearDensity with annular fuel. Got {0}. Should be {1}".format(cur, ref),
         )
+
+    def test_getSmearDensityMultipleClads(self):
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        cur = self.block.getSmearDensity()
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        ref = (fuel.getDimension("od", cold=True) ** 2 - fuel.getDimension("id", cold=True) ** 2) / liner.getDimension(
+            "id", cold=True
+        ) ** 2
+        fuelArea = fuel.getArea(cold=True)
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        self.assertAlmostEqual(cur, ref, places=10)
+
+    def test_getSmearDensityMixedPin(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        self.block.remove(fuel)
+
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": fuel.getDimension("od"),
+            "id": fuel.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("fuel annular", "UZr", **fuelDims))
+
+        # add non-annular fuel
+        fuelDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": 0.75,
+            "id": 0.0,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("fuel", "UZr", **fuelDims))
+
+        # add clad of different size
+        clad = self.block.getComponent(Flags.CLAD)
+        self.block.remove(clad)
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od") + 0.02,
+            "id": clad.getDimension("id"),
+            "mult": 117.0,
+        }
+        self.block.add(components.Circle("clad test", "HT9", **cladDims))
+
+        # add clad of different size
+        cladDims = {
+            "Tinput": 273.0,
+            "Thot": 273.0,
+            "od": clad.getDimension("od"),
+            "id": clad.getDimension("id") + 0.02,
+            "mult": 100.0,
+        }
+        self.block.add(components.Circle("clad", "HT9", **cladDims))
+
+        # calculate reference smear density
+        fuel = self.block.getComponent(Flags.FUEL, exact=True)
+        annularFuel = self.block.getComponent(Flags.FUEL | Flags.ANNULAR)
+        liner = self.block.getComponent(Flags.LINER | Flags.INNER)
+        clads = self.block.getComponents(Flags.CLAD)
+        fuelArea = math.pi / 4.0 * fuel.getDimension("od", cold=True) ** 2 * fuel.getDimension("mult")
+        fuelArea += (
+            math.pi
+            / 4.0
+            * (annularFuel.getDimension("od", cold=True) ** 2 - annularFuel.getDimension("id", cold=True) ** 2)
+            * annularFuel.getDimension("mult")
+        )
+        innerArea = 0.0
+        for clad in clads:
+            innerArea += math.pi / 4.0 * clad.getDimension("id", cold=True) ** 2 * clad.getDimension("mult")
+        for liner in self.block.getComponents(Flags.LINER):
+            innerArea -= liner.getArea(cold=True)
+
+        ref = fuelArea / innerArea
+        cur = self.block.getSmearDensity()
+        self.assertAlmostEqual(cur, ref, places=10)
 
     def test_getSmearDensityMultipleLiner(self):
         numLiners = sum(1 for c in self.block if "liner" in c.name and "gap" not in c.name)
@@ -1282,6 +1391,10 @@ class Block_TestCase(unittest.TestCase):
         cur = self.block.getUraniumNumEnrich()
         self.assertEqual(cur, 0.0)
 
+        self.block.setNumberDensity("U238", 0.0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
+
     def test_getUraniumNumEnrichWith233(self):
         fuel = self.block.getComponent(Flags.FUEL)
         u5 = fuel.getNumberDensity("U235")
@@ -1455,11 +1568,14 @@ class Block_TestCase(unittest.TestCase):
                     sum(ndens for ndens in hmNDens.values()) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * c.getVolume(),
                     places=12,
                 )
+                self.assertAlmostEqual(c.p.enrichmentBOL, c.getFissileMassEnrich(), places=12)
             else:
                 self.assertEqual(c.p.massHmBOL, 0.0)
                 self.assertEqual(c.p.molesHmBOL, 0.0)
+                self.assertEqual(c.p.enrichmentBOL, 0.0)
 
         self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
+        self.assertAlmostEqual(self.block.p.enrichmentBOL, self.block.getFissileMassEnrich(), places=12)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
@@ -1472,6 +1588,33 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertIn(newComp, self.block.getComponents())
         self.block.remove(newComp)
+
+    def test_extend(self):
+        # generate a list of composites to extend onto this block
+        comps = []
+        nunComps = 3
+        for i in range(nunComps):
+            fuelDims = {
+                "Tinput": 25.0 * i,
+                "Thot": 600,
+                "od": 0.76,
+                "id": 0.00,
+                "mult": 127.0,
+            }
+            comps.append(components.Circle("fuel", "UZr", **fuelDims))
+
+        # show the composites have no parents
+        for c in comps:
+            self.assertIsNone(c.parent)
+
+        # add the composites to the block
+        lenBlock = len(self.block)
+        self.block.extend(comps)
+        self.assertEqual(len(self.block), lenBlock + nunComps)
+
+        # show all the composites in the block have the block as the parent
+        for c in self.block:
+            self.assertIs(c.parent, self.block)
 
     def test_hasComponents(self):
         self.assertTrue(self.block.hasComponents([Flags.FUEL, Flags.CLAD]))
@@ -1569,7 +1712,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertIsNone(self.block.getComponentByName("not the droid you are looking for"))
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
-    def test_getSortedComponentsInsideOfComponentClad(self):
+    def test_getSortedCompsInClad(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
@@ -1591,7 +1734,7 @@ class Block_TestCase(unittest.TestCase):
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
-    def test_getSortedComponentsInsideOfComponentDuct(self):
+    def test_getSortedCompsInDuct(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a duct.
@@ -1885,7 +2028,8 @@ class Block_TestCase(unittest.TestCase):
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
-    def test_consistentMassDensVolBetweenColdBlockAndComp(self):
+    def test_consistentMassDensVolCold(self):
+        """Consistent mass density and volume betwen cold block and component."""
         block = self.block
         expectedData = []
         actualData = []
@@ -1901,7 +2045,8 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentMassDensVolBetweenHotBlockAndComp(self):
+    def test_consistentMassDensVolHot(self):
+        """Consistent mass density and volume betwen hot block and component."""
         block = self._hotBlock
         expectedData = []
         actualData = []
@@ -2602,7 +2747,15 @@ class HexBlock_TestCase(unittest.TestCase):
         b.add(clad)
 
         wire = components.Helix(
-            "wire", "HT9", Tinput=25.0, Thot=600, id=0, od=0.1, axialPitch=30, helixDiameter=0.9, mult=169
+            "wire",
+            "HT9",
+            Tinput=25.0,
+            Thot=600,
+            id=0,
+            od=0.1,
+            axialPitch=30,
+            helixDiameter=0.9,
+            mult=169,
         )
         b.add(wire)
 
@@ -2783,7 +2936,10 @@ nuclide flags:
         self._checkPinLocationsAndIndices(secondary, nSecondary, expectedSecondaryRingPos)
 
     def _checkPinLocationsAndIndices(
-        self, pin: components.Circle, expectedNumPins: int, expectedRingPos: set[tuple[int, int]]
+        self,
+        pin: components.Circle,
+        expectedNumPins: int,
+        expectedRingPos: set[tuple[int, int]],
     ):
         self.assertEqual(
             len(expectedRingPos),
@@ -2813,13 +2969,45 @@ nuclide flags:
         for c in nonFuel.iterComponents(Flags.CLAD):
             self.assertIsNotNone(c.getPinIndices())
 
+    def test_assignmentChangesPreviousPinIndices(self):
+        """Show successive calls to assignPinIndices clear out previous state."""
+        # assign pin indices to something that maybe doesn't need it
+        firstFuel = self.block.getFirstComponent(Flags.FUEL)
+        firstClad = self.block.getFirstComponent(Flags.CLAD)
+        self.assertIsNone(firstClad.p.pinIndices)
+        self.assertIsNotNone(firstFuel.p.pinIndices)
+        firstClad.p.pinIndices = firstFuel.p.pinIndices
+        self.block.assignPinIndices()
+        self.assertIsNone(firstClad.p.pinIndices)
+
+    def test_fuelAndNonFuel(self):
+        """If you have fuel and non-fuel pins in the block, all pins should have indices still."""
+        firstBefore = self.fuelPins[0].getPinIndices()
+        secondBefore = self.fuelPins[1].getPinIndices()
+
+        for c in self.block:
+            c.p.pinIndices = None
+
+        self.fuelPins[1].p.flags &= ~Flags.FUEL
+
+        self.block.assignPinIndices()
+        firstAfter = self.fuelPins[0].getPinIndices()
+        assert_array_equal(firstAfter, firstBefore)
+
+        secondAfter = self.fuelPins[1].getPinIndices()
+        assert_array_equal(secondAfter, secondBefore)
+
     def test_reassignOnSort(self):
         """Show the pin indices are reassigned when the block is sorted."""
         # Make sure we get new block-level pin locations or else this test is meaningless
         with patch.object(self.block, "assignPinIndices") as patchAssign:
             self.block.sort()
         newPinLocations = self.block.getPinLocations()
-        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
+        self.assertNotEqual(
+            newPinLocations,
+            self.allLocations,
+            msg="Test requires new pin locations post-sort.",
+        )
         # Make sure we called it. Other tests confirm that assignPinIndices is correct.
         # this makes sure we've called it where we want to call it
         patchAssign.assert_called_once()

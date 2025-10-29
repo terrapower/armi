@@ -428,7 +428,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
     def _getDriverBlock(self):
         """Return the block that is driving the representative block for this writer."""
         xsgm = self.getInterface("xsGroups")
-        return xsgm.representativeBlocks.get(self.driverXsID, None)
+        driverBlock = xsgm.representativeBlocks.get(self.driverXsID, None)
+        if self.driverXsID != "" and driverBlock is None:
+            msg = f"No representativeBlock found for driver XS ID {self.driverXsID} to use in {self}!"
+            runLog.error(msg)
+            raise ValueError(msg)
+        return driverBlock
 
 
 def _groupNuclidesByTemperature(nuclides):

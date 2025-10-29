@@ -30,19 +30,22 @@ class ImmutableClass:
 
 
 class ImmutablePropertyTests(unittest.TestCase):
-    def test_retreivingUnassignedValueRaisesError(self):
+    def test_retreivingUnassignedValue(self):
+        """Attempting to retreive an unassigned value should raise an error."""
         ic = ImmutableClass()
         with self.assertRaises(properties.ImmutablePropertyError):
             print(ic.myNum)
 
-    def test_cannotAssignValueToImmutableProperty(self):
+    def test_noAssignImmutableProperty(self):
+        """Cannot assign a value to an immutable property."""
         ic = ImmutableClass()
         ic.myNum = 4.0
         with self.assertRaises(properties.ImmutablePropertyError):
             ic.myNum = 2.2
         self.assertEqual(ic.myNum, 4.0)
 
-    def test_unlockDoesntPermitReassignmentOfAnImmutProp(self):
+    def test_unlockImmutableReassignment(self):
+        """Unlock does not permit reassignment of an immutable property."""
         ic = ImmutableClass()
         ic.myNum = 7.7
         with self.assertRaises(properties.ImmutablePropertyError):

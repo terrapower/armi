@@ -772,6 +772,47 @@ class TestFuelHandler(FuelHandlerTestHelper):
         finally:
             os.remove(fname)
 
+    def test_readMovesYaml_loadFromSfp(self):
+        assem = self.r.excore["sfp"].getChildren()[0]
+        yaml_text = f"""
+        sequence:
+            1:
+                - cascade: ["SFP", "005-003", "SFP"]
+                  assemblyName: "{assem.getName()}"
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
+            moves, _ = fuelHandlers.FuelHandler.readMovesYaml(fname)
+            expected = {
+                1: [
+                    AssemblyMove("SFP", "005-003", [], None, assem.getName()),
+                    AssemblyMove("005-003", "SFP"),
+                ]
+            }
+            self.assertEqual(moves, expected)
+
+    def test_performShuffleYaml_loadFromSfp(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        sfpAssem = self.r.excore["sfp"].getChildren()[0]
+        yaml_text = f"""
+        sequence:
+            1:
+                - cascade: ["SFP", "009-045", "SFP"]
+                  assemblyName: "{sfpAssem.getName()}"
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            fname = "moves.yaml"
+            with open(fname, "w", encoding="utf-8") as stream:
+                stream.write(yaml_text)
+            before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            fh.outage()
+            self.assertEqual(self.r.core.getAssemblyWithStringLocation("009-045").getName(), sfpAssem.getName())
+            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
+
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
@@ -881,10 +922,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
 
-    def test_transferDifferentNumberStationaryBlocks(self):
+    def test_transStatBlocksBadNumbers(self):
         """
-        Test the _transferStationaryBlocks method for the case where the input assemblies have
-        different numbers of stationary blocks.
+        Test the _transferStationaryBlocks method for the case where the input assemblies have different numbers of
+        stationary blocks.
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -908,10 +949,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
 
-    def test_transferUnalignedLocationStationaryBlocks(self):
+    def test_transStatBlockUnaligned(self):
         """
-        Test the _transferStationaryBlocks method for the case where the input assemblies have
-        unaligned locations of stationary blocks.
+        Test the _transferStationaryBlocks method for the case where the input assemblies have unaligned locations of
+        stationary blocks.
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -943,11 +984,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
 
-    def test_transferIncompatibleHeightStationaryBlocks(self):
+    def test_transStatBlockBadHeights(self):
         """
-        Test the _transferStationaryBlocks method
-        for the case where the total height of the
-        stationary blocks is unequal between input assemblies.
+        Test the _transferStationaryBlocks method for the case where the total height of the stationary blocks is
+        unequal between input assemblies.
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -1014,7 +1054,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
 
-    def test_dischargeSwapIncompatibleStationaryBlocks(self):
+    def test_dischargeSwapStationaryBlocks(self):
         """
         Test the _transferStationaryBlocks method for the case where the input assemblies have
         different numbers as well as unaligned locations of stationary blocks.
@@ -1090,8 +1130,3 @@ class TestFuelPlugin(unittest.TestCase):
 
         setting = cs.getSetting(nm)
         self.assertIn("distance", setting.options)
-
-
-def addSomeDetailAssemblies(hist, assems):
-    for a in assems:
-        hist.detailAssemblyNames.append(a.getName())

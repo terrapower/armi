@@ -164,7 +164,7 @@ class Pitch(yamlize.Object):
         if not any([hexPitch, x, y, z]):
             raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
 
-        self.hex = hex or x
+        self.hex = hexPitch or x
         self.x = x
         self.y = y
         self.z = z
@@ -313,13 +313,13 @@ class GridBlueprint(yamlize.Object):
         """
         Build spatial grid.
 
-        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be
-        adjusted to the proper dimensions (often by inspection of children) at a later time.
+        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be adjusted to the proper
+        dimensions (often by inspection of children) at a later time.
         """
         symmetry = geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
         geom = self.geom
         maxIndex = self._getMaxIndex()
-        runLog.extra("Creating the spatial grid")
+        runLog.extra(f"Creating the spatial grid {self.name}", single=True)
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
                 # This check is regrettably late. It would be nice if we could validate that bounds
@@ -410,6 +410,7 @@ class GridBlueprint(yamlize.Object):
 
         # fill the new grid contents
         grid = self.construct()
+        self._expandToFullOrientationBOL(grid)
 
         newContents = copy.copy(self.gridContents)
         for idx, contents in self.gridContents.items():
@@ -428,6 +429,31 @@ class GridBlueprint(yamlize.Object):
                 throughCenterAssembly=split,
             )
         )
+
+    def _expandToFullOrientationBOL(self, grid):
+        """Set the orientationBOL parameter during expandToFulLCore().
+
+        Parameters
+        ----------
+        grid : Grid
+            Spatial grid for the current ARMI object.
+        """
+        if self.orientationBOL is None:
+            return
+
+        newOrientations = copy.copy(self.orientationBOL)
+
+        for idx, contents in self.gridContents.items():
+            equivs = grid.getSymmetricEquivalents(idx)
+            angle = 360.0 / (len(equivs) + 1)
+            for count, idx2 in enumerate(equivs):
+                loc = grid.indicesToRingPos(*idx)
+                if loc in self.orientationBOL:
+                    loc2 = grid.indicesToRingPos(*idx2)
+                    newOrientation = self.orientationBOL[loc] + (count + 1) * angle
+                    newOrientations[loc2] = newOrientation % 360.0
+
+        self.orientationBOL = newOrientations
 
     def _readGridContents(self):
         """

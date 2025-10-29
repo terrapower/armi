@@ -1197,7 +1197,7 @@ class FuelHandler:
                 )
 
             for action in actions:
-                allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap"}
+                allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap", "assemblyName"}
                 unknown = set(action) - allowed
                 if unknown:
                     raise InputError(f"Unknown action keys {unknown} in shuffle YAML")
@@ -1205,12 +1205,23 @@ class FuelHandler:
                 if "cascade" in action:
                     chain = list(action["cascade"])
                     if len(chain) < 2:
-                        raise InputError("cascade must contain an assembly type and at least one location")
+                        raise InputError("cascade must contain at least two entries")
                     if any(not isinstance(item, str) for item in chain):
                         raise InputError("cascade entries must be strings")
 
-                    assemType = chain[0]
-                    locs = chain[1:]
+                    if chain[0] == "SFP":
+                        # move an assembly from the SFP into the Core
+                        assemType = None
+                        locs = chain
+                        if len(locs) < 2:
+                            raise InputError("cascade starting with SFP must include a destination location")
+                    else:
+                        # move an assembly around the Core
+                        assemType = chain[0]
+                        locs = chain[1:]
+                        if not locs:
+                            raise InputError("cascade must contain at least one location after the assembly type")
+
                     for loc in locs:
                         FuelHandler.validateLoc(loc, cycle)
                         if loc not in FuelHandler.DISCHARGE_LOCS and loc in seenLocs:
@@ -1226,8 +1237,19 @@ class FuelHandler:
                     if any(e < 0 or e > 1 for e in enrich):
                         raise InputError("fuelEnrichment values must be between 0 and 1. Got {enrich}")
 
-                    moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType))
-                    for i in range(len(locs) - 1):
+                    assemblyName = action.get("assemblyName")
+                    if locs[0] == "SFP":
+                        if assemblyName is None:
+                            raise InputError("assemblyName required when loading from SFP")
+                        moves[cycle].append(AssemblyMove("SFP", locs[1], [], None, assemblyName))
+                        startIdx = 1
+                    else:
+                        if assemblyName is not None:
+                            raise InputError("assemblyName is only valid when loading from SFP")
+                        moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType))
+                        startIdx = 0
+
+                    for i in range(startIdx, len(locs) - 1):
                         moves[cycle].append(AssemblyMove(locs[i], locs[i + 1]))
                     if locs[-1] not in FuelHandler.DISCHARGE_LOCS:
                         moves[cycle].append(AssemblyMove(locs[-1], "Delete"))

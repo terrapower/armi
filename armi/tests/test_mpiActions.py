@@ -26,6 +26,7 @@ from armi.mpiActions import (
     _disableForExclusiveTasks,
     _makeQueue,
     runActions,
+    runBatchedActions,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
@@ -52,6 +53,22 @@ class MockMpiComm:
 
     def Split(self, num):
         return self
+
+
+class MockMpiAction(MpiAction):
+    """Mock MPI Action, to simplify tests."""
+
+    runActionExclusive = False
+
+    def __init__(self, broadcastResult: int = 3, invokeResult: int = 7):
+        self.broadcastResult = broadcastResult
+        self.invokeResult = invokeResult
+
+    def broadcast(self, obj=None):
+        return self.broadcastResult
+
+    def invoke(self, o, r, cs):
+        return self.invokeResult
 
 
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
@@ -145,7 +162,6 @@ class MpiIterTests(unittest.TestCase):
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
     def test_runActionsDistributionAction(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
@@ -154,10 +170,69 @@ class MpiIterTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
+        o.cs["verbosity"] = "debug"
+        res = act.invokeHook()
+        self.assertIsNone(res)
+
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
+    @patch("armi.context.MPI_NODENAMES", ["node0", "node0", "node1", "node1"])
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runBatchedActions(self):
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        actionsByNode = {
+            "node0": [MockMpiAction(invokeResult=1)],
+            "node1": [MockMpiAction(invokeResult=5), MockMpiAction(invokeResult=11)],
+        }
+
+        # run in serial
+        with mockRunLogs.BufferLog() as mock:
+            results = runBatchedActions(o, r, o.cs, actionsByNode, serial=True)
+            self.assertIn("Running 3 MPI actions in serial", mock.getStdout())
+        self.assertEqual(len(results), 3)
+        self.assertListEqual(results, [1, 5, 11])
+
+        # run in parallel
+        with mockRunLogs.BufferLog() as mock:
+            results = runBatchedActions(o, r, o.cs, actionsByNode)
+            self.assertIn("Running 3 MPI actions in parallel over 2 nodes.", mock.getStdout())
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
+    @patch("armi.context.MPI_NODENAMES", ["node0", "node0", "node1", "node1"])
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runBatchedActionsOverload(self):
+        """Test that an error is thrown if the number of tasks exceeds number of ranks."""
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        actionsByNode = {
+            "node0": [MockMpiAction()],
+            "node1": [MockMpiAction(), MockMpiAction(), MockMpiAction()],
+        }
+
+        # run in parallel
+        with mockRunLogs.BufferLog() as mock:
+            with self.assertRaises(ValueError):
+                runBatchedActions(o, r, o.cs, actionsByNode)
+            self.assertIn("There are more actions (3) than ranks available (2) on node1!", mock.getStdout())
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
     def test_runActionsDistributeStateAction(self):
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        act = DistributeStateAction([self.action])
+        results = runActions(o, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runActionsDistStateActionParallel(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributeStateAction([self.action])
@@ -186,6 +261,10 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Scanning all blocks", mock.getStdout())
             self.assertIn("Scanning blocks by name", mock.getStdout())
             self.assertIn("Scanning the ISOTXS library", mock.getStdout())
+
+    def test_invokeAsMaster(self):
+        """Verify that calling invokeAsMaster calls invoke."""
+        self.assertEqual(7, MockMpiAction.invokeAsMaster(1, 2, 3))
 
 
 class QueueActionsTests(unittest.TestCase):
