@@ -452,10 +452,10 @@ For cycle 1 above, the actions execute in the following order:
 Zones
 ^^^^^
 
-Zones are a collection of assemblies that share some similar characteristics. Perhaps a similar orrificing pattern or
-a subset of fuel assemblies. Some codes may wish to study behavior by lumping the reactor into a few
-channels with bulk or aggregated properties. Users can collect assemblies in each of these channels through the
-:attr:`~armi.reactor.cores.Core.zones` attribute on the core. See also the
+Zones are a collection of assemblies that share some similar characteristics. A zone might be those assemblies with
+a similar orrificing pattern or a some subset of fuel assemblies. Some codes may wish to study behavior by lumping the
+reactor into a few channels with bulk or aggregated properties. Users can collect assemblies in each of these channels
+through the :attr:`~armi.reactor.cores.Core.zones` attribute on the core. See also the
 :class:`~armi.reactor.zones.Zones` class.
 
 Users can define these zones with the ``zonesFile`` setting. It must point to YAML file that contains the high-level key
