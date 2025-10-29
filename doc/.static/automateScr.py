@@ -30,6 +30,7 @@ GITHUB_USERS = {
     "alexhjames": "Alex James",
     "bsculac": "Brian Sculac",
     "clstocking": "Casey Stocking",
+    "crswong888": "Chris Wong",
     "drewj-tp": "Drew Johnson",
     "HunterPSmith": "Hunter Smith",
     "jakehader": "Jake Hader",
