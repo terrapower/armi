@@ -203,6 +203,7 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
     str
         RST-formatted list content.
     """
+    print("\n\n\nTODO JOHN\n\n\n")
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 2001, 100):
@@ -221,6 +222,7 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
         # in case the docs are not being built from a PR
         prNums.add(thisPrNum)
 
+    print("\n\nlines found to search:\n\n")
     for ln in txt.split("\n"):
         line = ln.strip()
         print(line)
@@ -232,16 +234,17 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
             # get the PR number
             try:
                 prNums.add(int(line.split("(#")[-1].split(")")[0]))
-                print(prNums)
+                print(f"prNums: {sorted(set(prNums))}")
             except ValueError as e:
-                print(e)
+                print(f"ValueError:  {e}")
                 # This is not a PR. Someone unwisely put some trash in the commit message.
                 pass
 
     # 3. Build a list for each SCR
+    print("\n\nlooping over SCRs:")
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
-        print(prNum)
+        print(f"prNum:  {prNum}")
         if not isMainPR(prNum):
             continue
 
@@ -258,6 +261,7 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
+    print("\n\n\nTODO JOHN\n\n\n")
     return content + "\n\n"
 
 
