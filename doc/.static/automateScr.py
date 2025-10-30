@@ -223,20 +223,25 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
 
     for ln in txt.split("\n"):
         line = ln.strip()
+        print(line)
         if pastCommit in line:
             # do not include the reference commit
+            print("    PAST COMMIT FOUND")
             break
         elif line.endswith(")") and "(#" in line:
             # get the PR number
             try:
                 prNums.add(int(line.split("(#")[-1].split(")")[0]))
-            except ValueError:
+                print(prNums)
+            except ValueError as e:
+                print(e)
                 # This is not a PR. Someone unwisely put some trash in the commit message.
                 pass
 
     # 3. Build a list for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
+        print(prNum)
         if not isMainPR(prNum):
             continue
 
