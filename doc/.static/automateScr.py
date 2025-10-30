@@ -20,6 +20,7 @@ This script is meant to be called by the docs build process, to help automate th
 
 import argparse
 import subprocess
+from pprint import pprint
 
 import requests
 
@@ -203,6 +204,7 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
     str
         RST-formatted list content.
     """
+    print("\n\n\nTODO JOHN\n\n\n")
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 2001, 100):
@@ -221,27 +223,39 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
         # in case the docs are not being built from a PR
         prNums.add(thisPrNum)
 
+    print("\n\nlines found to search:\n\n")
     for ln in txt.split("\n"):
         line = ln.strip()
+        print(line)
         if pastCommit in line:
             # do not include the reference commit
+            print("    PAST COMMIT FOUND")
             break
         elif line.endswith(")") and "(#" in line:
             # get the PR number
             try:
                 prNums.add(int(line.split("(#")[-1].split(")")[0]))
-            except ValueError:
+                print(f"prNums: {sorted(set(prNums))}")
+            except ValueError as e:
+                print(f"ValueError:  {e}")
                 # This is not a PR. Someone unwisely put some trash in the commit message.
                 pass
 
     # 3. Build a list for each SCR
+    print("\n\nlooping over SCRs:")
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
+        print(f"prNum:  {prNum}")
         if not isMainPR(prNum):
+            print(f"WHOOPS, this is the main PR: {prNum}")
             continue
 
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
+
+    print("\n\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+    pprint(data)
+    print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\n")
 
     # 4. Build final RST for all four lists, to return to the docs
     content = ""
@@ -251,8 +265,10 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
             content += _buildHeader(typ)
             for line in data[typ]:
                 content += line
+                print(f"    {line}")
             content += "\n\n"
 
+    print("\n\n\nTODO JOHN\n\n\n")
     return content + "\n\n"
 
 
