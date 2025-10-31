@@ -19,7 +19,7 @@ import numpy as np
 
 from armi.materials.material import Material
 from armi.materials.uraniumOxide import UO2
-from armi.nucDirectory import elements, nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.utils import densityTools
 
 
@@ -38,6 +38,11 @@ class UraniumOxide(Material):
 
 
 class TestDensityTools(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.nuclideBases = NuclideBases()
+        cls.elements = cls.nuclideBases.elements
+
     def test_expandElementalMassFracsToNuclides(self):
         """
         Expand mass fraction to nuclides.
@@ -46,7 +51,7 @@ class TestDensityTools(unittest.TestCase):
             :id: T_ARMI_UTIL_EXP_MASS_FRACS
             :tests: R_ARMI_UTIL_EXP_MASS_FRACS
         """
-        element = elements.bySymbol["N"]
+        element = self.elements.bySymbol["N"]
         mass = {"N": 1.0}
         densityTools.expandElementalMassFracsToNuclides(mass, [(element, None)])
         self.assertNotIn("N", mass)
@@ -57,7 +62,7 @@ class TestDensityTools(unittest.TestCase):
 
     def test_expandElementalZeroMassFrac(self):
         """As above, but try with a zero mass frac elemental."""
-        elementals = [(elements.bySymbol["N"], None), (elements.bySymbol["O"], None)]
+        elementals = [(self.elements.bySymbol["N"], None), (self.elements.bySymbol["O"], None)]
         mass = {"N": 0.0, "O": 1.0}
         densityTools.expandElementalMassFracsToNuclides(mass, elementals)
         self.assertNotIn("N", mass)
@@ -68,9 +73,9 @@ class TestDensityTools(unittest.TestCase):
         self.assertAlmostEqual(sum(mass.values()), 1.0)
 
     def test_getChemicals(self):
-        u235 = nuclideBases.byName["U235"]
-        u238 = nuclideBases.byName["U238"]
-        o16 = nuclideBases.byName["O16"]
+        u235 = self.nuclideBases.byName["U235"]
+        u238 = self.nuclideBases.byName["U238"]
+        o16 = self.nuclideBases.byName["O16"]
 
         uo2 = UO2()
         uo2Chemicals = densityTools.getChemicals(uo2.massFrac)
@@ -91,9 +96,9 @@ class TestDensityTools(unittest.TestCase):
 
     def test_expandElement(self):
         """Ensure isotopic subset feature works in expansion."""
-        elemental = elements.bySymbol["O"]
+        elemental = self.elements.bySymbol["O"]
         massFrac = 1.0
-        subset = [nuclideBases.byName["O16"], nuclideBases.byName["O17"]]
+        subset = [self.nuclideBases.byName["O16"], self.nuclideBases.byName["O17"]]
         m1 = densityTools.expandElementalNuclideMassFracs(elemental, massFrac)
         m2 = densityTools.expandElementalNuclideMassFracs(elemental, massFrac, subset)
         self.assertIn("O18", m1)
@@ -178,9 +183,9 @@ class TestDensityTools(unittest.TestCase):
             :id: T_ARMI_UTIL_MCNP_MAT_CARD
             :tests: R_ARMI_UTIL_MCNP_MAT_CARD
         """
-        u235 = nuclideBases.byName["U235"]
-        pu239 = nuclideBases.byName["PU239"]
-        o16 = nuclideBases.byName["O16"]
+        u235 = self.nuclideBases.byName["U235"]
+        pu239 = self.nuclideBases.byName["PU239"]
+        o16 = self.nuclideBases.byName["O16"]
         numDens = {o16: 0.7, pu239: 0.1, u235: 0.2}
         matCard = densityTools.formatMaterialCard(
             numDens,
@@ -194,9 +199,9 @@ class TestDensityTools(unittest.TestCase):
 """
         self.assertEqual(refMatCard, "".join(matCard))
 
-        lfp35 = nuclideBases.byName["LFP35"]
-        dump1 = nuclideBases.byName["DUMP1"]
-        o16 = nuclideBases.byName["O16"]
+        lfp35 = self.nuclideBases.byName["LFP35"]
+        dump1 = self.nuclideBases.byName["DUMP1"]
+        o16 = self.nuclideBases.byName["O16"]
         numDens = {o16: 0.7, pu239: 1e-8, u235: 0.2, lfp35: 1e-3, dump1: 1e-4}
         matCard = densityTools.formatMaterialCard(
             numDens,

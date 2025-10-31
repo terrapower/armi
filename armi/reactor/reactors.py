@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Reactor objects represent the highest level in the hierarchy of structures that compose the system
-to be modeled.
-"""
+"""Reactor objects represent the highest level in the hierarchy of structures that compose the system to be modeled."""
 
 import copy
+import os
 
 from armi import getPluginManagerOrFail, runLog
 from armi.reactor import composites, reactorParameters
@@ -79,11 +77,20 @@ class Reactor(composites.Composite):
     def __deepcopy__(self, memo):
         memo[id(self)] = newR = self.__class__.__new__(self.__class__)
         newR.__setstate__(copy.deepcopy(self.__getstate__(), memo))
-        newR.name = self.name + "-copy"
+        newR.name = f"{self.name}-copy"
         return newR
 
     def __repr__(self):
-        return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
+        return f"<{self.__class__.__name__}: {self.name} id:{id(self)}>"
+
+    @property
+    def nuclideBases(self):
+        from armi.nucDirectory import nuclideBases
+
+        if nuclideBases.nuclideBases is None:
+            nuclideBases.factory()
+
+        return nuclideBases.nuclideBases
 
     def add(self, container):
         composites.Composite.add(self, container)
@@ -109,8 +116,8 @@ class Reactor(composites.Composite):
 
         Notes
         -----
-        The "max assembly number" is not currently used in the Reactor. So the idea is that we
-        return the current number, then iterate it for the next assembly.
+        The "max assembly number" is not currently used in the Reactor. So the idea is that we return the current
+        number, then iterate it for the next assembly.
 
         Obviously, this method will be unused for non-assembly-based reactors.
 
@@ -146,6 +153,36 @@ class Reactor(composites.Composite):
         return ind
 
 
+def initBurnChain(r, cs):
+    """
+    Apply the burn chain setting to the nucDir.
+
+    Parameters
+    ----------
+    r: Reactor
+        The reactor object for this case.
+    cs: Settings
+        Settings object to use.
+
+    Notes
+    -----
+    This is admittedly an odd place for this but the burn chain info must be applied sometime after user-input has
+    been loaded (for custom burn chains) but not long after (because users need it).
+    """
+    if not cs["initializeBurnChain"]:
+        runLog.info("Skipping burn-chain initialization since `initializeBurnChain` setting is disabled.")
+        return
+
+    if not os.path.exists(cs["burnChainFileName"]):
+        raise ValueError(
+            f"The burn-chain file {cs['burnChainFileName']} does not exist. The data cannot be loaded. Fix "
+            "this path or disable burn-chain initialization using the `initializeBurnChain` setting."
+        )
+
+    with open(cs["burnChainFileName"]) as burnChainStream:
+        r.nuclideBases.imposeBurnChain(burnChainStream)
+
+
 def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
@@ -172,6 +209,7 @@ def factory(cs, bp) -> Reactor:
     getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
     r = Reactor(cs.caseTitle, bp)
+    initBurnChain(r, cs)
 
     # For now, ARMI will create a default Spent Fuel Pool and add it to every reactor.
     if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):

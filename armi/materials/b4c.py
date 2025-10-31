@@ -22,7 +22,6 @@ assembly definition.
 
 from armi import runLog
 from armi.materials import material
-from armi.nucDirectory import nuclideBases
 from armi.utils.units import getTc
 
 
@@ -91,16 +90,15 @@ class B4C(material.Material):
         mB10 = nB10*AB10 /(nB10*AB10 + nB11*AB11)
         """
         if massEnrichment < 0 or massEnrichment > 1:
-            raise ValueError("massEnrichment {} is unphysical for B4C".format(massEnrichment))
+            raise ValueError(f"massEnrichment {massEnrichment} is unphysical for B4C")
 
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
+        b10AtomicMass = 10.01293728
+        b11AtomicMass = 11.0093054803
         b10NumEnrich = (massEnrichment / b10AtomicMass) / (
             massEnrichment / b10AtomicMass + (1 - massEnrichment) / b11AtomicMass
         )
         b11NumEnrich = 1.0 - b10NumEnrich
-
-        cAtomicMass = nuclideBases.byName["C"].weight
+        cAtomicMass = 12.011137118560828
 
         boron10MassGrams = b10AtomicMass * b10NumEnrich * 4.0
         boron11MassGrams = b11AtomicMass * b11NumEnrich * 4.0
@@ -144,8 +142,8 @@ class B4C(material.Material):
     @staticmethod
     def getMassEnrichmentFromNumEnrich(b10NumFrac: float) -> float:
         """Given a B10 number fraction, give the B10 weight fraction."""
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
+        b10AtomicMass = 10.01293728
+        b11AtomicMass = 11.0093054803
         return b10NumFrac * b10AtomicMass / (b10NumFrac * b10AtomicMass + (1.0 - b10NumFrac) * b11AtomicMass)
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:

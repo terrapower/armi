@@ -17,8 +17,7 @@ Lattice Physics Writer.
 
 Parent class for lattice physics writers.
 
-Seeks to provide access to common methods used by general lattice
-physics codes.
+Seeks to provide access to common methods used by general lattice physics codes.
 """
 
 import collections
@@ -228,7 +227,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         numDensities = subjectObject.getNuclideNumberDensities(nuclides)
 
         for nucName, dens in zip(nuclides, numDensities):
-            nuc = nuclideBases.byName[nucName]
+            nuc = self.r.nuclideBases.byName[nucName]
             if isinstance(nuc, nuclideBases.LumpNuclideBase):
                 continue  # skip LFPs here but add individual FPs below.
 
@@ -369,7 +368,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             # now, go through the list and make sure that there aren't any values less than the
             # minimumNuclideDensity; we need to keep trace amounts of nuclides in the problem
             for fpName, fpDens in dfpDensitiesByName.items():
-                fp = nuclideBases.byName[fpName]
+                fp = self.r.nuclideBases.byName[fpName]
                 dfpDensities[fp] = max(fpDens, self.minimumNuclideDensity)
         return dfpDensities
 
@@ -415,7 +414,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         hm = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isHeavyMetal())
 
         if fiss / hm < minFrac:
-            pu239 = nuclideBases.byName["PU239"]
+            pu239 = self.r.nuclideBases.byName["PU239"]
             old, temp, msg = nucDensities[pu239]
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
             nucDensities[pu239] = (new, temp, msg)
