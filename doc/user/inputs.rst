@@ -376,8 +376,12 @@ A few examples of restart cases:
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 
-Fuel Shuffling
-^^^^^^^^^^^^^^
+.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
+
+.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
+
+Shuffling
+^^^^^^^^^
 
 .. note:: The ``explicitRepeatShuffles`` setting points to a ``*-SHUFFLES.txt`` file that records moves from a previous
           run for exact repetition.
@@ -408,7 +412,7 @@ even if the ``trackAssems`` setting is ``False``; ``Delete`` always removes the 
 Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing an
 ``assemblyName`` for the assembly to load. No assembly type is required in this case. The cascade then proceeds as
 normal from the destination location. For example
-   
+
 ..  code:: yaml
 
        sequence:
@@ -445,11 +449,54 @@ For cycle 1 above, the actions execute in the following order:
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
 
-.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
+Zones
+^^^^^
 
-.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
+Zones are a collection of assemblies that share some similar characteristics. A zone might be those assemblies with
+a similar orrificing pattern or a some subset of fuel assemblies. Some codes may wish to study behavior by lumping the
+reactor into a few channels with bulk or aggregated properties. Users can collect assemblies in each of these channels
+through the :attr:`~armi.reactor.cores.Core.zones` attribute on the core. See also the
+:class:`~armi.reactor.zones.Zones` class.
 
-.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
+Users can define these zones with the ``zonesFile`` setting. It must point to YAML file that contains the high-level key
+``customZonesMap`` containing a map of ``location: zone`` maps.
+
+.. code:: yaml
+
+    customZonesMap:
+      001-001: primary control
+      002-001: fuel z0
+      003-001: fuel z0
+      004-001: fuel z1
+      004-002: secondary control
+
+The ``location`` keys are the ARMI ring-position assembly identifier. It is not required to have every assembly
+be inside a zone. But assemblies not listed will not be added to any zone, i.e., there is no default zone.
+
+This example would produce four zones:
+
+1. ``primary control`` containing the center assembly at ``001-001``,
+2. ``fuel z0`` containing two fuel assemblies: ``002-001`` and ``003-001``,
+3. ``fuel z1`` containing one fuel assembly: ``004-001``, and
+4. ``secondary control`` containing the assembly at ``004-002``.
+
+An alternative method is with the ``zoneDefinitions`` setting in the primary settings file. This contains a list of
+zone names and the assemblies that make up that zone. The following would create an identical zone structure as above.
+
+.. code:: yaml
+
+    settings:
+      zoneDefinitions:
+        - "primary control: 001-001"
+        - "fuel z0: 002-001, 003-001"
+        - "fuel z1: 004-001"
+        - "secondary control: 004-002"
+
+.. note::
+
+    These are list of strings, not additional maps. Wrapping in quotations is required to process the zone definitions.
+
+These zones will be populated according to the :meth:`~armi.reactor.cores.Core.buildManualZones` core method.
 
 .. _bp-input-file:
 
@@ -795,8 +842,8 @@ xs types
   Representing xsType by a single capital letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
   will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
-  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this 
-  should only be done when working on a case-sensitive file system. On a case-insensitive file system 
+  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this
+  should only be done when working on a case-sensitive file system. On a case-insensitive file system
   (Windows, and some MacOS systems) this could cause unpredictable errors.
 
 axial mesh points
