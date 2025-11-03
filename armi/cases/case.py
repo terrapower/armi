@@ -452,6 +452,33 @@ class Case:
         else:
             print(statsStream.getvalue())
 
+    def _initBurnChain(self, r):
+        """
+        Apply the burn chain setting to the nucDir.
+
+        Parameters
+        ----------
+        r: Reactor
+            The reactor object for this case.
+
+        Notes
+        -----
+        This is admittedly an odd place for this but the burn chain info must be applied sometime after user-input has
+        been loaded (for custom burn chains) but not long after (because users need it).
+        """
+        if not self.cs["initializeBurnChain"]:
+            runLog.info("Skipping burn-chain initialization since `initializeBurnChain` setting is disabled.")
+            return
+
+        if not os.path.exists(self.cs["burnChainFileName"]):
+            raise ValueError(
+                f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The data cannot be loaded. Fix "
+                "this path or disable burn-chain initialization using the `initializeBurnChain` setting."
+            )
+
+        with open(self.cs["burnChainFileName"]) as burnChainStream:
+            r.nuclideBases.imposeBurnChain(burnChainStream)
+
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
@@ -459,6 +486,7 @@ class Case:
             if r is None:
                 r = reactors.factory(self.cs, self.bp)
 
+            self._initBurnChain(r)
             o.initializeInterfaces(r)
             # Set this here to make sure the full duration of initialization is properly captured.
             # Cannot be done in reactors since the above self.bp call implicitly initializes blueprints.
