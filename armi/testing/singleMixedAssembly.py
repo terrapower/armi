@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import io
+from typing import Optional
 
 from armi.reactor.blueprints import Blueprints
 from armi.settings import Settings
@@ -244,13 +245,17 @@ grids:
 """
 
 
-def buildMixedPinAssembly():
+def buildMixedPinAssembly(
+    blockDefs: Optional[str] = BLOCK_DEFINITIONS,
+    assemDef: Optional[str] = REGULAR_ASSEMBLY_DEF,
+    gridDef: Optional[str] = GRID_DEFINITION,
+):
     """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 2 pin types
     arranged as specified in the lattice map.
     """
-    FULL_BP = BLOCK_DEFINITIONS + REGULAR_ASSEMBLY_DEF + GRID_DEFINITION
+    completeBlueprints = blockDefs + assemDef + gridDef
     cs = Settings()
-    with io.StringIO(FULL_BP) as stream:
+    with io.StringIO(completeBlueprints) as stream:
         blueprints = Blueprints.load(stream)
         blueprints._prepConstruction(cs)
 
