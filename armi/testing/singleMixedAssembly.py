@@ -246,9 +246,9 @@ grids:
 
 
 def buildMixedPinAssembly(
-    blockDefs: Optional[str] = BLOCK_DEFINITIONS,
-    assemDef: Optional[str] = REGULAR_ASSEMBLY_DEF,
-    gridDef: Optional[str] = GRID_DEFINITION,
+    blockDefs: str = BLOCK_DEFINITIONS,
+    assemDef: str = REGULAR_ASSEMBLY_DEF,
+    gridDef: str = GRID_DEFINITION,
 ):
     """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 2 pin types
     arranged as specified in the lattice map.
