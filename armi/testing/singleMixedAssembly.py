@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import io
-from typing import Optional
 
 from armi.reactor.blueprints import Blueprints
 from armi.settings import Settings
