@@ -133,7 +133,7 @@ def _buildScrLine(prNum: str):
         scrType = "trivial"
 
     # grab one-line description
-    desc = _findOneLineData(lines, prNum, "One-Sentence Description:")
+    desc = _findOneLineData(lines, prNum, "One-Sentence Rationale:")
 
     # grab impact on requirements
     impact = _findOneLineData(lines, prNum, "One-line Impact on Requirements:")
