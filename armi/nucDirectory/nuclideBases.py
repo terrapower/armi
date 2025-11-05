@@ -1199,11 +1199,6 @@ class NuclideBases:
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
-        # reload the thermal scattering library with the new nuclideBases too
-        from armi.nucDirectory import thermalScattering
-
-        thermalScattering.factory(self.byName)
-
     def initReachableActiveNuclidesThroughBurnChain(self, nuclides, numberDensities, activeNuclides):
         """
         March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.

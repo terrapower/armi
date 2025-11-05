@@ -251,6 +251,15 @@ class Core(composites.Composite):
         runLog.extra(f"Updating cross section library on {self}.\nInitial: {self._lib}\nUpdated: {value}.")
         self._lib = value
 
+    def hasLib(self):
+        """Check if the microscopic cross section library is set.
+
+        Since the property ``lib`` will attempt to auto-load from a given ISOTXS file
+        in the working directory, checking ``r.core.lib is not None`` may result in unexpected
+        behavior. Use this instead.
+        """
+        return self._lib is not None
+
     @property
     def isFullCore(self):
         """Return True if reactor is full core, otherwise False."""
@@ -2187,14 +2196,14 @@ class Core(composites.Composite):
         Manual zones will be defined in a special string format, e.g.:
 
         >>> zoneDefinitions:
-        >>>     - ring-1: 001-001
-        >>>     - ring-2: 002-001, 002-002
-        >>>     - ring-3: 003-001, 003-002, 003-003
+        >>>     - "ring-1: 001-001"
+        >>>     - "ring-2: 002-001, 002-002"
+        >>>     - "ring-3: 003-001, 003-002, 003-003"
 
         Notes
         -----
-        This function will just define the Zones it sees in the settings, it does not do any
-        validation against a Core object to ensure those manual zones make sense.
+        This function will just define the Zones it sees in the settings, it does not do any validation against a Core
+        object to ensure those manual zones make sense.
         """
         if cs[CONF_ZONE_DEFINITIONS]:
             runLog.info(f"Building Zones by manual definitions in {CONF_ZONE_DEFINITIONS} setting")
