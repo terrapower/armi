@@ -16,6 +16,10 @@
 Simplified UZr alloy.
 
 This is a notional U-10Zr material based on [Chandrabhanu]_.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
 """
 
 from armi.materials import material
