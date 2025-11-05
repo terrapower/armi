@@ -319,12 +319,12 @@ class Block(composites.Composite):
     def assignPinIndices(self):
         pass
 
-    def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
+    def getMgFlux(self, adjoint=False, average=False, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the next energy group, as
+        set in the ISOTXS library.
 
         It is stored integrated over volume on self.p.mgFlux
 
@@ -332,15 +332,8 @@ class Block(composites.Composite):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         average : bool, optional
-            If true, will return average flux between latest and previous. Doesn't work
-            for pin detailed yet
-
-        volume: float, optional
-            If average=True, the volume-integrated flux is divided by volume before being returned.
-            The user may specify a volume, or the function will obtain the block volume directly.
-
+            If true, will return average flux between latest and previous. Doesn't work for pin detailed yet.
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -348,11 +341,12 @@ class Block(composites.Composite):
         -------
         flux : multigroup neutron flux in [n/cm^2/s]
         """
-        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, volume=volume, gamma=gamma)
+        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, gamma=gamma)
         if average and np.any(self.p.lastMgFlux):
-            volume = volume or self.getVolume()
+            volume = self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
             flux = (flux + lastFlux) / 2.0
+
         return flux
 
     def setPinMgFluxes(self, fluxes, adjoint=False, gamma=False):
@@ -824,10 +818,7 @@ class Block(composites.Composite):
 
     @staticmethod
     def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
-        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a better fit.
-        # We don't want to remove the plotFlux function in the Block namespace yet in case client
-        # code is depending on this function existing here. This is just a simple pass-through
-        # function that passes the arguments along to the actual implementation in its new location.
+        """A simple pass-through method to a utils plotting function. This is here to preserve the API."""
         plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):
