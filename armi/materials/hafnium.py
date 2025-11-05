@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hafnium is an element that has high capture cross section across multiple isotopes."""
+"""Hafnium is an element that has high capture cross section across multiple isotopes.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
+"""
 
 from armi.materials.material import SimpleSolid
 from armi.nucDirectory import nucDir
