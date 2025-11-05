@@ -15,8 +15,8 @@
 """
 Custom materials are ones that you can specify all the number densities yourself.
 
-Useful for benchmarking when you have a particular specified material density.
-Use the isotopic input described in :ref:`bp-input-file`.
+Useful for benchmarking when you have a particular specified material density. Use the isotopic input described in
+:ref:`bp-input-file`.
 
 The density function gets applied from custom isotopics by
 :py:meth:`armi.reactor.blueprints.isotopicOptions.CustomIsotopic.apply`.
@@ -32,10 +32,8 @@ class Custom(Material):
 
     def __init__(self):
         """
-        During construction, set default density to 1.0. That way,
-        people can set number densities without having to set
-        a density and it will work. This will generally be overwritten in practice
-        by a constant user-input density.
+        During construction, set default density to 1.0. That way, people can set number densities without having to set
+        a density and it will work. This will generally be overwritten in practice by a constant user-input density.
         """
         Material.__init__(self)
         self.customDensity = 1.0
@@ -44,9 +42,8 @@ class Custom(Material):
         """
         The density value is set in the loading input.
 
-        In some cases it needs to be set after full core assemblies are populated (e.g. for
-        CustomLocation materials), so the missing density warning will appear no matter
-        what.
+        In some cases it needs to be set after full core assemblies are populated (e.g. for CustomLocation materials),
+        so the missing density warning will appear no matter what.
         """
         return self.customDensity
 

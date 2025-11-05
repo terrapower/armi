@@ -16,10 +16,13 @@
 Beryllium is a lightweight metal with lots of interesting nuclear use-cases.
 
 It has a nice (n,2n) reaction and is an inhalation hazard.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
 """
 
 from armi.materials.material import Material
-from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils.units import getTk
 
@@ -27,7 +30,7 @@ from armi.utils.units import getTk
 class Be9(Material):
     """Beryllium."""
 
-    thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["BE"], tsl.BE_METAL],)
+    thermalScatteringLaws = (tsl.fromNameAndCompound("BE", tsl.BE_METAL),)
     propertyValidTemperature = {"linear expansion percent": ((50, 1560.0), "K")}
 
     def setDefaultMassFracs(self):

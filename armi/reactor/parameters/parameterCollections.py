@@ -252,6 +252,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         cls._allFields = list(sorted(["_backup", "_hist", "assigned"] + [pd.fieldName for pd in cls.pDefs]))
 
         cls._slots = set(cls._allFields).union({pd.name for pd in cls.pDefs})
+        cls._slots.add("readOnly")
 
     def __repr__(self):
         return "<{} assigned:{}>".format(self.__class__.__name__, self.assigned)

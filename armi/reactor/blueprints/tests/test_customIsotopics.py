@@ -406,9 +406,9 @@ assemblies:
 
     def test_densAppliedToNonCustomMatsFluid(self):
         """
-        Ensure that a density can be set in custom isotopics for components using library materials,
-        specifically in the case of a fluid component. In this case, inputHeightsConsideredHot
-        does not matter, and the material has a zero dLL value.
+        Ensure that a density can be set in custom isotopics for components using library materials, specifically in the
+        case of a fluid component. In this case, inputHeightsConsideredHot does not matter, and the material has a zero
+        dLL value.
         """
         # The template block
         sodium1 = self.a[0].getComponentByName("sodium1")
@@ -448,11 +448,8 @@ assemblies:
 
             # Check for log messages
             streamVal = mockLog.getStdout()
-            self.assertIn(
-                "Both TD_frac and a custom isotopic with density",
-                streamVal,
-                msg=streamVal,
-            )
+            self.assertIn("and a custom isotopic with density", streamVal, msg=streamVal)
+            self.assertIn("Custom isotopics and material modifications have both", streamVal, msg=streamVal)
             self.assertIn("A custom material density was specified", streamVal, msg=streamVal)
             self.assertIn(
                 "A custom isotopic with associated density has been specified for non-`Custom`",
@@ -489,8 +486,7 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT4
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as
-        # number fractions
+        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as number fractions
         fuel2 = self.a[1].getComponent(Flags.FUEL)
         fuel4 = self.a[3].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel4.density())
@@ -507,8 +503,7 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT5
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as
-        # number densities
+        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as number densities
         fuel2 = self.a[1].getComponent(Flags.FUEL)
         fuel5 = self.a[4].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel5.density())
@@ -587,6 +582,39 @@ class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
             density: 10.0
             """
             )
+
+
+class TestIsotopicsMissingData(unittest.TestCase):
+    """Custom materials must define isotopics."""
+
+    yamlBlocksBadIsotopics = r"""
+blocks:
+    steel: &block_0
+        clad:
+            shape: Hexagon
+            material: Custom
+            #isotopics: sodium custom isotopics
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 169.0
+            op: 0.86602
+
+assemblies:
+    fuel a: &assembly_a
+        specifier: IC
+        blocks: [*block_0]
+        height: [10]
+        axial mesh points: [1]
+        xs types: [A]
+"""
+
+    def test_customComponentsWithoutComposition(self):
+        cs = settings.Settings()
+        bp = blueprints.Blueprints.load(self.yamlBlocksBadIsotopics)
+
+        with self.assertRaises(IOError):
+            _a = bp.constructAssem(cs, name="fuel a")
 
 
 class TestNuclideFlagsExpansion(unittest.TestCase):

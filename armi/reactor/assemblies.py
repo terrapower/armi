@@ -74,6 +74,7 @@ class Assembly(composites.Composite):
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
         self.lastLocationLabel = self.LOAD_QUEUE
+        self.p.orientation = np.array((0.0, 0.0, 0.0))
 
     def __repr__(self):
         msg = "<{typeName} Assembly {name} at {loc}>".format(
@@ -1187,10 +1188,6 @@ class Assembly(composites.Composite):
         rad : float
             number (in radians) specifying the angle of counter clockwise rotation
         """
-        # handle the orientation parameter
-        if self.p.orientation is None:
-            self.p.orientation = np.array([0.0, 0.0, 0.0])
-
         self.p.orientation[2] += math.degrees(rad)
 
         for b in self:

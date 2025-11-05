@@ -740,7 +740,7 @@ def defineSettings() -> List[setting.Setting]:
             default=[],
             label="Zone Definitions",
             description="Manual definitions of zones as lists of assembly locations "
-            "(e.g. 'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used "
+            '(e.g. "zoneName: loc1, loc2, loc3") . Zones are groups of assemblies used '
             f"by various summary and calculation routines. See also {CONF_ZONES_FILE} "
             "for an alternative method of specifying zones.",
         ),
