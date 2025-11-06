@@ -30,16 +30,28 @@ class InconelPE16(SimpleSolid):
     }
 
     def setDefaultMassFracs(self):
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            ag107abundance = 0.51839001
+            ag109abundance = 0.48160999
+            b10abundance = 0.19799999
+            b11abundance = 0.80199997
+        else:
+            ag107abundance = nb.byName["AG107"].abundance
+            ag109abundance = nb.byName["AG109"].abundance
+            b10abundance = nb.byName["B10"].abundance
+            b11abundance = nb.byName["B11"].abundance
+
         massFracs = {
             "C": 0.0006,
             "SI": 0.0025,
             "MN55": 0.001,
             "S": 0.000075,
-            "AG107": 0.0000025 * 0.51839001,
-            "AG109": 0.0000025 * 0.48160999,
+            "AG107": 0.0000025 * ag107abundance,
+            "AG109": 0.0000025 * ag109abundance,
             "AL27": 0.012,
-            "B10": 0.000025 * 0.19799999,
-            "B11": 0.000025 * 0.80199997,
+            "B10": 0.000025 * b10abundance,
+            "B11": 0.000025 * b11abundance,
             "BI209": 0.0000005,
             "CO59": 0.01,
             "CR": 0.165,

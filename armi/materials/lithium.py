@@ -67,8 +67,16 @@ class Lithium(material.Fluid):
         return 0.512
 
     def setDefaultMassFracs(self):
-        self.setMassFrac("LI6", 0.0759)
-        self.setMassFrac("LI7", 0.92410004)
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            li6abundance = 0.0759
+            li7abundance = 0.92410004
+        else:
+            li6abundance = nb.byName["LI6"].abundance
+            li7abundance = nb.byName["LI7"].abundance
+
+        self.setMassFrac("LI6", li6abundance)
+        self.setMassFrac("LI7", li7abundance)
 
     def meltingPoint(self):
         return 453.69  # K
@@ -77,7 +85,7 @@ class Lithium(material.Fluid):
         return 1615.0  # K
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""Wikipedia."""
+        """Wikipedia."""
         return 84.8  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):
