@@ -253,9 +253,8 @@ class ArmiTestHelper(unittest.TestCase):
 
             if actualVal is not None:
                 # we have two floats and can compare them
-                if actualVal == expectedVal:
-                    # will catch the case where they are zero
-                    return True
+                if actualVal == expectedVal == 0:
+                    continue
                 elif abs(actualVal - expectedVal) / expectedVal > eps:
                     return False
             else:

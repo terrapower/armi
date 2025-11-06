@@ -15,7 +15,13 @@
 """
 Lithium.
 
-.. WARNING:: Whenever you irradiate lithium you will get tritium.
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
+
+Warning
+-------
+Whenever you irradiate lithium you will get tritium.
 """
 
 from armi import runLog

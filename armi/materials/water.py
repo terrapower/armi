@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Basic water material."""
+"""Basic water material.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
+"""
 
 import math
 
@@ -27,17 +32,15 @@ class Water(Fluid):
     """
     Water.
 
-    This is a good faith implementation of the Revised Supplementary Properties
-    of Ordinary Water Substance (1992) by IAPWS -- International Association for
-    the Properties of Water and Steam .
+    This is a good faith implementation of the Revised Supplementary Properties of Ordinary Water Substance (1992) by
+    IAPWS -- International Association for the Properties of Water and Steam .
 
-    This is an abstract class implemented on the Saturated Water Material Class
-    and the Saturated Steam Material Class, which should be good enough for
+    This is an abstract class implemented on the Saturated Water Material  and the Saturated Steam Material Class, which
+    should be good enough for
     most uses.
 
     http://www.iapws.org/relguide/supsat.pdf
-    IAPWS-IF97 is now the international standard for calculations in the steam
-    power industry
+    IAPWS-IF97 is now the international standard for calculations in the steam power industry
     """
 
     thermalScatteringLaws = (tsl.fromNameAndCompound("H", tsl.H2O),)

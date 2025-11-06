@@ -18,6 +18,10 @@ Boron carbide; a very typical reactor control material.
 Note that this material defaults to a theoretical density fraction of 0.9, reflecting the difficulty of producing B4C at
 100% theoretical density in real life. To get different fraction, use the `TD_frac` material modification in your
 assembly definition.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
 """
 
 from armi import runLog
