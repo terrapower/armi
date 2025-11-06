@@ -1708,6 +1708,7 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     for b in blocks:
         if b.nuclideBases is not None:
             nuclideBases = b.nuclideBases
+            break
 
     if not nuclideBases:
         return {}

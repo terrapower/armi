@@ -126,10 +126,18 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def setDefaultMassFracs(self) -> None:
         """UO2 mass fractions. Using Natural Uranium without U234."""
-        u235Weight = 235.043929425
-        u238Weight = 238.050788298
-        oxygenWeight = 15.999304875697801
-        u235Abundance = 0.007204
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            u235Weight = 235.043929425
+            u238Weight = 238.050788298
+            oxygenWeight = 15.999304875697801
+            u235Abundance = 0.007204
+        else:
+            u235Weight = nb.byName["U235"].weight
+            u238Weight = nb.byName["U238"].weight
+            oxygenWeight = nb.byName["O"].weight
+            u235Abundance = nb.byName["U235"].abundance
+
         u238Abundance = 1.0 - u235Abundance  # neglect U234 and keep U235 at natural level
         gramsIn1Mol = 2 * oxygenWeight + u235Abundance * u235Weight + u238Abundance * u238Weight
 

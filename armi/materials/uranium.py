@@ -227,9 +227,16 @@ class Uranium(FuelMaterial):
         return interp(Tk, self._heatCapacityTableK, self._heatCapacityTable)
 
     def setDefaultMassFracs(self) -> None:
-        u235Weight = 235.043929425
-        u238Weight = 238.050788298
-        u235Abundance = 0.007204
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            u235Weight = 235.043929425
+            u238Weight = 238.050788298
+            u235Abundance = 0.007204
+        else:
+            u235Weight = nb.byLabel["U235"].weight
+            u238Weight = nb.byLabel["U238"].weight
+            u235Abundance = nb.byLabel["U235"].abundance
+
         u238Abundance = 1.0 - u235Abundance  # neglect U234 and keep U235 at natural level
         gramsIn1Mol = u235Abundance * u235Weight + u238Abundance * u238Weight
 

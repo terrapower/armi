@@ -21,6 +21,7 @@ contained in this file should not be used in production simulations.
 import math
 
 from armi.materials.material import Fluid
+from armi.nucDirectory import elements
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
@@ -75,8 +76,14 @@ class Water(Fluid):
     }
 
     def setDefaultMassFracs(self) -> None:
-        massHydrogen = 1.007976004510346
-        massOxygen = 15.999304715704756
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            massHydrogen = 1.007976004510346
+            massOxygen = 15.999304715704756
+        else:
+            massHydrogen = elements.bySymbol["H"].standardWeight
+            massOxygen = elements.bySymbol["O"].standardWeight
+
         totalMass = 2 * massHydrogen + massOxygen
         massFrac = {"H": 2.0 * massHydrogen / totalMass, "O": massOxygen / totalMass}
         for nucName, mfrac in massFrac.items():
