@@ -1701,17 +1701,18 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     """
     Collect block-by-block homogenized number densities for each nuclide.
 
-    Long ago, composition was stored on block params. No longer; they are on the component numberDensity params. These
-    block-level params, are still useful to see compositions in some visualization tools. Rather than keep them on the
-    reactor model, we dynamically compute them here and slap them in the database. These are ignored upon reading and
-    will not affect the results.
+    Homogenize the component-level to the block level. These are written to the database and useful for visualization.
     """
-    nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
-    nuclideBasesAll = [b.nuclideBases for b in blocks if b.nuclideBases is not None]
-    if not len(nuclideBasesAll):
+    # find the NuclidesBases object on the Reactor
+    nuclideBases = None
+    for b in blocks:
+        if b.nuclideBases is not None:
+            nuclideBases = b.nuclideBases
+
+    if not nuclideBases:
         return {}
 
-    nuclideBases = nuclideBasesAll[0]
+    nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
     nucBases = [nuclideBases.byName[nn] for nn in nucNames]
     # It's faster to loop over blocks first and get all number densities from each than it is to get one nuclide at a
     # time from each block because of area fraction calculations. So we use some RAM here instead.

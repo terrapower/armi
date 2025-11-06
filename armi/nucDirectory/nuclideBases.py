@@ -1191,7 +1191,7 @@ class NuclideBases:
                 "first."
             )
 
-        # grab the default data files, if none were provided
+        # If an input file is provided, use it, otherwise there is a class default.
         if nuclidesFile:
             self.nuclidesFile = nuclidesFile
 

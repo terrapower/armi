@@ -366,7 +366,7 @@ class Elements:
         """Generate the :class:`Elements <Element>` instances."""
         self.clear()
 
-        # if no input file is provided, use the default
+        # If an input file is provided, use it, otherwise there is a class default.
         if elementsFile:
             self.elementsFile = elementsFile
 
