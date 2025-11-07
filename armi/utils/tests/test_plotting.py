@@ -88,17 +88,27 @@ class TestPlotting(unittest.TestCase):
                 os.remove(plotPath)
 
             plotPath = "coreAssemblyTypes2.png"
-            plotting.plotAssemblyTypes(
+            fig = plotting.plotAssemblyTypes(
                 list(self.r.core.parent.blueprints.assemblies.values()),
                 plotPath,
                 yAxisLabel="y axis",
                 title="title",
             )
+            self.assertFalse(fig.subfigures(1, 1).subplots().has_data())
+            self.assertEqual(fig.axes[0]._children[0].xy, (0.5, 0))
             self._checkFileExists(plotPath)
 
-            if os.path.exists(plotPath):
-                os.remove(plotPath)
+            for _ in range(3):
+                if os.path.exists(plotPath):
+                    os.remove(plotPath)
 
+    def test_plotRadialReactorLayouts(self):
+        figs = plotting.plotRadialReactorLayouts(self.r)
+        self.assertEqual(len(figs), 1)
+        self.assertEqual(figs[0].axes[0]._children[0].xy, (0.5, 0))
+
+        plotPath = "coreAssemblyTypes1-rank0.png"
+        for _ in range(3):
             if os.path.exists(plotPath):
                 os.remove(plotPath)
 
