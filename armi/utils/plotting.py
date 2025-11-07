@@ -1414,7 +1414,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, f
 
 def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
     """Plots a matrix to show scattering."""
-    plt.imshow(scatterMatrix.todense(), interpolation="nearest")
+    img = plt.imshow(scatterMatrix.todense(), interpolation="nearest")
     plt.grid(color="0.70")
     plt.xlabel("From group")
     plt.ylabel("To group")
@@ -1426,6 +1426,8 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
         plt.close()
     else:
         plt.show()
+
+    return img
 
 
 def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None):

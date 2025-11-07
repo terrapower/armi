@@ -112,6 +112,19 @@ class TestPlotting(unittest.TestCase):
             if os.path.exists(plotPath):
                 os.remove(plotPath)
 
+    def test_plotScatterMatrix(self):
+        plotPath = "test_plotScatterMatrix.png"
+        lib = isotxs.readBinary(ISOAA_PATH)
+        u235 = lib.getNuclide("U235", "AA")
+        scatterMatrix = u235.micros.inelasticScatter
+        img = plotting.plotScatterMatrix(scatterMatrix, fName=plotPath)
+        self.assertEqual(len(img.axes.get_children()), 11)
+        self.assertTrue(img.axes.has_data())
+
+        for _ in range(3):
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
     def test_plotBlocksInAssembly(self):
         _fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
         xBlockLoc, yBlockHeights, yBlockAxMesh = plotting._plotBlocksInAssembly(
