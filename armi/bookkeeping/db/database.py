@@ -15,11 +15,10 @@
 """
 ARMI Database implementation, version 3.4.
 
-A reactor model should be fully recoverable from the database; all the way down to the component
-level. As a result, the structure of the underlying data is bound to the hierarchical Composite
-Reactor Model. Furthermore, this database format is intended to be more dynamic, permitting as-yet
-undeveloped levels and classes in the Composite Reactor Model to be supported as they are added.
-More high-level discussion is contained in :ref:`database-file`.
+A reactor model should be fully recoverable from the database; all the way down to the component level. As a result, the
+structure of the underlying data is bound to the hierarchical Composite Reactor Model. Furthermore, this database format
+is intended to be more dynamic, permitting as-yet undeveloped levels and classes in the Composite Reactor Model to be
+supported as they are added. More high-level discussion is contained in :ref:`database-file`.
 
 The :py:class:`Database` class contains most of the functionality for interacting with the
 underlying data. This includes things like dumping a Reactor state to the database and loading it
@@ -142,9 +141,9 @@ class Database:
         self._permission = permission
         self.h5db: Optional[h5py.File] = None
 
-        # Allows context management on open files. If context management is used on a file that is
-        # already open, it will not reopen and it will also not close after leaving that context.
-        # This allows the treatment of all databases the same whether they are open or closed.
+        # Allows context management on open files. If context management is used on a file that is already open, it will
+        # not reopen and it will also not close after leaving that context. This allows the treatment of all databases
+        # the same whether they are open or closed.
         self._openCount: int = 0
 
         if permission == "w":
@@ -163,6 +162,8 @@ class Database:
     def version(self, value: str):
         self._version = value
         self._versionMajor, self._versionMinor = (int(v) for v in value.split("."))
+        if self.versionMajor != 3:
+            raise ValueError(f"This version of ARMI only supports version 3 of the ARMI DB, found {self.versionMajor}.")
 
     @property
     def versionMajor(self):
@@ -178,6 +179,7 @@ class Database:
     def open(self):
         if self.h5db is not None:
             raise ValueError("This database is already open; make sure to close it before trying to open it again.")
+
         filePath = self._fileName
         self._openCount += 1
 
@@ -1116,17 +1118,16 @@ class Database:
         Parameters
         ----------
         comps : list of ArmiObject
-            The components/composites that currently occupy the location that you want histories at.
-            ArmiObjects are passed, rather than locations, because this makes it easier to figure
-            out things related to layout.
+            The components/composites that currently occupy the location that you want histories at. ArmiObjects are
+            passed, rather than locations, because this makes it easier to figure out things related to layout.
         params : List of str, optional
-            The parameter names for the parameters that we want the history of. If None, all
-            parameter history is given
+            The parameter names for the parameters that we want the history of. If None, all parameter history is given.
         timeSteps : List of (cycle, node) tuples, optional
-            The time nodes that you want history for. If None, all available time nodes will be
-            returned.
+            The time nodes that you want history for. If None, all available time nodes will be returned.
         """
-        if self.versionMinor < 4:
+        if self.versionMajor != 3:
+            raise ValueError(f"This version of ARMI only supports version 3 of the ARMI DB, found {self.versionMajor}.")
+        elif self.versionMinor < 4:
             raise ValueError(
                 "Location-based histories are only supported for db version 3.4 and greater. This "
                 f"database is version {self.versionMajor}, {self.versionMinor}."
@@ -1136,14 +1137,14 @@ class Database:
 
         histData: Histories = {c: collections.defaultdict(collections.OrderedDict) for c in comps}
 
-        # Check our assumptions about the passed locations: All locations must have the same parent
-        # and bear the same relationship to the anchor object.
+        # Check our assumptions about the passed locations: All locations must have the same parent and bear the same
+        # relationship to the anchor object.
         anchors = {obj.getAncestorAndDistance(lambda a: isinstance(a, Core)) for obj in comps}
 
         if len(anchors) != 1:
             raise ValueError(
-                "The passed objects do not have the same anchor or distance to that anchor; "
-                "encountered the following: {}".format(anchors)
+                "The passed objects do not have the same anchor or distance to that anchor; encountered the following: "
+                f"{anchors}"
             )
 
         anchorInfo = anchors.pop()
