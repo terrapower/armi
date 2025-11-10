@@ -132,6 +132,19 @@ class TestCompositePattern(unittest.TestCase):
         allChildren = container.getChildren(deep=True)
         self.assertEqual(len(allChildren), 8)
 
+    def test_printContents(self):
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            testName = "test_printContents"
+            runLog.LOG.startLog(testName)
+            runLog.LOG.setVerbosity(logging.IMPORTANT)
+
+            self.container.printContents(includeNuclides=True)
+            logMsg = mock.getStdout()
+
+        self.assertIn("DummyComposite", logMsg)
+        self.assertIn("DummyLeaf", logMsg)
+
     def test_iterComponents(self):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
