@@ -511,7 +511,9 @@ class Database:
                 return
             self.h5db.copy(h5ts, h5ts.name)
 
-            if inputDB.versionMinor < 2:
+            if self.versionMajor != 3:
+                raise ValueError(f"Only version 3 of the ARMI DB is supported, found {self.versionMajor}.")
+            elif inputDB.versionMinor < 2:
                 # The source database may have object references in some attributes. Make sure to link those up using
                 # our manual path strategy.
                 references = []
