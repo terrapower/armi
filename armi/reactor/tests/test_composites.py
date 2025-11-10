@@ -712,18 +712,18 @@ class TestCompositeTree(unittest.TestCase):
         self.assertEqual(child2, child)
 
     def test_changeNDensByFactor(self):
-        c = deepcopy(self.block.getComponents(Flags.FUEL)[0])
+        b = deepcopy(self.block.getChildrenWithFlags(Flags.FUEL)[0])
 
         # test inital state
-        dens = c.getNumberDensities()
+        dens = b.getNumberDensities()
         zrDens = dens["ZR"]
         u235Dens = dens["U235"]
         u238Dens = dens["U238"]
 
-        c.changeNDensByFactor(0.5)
+        b.changeNDensByFactor(0.5)
 
         # test new state
-        dens = c.getNumberDensities()
+        dens = b.getNumberDensities()
         self.assertAlmostEqual(dens["ZR"], zrDens / 2, delta=1e-6)
         self.assertAlmostEqual(dens["U235"], u235Dens / 2, delta=1e-6)
         self.assertAlmostEqual(dens["U238"], u238Dens / 2, delta=1e-6)
