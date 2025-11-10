@@ -503,6 +503,9 @@ class Database:
         This is used for restart runs with the standard operator for example. The current time step (being loaded from)
         should not be copied, as that time steps data will be written at the end of the time step.
         """
+        if self.versionMajor != 3:
+            raise ValueError(f"Only version 3 of the ARMI DB is supported, found {self.versionMajor}.")
+
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
             cyc, tn = time
@@ -511,9 +514,7 @@ class Database:
                 return
             self.h5db.copy(h5ts, h5ts.name)
 
-            if self.versionMajor != 3:
-                raise ValueError(f"Only version 3 of the ARMI DB is supported, found {self.versionMajor}.")
-            elif inputDB.versionMinor < 2:
+            if inputDB.versionMinor < 2:
                 # The source database may have object references in some attributes. Make sure to link those up using
                 # our manual path strategy.
                 references = []
