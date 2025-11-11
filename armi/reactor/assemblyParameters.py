@@ -35,15 +35,6 @@ def getAssemblyParameterDefinitions():
             default=None,
         )
 
-        pb.defParam(
-            "guideTubeTopElevation",
-            units=units.CM,
-            description=("Elevation of the top of the guide tube relative to the bottom of the duct."),
-            categories=[parameters.Category.assignInBlueprints],
-            saveToDB=True,
-            default=None,
-        )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
         pb.defParam(
             "arealPd",
@@ -119,6 +110,14 @@ def getAssemblyParameterDefinitions():
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves")
 
         pb.defParam("timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6)
+
+        pb.defParam(
+            "guideTubeTopElevation",
+            units=units.CM,
+            description=("Elevation of the top of the guide tube relative to the bottom of the duct."),
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
         pb.defParam(
