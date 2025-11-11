@@ -78,14 +78,13 @@ def getPowerFractions(cs):
     Returns
     -------
     powerFractions : 2-list
-        A list with nCycles elements, where each element is itself a list of the
-        power fractions at each step of the cycle.
+        A list with nCycles elements, where each element is itself a list of the power fractions at each step of the
+        cycle.
 
     Notes
     -----
-    This is stored outside of the Operator class so that it can be easily called
-    to resolve case settings objects in other contexts (i.e. in the preparation
-    of restart runs).
+    This is stored outside of the Operator class so that it can be easily called to resolve case settings objects in
+    other contexts (i.e. in the preparation of restart runs).
     """
     if cs["cycles"] != []:
         return [
@@ -119,9 +118,8 @@ def getCycleNames(cs):
 
     Notes
     -----
-    This is stored outside of the Operator class so that it can be easily called
-    to resolve case settings objects in other contexts (i.e. in the preparation
-    of restart runs).
+    This is stored outside of the Operator class so that it can be easily called to resolve case settings objects in
+    other contexts (i.e. in the preparation of restart runs).
     """
     if cs["cycles"] != []:
         return [(cycle["name"] if "name" in cycle.keys() else None) for cycle in cs["cycles"]]
@@ -144,9 +142,8 @@ def getAvailabilityFactors(cs):
 
     Notes
     -----
-    This is stored outside of the Operator class so that it can be easily called
-    to resolve case settings objects in other contexts (i.e. in the preparation
-    of restart runs).
+    This is stored outside of the Operator class so that it can be easily called to resolve case settings objects in
+    other contexts (i.e. in the preparation of restart runs).
     """
     if cs["cycles"] != []:
         availabilityFactors = []
@@ -170,9 +167,8 @@ def _getStepAndCycleLengths(cs):
 
     Notes
     -----
-    Using this method directly is more efficient than calling `getStepLengths`
-    and `getCycleLengths` separately, but it is probably more clear to the user
-    to call each of them separately.
+    Using this method directly is more efficient than calling `getStepLengths` and `getCycleLengths` separately, but it
+    is probably more clear to the user to call each of them separately.
     """
     stepLengths = []
     availabilityFactors = getAvailabilityFactors(cs)
@@ -194,7 +190,6 @@ def _getStepAndCycleLengths(cs):
 
         cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
         cycleLengths = [cycleLength / aFactor for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)]
-
     else:
         cycleLengths = (
             expandRepeatedFloats(cs["cycleLengths"])
@@ -224,14 +219,12 @@ def getStepLengths(cs):
     Returns
     -------
     stepLengths : 2-list
-        A list with elements for each cycle, where each element itself is a list
-        containing the step lengths in days.
+        A list with elements for each cycle, where each element itself is a list containing the step lengths in days.
 
     Notes
     -----
-    This is stored outside of the Operator class so that it can be easily called
-    to resolve case settings objects in other contexts (i.e. in the preparation
-    of restart runs).
+    This is stored outside of the Operator class so that it can be easily called to resolve case settings objects in
+    other contexts (i.e. in the preparation of restart runs).
     """
     return _getStepAndCycleLengths(cs)[0]
 
@@ -251,9 +244,8 @@ def getCycleLengths(cs):
 
     Notes
     -----
-    This is stored outside of the Operator class so that it can be easily called
-    to resolve case settings objects in other contexts (i.e. in the preparation
-    of restart runs).
+    This is stored outside of the Operator class so that it can be easily called to resolve case settings objects in
+    other contexts (i.e. in the preparation of restart runs).
     """
     return _getStepAndCycleLengths(cs)[1]
 
@@ -273,9 +265,8 @@ def getBurnSteps(cs):
 
     Notes
     -----
-    This is stored outside of the Operator class so that it can be easily called
-    to resolve case settings objects in other contexts (i.e. in the preparation
-    of restart runs).
+    This is stored outside of the Operator class so that it can be easily called to resolve case settings objects in
+    other contexts (i.e. in the preparation of restart runs).
     """
     stepLengths = getStepLengths(cs)
     return [len(steps) for steps in stepLengths]
@@ -305,8 +296,8 @@ def getCumulativeNodeNum(cycle, node, cs):
     """
     Return the cumulative node number associated with a cycle and time node.
 
-    Note that a cycle with n time steps has n+1 nodes, and for cycle m with n steps, nodes
-    (m, n+1) and (m+1, 0) are counted separately.
+    Note that a cycle with n time steps has n+1 nodes, and for cycle m with n steps, nodes (m, n+1) and (m+1, 0) are
+    counted separately.
 
     Parameters
     ----------
@@ -337,8 +328,7 @@ def getCycleNodeFromCumulativeStep(timeStepNum, cs):
     -----
     Time steps are the spaces between time nodes, and are 1-indexed.
 
-    To get the (cycle, node) from a cumulative time node, see instead
-    getCycleNodeFromCumulativeNode.
+    To get the (cycle, node) from a cumulative time node, see instead getCycleNodeFromCumulativeNode.
     """
     stepsPerCycle = getBurnSteps(cs)
 
@@ -368,13 +358,11 @@ def getCycleNodeFromCumulativeNode(timeNodeNum, cs):
 
     Notes
     -----
-    Time nodes are the start/end of time steps, and are 0-indexed. For a cycle
-    with n steps, there will be n+1 nodes (one at the start of the cycle and another
-    at the end, plus those separating the steps). For cycle m with n steps, nodes
-    (m, n+1) and (m+1, 0) are counted separately.
+    Time nodes are the start/end of time steps, and are 0-indexed. For a cycle with n steps, there will be n+1 nodes
+    (one at the start of the cycle and another at the end, plus those separating the steps). For cycle m with n steps,
+    nodes (m, n+1) and (m+1, 0) are counted separately.
 
-    To get the (cycle, node) from a cumulative time step, see instead
-    getCycleNodeFromCumulativeStep.
+    To get the (cycle, node) from a cumulative time step, see instead getCycleNodeFromCumulativeStep.
     """
     nodesPerCycle = getNodesPerCycle(cs)
 
@@ -413,9 +401,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
     r"""
     Attempts to pickle all members of this object and identifies those who cannot be pickled.
 
-    Useful for debugging MPI-bcast errors
-
-    Not recursive yet. Would be nice to have it loop through nested objects (blocks in assems in reactors)
+    Useful for debugging MPI-bcast errors.
 
     Parameters
     ----------
@@ -433,41 +419,11 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
     for name, ob in obj.__dict__.items():
         if name not in ignore:
             if verbose:
-                print("Checking {0}...".format(name))
+                print(f"Checking {name}...")
             try:
                 pickle.dumps(ob)  # dump as a string
             except Exception:
-                print("{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob))
-
-
-def doTestPickleOnAllContents2(obj, ignore=None):
-    r"""
-    Attempts to find one unpickleable object in a nested object.
-
-    Returns
-    -------
-    pickleChain : list
-        list of names in a chain that are unpickleable. Just one example per object
-        e.g. ['r','assemblies','A101','lib] means the lib is unpicklable.
-    """
-    if ignore is None:
-        ignore = []
-    unpickleable = []
-    if not hasattr(obj, "__dict__"):
-        print("done")
-        return unpickleable
-    for name, ob in obj.__dict__.items():
-        print(("checking ", name))
-        if name not in ignore:
-            try:
-                pickle.dumps(ob)  # dump as a string
-            except Exception:
-                unpickleable.append(name)
-                print("Can't pickle {0}".format(name))
-                # recursive call.
-                unpickleable.extend(doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore))
-
-    return unpickleable
+                print(f"{name} in {obj} cannot be pickled.")
 
 
 class MyPickler(pickle.Pickler):
@@ -482,7 +438,7 @@ class MyPickler(pickle.Pickler):
             pickle.Pickler.save(self, obj)
         except Exception:
             _excType, excValue, _excTraceback = sys.exc_info()
-            print("Object that failed: {}. Err: {}".format(obj, excValue))
+            print(f"Object that failed: {obj}. Err: {excValue}")
             raise
 
 
@@ -492,9 +448,8 @@ def tryPickleOnAllContents3(obj):
 
     Notes
     -----
-    In this form, this just finds one pickle error and then crashes. If you want
-    to make it work like the other testPickle functions and handle errors, you could.
-    But usually you just have to find one unpickleable SOB.
+    In this form, this just finds one pickle error and then crashes. If you want to make it work like the other
+    testPickle functions and handle errors, you could. But usually you just have to find one unpickleable SOB.
     """
     with tempfile.TemporaryFile() as output:
         try:
@@ -527,8 +482,8 @@ def slantSplit(val, ratio, nodes, order="low first"):
     """
     Returns a list of values whose sum is equal to the value specified.
 
-    The ratio between the highest and lowest value is equal to the specified ratio,
-    and the middle values trend linearly between them.
+    The ratio between the highest and lowest value is equal to the specified ratio, and the middle values trend linearly
+    between them.
     """
     val = float(val)
     ratio = float(ratio)
@@ -552,7 +507,6 @@ def prependToList(originalList, listToPrepend):
     ----------
     originalList : list
         The list to prepend to.
-
     listToPrepend : list
         The list to add to the beginning of (prepend) the originalList.
 
@@ -598,20 +552,14 @@ def list2str(strings, width=None, preStrings=None, fmt=None):
     Parameters
     ----------
     strings : list
-        The items to create centered strings in the line for.
-        Can be str, float, int, etc.
-
+        The items to create centered strings in the line for. Can be str, float, int, etc.
     width : int, optional
-        The maximum width that the strings are allowed to take up.
-        Only strings are affected by this parameter, because it does
-        not make sense to truncate ints or floats.
-
+        The maximum width that the strings are allowed to take up. Only strings are affected by this parameter, because
+        it does not make sense to truncate ints or floats.
     preStrings : list of str, optional
         Any strings that come before the centered strings.
-
     fmt : str, optional
-        The format to apply to each string, such as
-        ' >4d', '^12.4E'.
+        The format to apply to each string, such as ' >4d', '^12.4E'.
     """
     if preStrings is None:
         preStrings = []
@@ -730,13 +678,11 @@ def userName() -> str:
     """
     Return a database-friendly username.
 
-    This will return the current user's username, removing any prefix like ``pre-``, if
-    present.
+    This will return the current user's username, removing any prefix like ``pre-``, if present.
 
     Notes
     -----
-    ARMI uses the user name in a number of places, namely in the database names, which
-    cannot contain hyphens.
+    ARMI uses the user name in a number of places, namely in the database names, which cannot contain hyphens.
     """
     return re.sub("^[a-zA-Z]-", "", getpass.getuser())
 
@@ -772,7 +718,7 @@ def safeCopy(src: str, dst: str) -> None:
         cmd = f'cp "{src}" "{dst}"'
         os.system(cmd)
     else:
-        raise OSError("Cannot perform ``safeCopy`` on files because ARMI only supports " + "Linux, MacOs, and Windows.")
+        raise OSError("Cannot perform ``safeCopy`` on files because ARMI only supports Linux, MacOs, and Windows.")
 
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
@@ -785,12 +731,12 @@ def safeCopy(src: str, dst: str) -> None:
         totalWaitTime += waitTime
         if totalWaitTime > maxWaitTime:
             runLog.warning(
-                f"File copy from {dst} to {src} has failed due to exceeding "
-                + f"a maximum wait time of {maxWaitTime / 60} minutes."
+                f"File copy from {dst} to {src} has failed due to exceeding a maximum wait time of {maxWaitTime / 60} "
+                "minutes."
             )
             return
 
-    runLog.extra("Copied {} -> {}".format(src, dst))
+    runLog.extra(f"Copied {src} -> {dst}")
 
 
 def safeMove(src: str, dst: str) -> None:
@@ -825,10 +771,10 @@ def safeMove(src: str, dst: str) -> None:
         totalWaitTime += waitTime
         if totalWaitTime > maxWaitTime:
             runLog.warning(
-                f"File move from {dst} to {src} has failed due to exceeding "
-                + f"a maximum wait time of {maxWaitTime / 60} minutes."
+                f"File move from {dst} to {src} has failed due to exceeding a maximum wait time of {maxWaitTime / 60} "
+                "minutes."
             )
             return
 
-    runLog.extra("Moved {} -> {}".format(src, dst))
+    runLog.extra(f"Moved {src} -> {dst}")
     return dst
