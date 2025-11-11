@@ -90,6 +90,7 @@ jobs:
           rm -rf doc/_build/html/_modules/.apidocs
           rm -rf doc/_build/html/_modules
 
+          ls -lah *
           ls -lah doc
           ls -lah doc/_build
           ls -lah doc/_build/doctrees
