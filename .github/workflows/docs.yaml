@@ -17,6 +17,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Cleanup build folder
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@v2
