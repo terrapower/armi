@@ -492,7 +492,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c01n00"])
 
         # check edge case: major vesion is not 3
-        db3 = Database("restartDBedgeCase.h5", "w")
+        db3 = Database("restartDBedgeCase1.h5", "w")
         with patch.object(db3, "_versionMajor", 2), self.assertRaises(ValueError):
             with db3:
                 db3.mergeHistory(self.db, 2, 2)

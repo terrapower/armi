@@ -525,10 +525,9 @@ class Database:
                             references.append((name, key, inputDB.h5db[attr].name))
 
                 h5ts.visititems(findReferences)
-
                 for key, attr, path in references:
                     destTs = self.h5db[h5ts.name]
-                    destTs[key].attrs[attr] = "@{}".format(path)
+                    destTs[key].attrs[attr] = f"@{path}"
 
     def __enter__(self):
         """Context management support."""
@@ -537,6 +536,7 @@ class Database:
             self.open()
         else:
             self._openCount += 1
+
         return self
 
     def __exit__(self, type, value, traceback):
