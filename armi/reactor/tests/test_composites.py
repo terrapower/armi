@@ -138,6 +138,19 @@ class TestCompositePattern(unittest.TestCase):
         allChildren = container.getChildren(deep=True)
         self.assertEqual(len(allChildren), 8)
 
+    def test_printContents(self):
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            testName = "test_printContents"
+            runLog.LOG.startLog(testName)
+            runLog.LOG.setVerbosity(logging.IMPORTANT)
+
+            self.container.printContents(includeNuclides=True)
+            logMsg = mock.getStdout()
+
+        self.assertIn("DummyComposite", logMsg)
+        self.assertIn("DummyLeaf", logMsg)
+
     def test_iterComponents(self):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
@@ -723,18 +736,18 @@ class TestCompositeTree(unittest.TestCase):
         self.assertEqual(child2, child)
 
     def test_changeNDensByFactor(self):
-        c = deepcopy(self.block.getComponents(Flags.FUEL)[0])
+        b = deepcopy(self.block.getChildrenWithFlags(Flags.FUEL)[0])
 
         # test inital state
-        dens = c.getNumberDensities()
+        dens = b.getNumberDensities()
         zrDens = dens["ZR"]
         u235Dens = dens["U235"]
         u238Dens = dens["U238"]
 
-        c.changeNDensByFactor(0.5)
+        b.changeNDensByFactor(0.5)
 
         # test new state
-        dens = c.getNumberDensities()
+        dens = b.getNumberDensities()
         self.assertAlmostEqual(dens["ZR"], zrDens / 2, delta=1e-6)
         self.assertAlmostEqual(dens["U235"], u235Dens / 2, delta=1e-6)
         self.assertAlmostEqual(dens["U238"], u238Dens / 2, delta=1e-6)
