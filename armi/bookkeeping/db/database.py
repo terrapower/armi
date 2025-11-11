@@ -505,6 +505,8 @@ class Database:
         """
         if self.versionMajor != 3:
             raise ValueError(f"Only version 3 of the ARMI DB is supported, found {self.versionMajor}.")
+        elif inputDB.versionMajor != 3:
+            raise ValueError(f"Only version 3 of the ARMI DB is supported, found {inputDB.versionMajor}.")
 
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
@@ -513,21 +515,6 @@ class Database:
                 # all data up to current state are merged
                 return
             self.h5db.copy(h5ts, h5ts.name)
-
-            if inputDB.versionMinor < 2:
-                # The source database may have object references in some attributes. Make sure to link those up using
-                # our manual path strategy.
-                references = []
-
-                def findReferences(name, obj):
-                    for key, attr in obj.attrs.items():
-                        if isinstance(attr, h5py.h5r.Reference):
-                            references.append((name, key, inputDB.h5db[attr].name))
-
-                h5ts.visititems(findReferences)
-                for key, attr, path in references:
-                    destTs = self.h5db[h5ts.name]
-                    destTs[key].attrs[attr] = f"@{path}"
 
     def __enter__(self):
         """Context management support."""
