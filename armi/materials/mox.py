@@ -21,6 +21,9 @@ A definitive source for these properties is [#ornltm20002]_.
     Irradiation. S.G. Popov, et.al.  Oak Ridge National Laboratory.
     ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
 """
 
 from armi import runLog
