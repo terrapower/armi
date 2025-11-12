@@ -309,8 +309,7 @@ class TestBlockConverter(unittest.TestCase):
         self.assertEqual(5, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CONTROL)]))
         self.assertEqual(9, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CLAD)]))
 
-        # This should fail because a spatial grid is required
-        # on the block.
+        # This should fail because a spatial grid is required on the block.
         driverBlock.spatialGrid = None
         block.spatialGrid = None
         with self.assertRaises(ValueError):
@@ -321,9 +320,8 @@ class TestBlockConverter(unittest.TestCase):
                 hexagon.numPositionsInRing,
             )
 
-        # The ``BlockAvgToCylConverter`` should work
-        # without any spatial grid defined because it
-        # assumes the grid based on the block type.
+        # The ``BlockAvgToCylConverter`` should work without any spatial grid defined because it assumes the grid based
+        # on the block type.
         driverBlock.spatialGrid = None
         block.spatialGrid = None
 

@@ -45,8 +45,8 @@ def setBlockNeutronVelocities(r, neutronVelocities):
     r : Reactor
         A Reactor object, that we want to modify.
     neutronVelocities : dict
-        Dictionary that is keyed with the ``representativeBlock`` XS IDs with values of multigroup neutron
-        velocity data computed by MC2.
+        Dictionary that is keyed with the ``representativeBlock`` XS IDs with values of multigroup neutron velocity data
+        computed by MC2.
 
     Raises
     ------
@@ -57,9 +57,9 @@ def setBlockNeutronVelocities(r, neutronVelocities):
         xsID = b.getMicroSuffix()
         if xsID not in neutronVelocities:
             raise ValueError(
-                "Cannot assign multi-group neutron velocity to {} because it does not exist in "
-                "the neutron velocities dictionary with keys: {}. The XS library does not contain "
-                "data for the {} xsid.".format(b, neutronVelocities.keys(), xsID)
+                f"Cannot assign multi-group neutron velocity to {b} because it does not exist in the neutron "
+                f"velocities dictionary with keys: {neutronVelocities.keys()}. The XS library does not contain data "
+                f"for the {xsID} xsid."
             )
         b.p.mgNeutronVelocity = neutronVelocities[b.getMicroSuffix()]
 
@@ -88,8 +88,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 
-        Generate new cross sections based off the case settings and the current state
-        of the reactor if the lattice physics frequency is BOL.
+        Generate new cross sections based off the case settings and the current state of the reactor if the lattice
+        physics frequency is BOL.
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
             self.updateXSLibrary(cycle)
@@ -98,14 +98,13 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 
-        Generate new cross sections based off the case settings and the current state
-        of the reactor if the lattice physics frequency is BOC.
+        Generate new cross sections based off the case settings and the current state of the reactor if the lattice
+        physics frequency is BOC.
 
         Notes
         -----
-        :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
-        also calls this if the ``runLatticePhysicsBeforeShuffling`` setting is True.
-        This happens because branch searches may need XS.
+        :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC` also calls this if the
+        ``runLatticePhysicsBeforeShuffling`` setting is True. This happens because branch searches may need XS.
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
             self.updateXSLibrary(cycle)
@@ -125,7 +124,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         --------
         computeCrossSections : run lattice physics on the current reactor state no matter weather needed or not.
         """
-        runLog.important("Preparing XS for cycle {}".format(cycle))
+        runLog.important(f"Preparing XS for cycle {cycle}")
         representativeBlocks, xsIds = self._getBlocksAndXsIds()
         if self._newLibraryShouldBeCreated(cycle, representativeBlocks, xsIds):
             if self.cs[CONF_CLEAR_XS]:
@@ -161,30 +160,27 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     @staticmethod
     def _copyLibraryFilesForCycle(cycle, libFiles):
-        runLog.extra("Current library files: {}".format(libFiles))
+        runLog.extra(f"Current library files: {libFiles}")
         for baseName, cycleName in libFiles.items():
             if not os.path.exists(cycleName):
                 if not os.path.exists(baseName):
                     raise ValueError(
-                        "Neither {} nor {} libraries exist. Either the "
-                        "current cycle library for cycle {} should exist "
-                        "or a base library is required to continue.".format(cycleName, baseName, cycle)
+                        f"Neither {cycleName} nor {baseName} libraries exist. Either the current cycle library for "
+                        f"cycle {cycle} should exist or a base library is required to continue."
                     )
                 runLog.info(
-                    "Existing library {} for cycle {} does not exist. The active library is {}".format(
-                        cycleName, cycle, baseName
-                    )
+                    f"Existing library {cycleName} for cycle {cycle} does not exist. The active library is {baseName}"
                 )
             else:
-                runLog.info("Using {} as an active library".format(baseName))
+                runLog.info(f"Using {baseName} as an active library")
                 if cycleName != baseName:
                     safeCopy(cycleName, baseName)
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
-        raise NotImplementedError("Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL]))
+        raise NotImplementedError(f"Gamma cross sections not implemented in {self.cs[CONF_XS_KERNEL]}")
 
     def _writeGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
-        raise NotImplementedError("Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL]))
+        raise NotImplementedError(f"Gamma cross sections not implemented in {self.cs[CONF_XS_KERNEL]}")
 
     def _getSuffix(self, cycle):
         return ""
@@ -193,14 +189,13 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 
-        Generate new cross sections based off the case settings and the current state
-        of the reactor if the lattice physics frequency is at least everyNode.
+        Generate new cross sections based off the case settings and the current state of the reactor if the lattice
+        physics frequency is at least everyNode.
 
-        If this is not a coupled calculation, or if cross sections are only being
-        generated at everyNode, then we want to regenerate all cross sections here.
-        If it _is_ a coupled calculation, and we are generating cross sections at
-        coupled iterations, then keep the existing XS lib for now, adding
-        any XS groups as necessary to ensure that all XS groups are covered.
+        If this is not a coupled calculation, or if cross sections are only being generated at everyNode, then we want
+        to regenerate all cross sections here. If it _is_ a coupled calculation, and we are generating cross sections at
+        coupled iterations, then keep the existing XS lib for now, adding any XS groups as necessary to ensure that all
+        XS groups are covered.
         """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
             if not self.o.couplingIsActive() or self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode:
@@ -213,18 +208,18 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Notes
         -----
-        This accounts for changes in cross section data due to temperature changes, which are important
-        for cross section resonance effects and accurately characterizing Doppler constant and coefficient
-        evaluations. For Standard and Equilibrium run types, this coupling iteration is limited to when the
-        time node is equal to zero. The validity of this assumption lies in the expectation that these runs
-        have consistent power, flow, and temperature conditions at all time nodes. For Snapshot run types,
-        this assumption, in general, is invalidated as the requested reactor state may sufficiently differ
-        from what exists on the database and where tight coupling is needed to capture temperature effects.
+        This accounts for changes in cross section data due to temperature changes, which are important for cross
+        section resonance effects and accurately characterizing Doppler constant and coefficient evaluations. For
+        Standard and Equilibrium run types, this coupling iteration is limited to when the time node is equal to zero.
+        The validity of this assumption lies in the expectation that these runs have consistent power, flow, and
+        temperature conditions at all time nodes. For Snapshot run types, this assumption, in general, is invalidated as
+        the requested reactor state may sufficiently differ from what exists on the database and where tight coupling is
+        needed to capture temperature effects.
 
         .. warning::
 
-            For Standard and Equilibrium run types, if the reactor power, flow, and/or temperature state
-            is expected to vary over the lifetime of the simulation, as could be the case with
+            For Standard and Equilibrium run types, if the reactor power, flow, and/or temperature state is expected to
+            vary over the lifetime of the simulation, as could be the case with
             :ref:`detailed cycle histories <cycle-history>`, a custom subclass should be considered.
 
         Parameters
@@ -265,8 +260,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         xsLibrarySuffix : str, optional
             A book-keeping suffix used in Doppler calculations
         blockList : list, optional
-            List of blocks for which to generate cross sections.
-            If None, representative blocks will be determined
+            List of blocks for which to generate cross sections. If None, representative blocks will be determined.
         """
         self.r.core.lib = self._generateXsLibrary(baseList, forceSerial, xsLibrarySuffix, blockList)
 
@@ -383,31 +377,28 @@ class LatticePhysicsInterface(interfaces.Interface):
         if executeXSGen and not idsChangedBurnup:
             executeXSGen = False
 
-        if self.r.core._lib is not None:
-            # justification=r.core.lib property can raise exception or load pre-generated
-            # ISOTXS, but the interface should have responsibility of loading
-            # XS's have already generated for this cycle (maybe during fuel management). Should we update due to
-            # changes that occurred during fuel management?
+        if self.r.core.hasLib():
+            # justification=r.core.lib property can raise exception or load pre-generated ISOTXS, but the interface
+            # should have responsibility of loading XS's have already generated for this cycle (maybe during fuel
+            # management). Should we update due to changes that occurred during fuel management?
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)
             if missing and not executeXSGen:
                 runLog.info(
-                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
-                    f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
-                    "is not enabled, but will be run to generate these missing cross sections."
+                    f"Although a XS library {self.r.core.lib} exists on {self.r.core}, there are missing XS IDs "
+                    f"{missing} required. The XS generation on cycle {cycle} is not enabled, but will be run to "
+                    "generate these missing cross sections."
                 )
                 executeXSGen = True
             elif missing:
                 runLog.info(
-                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
-                    f"there are missing XS IDs {missing} required. These will be generated "
-                    f"on cycle {cycle}."
+                    f"Although a XS library {self.r.core.lib} exists on {self.r.core}, there are missing XS IDs "
+                    f"{missing} required. These will be generated on cycle {cycle}."
                 )
                 executeXSGen = True
             else:
                 runLog.info(
-                    f"A XS library {self.r.core._lib} exists on {self.r.core} and contains "
-                    f"the required XS data for XS IDs {self.r.core.lib.xsIDs}. The generation "
-                    "of XS will be skipped."
+                    f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required XS data for XS "
+                    f"IDs {self.r.core.lib.xsIDs}. The generation of XS will be skipped."
                 )
                 executeXSGen = False
 
@@ -415,9 +406,8 @@ class LatticePhysicsInterface(interfaces.Interface):
             runLog.info(f"Cross sections will be generated on cycle {cycle} for the following XS IDs: {xsIDs}")
         else:
             runLog.info(
-                f"Cross sections will not be generated on cycle {cycle}. The "
-                f"setting `{CONF_GEN_XS}` is {self.cs[CONF_GEN_XS]} and `skipCycles` "
-                f"is {self.cs['skipCycles']}"
+                f"Cross sections will not be generated on cycle {cycle}. The setting `{CONF_GEN_XS}` is "
+                f"{self.cs[CONF_GEN_XS]} and `skipCycles` is {self.cs['skipCycles']}"
             )
 
         return executeXSGen
@@ -426,11 +416,10 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         Check to see if burnup has changed meaningfully.
 
-        If there are, then the xs sets should be regenerated.
-        Otherwise then go ahead and skip xs generation.
+        If there are, then the xs sets should be regenerated. Otherwise then go ahead and skip xs generation.
 
-        This is motivated by the idea that during very long explicit equilibrium runs,
-        it might save time to turn off xs generation at a certain point.
+        This is motivated by the idea that during very long explicit equilibrium runs, it might save time to turn off xs
+        generation at a certain point.
 
         Parameters
         ----------
@@ -449,13 +438,13 @@ class LatticePhysicsInterface(interfaces.Interface):
                 xsID = b.getMicroSuffix()
 
                 if xsID not in self._oldXsIdsAndBurnup:
-                    # Looks like a new ID was found that was not in the old ID's
-                    # have to regenerate the cross-sections this time around
+                    # Looks like a new ID was found that was not in the old ID's have to regenerate the cross-sections
+                    # this time around
                     self._oldXsIdsAndBurnup[xsID] = b.p.percentBu
                     idsChangedBurnup = True
                 else:
-                    # The id was found.  Now it is time to compare the burnups to determine
-                    # if there has been enough meaningful change between the runs
+                    # The id was found. Now it is time to compare the burnups to determine if there has been enough
+                    # meaningful change between the runs
                     buOld = self._oldXsIdsAndBurnup[xsID]
                     buNow = b.p.percentBu
 
@@ -465,9 +454,7 @@ class LatticePhysicsInterface(interfaces.Interface):
                         self._oldXsIdsAndBurnup[xsID] = buNow
 
                         runLog.important(
-                            "Burnup has changed in xsID {} from {} to {}. Recalculating Cross-sections".format(
-                                xsID, buOld, buNow
-                            )
+                            f"Burnup has changed in xsID {xsID} from {buOld} to {buNow}. Recalculating Cross-sections"
                         )
 
         return idsChangedBurnup
@@ -491,10 +478,9 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Notes
         -----
-        This is only relevant for equilibrium cases. We have to turn
-        off XS updates after several cyclics or else the number densities
-        will never converge.
+        This is only relevant for equilibrium cases. We have to turn off XS updates after several cyclics or else the
+        number densities will never converge.
         """
         if self.r.core.p.cyclics >= self.cs["numCyclicsBeforeStoppingXS"]:
             self.enabled(False)
-            runLog.important("Disabling {} because numCyclics={}".format(self, self.r.core.p.cyclics))
+            runLog.important(f"Disabling {self} because numCyclics={self.r.core.p.cyclics}")

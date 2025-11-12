@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple air material."""
+"""Simple air material.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
+"""
 
 from armi.materials import material
 from armi.utils.units import G_PER_CM3_TO_KG_PER_M3, getTk

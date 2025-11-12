@@ -183,7 +183,7 @@ class Core(composites.Composite):
             :py:class:`DomainType <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
             <armi.reactor.geometry.BoundaryType>` are valid. The validity of a user-specified
             geometry and symmetry is verified by a settings :py:class:`Inspector
-            <armi.operators.settingsValidation.Inspector`.
+            <armi.settings.settingsValidation.Inspector`.
         """
         if not self.spatialGrid:
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
@@ -250,6 +250,15 @@ class Core(composites.Composite):
         """Set the microscopic cross section library."""
         runLog.extra(f"Updating cross section library on {self}.\nInitial: {self._lib}\nUpdated: {value}.")
         self._lib = value
+
+    def hasLib(self):
+        """Check if the microscopic cross section library is set.
+
+        Since the property ``lib`` will attempt to auto-load from a given ISOTXS file
+        in the working directory, checking ``r.core.lib is not None`` may result in unexpected
+        behavior. Use this instead.
+        """
+        return self._lib is not None
 
     @property
     def isFullCore(self):
@@ -347,7 +356,7 @@ class Core(composites.Composite):
         for a in self.getAssemblies(includeAll=True):
             a.lastLocationLabel = a.getLocation()
 
-    def removeAssembly(self, a1, discharge=True):
+    def removeAssembly(self, a1, discharge=True, addToSFP=False):
         """
         Takes an assembly and puts it out of core.
 
@@ -357,11 +366,14 @@ class Core(composites.Composite):
             The assembly to remove
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
+        addToSFP : bool, optional
+            Store the discharged assembly in the SFP regardless of the
+            ``trackAssems`` setting. Default: False
 
         Notes
         -----
         Please expect this method will delete your assembly (instead of moving it into a Spent Fuel
-        Pool) unless you set the ``trackAssems`` to True in your settings file.
+        Pool) unless you set ``trackAssems`` to True or ``addToSFP`` is set to True.
 
         Originally, this held onto all assemblies in the Spend Fuel Pool. However, they use memory.
         And it is possible to have the history interface record only the parameters you need.
@@ -384,7 +396,7 @@ class Core(composites.Composite):
         a1.p.dischargeTime = self.r.p.time
         self.remove(a1)
 
-        if discharge and self._trackAssems:
+        if discharge and (self._trackAssems or addToSFP):
             if self.parent.excore.get("sfp") is not None:
                 self.parent.excore.sfp.add(a1)
             else:
@@ -1602,11 +1614,13 @@ class Core(composites.Composite):
 
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
-        data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
+        from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
+
+        data = AssemblyMove(oldLoc, newLoc, enrichList, assemblyType, assemName)
         if self.moves.get(cycle) is None:
             self.moves[cycle] = []
         if data in self.moves[cycle]:
-            # remove the old version and throw the new on at the end.
+            # remove the old version and throw the new one at the end.
             self.moves[cycle].remove(data)
         self.moves[cycle].append(data)
 
@@ -2170,8 +2184,7 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined in the given Settings, in the
-        `zoneDefinitions` or `zonesFile` case setting.
+        Build the Zones that are defined in the given Settings, in the `zoneDefinitions` or `zonesFile` case setting.
 
         Parameters
         ----------
@@ -2183,14 +2196,14 @@ class Core(composites.Composite):
         Manual zones will be defined in a special string format, e.g.:
 
         >>> zoneDefinitions:
-        >>>     - ring-1: 001-001
-        >>>     - ring-2: 002-001, 002-002
-        >>>     - ring-3: 003-001, 003-002, 003-003
+        >>>     - "ring-1: 001-001"
+        >>>     - "ring-2: 002-001, 002-002"
+        >>>     - "ring-3: 003-001, 003-002, 003-003"
 
         Notes
         -----
-        This function will just define the Zones it sees in the settings, it does not do any
-        validation against a Core object to ensure those manual zones make sense.
+        This function will just define the Zones it sees in the settings, it does not do any validation against a Core
+        object to ensure those manual zones make sense.
         """
         if cs[CONF_ZONE_DEFINITIONS]:
             runLog.info(f"Building Zones by manual definitions in {CONF_ZONE_DEFINITIONS} setting")
@@ -2235,8 +2248,7 @@ class Core(composites.Composite):
     ) -> Iterator[blocks.Block]:
         """Iterate over the blocks in the core.
 
-        Useful for operations that just want to find all the blocks in the core with light
-        filtering.
+        Useful for operations that just want to find all the blocks in the core with light filtering.
 
         Parameters
         ----------
@@ -2255,30 +2267,29 @@ class Core(composites.Composite):
 
         Examples
         --------
-        Iterate over all fuel blocks::
-
         >>> for b in r.core.iterBlocks(Flags.FUEL):
         ...     pass
 
         See Also
         --------
-        :meth:`getBlocks` has more control over what is included in the returned list
-        including looking at the spent fuel pool and assemblies that may not exist now
-        but existed at BOL (via :meth:`getAssemblies`). But if you're just interested in
-        the blocks in the core now, maybe with a flag attached to that block, this is what
-        you should use.
+        The :py:meth:`getBlocks` has more control over what is included in the returned list including looking at the
+        spent fuel pool and assemblies that may not exist now but existed at BOL (via :meth:`getAssemblies`). But if
+        you're just interested in the blocks in the core now, maybe with a flag attached to that block, this is what you
+        should use.
 
         Notes
         -----
-        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If
-        this is not the case, consider using :meth:`iterChildren`.
+        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If this is not the case,
+        consider using :meth:`iterChildren`.
         """
         if typeSpec is not None:
             typeChecker = lambda b: b.hasFlags(typeSpec, exact=exact)
         else:
             typeChecker = lambda _: True
+
         if predicate is not None:
             blockChecker = lambda b: typeChecker(b) and predicate(b)
         else:
             blockChecker = typeChecker
+
         return self.iterChildren(generationNum=2, predicate=blockChecker)

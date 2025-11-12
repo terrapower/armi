@@ -29,7 +29,7 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings, setting
 from armi.settings.settingsValidation import Inspector, validateVersion
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 
@@ -154,6 +154,30 @@ class TestAddingOptions(unittest.TestCase):
         cs = settings.Settings(fout)
         self.assertEqual(cs["burnSteps"], 2)
         self.assertEqual(cs[CONF_NEUTRONICS_KERNEL], "MCNP")
+
+    def test_illDefinedOptions(self):
+        """Test an edge case where the Setting was ill-defined."""
+        s = setting.Setting(
+            "illDefinedOptions",
+            default="DEFAULT",
+            label="stuff",
+            description="Whatever",
+            enforcedOptions=True,
+        )
+
+        self.assertIsNone(s.options)
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertIs(mock.getStdout(), "")
+            with self.assertRaises(AttributeError):
+                s.addOptions([1, 2])
+            self.assertIn("has no default options", mock.getStdout())
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertIs(mock.getStdout(), "")
+            with self.assertRaises(AttributeError):
+                s.addOption(3)
+            self.assertIn("has no default options", mock.getStdout())
 
 
 class TestSettings2(unittest.TestCase):

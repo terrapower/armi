@@ -97,7 +97,7 @@ def defineCoreParameters():
 
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves", default=0)
 
-    with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
+    with pDefs.createBuilder(location=ParamLocation.NA, categories=["control rods"]) as pb:
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
             default="",
@@ -132,7 +132,7 @@ def defineCoreParameters():
             location=ParamLocation.TOP,
         )
 
-    with pDefs.createBuilder(default=0.0, location="N/A") as pb:
+    with pDefs.createBuilder(default=0.0, location=ParamLocation.NA) as pb:
         pb.defParam(
             "referenceBlockAxialMesh",
             units=units.CM,

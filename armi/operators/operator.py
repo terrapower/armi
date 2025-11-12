@@ -26,10 +26,10 @@ import collections
 import os
 import re
 import time
-from typing import Tuple
+from typing import Optional, Tuple
 
 from armi import context, interfaces, runLog
-from armi.bookkeeping import memoryProfiler
+from armi.bookkeeping import db, memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
@@ -52,6 +52,7 @@ from armi.utils import (
     getCycleNames,
     getMaxBurnSteps,
     getPowerFractions,
+    getPreviousTimeNode,
     getStepLengths,
     pathTools,
     units,
@@ -352,6 +353,11 @@ class Operator:
 
     def _mainOperate(self):
         """Main loop for a standard ARMI run. Steps through time interacting with the interfaces."""
+        dbi = self.getInterface("database")
+        if dbi is not None and dbi.enabled():
+            dbi.initDB()
+        if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != RunTypes.SNAPSHOTS:
+            self.interactAllRestart(dbi)
         self.interactAllBOL()
         startingCycle = self.r.p.cycle  # may be starting at t != 0 in restarts
         for cycle in range(startingCycle, self.cs["nCycles"]):
@@ -359,6 +365,37 @@ class Operator:
             if not keepGoing:
                 break
         self.interactAllEOL()
+
+    def interactAllRestart(self, dbi: Optional[db.DatabaseInterface]):
+        """Prepare for a restart simulation.
+
+        Some steps are necessary to be taken after interfaces are constructed but before we
+        start the real simulation. Crucially, we need to load the previous time point from the
+        database. The previous time node is chosen because that is the last point where we are
+        certain we have valid data and can safely recover.
+
+        If restarting at BOC, trigger the EOC actions from the previous cycle. This is necessary to
+        perform any fuel management operations that would have happened at the end of the previous cycle.
+        """
+        startCycle = self.cs["startCycle"]
+        startNode = self.cs["startNode"]
+        prevTimeNode = getPreviousTimeNode(startCycle, startNode, self.cs)
+
+        if dbi is not None:
+            dbi.prepRestartRun()
+        else:
+            raise ValueError("No database interface means nothing is responsible for restarting from DB")
+
+        activeInterfaces = self.getActiveInterfaces("Restart", excludedInterfaceNames=("database",))
+        self._interactAll("Restart", activeInterfaces, (startCycle, startNode), prevTimeNode)
+
+        if startNode == 0:
+            runLog.important("Calling `o.interactAllEOC` due to loading the last time node of the previous cycle.")
+            self.interactAllEOC(prevTimeNode[0])
+
+        # advance time time since we loaded the previous time step
+        self.r.p.cycle = startCycle
+        self.r.p.timeNode = startNode
 
     def _cycleLoop(self, cycle, startingCycle):
         """Run the portion of the main loop that happens each cycle."""
@@ -458,8 +495,6 @@ class Operator:
         interactMethodName = "interact{}".format(interactionName)
 
         printMemUsage = self.cs["verbosity"] == "debug" and self.cs["debugMem"]
-        if self.cs["debugDB"]:
-            self._debugDB(interactionName, "start", 0)
 
         halt = False
 
@@ -479,9 +514,6 @@ class Operator:
             with self.timer.getTimer(interactionMessage):
                 interactMethod = getattr(interface, interactMethodName)
                 halt = halt or interactMethod(*args)
-
-            if self.cs["debugDB"]:
-                self._debugDB(interactionName, interface.name, statePointIndex)
 
             if printMemUsage:
                 memAfter = memoryProfiler.PrintSystemMemoryUsageAction()
@@ -544,39 +576,6 @@ class Operator:
             )
 
         return cycleNodeInfo
-
-    def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
-        """
-        Write state to DB with a unique "statePointName", or label.
-
-        Notes
-        -----
-        Used within _interactAll to write details between each physics interaction when cs['debugDB'] is enabled.
-
-        Parameters
-        ----------
-        interactionName : str
-            name of the interaction (e.g. BOL, BOC, EveryNode)
-        interfaceName : str
-            name of the interface that is interacting (e.g. globalflux, lattice, th)
-        statePointIndex : int (optional)
-            used as a counter to make labels that increment throughout an _interactAll call. The result should be fed
-            into the next call to ensure labels increment.
-        """
-        dbiForDetailedWrite = self.getInterface("database")
-        db = dbiForDetailedWrite.database if dbiForDetailedWrite is not None else None
-
-        if db is not None and db.isOpen():
-            # looks something like "c00t00-BOL-01-main"
-            statePointName = "c{:2<0}t{:2<0}-{}-{:2<0}-{}".format(
-                self.r.p.cycle,
-                self.r.p.timeNode,
-                interactionName,
-                statePointIndex,
-                interfaceName,
-            )
-
-            db.writeToDB(self.r, statePointName=statePointName)
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
@@ -950,7 +949,7 @@ class Operator:
         if excludedInterfaceNames is None:
             excludedInterfaceNames = ()
 
-        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled"):
+        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled", "Restart"):
             raise ValueError(f"{interactState} is an unknown interaction state!")
 
         # Ensure the interface is enabled.

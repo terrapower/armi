@@ -15,17 +15,16 @@
 """
 ARMI Database implementation, version 3.4.
 
-A reactor model should be fully recoverable from the database; all the way down to the component
-level. As a result, the structure of the underlying data is bound to the hierarchical Composite
-Reactor Model. Furthermore, this database format is intended to be more dynamic, permitting as-yet
-undeveloped levels and classes in the Composite Reactor Model to be supported as they are added.
-More high-level discussion is contained in :ref:`database-file`.
+A reactor model should be fully recoverable from the database; all the way down to the component level. As a result, the
+structure of the underlying data is bound to the hierarchical Composite Reactor Model. Furthermore, this database format
+is intended to be more dynamic, permitting as-yet undeveloped levels and classes in the Composite Reactor Model to be
+supported as they are added. More high-level discussion is contained in :ref:`database-file`.
 
-The :py:class:`Database` class contains most of the functionality for interacting with the
-underlying data. This includes things like dumping a Reactor state to the database and loading it
-back again, as well as extracting historical data for a given object or collection of object from
-the database file. However, for the nitty-gritty details of how the hierarchical Composite Reactor
-Model is translated to the flat file database, please refer to :py:mod:`armi.bookkeeping.db.layout`.
+The :py:class:`Database` class contains most of the functionality for interacting with the underlying data. This
+includes things like dumping a Reactor state to the database and loading it back again, as well as extracting historical
+data for a given object or collection of object from the database file. However, for the nitty-gritty details of how the
+hierarchical Composite Reactor Model is translated to the flat file database, please refer to
+:py:mod:`armi.bookkeeping.db.layout`.
 
 Refer to :py:mod:`armi.bookkeeping.db` for information about versioning.
 """
@@ -61,6 +60,7 @@ from armi import context, getApp, getPluginManagerOrFail, meta, runLog, settings
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.layout import (
     DB_VERSION,
+    LOC_COORD,
     Layout,
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
@@ -92,9 +92,8 @@ def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str
     """
     Naming convention specifier.
 
-    ARMI defines the naming convention cXXnYY for groups of simulation data.
-    That is, data is grouped by cycle and time node information during a
-    simulated run.
+    ARMI defines the naming convention cXXnYY for groups of simulation data. That is, data is grouped by cycle and time
+    node information during a simulated run.
     """
     return "c{:0>2}n{:0>2}{}".format(cycle, timeNode, statePointName or "")
 
@@ -103,18 +102,18 @@ class Database:
     """
     ARMI Database, handling serialization and loading of Reactor states.
 
-    This implementation of the database pushes all objects in the Composite Reactor Model into the
-    database. This process is aided by the ``Layout`` class, which handles the packing and unpacking
-    of the structure of the objects, their relationships, and their non-parameter attributes.
+    This implementation of the database pushes all objects in the Composite Reactor Model into the database. This
+    process is aided by the ``Layout`` class, which handles the packing and unpacking of the structure of the objects,
+    their relationships, and their non-parameter attributes.
 
     .. impl:: The database files are H5, and thus language agnostic.
         :id: I_ARMI_DB_H51
         :implements: R_ARMI_DB_H5
 
-        This class implements a light wrapper around H5 files, so they can be used to store ARMI
-        outputs. H5 files are commonly used in scientific applications in Fortran and C++. As such,
-        they are entirely language agnostic binary files. The implementation here is that ARMI wraps
-        the ``h5py`` library, and uses its extensive tooling, instead of re-inventing the wheel.
+        This class implements a light wrapper around H5 files, so they can be used to store ARMI outputs. H5 files are
+        commonly used in scientific applications in Fortran and C++. As such, they are entirely language agnostic binary
+        files. The implementation here is that ARMI wraps the ``h5py`` library, and uses its extensive tooling, instead
+        of re-inventing the wheel.
 
     See Also
     --------
@@ -141,9 +140,9 @@ class Database:
         self._permission = permission
         self.h5db: Optional[h5py.File] = None
 
-        # Allows context management on open files. If context management is used on a file that is
-        # already open, it will not reopen and it will also not close after leaving that context.
-        # This allows the treatment of all databases the same whether they are open or closed.
+        # Allows context management on open files. If context management is used on a file that is already open, it will
+        # not reopen and it will also not close after leaving that context. This allows the treatment of all databases
+        # the same whether they are open or closed.
         self._openCount: int = 0
 
         if permission == "w":
@@ -162,6 +161,8 @@ class Database:
     def version(self, value: str):
         self._version = value
         self._versionMajor, self._versionMinor = (int(v) for v in value.split("."))
+        if self.versionMajor != 3:
+            raise ValueError(f"This version of ARMI only supports version 3 of the ARMI DB, found {self.versionMajor}.")
 
     @property
     def versionMajor(self):
@@ -177,6 +178,7 @@ class Database:
     def open(self):
         if self.h5db is not None:
             raise ValueError("This database is already open; make sure to close it before trying to open it again.")
+
         filePath = self._fileName
         self._openCount += 1
 
@@ -192,8 +194,8 @@ class Database:
             self._fullPath = os.path.abspath(filePath)
 
         else:
-            runLog.error("Unrecognized file permissions `{}`".format(self._permission))
-            raise ValueError("Cannot open database with permission `{}`".format(self._permission))
+            runLog.error(f"Unrecognized file permissions `{self._permission}`")
+            raise ValueError(f"Cannot open database with permission `{self._permission}`")
 
         # open the database, and write a bunch of metadata to it
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
@@ -223,10 +225,9 @@ class Database:
             :id: I_ARMI_DB_QA
             :implements: R_ARMI_DB_QA
 
-            This method writes some basic system information to the H5 file. This is designed as a
-            starting point, so users can see information about the system their simulations were run
-            on. As ARMI is used on Windows and Linux, the tooling here has to be platform
-            independent. The two major sources of information are the ARMI
+            This method writes some basic system information to the H5 file. This is designed as a starting point, so
+            users can see information about the system their simulations were run on. As ARMI is used on Windows and
+            Linux, the tooling here has to be platform independent. The two major sources of information are the ARMI
             :py:mod:`context <armi.context>` module and the Python standard library ``platform``.
         """
         h5db.attrs["user"] = context.USER
@@ -248,8 +249,8 @@ class Database:
         """
         Try to determine the local Git commit.
 
-        We have to be sure to handle the errors where the code is run on a system that doesn't have
-        Git installed. Or if the code is simply not run from inside a repo.
+        We have to be sure to handle the errors where the code is run on a system that doesn't have Git installed. Or if
+        the code is simply not run from inside a repo.
 
         Returns
         -------
@@ -306,20 +307,19 @@ class Database:
         """
         Discard all data except for specific time steps, retaining old data in a separate file.
 
-        This is useful when performing more exotic analyses, where each "time step" may not
-        represent a specific point in time, but something more nuanced. For example, equilibrium
-        cases store a new "cycle" for each iteration as it attempts to converge the equilibrium
-        cycle. At the end of the run, the last "cycle" is the converged equilibrium cycle, whereas
-        the previous cycles constitute the path to convergence, which we typically wish to discard
-        before further analysis.
+        This is useful when performing more exotic analyses, where each "time step" may not represent a specific point
+        in time, but something more nuanced. For example, equilibrium cases store a new "cycle" for each iteration as it
+        attempts to converge the equilibrium cycle. At the end of the run, the last "cycle" is the converged equilibrium
+        cycle, whereas the previous cycles constitute the path to convergence, which we typically wish to discard before
+        further analysis.
 
         Parameters
         ----------
         keepTimeSteps
             A collection of the time steps to retain
         label
-            An informative label for the backed-up database. Usually something like
-            "-all-iterations". Will be interposed between the source name and the ".h5" extension.
+            An informative label for the backed-up database. Usually something like "-all-iterations". Will be
+            interposed between the source name and the ".h5" extension.
 
         Returns
         -------
@@ -332,7 +332,7 @@ class Database:
         self.h5db.close()
 
         backupDBPath = os.path.abspath(label.join(os.path.splitext(self._fileName)))
-        runLog.info("Retaining full database history in {}".format(backupDBPath))
+        runLog.info(f"Retaining full database history in {backupDBPath}")
         if self._fullPath is not None:
             safeMove(self._fullPath, backupDBPath)
 
@@ -352,9 +352,7 @@ class Database:
                     dbIn.copy(groupName, dbOut)
 
             if not set(keepTimeSteps).issubset(timeSteps):
-                raise ValueError(
-                    "Not all desired time steps ({}) are even present in the database".format(keepTimeSteps)
-                )
+                raise ValueError(f"Not all desired time steps ({keepTimeSteps}) are even present in the database")
 
             minCycle = next(iter(sorted(keepTimeSteps)))[0]
             for cycle, node in keepTimeSteps:
@@ -385,34 +383,38 @@ class Database:
 
         Notes
         -----
-        There are no guarantees here. If the database was written from a different version of ARMI
-        than you are using, these results may not be usable. Or if the database was written using a
-        custom Application you do not have access to, the DB may not be usable.
+        There are no guarantees here. If the database was written from a different version of ARMI than you are using,
+        these results may not be usable. Or if the database was written using a custom Application you do not have
+        access to, the DB may not be usable.
         """
         cs = settings.Settings()
-        cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
+        cs.path = self.fileName
         cs.loadFromString(self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids)
 
         return cs
 
-    def loadBlueprints(self):
+    def loadBlueprints(self, cs=None):
         """Attempt to load reactor blueprints from the database file.
 
         Notes
         -----
-        There are no guarantees here. If the database was written from a different version of ARMI
-        than you are using, these results may not be usable. Or if the database was written using a
-        custom Application you do not have access to, the DB may not be usable.
+        There are no guarantees here. If the database was written from a different version of ARMI than you are using,
+        these results may not be usable. Or if the database was written using a custom Application you do not have
+        access to, the DB may not be usable.
         """
-        # Blueprints use the yamlize package, which uses class attributes to define much of the
-        # class's behavior through metaclassing. Therefore, we need to be able to import all plugins
-        # before importing blueprints.
+        # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior through
+        # metaclassing. Therefore, we need to be able to import all plugins before importing blueprints.
         from armi.reactor.blueprints import Blueprints
 
         bpString = None
 
         try:
             bpString = self.h5db["inputs/blueprints"].asstr()[()]
+            # Need to update the blueprint file to be the database so that its not pointing at a source that doesn't
+            # exist anymore (the original blueprints yaml).
+            if cs:
+                # Update the settings to point at where the file was actually read from
+                cs[CONF_LOADING_FILE] = os.path.basename(self.fileName)
         except KeyError:
             # not all reactors need to be created from blueprints, so they may not exist
             pass
@@ -429,39 +431,36 @@ class Database:
         """
         Write inputs into the database based the Settings.
 
-        This is not DRY on purpose. The goal is that any particular Database implementation should
-        be very stable, so we dont want it to be easy to change one Database implementation's
-        behavior when trying to change another's.
+        This is not DRY on purpose. The goal is that any particular Database implementation should be very stable, so we
+        dont want it to be easy to change one Database implementation's behavior when trying to change another's.
 
         .. impl:: The run settings are saved the settings file.
             :id: I_ARMI_DB_CS
             :implements: R_ARMI_DB_CS
 
-            A ``Settings`` object is passed into this method, and then the settings are converted
-            into a YAML string stream. That stream is then written to the H5 file. Optionally, this
-            method can take a pre-build settings string to be written directly to the file.
+            A ``Settings`` object is passed into this method, and then the settings are converted into a YAML string
+            stream. That stream is then written to the H5 file. Optionally, this method can take a pre-build settings
+            string to be written directly to the file.
 
         .. impl:: The reactor blueprints are saved the settings file.
             :id: I_ARMI_DB_BP
             :implements: R_ARMI_DB_BP
 
-            A ``Blueprints`` string is optionally passed into this method, and then written to the
-            H5 file. If it is not passed in, this method will attempt to find the blueprints input
-            file in the settings, and read the contents of that file into a stream to be written to
-            the H5 file.
+            A ``Blueprints`` string is optionally passed into this method, and then written to the H5 file. If it is not
+            passed in, this method will attempt to find the blueprints input file in the settings, and read the contents
+            of that file into a stream to be written to the H5 file.
 
         Notes
         -----
-        This is hard-coded to read the entire file contents into memory and write that directly into
-        the database. We could have the cs/blueprints/geom write to a string, however the ARMI log
-        file contains a hash of each files' contents. In the future, we should be able to reproduce
-        a calculation with confidence that the inputs are identical.
+        This is hard-coded to read the entire file contents into memory and write that directly into the database. We
+        could have the cs/blueprints/geom write to a string, however the ARMI log file contains a hash of each files'
+        contents. In the future, we should be able to reproduce a calculation with confidence that the inputs are
+        identical.
         """
         caseTitle = cs.caseTitle if cs is not None else os.path.splitext(self.fileName)[0]
         self.h5db.attrs["caseTitle"] = caseTitle
         if csString is None:
-            # don't read file; use what's in the cs now.
-            # Sometimes settings are modified in tests.
+            # Don't read file; use what's in the cs now. Sometimes settings are modified in tests.
             stream = io.StringIO()
             cs.writeToYamlStream(stream)
             stream.seek(0)
@@ -469,12 +468,22 @@ class Database:
 
         if bpString is None:
             bpPath = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
-            # only store blueprints if we actually loaded from them
-            if bpPath.exists() and bpPath.is_file():
-                # Ensure that the input as stored in the DB is complete
-                bpString = resolveMarkupInclusions(pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]).read()
+            if bpPath.suffix.lower() in (".h5", ".hdf5"):
+                # The blueprints are in a database file, they need to be read
+                try:
+                    db = h5py.File(bpPath, "r")
+                    bpString = db["inputs/blueprints"].asstr()[()]
+                except KeyError:
+                    # not all reactors need to be created from blueprints, so they may not exist
+                    bpString = ""
             else:
-                bpString = ""
+                # The blueprints are a standard blueprints yaml that can be read.
+                if bpPath.exists() and bpPath.is_file():
+                    # Only store blueprints if we actually loaded from them. Ensure that the input as stored in the DB
+                    # is complete
+                    bpString = resolveMarkupInclusions(pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]).read()
+                else:
+                    bpString = ""
 
         self.h5db["inputs/settings"] = csString
         self.h5db["inputs/blueprints"] = bpString
@@ -491,10 +500,14 @@ class Database:
 
         Notes
         -----
-        This is used for restart runs with the standard operator for example. The current time step
-        (being loaded from) should not be copied, as that time steps data will be written at the end
-        of the time step.
+        This is used for restart runs with the standard operator for example. The current time step (being loaded from)
+        should not be copied, as that time steps data will be written at the end of the time step.
         """
+        if self.versionMajor != 3:
+            raise ValueError(f"Only version 3 of the ARMI DB is supported, found {self.versionMajor}.")
+        elif inputDB.versionMajor != 3:
+            raise ValueError(f"Only version 3 of the ARMI DB is supported, found {inputDB.versionMajor}.")
+
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
             cyc, tn = time
@@ -503,22 +516,6 @@ class Database:
                 return
             self.h5db.copy(h5ts, h5ts.name)
 
-            if inputDB.versionMinor < 2:
-                # The source database may have object references in some attributes.
-                # make sure to link those up using our manual path strategy.
-                references = []
-
-                def findReferences(name, obj):
-                    for key, attr in obj.attrs.items():
-                        if isinstance(attr, h5py.h5r.Reference):
-                            references.append((name, key, inputDB.h5db[attr].name))
-
-                h5ts.visititems(findReferences)
-
-                for key, attr, path in references:
-                    destTs = self.h5db[h5ts.name]
-                    destTs[key].attrs[attr] = "@{}".format(path)
-
     def __enter__(self):
         """Context management support."""
         if self._openCount == 0:
@@ -526,6 +523,7 @@ class Database:
             self.open()
         else:
             self._openCount += 1
+
         return self
 
     def __exit__(self, type, value, traceback):
@@ -597,8 +595,7 @@ class Database:
         """
         Get the H5Group for the current ARMI timestep.
 
-        This method can be used to allow other interfaces to place data into the database at the
-        correct timestep.
+        This method can be used to allow other interfaces to place data into the database at the correct timestep.
         """
         groupName = getH5GroupName(r.p.cycle, r.p.timeNode, statePointName)
         if groupName in self.h5db:
@@ -629,13 +626,13 @@ class Database:
         """
         Copy DB to run working directory.
 
-        Needed when multiple MPI processes need to read the same db, for example when a history is
-        needed from independent runs (e.g. for fuel performance on a variety of assemblies).
+        Needed when multiple MPI processes need to read the same db, for example when a history is needed from
+        independent runs (e.g. for fuel performance on a variety of assemblies).
 
         Notes
         -----
-        At some future point, we may implement a client-server like DB system which would render
-        this kind of operation unnecessary.
+        At some future point, we may implement a client-server like DB system which would render this kind of operation
+        unnecessary.
         """
         runLog.extra("Copying DB to shared working directory.")
         self.h5db.flush()
@@ -664,21 +661,18 @@ class Database:
     ):
         """Load a new reactor from a DB at (cycle, node).
 
-        Case settings and blueprints can be provided, or read from the database. Providing these
-        can be useful for snapshot runs or when you want to change settings mid-simulation. Geometry
-        is read from the database.
+        Case settings and blueprints can be provided, or read from the database. Providing  can be useful for snapshot
+        runs or when you want to change settings mid-simulation. Geometry is read from the database.
 
         .. impl:: Users can load a reactor from a DB.
             :id: I_ARMI_DB_TIME1
             :implements: R_ARMI_DB_TIME
 
-            This method creates a ``Reactor`` object by reading the reactor state out of an ARMI
-            database file. This is done by passing in mandatory arguments that specify the exact
-            place in time you want to load the reactor from. (That is, the cycle and node numbers.)
-            Users can either pass the settings and blueprints directly into this method, or it will
-            attempt to read them from the database file. The primary work done here is to read the
-            hierarchy of reactor objects from the data file, then reconstruct them in the correct
-            order.
+            This method creates a ``Reactor`` object by reading the reactor state out of an ARMI database file. This is
+            done by passing in mandatory arguments that specify the exact place in time you want to load the reactor
+            from. (That is, the cycle and node numbers.) Users can either pass the settings and blueprints directly into
+            this method, or it will attempt to read them from the database file. The primary work done here is to read
+            the hierarchy of reactor objects from the data file, then reconstruct them in the correct order.
 
         Parameters
         ----------
@@ -705,10 +699,10 @@ class Database:
         root : Reactor
             The top-level object stored in the database; a Reactor.
         """
-        runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
+        runLog.info(f"Loading reactor state for time node ({cycle}, {node})")
 
         cs = cs or self.loadCS(handleInvalids=handleInvalids)
-        bp = bp or self.loadBlueprints()
+        bp = bp or self.loadBlueprints(cs)
 
         if callReactorConstructionHook:
             getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
@@ -744,9 +738,9 @@ class Database:
             root.sort()
         else:
             runLog.warning(
-                "DeprecationWarning: This Reactor is not being sorted on DB load. Due to the "
-                f"setting {CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is "
-                "temporary and will be removed by 2024."
+                "DeprecationWarning: This Reactor is not being sorted on DB load. Due to the setting "
+                f"{CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is temporary and will be removed by "
+                "2024."
             )
 
         if cs[CONF_GROW_TO_FULL_CORE_AFTER_LOAD] and not root.core.isFullCore:
@@ -800,10 +794,10 @@ class Database:
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
-        comp, _, numChildren, location = next(comps)
+        comp, _, numChildren, location, locationType = next(comps)
 
-        # attach the parent early, if provided; some cases need the parent attached for the rest of
-        # _compose to work properly.
+        # attach the parent early, if provided; some cases need the parent attached for the rest of _compose to work
+        # properly.
         comp.parent = parent
 
         # The Reactor adds a Core child by default, this is not ideal
@@ -813,21 +807,27 @@ class Database:
         if isinstance(comp, Core):
             pass
         elif isinstance(comp, Assembly):
-            # Assemblies force their name to be something based on assemNum. When the assembly is
-            # created it gets a new assemNum, and throws out the correct name read from the DB.
+            # Assemblies force their name to be something based on assemNum. When the assembly is created it gets a new
+            # assemNum, and throws out the correct name read from the DB.
             comp.name = comp.makeNameFromAssemNum(comp.p.assemNum)
             comp.lastLocationLabel = Assembly.DATABASE
 
         # set the spatialLocators on each component
         if location is not None:
             if parent is not None and parent.spatialGrid is not None:
-                comp.spatialLocator = parent.spatialGrid[location]
+                if locationType != LOC_COORD:
+                    # We can directly index into the spatial grid for IndexLocation and MultiIndexLocators to get
+                    # equivalent spatial locators
+                    comp.spatialLocator = parent.spatialGrid[location]
+                else:
+                    comp.spatialLocator = grids.CoordinateLocation(
+                        location[0], location[1], location[2], parent.spatialGrid
+                    )
             else:
                 comp.spatialLocator = grids.CoordinateLocation(location[0], location[1], location[2], None)
 
-        # Need to keep a collection of Component instances for linked dimension resolution, before
-        # they can be add()ed to their parents. Not just filtering out of `children`, since
-        # resolveLinkedDims() needs a dict
+        # Need to keep a collection of Component instances for linked dimension resolution, before they can be add()ed
+        # to their parents. Not just filtering out of `children`, since resolveLinkedDims() needs a dict
         childComponents = collections.OrderedDict()
         children = []
 
@@ -867,9 +867,8 @@ class Database:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
-            # Only create the group if it doesn't already exist. This happens when
-            # re-writing params in the same time node (e.g. something changed between
-            # EveryNode and EOC)
+            # Only create the group if it doesn't already exist. This happens when re-writing params in the same time
+            # node (e.g. something changed between EveryNode and EOC).
             g = h5group.create_group(groupName, track_order=True)
         else:
             g = h5group[groupName]
@@ -913,10 +912,10 @@ class Database:
                     data = JaggedArray(temp, paramDef.name) if jagged else np.array(temp)
                     del temp
 
-            # - Check to see if the array is jagged. If so, flatten, store the data offsets and
-            #   array shapes, and None locations as attrs.
-            # - If not jagged, all top-level ndarrays are the same shape, so it is easier to replace
-            #   Nones with ndarrays filled with special values.
+            # - Check to see if the array is jagged. If so, flatten, store the data offsets and array shapes, and None
+            #   locations as attrs.
+            # - If not jagged, all top-level ndarrays are the same shape, so it is easier to replace Nones with ndarrays
+            #   filled with special values.
             if isinstance(data, JaggedArray):
                 data, specialAttrs = packSpecialData(data, paramDef.name)
                 attrs.update(specialAttrs)
@@ -927,17 +926,14 @@ class Database:
                     data = data.astype("S")
 
                 if data.dtype.kind == "O":
-                    # Something was added to the data array that caused np to want to
-                    # treat it as a general-purpose Object array. This usually happens
-                    # because:
+                    # Something was added to the data array that caused np to want to treat it as a general-purpose
+                    # Object array. This usually happens because:
                     # - the data contain NoDefaults
                     # - the data contain one or more Nones,
                     # - the data contain special types like tuples, dicts, etc
                     # - there is some sort of honest-to-goodness weird object
-                    # We want to support the first two cases with minimal intrusion, since
-                    # these should be pretty easy to faithfully represent in the db.
-                    # The last case isn't really worth supporting.
-
+                    # We want to support the first two cases with minimal intrusion, since these should be pretty easy
+                    # to faithfully represent in the db. The last case isn't really worth supporting.
                     if parameters.NoDefault in data:
                         data = None
                     else:
@@ -949,16 +945,15 @@ class Database:
 
             try:
                 if paramDef.name in g:
-                    raise ValueError(
-                        "`{}` was already in `{}`. This time node should have been empty".format(paramDef.name, g)
-                    )
+                    raise ValueError(f"`{paramDef.name}` was already in `{g}`. This time node should have been empty")
 
                 dataset = g.create_dataset(paramDef.name, data=data, compression="gzip", track_order=True)
                 if any(attrs):
                     Database._writeAttrs(dataset, h5group, attrs)
             except Exception:
-                runLog.error("Failed to write {} to database. Data: {}".format(paramDef.name, data))
+                runLog.error(f"Failed to write {paramDef.name} to database. Data: {data}")
                 raise
+
         if isinstance(c, Block):
             self._addHomogenizedNumberDensityParams(comps, g)
 
@@ -994,13 +989,12 @@ class Database:
                 pDef = pDefs[paramName]
             except KeyError:
                 if re.match(r"^n[A-Z][a-z]?\d*", paramName):
-                    # This is a temporary viz param (number density) made by
-                    # _addHomogenizedNumberDensityParams ignore it safely
+                    # This is a temporary viz param (number density) made by _addHomogenizedNumberDensityParams ignore
+                    # it safely
                     continue
                 else:
-                    # If a parameter exists in the database but not in the application
-                    # reading it, we can technically keep going. Since this may lead to
-                    # potential correctness issues, raise a warning
+                    # If a parameter exists in the database but not in the application reading it, we can technically
+                    # keep going. Since this may lead to potential correctness issues, raise a warning
                     if allowMissing:
                         runLog.warning(
                             "Found `{}` parameter `{}` in the database, which is not defined. Ignoring it.".format(
@@ -1022,7 +1016,7 @@ class Database:
                 data = np.array(pDef.serializer.unpack(data, dataSet.attrs[_SERIALIZER_VERSION], attrs))
 
             # nuclides are a special case where we want to keep in np.bytes_ format
-            if data.dtype.type is np.bytes_ and paramName != "nuclides":
+            if data.dtype.type is np.bytes_ and "nuclides" not in paramName.lower():
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
@@ -1080,46 +1074,43 @@ class Database:
         Get the parameter histories at specific locations.
 
         This has a number of limitations, which should in practice not be too limiting:
-         - The passed objects must have IndexLocations. This type of operation doesn't make much
-           sense otherwise.
-         - The passed objects must exist in a hierarchy that leads to a Core object, which serves as
-           an anchor that can fully define all index locations. This could possibly be made more
-           general by extending grids, but that gets a little more complicated.
-         - All requested objects must exist under the **same** anchor object, and at the same depth
-           below it.
+         - The passed objects must have IndexLocations. This type of operation doesn't make much sense otherwise.
+         - The passed objects must exist in a hierarchy that leads to a Core object, which serves as an anchor that can
+           fully define all index locations. This could possibly be made more general by extending grids, but that gets
+           a little more complicated.
+         - All requested objects must exist under the **same** anchor object, and at the same depth below it.
          - All requested objects must have the same type.
 
         Parameters
         ----------
         comps : list of ArmiObject
-            The components/composites that currently occupy the location that you want histories at.
-            ArmiObjects are passed, rather than locations, because this makes it easier to figure
-            out things related to layout.
+            The components/composites that currently occupy the location that you want histories at. ArmiObjects are
+            passed, rather than locations, because this makes it easier to figure out things related to layout.
         params : List of str, optional
-            The parameter names for the parameters that we want the history of. If None, all
-            parameter history is given
+            The parameter names for the parameters that we want the history of. If None, all parameter history is given.
         timeSteps : List of (cycle, node) tuples, optional
-            The time nodes that you want history for. If None, all available time nodes will be
-            returned.
+            The time nodes that you want history for. If None, all available time nodes will be returned.
         """
-        if self.versionMinor < 4:
+        if self.versionMajor != 3:
+            raise ValueError(f"This version of ARMI only supports version 3 of the ARMI DB, found {self.versionMajor}.")
+        elif self.versionMinor < 4:
             raise ValueError(
-                "Location-based histories are only supported for db version 3.4 and greater. This "
-                f"database is version {self.versionMajor}, {self.versionMinor}."
+                "Location-based histories are only supported for db version 3.4 and greater. This database is version "
+                f"{self.versionMajor}, {self.versionMinor}."
             )
 
         locations = [c.spatialLocator.getCompleteIndices() for c in comps]
 
         histData: Histories = {c: collections.defaultdict(collections.OrderedDict) for c in comps}
 
-        # Check our assumptions about the passed locations: All locations must have the same parent
-        # and bear the same relationship to the anchor object.
+        # Check our assumptions about the passed locations: All locations must have the same parent and bear the same
+        # relationship to the anchor object.
         anchors = {obj.getAncestorAndDistance(lambda a: isinstance(a, Core)) for obj in comps}
 
         if len(anchors) != 1:
             raise ValueError(
-                "The passed objects do not have the same anchor or distance to that anchor; "
-                "encountered the following: {}".format(anchors)
+                "The passed objects do not have the same anchor or distance to that anchor; encountered the following: "
+                f"{anchors}"
             )
 
         anchorInfo = anchors.pop()
@@ -1133,7 +1124,7 @@ class Database:
         # All objects of the same type
         objectTypes = {type(obj) for obj in comps}
         if len(objectTypes) != 1:
-            raise TypeError("The passed objects must be the same type; got objects of types `{}`".format(objectTypes))
+            raise TypeError(f"The passed objects must be the same type; got objects of types `{objectTypes}`")
 
         compType = objectTypes.pop()
         objClassName = compType.__name__
@@ -1142,15 +1133,13 @@ class Database:
 
         for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
             if "layout" not in h5TimeNodeGroup:
-                # layout hasn't been written for this time step, so we can't get anything useful
-                # here. Perhaps the current value is of use, in which case the DatabaseInterface
-                # should be used.
+                # Layout hasn't been written for this time step, so we can't get anything useful here. Perhaps the
+                # current value is of use, in which case the DatabaseInterface should be used.
                 continue
 
             cycle = h5TimeNodeGroup.attrs["cycle"]
             timeNode = h5TimeNodeGroup.attrs["timeNode"]
             layout = Layout((self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup)
-
             ancestors = layout.computeAncestors(layout.serialNum, layout.numChildren, depth=anchorDistance)
 
             lLocation = layout.location
@@ -1165,13 +1154,12 @@ class Database:
 
             # This could also be way more efficient if lLocation were a numpy array
             objectLocationsInLayout = [lLocation[i] for i in objectIndicesInLayout]
-
             objectIndicesInData = np.array(layout.indexInData)[objectIndicesInLayout].tolist()
 
             try:
                 h5GroupForType = h5TimeNodeGroup[objClassName]
             except KeyError as ee:
-                runLog.error("{} not found in {} of {}".format(objClassName, h5TimeNodeGroup, self))
+                runLog.error(f"{objClassName} not found in {h5TimeNodeGroup} of {self}")
                 raise ee
 
             for paramName in params or h5GroupForType.keys():
@@ -1183,9 +1171,7 @@ class Database:
                     try:
                         data = dataSet[objectIndicesInData]
                     except:
-                        runLog.error(
-                            "Failed to load index {} from {}@{}".format(objectIndicesInData, dataSet, (cycle, timeNode))
-                        )
+                        runLog.error(f"Failed to load index {objectIndicesInData} from {dataSet}@{(cycle, timeNode)}")
                         raise
 
                     if data.dtype.type is np.bytes_:
@@ -1196,8 +1182,7 @@ class Database:
                             data = replaceNonsenseWithNones(data, paramName)
                         else:
                             raise ValueError(
-                                "History tracking for non-None, "
-                                "special-formatted parameters is not supported: "
+                                "History tracking for non-None, special-formatted parameters is not supported: "
                                 "{}, {}".format(paramName, {k: v for k, v in dataSet.attrs.items()})
                             )
                 else:
@@ -1207,15 +1192,15 @@ class Database:
                         len(comps),
                     )
 
-                # store data to the appropriate comps. This is where taking components
-                # as the argument (rather than locations) is a little bit peculiar.
+                # store data to the appropriate comps. This is where taking components as the argument (rather than
+                # locations) is a little bit peculiar.
                 #
-                # At this point, `data` are arranged by the order of elements in
-                # `objectIndicesInData`, which corresponds to the order of
-                # `objectIndicesInLayout`
+                # At this point, `data` are arranged by the order of elements in `objectIndicesInData`, which
+                # corresponds to the order of `objectIndicesInLayout`
                 for loc, val in zip(objectLocationsInLayout, data.tolist()):
                     comp = locToComp[loc]
                     histData[comp][paramName][cycle, timeNode] = val
+
         return histData
 
     def getHistory(
@@ -1250,11 +1235,10 @@ class Database:
         """
         Get the parameter histories for a sequence of ARMI Objects.
 
-        This implementation is unaware of the state of the reactor outside of the database itself,
-        and is therefore not usually what client code should be calling directly during normal ARMI
-        operation. It only knows about historical data that have actually been written to the
-        database. Usually one wants to be able to get historical, plus current data, for which the
-        similar method on the DatabaseInterface may be more useful.
+        This implementation is unaware of the state of the reactor outside of the database itself, and is therefore not
+        usually what client code should be calling directly during normal ARMI operation. It only knows about historical
+        data that have actually been written to the database. Usually one wants to be able to get historical, plus
+        current data, for which the similar method on the DatabaseInterface may be more useful.
 
         Parameters
         ----------
@@ -1279,9 +1263,9 @@ class Database:
 
         for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
             if "layout" not in h5TimeNodeGroup:
-                # Layout hasn't been written for this time step, so whatever is in there didn't come
-                # from the DatabaseInterface. Probably because it's the current time step and
-                # something has created the group to store aux data
+                # Layout hasn't been written for this time step, so whatever is in there didn't come from the
+                # DatabaseInterface. Probably because it's the current time step and something has created the group to
+                # store aux data
                 continue
 
             # might save as int or np.int64, so forcing int keeps things predictable
@@ -1379,17 +1363,15 @@ class Database:
         """
         Handle safely writing attributes to a dataset, handling large data if necessary.
 
-        This will attempt to store attributes directly onto an HDF5 object if possible,
-        falling back to proper datasets and reference attributes if necessary. This is
-        needed because HDF5 tries to fit attributes into the object header, which has
-        limited space. If an attribute is too large, h5py raises a RuntimeError.
-        In such cases, this will store the attribute data in a proper dataset and
-        place a reference to that dataset in the attribute instead.
+        This will attempt to store attributes directly onto an HDF5 object if possible, falling back to proper datasets
+        and reference attributes if necessary. This is needed because HDF5 tries to fit attributes into the object
+        header, which has limited space. If an attribute is too large, h5py raises a RuntimeError. In such cases, this
+        will store the attribute data in a proper dataset and place a reference to that dataset in the attribute
+        instead.
 
-        In practice, this takes ``linkedDims`` attrs from a particular component type (like
-        ``c00n00/Circle/id``) and stores them in new datasets (like
-        ``c00n00/attrs/1_linkedDims``, ``c00n00/attrs/2_linkedDims``) and then sets the
-        object's attrs to links to those datasets.
+        In practice, this takes ``linkedDims`` attrs from a particular component type (like ``c00n00/Circle/id``) and
+        stores them in new datasets (like ``c00n00/attrs/1_linkedDims``, ``c00n00/attrs/2_linkedDims``) and then sets
+        the object's attrs to links to those datasets.
         """
         for key, value in attrs.items():
             try:
@@ -1398,9 +1380,7 @@ class Database:
                 if "object header message is too large" not in err.args[0]:
                     raise
 
-                runLog.info(
-                    "Storing attribute `{}` for `{}` into it's own dataset within `{}/attrs`".format(key, obj, group)
-                )
+                runLog.info(f"Storing attribute `{key}` for `{obj}` into it's own dataset within `{group}/attrs`")
 
                 if "attrs" not in group:
                     attrGroup = group.create_group("attrs")
@@ -1409,8 +1389,8 @@ class Database:
                 dataName = str(len(attrGroup)) + "_" + key
                 attrGroup[dataName] = value
 
-                # using a soft link here allows us to cheaply copy time nodes without needing to
-                # crawl through and update object references.
+                # using a soft link here allows us to cheaply copy time nodes without needing to crawl through and
+                # update object references.
                 linkName = attrGroup[dataName].name
                 obj.attrs[key] = "@{}".format(linkName)
 
@@ -1419,8 +1399,7 @@ class Database:
         """
         Reverse the action of _writeAttrs.
 
-        This reads actual attrs and looks for the real data in the datasets that the attrs were
-        pointing to.
+        This reads actual attrs and looks for the real data in the datasets that the attrs were pointing to.
         """
         attr_link = re.compile("^@(.*)$")
 
@@ -1428,9 +1407,8 @@ class Database:
         for key, val in attrs.items():
             try:
                 if isinstance(val, h5py.h5r.Reference):
-                    # Old style object reference. If this cannot be dereferenced, it is likely
-                    # because mergeHistory was used to get the current database, which does not
-                    # preserve references.
+                    # Old style object reference. If this cannot be dereferenced, it is likely because mergeHistory was
+                    # used to get the current database, which does not preserve references.
                     resolved[key] = group[val]
                 elif isinstance(val, str):
                     m = attr_link.match(val)
@@ -1627,18 +1605,16 @@ def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
     ----------
     data
         Specially-formatted data array straight from the database.
-
     attrs
         The attributes associated with the dataset that contained the data.
-
     paramName
         The name of the parameter that is being unpacked. Only used for diagnostics.
 
     Returns
     -------
     np.ndarray
-        An ndarray containing the closest possible representation of the data that was
-        originally written to the database.
+        An ndarray containing the closest possible representation of the data that was originally written to the
+        database.
 
     See Also
     --------
@@ -1678,20 +1654,17 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     """
     Collect block-by-block homogenized number densities for each nuclide.
 
-    Long ago, composition was stored on block params. No longer; they are on the
-    component numberDensity params. These block-level params, are still useful to see
-    compositions in some visualization tools. Rather than keep them on the reactor
-    model, we dynamically compute them here and slap them in the database. These are
-    ignored upon reading and will not affect the results.
+    Long ago, composition was stored on block params. No longer; they are on the component numberDensity params. These
+    block-level params, are still useful to see compositions in some visualization tools. Rather than keep them on the
+    reactor model, we dynamically compute them here and slap them in the database. These are ignored upon reading and
+    will not affect the results.
 
-    Remove this once a better viz tool can view composition distributions. Also remove
-    the try/except in ``_readParams``
+    Remove this once a better viz tool can view composition distributions. Also remove the try/except in ``_readParams``
     """
     nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
     nucBases = [nuclideBases.byName[nn] for nn in nucNames]
-    # it's faster to loop over blocks first and get all number densities from each
-    # than it is to get one nuclide at a time from each block because of area fraction
-    # calculations. So we use some RAM here instead.
+    # It's faster to loop over blocks first and get all number densities from each than it is to get one nuclide at a
+    # time from each block because of area fraction calculations. So we use some RAM here instead.
     nucDensityMatrix = []
     for block in blocks:
         nucDensityMatrix.append(block.getNuclideNumberDensities(nucNames))

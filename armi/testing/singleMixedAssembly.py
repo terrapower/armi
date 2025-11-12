@@ -238,23 +238,23 @@ grids:
         geom: hex_corners_up
         symmetry: full
         lattice map: |
-          - - -  1 1 1 1
-            - - 1 1 2 1 1
-             - 1 1 2 2 1 1
-              1 1 2 2 2 1 1
-               1 1 2 2 1 1
-                1 1 2 1 1
-                 1 1 1 1
+            -  2 1
+              2 1 2
+               1 2
 """
 
 
-def buildMixedPinAssembly():
+def buildMixedPinAssembly(
+    blockDefs: str = BLOCK_DEFINITIONS,
+    assemDef: str = REGULAR_ASSEMBLY_DEF,
+    gridDef: str = GRID_DEFINITION,
+):
     """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 2 pin types
     arranged as specified in the lattice map.
     """
-    FULL_BP = BLOCK_DEFINITIONS + REGULAR_ASSEMBLY_DEF + GRID_DEFINITION
+    completeBlueprints = blockDefs + assemDef + gridDef
     cs = Settings()
-    with io.StringIO(FULL_BP) as stream:
+    with io.StringIO(completeBlueprints) as stream:
         blueprints = Blueprints.load(stream)
         blueprints._prepConstruction(cs)
 

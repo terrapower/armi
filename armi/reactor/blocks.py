@@ -227,9 +227,11 @@ class Block(composites.Composite):
             raise ValueError(f"Cannot get smear density of {self}. There are no clad components.")
 
         # Compute component areas
-        cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
-        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
-        sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(clads.pop())
+        innerCladdingArea = sum(
+            math.pi * clad.getDimension("id", cold=cold) ** 2 / 4.0 * clad.getDimension("mult") for clad in clads
+        )
+        sortedClads = sorted(clads)
+        sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(sortedClads.pop())
 
         return self.computeSmearDensity(innerCladdingArea, sortedCompsInsideClad, cold)
 
@@ -258,6 +260,9 @@ class Block(composites.Composite):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
+            elif c.hasFlags(Flags.CLAD):
+                # this is another component's clad; don't count it towards unmoveable area
+                pass
             elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
                 # this flag designates that this clad/slug combination isn't fuel and shouldn't be in the average
                 pass
@@ -283,9 +288,10 @@ class Block(composites.Composite):
 
         innerCladdingArea += negativeArea  # See note 2 of self.getSmearDensity
         totalMovableArea = innerCladdingArea - unmovableComponentArea
-        smearDensity = fuelComponentArea / totalMovableArea
-
-        return smearDensity
+        if totalMovableArea <= 0.0:
+            return 0.0
+        else:
+            return fuelComponentArea / totalMovableArea
 
     def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
@@ -313,12 +319,12 @@ class Block(composites.Composite):
     def assignPinIndices(self):
         pass
 
-    def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
+    def getMgFlux(self, adjoint=False, average=False, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the next energy group, as
+        set in the ISOTXS library.
 
         It is stored integrated over volume on self.p.mgFlux
 
@@ -326,15 +332,8 @@ class Block(composites.Composite):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         average : bool, optional
-            If true, will return average flux between latest and previous. Doesn't work
-            for pin detailed yet
-
-        volume: float, optional
-            If average=True, the volume-integrated flux is divided by volume before being returned.
-            The user may specify a volume, or the function will obtain the block volume directly.
-
+            If true, will return average flux between latest and previous. Doesn't work for pin detailed yet.
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -342,11 +341,12 @@ class Block(composites.Composite):
         -------
         flux : multigroup neutron flux in [n/cm^2/s]
         """
-        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, volume=volume, gamma=gamma)
+        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, gamma=gamma)
         if average and np.any(self.p.lastMgFlux):
-            volume = volume or self.getVolume()
+            volume = self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
             flux = (flux + lastFlux) / 2.0
+
         return flux
 
     def setPinMgFluxes(self, fluxes, adjoint=False, gamma=False):
@@ -743,10 +743,12 @@ class Block(composites.Composite):
             hmMass = child.getHMMass()
             massHmBOL += hmMass
             # Components have the following parameters but not every composite will massHmBOL,
-            # molesHmBOL, puFrac
+            # molesHmBOL, puFrac, enrichmentBOL
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
+                if child.p.molesHmBOL:
+                    child.p.enrichmentBOL = child.getFissileMassEnrich()
 
         self.p.massHmBOL = massHmBOL
 
@@ -816,10 +818,7 @@ class Block(composites.Composite):
 
     @staticmethod
     def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
-        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a better fit.
-        # We don't want to remove the plotFlux function in the Block namespace yet in case client
-        # code is depending on this function existing here. This is just a simple pass-through
-        # function that passes the arguments along to the actual implementation in its new location.
+        """A simple pass-through method to a utils plotting function. This is here to preserve the API."""
         plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):
@@ -1130,9 +1129,7 @@ class Block(composites.Composite):
 
     def isPlenumPin(self, c):
         """Return True if the specified component is a plenum pin."""
-        # This assumes that anything with the GAP flag will have a valid 'id' dimension. If that
-        # were not the case, then we would need to protect the call to getDimension with a
-        # try/except
+        # This assumes that anything with the GAP flag will have a valid 'id' dimension.
         cIsCenterGapGap = isinstance(c, components.Component) and c.hasFlags(Flags.GAP) and c.getDimension("id") == 0
         return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
@@ -1148,19 +1145,17 @@ class Block(composites.Composite):
         Returns
         -------
         pitch : float or None
-            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch,
-            returns None
+            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch, returns None
         component : Component or None
-            Component that has the max pitch, if returnComp == True. If no component is found to
-            define the pitch, returns None
+            Component that has the max pitch, if returnComp == True. If no component is found to define the pitch,
+            returns None.
 
         Notes
         -----
-        The block stores a reference to the component that defines the pitch, making the assumption
-        that while the dimensions can change, the component containing the largest dimension will
-        not. This lets us skip the search for largest component. We still need to ask the largest
-        component for its current dimension in case its temperature changed, or was otherwise
-        modified.
+        The block stores a reference to the component that defines the pitch, making the assumption that while the
+        dimensions can change, the component containing the largest dimension will not. This lets us skip the search for
+        largest component. We still need to ask the largest component for its current dimension in case its temperature
+        changed, or was otherwise modified.
 
         See Also
         --------
@@ -1581,12 +1576,13 @@ class Block(composites.Composite):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
-        u5 = self.getMass("U235")
-        if u5 < 1e-10:
+        """Returns fissile mass fraction of uranium."""
+        totalU = self.getMass("U")
+        if totalU < 1e-10:
             return 0.0
-        u8 = self.getMass("U238")
-        return u5 / (u8 + u5)
+
+        fissileU = self.getMass(["U233", "U235"])
+        return fissileU / totalU
 
     def getInputHeight(self) -> float:
         """Determine the input height from blueprints.
@@ -1613,6 +1609,18 @@ class Block(composites.Composite):
             return heights[myIndex]
 
         raise AttributeError(f"No ancestor of {self} has blueprints")
+
+    def sort(self):
+        """Sort the children on this block.
+
+        If there is a spatial grid, the previous pin indices on the components
+        is now invalid because the ordering of :meth:`getPinLocations` has maybe
+        changed since the ordering of components has changed. Reassign the pin
+        indices via :meth:`assignPinIndices` accordingly.
+        """
+        super().sort()
+        if self.spatialGrid is not None:
+            self.assignPinIndices()
 
 
 class HexBlock(Block):
@@ -2159,39 +2167,50 @@ class HexBlock(Block):
         locations = self.getPinLocations()
         if not locations:
             return
+        # Clear out any previous values. If your block is built with one ordering
+        # and then sorted, things that used to have pin indices may now have invalid
+        # pin indices. Wipe them out just to be safe
+        for c in self:
+            c.p.pinIndices = None
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
         # Flags for components that we want to set this parameter
         # Usually things are linked to one of these "important" flags, like
         # a cladding component having linked dimensions to a fuel component
-        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
-        found = self._assignPinIndices(ijGetter, allIJ, targetFlags)
-        if found:
-            return
-        # If we didn't find any "important" components, but we have pins, we need to
-        # provide some information about where the pins live still. Fall back to
-        # assigning on the cladding components
-        self._assignPinIndices(ijGetter, allIJ, Flags.CLAD)
-
-    def _assignPinIndices(
-        self,
-        ijGetter: Callable[[grids.IndexLocation], tuple[int, int]],
-        allIJ: tuple[int, int],
-        targetFlags: Flags,
-    ) -> bool:
-        found = False
-        for c in self.iterChildren(predicate=lambda c: c.hasFlags(targetFlags) and isinstance(c, Circle)):
-            localLocations = c.spatialLocator
-            if isinstance(localLocations, grids.MultiIndexLocation):
-                localIJ = list(map(ijGetter, localLocations))
-            elif isinstance(localLocations, grids.IndexLocation):
-                localIJ = [ijGetter(localLocations)]
-            else:
+        primaryFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
+        withPinIndices: list[components.Component] = []
+        for c in self.iterChildrenWithFlags(primaryFlags):
+            if self._setPinIndices(c, ijGetter, allIJ):
+                withPinIndices.append(c)
+        # Iterate over every other thing on the grid and make sure
+        # 1) it share a lattice site with something that has pin indices, or
+        # 2) it itself declares the pin indices
+        for c in self:
+            if c.p.pinIndices is not None:
                 continue
-            localIndices = list(map(allIJ.index, localIJ))
-            c.p.pinIndices = localIndices
-            found = True
-        return found
+            # Does anything with pin indices share this lattice site?
+            if any(other.spatialLocator == c.spatialLocator for other in withPinIndices):
+                continue
+            if self._setPinIndices(c, ijGetter, allIJ):
+                withPinIndices.append(c)
+
+    @staticmethod
+    def _setPinIndices(
+        c: components.Component, ijGetter: Callable[[grids.IndexLocation], tuple[int, int]], allIJ: tuple[int, int]
+    ):
+        localLocations = c.spatialLocator
+        if isinstance(localLocations, grids.MultiIndexLocation):
+            localIJ = list(map(ijGetter, localLocations))
+        # CoordinateLocations do not live on the grid, by definition
+        elif isinstance(localLocations, grids.CoordinateLocation):
+            return False
+        elif isinstance(localLocations, grids.IndexLocation):
+            localIJ = [ijGetter(localLocations)]
+        else:
+            return False
+        localIndices = list(map(allIJ.index, localIJ))
+        c.p.pinIndices = localIndices
+        return True
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""

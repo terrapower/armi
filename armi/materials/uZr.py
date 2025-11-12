@@ -16,6 +16,10 @@
 Simplified UZr alloy.
 
 This is a notional U-10Zr material based on [Chandrabhanu]_.
+
+The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
+this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
+contained in this file should not be used in production simulations.
 """
 
 from armi.materials import material
@@ -51,36 +55,27 @@ class UZr(material.FuelMaterial):
     def setDefaultMassFracs(self):
         """U-Pu-Zr mass fractions."""
         u235Enrichment = 0.1
-        self.uFrac = self.uFracDefault
-        self.zrFrac = self.zrFracDefault
-        self.setMassFrac("ZR", self.zrFrac)
-        self.setMassFrac("U235", u235Enrichment * self.uFrac)
-        self.setMassFrac("U238", (1.0 - u235Enrichment) * self.uFrac)
-        self._calculateReferenceDensity()
+        self.setMassFrac("ZR", self.zrFracDefault)
+        self.setMassFrac("U235", u235Enrichment * self.uFracDefault)
+        self.setMassFrac("U238", (1.0 - u235Enrichment) * self.uFracDefault)
+        self._calculateReferenceDensity(self.zrFracDefault, self.uFracDefault)
 
     def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs):
         """Apply user input."""
         ZR_wt_frac = self.zrFracDefault if ZR_wt_frac is None else ZR_wt_frac
         U235_wt_frac = 0.1 if U235_wt_frac is None else U235_wt_frac
-        self.zrFrac = ZR_wt_frac
-        self.uFrac = 1.0 - ZR_wt_frac
+
+        uFrac = 1.0 - ZR_wt_frac
         self.setMassFrac("ZR", ZR_wt_frac)
-        self.setMassFrac("U235", U235_wt_frac * self.uFrac)
-        self.setMassFrac("U238", (1.0 - U235_wt_frac) * self.uFrac)
-        self._calculateReferenceDensity()
+        self.setMassFrac("U235", U235_wt_frac * uFrac)
+        self.setMassFrac("U238", (1.0 - U235_wt_frac) * uFrac)
+        self._calculateReferenceDensity(ZR_wt_frac, uFrac)
+
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
-    def _calculateReferenceDensity(self):
-        """
-        Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law.
-
-        .. warning:: the zrFrac, uFrac, etc. may seem redundant with massFrac data.
-            But it's complicated to update material fractions one at a time when density
-            is changing on the fly.
-        """
-        zrFrac = self.zrFrac
-        uFrac = self.uFrac
-        # use vergard's law to mix densities by weight fraction at 293K
+    def _calculateReferenceDensity(self, zrFrac, uFrac):
+        """Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law."""
+        # use Vergard's law to mix densities by weight fraction at 293K
         u0 = 19.1
         zr0 = 6.52
         specificVolume = uFrac / u0 + zrFrac / zr0

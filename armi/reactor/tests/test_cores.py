@@ -133,10 +133,12 @@ class HexCoreTests(unittest.TestCase):
         # the default case will look something like this
         mockFileName.return_value = "ISOTXS-c0n0"
         self.assertIsNone(self.core.lib)
+        self.assertFalse(self.core.hasLib())
 
         # we can inject some mock data, and retrieve it
         mockFileName.return_value = ISOAA_PATH
         self.assertTrue(isinstance(self.core.lib, IsotxsLibrary))
+        self.assertTrue(self.core.hasLib())
 
     def test_getAssembliesInRing(self):
         assems = self.core.getAssembliesInRing(0)
