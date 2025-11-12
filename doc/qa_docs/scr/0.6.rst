@@ -7,7 +7,7 @@ ARMI v0.6.1
 -----------
 Release Date: 2025-11-05
 
-This was a minor release. While a lot of technical debt was address, no major feature work was done. There were some minor bugs fixed, but again nothing worth a release. This is being tagged as a release because the API is stable and this commit was tested heavily downstream and is trustworthy.
+This was a minor release. While a lot of technical debt was addressed, no major feature work was done. There were some minor bugs fixed, but again nothing worth a release. This is being tagged as a release because the API is stable and this commit was tested heavily downstream and is trustworthy.
 
 Code Changes, Features
 ^^^^^^^^^^^^^^^^^^^^^^
