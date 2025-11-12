@@ -3,6 +3,63 @@ Release Notes for ARMI 0.6
 
 Here you will find the release notes for previous ARMI releases.
 
+ARMI v0.6.1
+-----------
+Release Date: 2025-11-05
+
+This was a minor release. While a lot of technical debt was address, no major feature work was done. There were some minor bugs fixed, but again nothing worth a release. This is being tagged as a release because the API is stable and this commit was tested heavily downstream and is trustworthy.
+
+Code Changes, Features
+^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2303 <https://github.com/terrapower/armi/pull/2303>`_) Encapsulating global nuclide data in classes
+#. (`PR#2317 <https://github.com/terrapower/armi/pull/2317>`_) Simplify thermal scattering
+#. (`PR#2320 <https://github.com/terrapower/armi/pull/2320>`_) Providing interface method interactRestart for managing restarts
+#. (`PR#2321 <https://github.com/terrapower/armi/pull/2321>`_) Adding Core.hasLib to check if there is a XS library
+#. (`PR#2323 <https://github.com/terrapower/armi/pull/2323>`_) Enabling user-specified distribution of MPI actions across nodes
+#. (`PR#2324 <https://github.com/terrapower/armi/pull/2324>`_) Adding orientationBOL to full core modifier
+#. (`PR#2325 <https://github.com/terrapower/armi/pull/2325>`_) Creating a new setting to specify memory requirement for cross section calculation
+#. (`PR#2344 <https://github.com/terrapower/armi/pull/2344>`_) Changing default for guideTubeTopElevation to zero
+
+
+Code Changes, Bugs and Fixes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2328 <https://github.com/terrapower/armi/pull/2328>`_) Ensuring that users define isotopics for custom materials
+#. (`PR#2331 <https://github.com/terrapower/armi/pull/2331>`_) Resolve TEST_ROOT path
+#. (`PR#2336 <https://github.com/terrapower/armi/pull/2336>`_) Checking number of jobs against available ranks in runBatchedActions
+#. (`PR#2347 <https://github.com/terrapower/armi/pull/2347>`_) Fixing missing f-string in component blueprints
+#. (`PR#2350 <https://github.com/terrapower/armi/pull/2350>`_) Fixing compareLines for a multiple numbers edge case
+
+
+Code Changes, Maintenance, or Trivial
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2306 <https://github.com/terrapower/armi/pull/2306>`_) Removing volume from getMgFlux()
+#. (`PR#2309 <https://github.com/terrapower/armi/pull/2309>`_) Moving plotting functions into utils module
+#. (`PR#2310 <https://github.com/terrapower/armi/pull/2310>`_) Removing unnecessary code from Assembly.getBlocksBetweenElevations
+#. (`PR#2315 <https://github.com/terrapower/armi/pull/2315>`_) Moving some testing utils to testing module
+#. (`PR#2327 <https://github.com/terrapower/armi/pull/2327>`_) Adding a unit test to HexGrid.generateSortedHexLocationList
+#. (`PR#2348 <https://github.com/terrapower/armi/pull/2348>`_) Make singleMixedAssembly more flexible for downstream testing
+
+
+Documentation-Only Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2250 <https://github.com/terrapower/armi/pull/2250>`_) Logging redundant material modifications
+#. (`PR#2280 <https://github.com/terrapower/armi/pull/2280>`_) Improving the new shuffling docs
+#. (`PR#2311 <https://github.com/terrapower/armi/pull/2311>`_) Starting the ARMI 0.6.1 release cycle
+#. (`PR#2312 <https://github.com/terrapower/armi/pull/2312>`_) Updating XS group manager requirements
+#. (`PR#2314 <https://github.com/terrapower/armi/pull/2314>`_) Documenting ARMI’s testing tools for devs
+#. (`PR#2332 <https://github.com/terrapower/armi/pull/2332>`_) Adding settings header to the settings YAML
+#. (`PR#2337 <https://github.com/terrapower/armi/pull/2337>`_) Fixing docs build
+#. (`PR#2339 <https://github.com/terrapower/armi/pull/2339>`_) Adding contributor to SCR doc automation script
+#. (`PR#2342 <https://github.com/terrapower/armi/pull/2342>`_) Documenting how to use the zonesFile Setting
+#. (`PR#2343 <https://github.com/terrapower/armi/pull/2343>`_) Improving documentation for zoneDefinions Setting
+#. (`PR#2354 <https://github.com/terrapower/armi/pull/2354>`_) Clarifying that ARMI materials are of testing quality
+
+
+
 ARMI v0.6.0
 -----------
 Release Date: 2025-09-25
