@@ -11,8 +11,8 @@
 <!-- Change Type: trivial -->
 <!-- Change Type: docs -->
 
-<!-- MANDATORY: Describe the change in one sentence -->
-One-Sentence Description: TBD
+<!-- MANDATORY: Describe why this change is needed, in one sentence -->
+One-Sentence Rationale: TBD
 
 <!-- MANDATORY: Describe any impact on the requirements, all on one line -->
 One-line Impact on Requirements: NA

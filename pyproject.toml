@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.6.1"
+version = "0.6.2"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
 requires-python = ">3.8"
