@@ -46,19 +46,19 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class InterfaceA(Interface):
-    function = "A"
+    purpose = "A"
     name = "First"
 
 
 class InterfaceB(InterfaceA):
     """Dummy Interface that extends A."""
 
-    function = "A"
+    purpose = "A"
     name = "Second"
 
 
 class InterfaceC(Interface):
-    function = "A"
+    purpose = "A"
     name = "Third"
 
 
@@ -159,13 +159,13 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Second"), interfaceB)
         self.assertEqual(self.o.getInterface("First"), None)
 
-        # 3) Also if another class not a subclass has the same function,
+        # 3) Also if another class not a subclass has the same purpose,
         #    raise an error
         interfaceC = InterfaceC(self.r, cs)
         self.assertRaises(RuntimeError, self.o.addInterface, interfaceC)
 
-        # 4) Check adding a different function Interface
-        interfaceC.function = "C"
+        # 4) Check adding a different purpose Interface
+        interfaceC.purpose = "C"
         self.o.addInterface(interfaceC)
         self.assertEqual(self.o.getInterface("Second"), interfaceB)
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
