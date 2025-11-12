@@ -20,21 +20,22 @@ import unittest
 from copy import deepcopy
 
 from armi import nuclearDataIO, runLog, settings, utils
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
+from armi.nucDirectory.nuclideBases import NuclideBase, NuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
 from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
-from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.testing import loadTestReactor
-from armi.tests import ISOAA_PATH, mockRunLogs
+from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
 
 
 class MockBP:
+    nuclideBases = NuclideBases()
     allNuclidesInProblem = set(nuclideBases.byName.keys())
     """:meta hide-value:"""
     activeNuclides = allNuclidesInProblem
@@ -93,11 +94,18 @@ class TestCompositePattern(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
         runLog.setVerbosity("error")
-        container = DummyComposite("inner test fuel", 99)
+        self.container = DummyComposite("inner test fuel", 99)
+
+        # Make sure the Composite is within the Reactor
+        _o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        r.core.getFirstBlock().add(self.container)
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        r.core.lib = lib
+
         for i in range(5):
             leaf = DummyLeaf(f"duct {i}", i + 100)
             leaf.setType("duct")
-            container.add(leaf)
+            self.container.add(leaf)
         nested = DummyComposite("clad", 98)
         nested.setType("clad")
         self.cladChild = nested
@@ -105,10 +113,8 @@ class TestCompositePattern(unittest.TestCase):
         self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
         nested.add(self.secondGen)
-        container.add(nested)
-        self.container = container
-        # Composite tree structure in list of lists for testing
-        # tree[i] contains the children at "generation" or "depth" i
+        self.container.add(nested)
+        # Composite tree structure in list of lists for testing. tree[i] contains the children at generation / depth i
         self.tree: list[list[composites.Composite]] = [
             [self.container],
             list(self.container),
@@ -530,6 +536,11 @@ class TestCompositePattern(unittest.TestCase):
         with self.assertRaises(ValueError):
             b.getFirstComponent(typeSpec=Flags.POISON)
 
+    def test_getReactionRateDict(self):
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        rxRatesDict = self.container._getReactionRateDict(nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1)
+        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
+
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
         numSynced = self.container._syncParameters(data, {})
@@ -879,7 +890,7 @@ class TestCompositeTree(unittest.TestCase):
 
         mass = 0.0
         for nucName in self.refDict.keys():
-            if nucName in nuclideBases.NuclideBase.fissile:
+            if nucName in NuclideBase.fissile:
                 mass += self.block.getMass(nucName)
         ref = mass
 
@@ -1120,10 +1131,3 @@ class TestMiscMethods(unittest.TestCase):
         obj2.p.percentBu = 15.2
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
-
-
-class TestGetReactionRateDict(unittest.TestCase):
-    def test_getReactionRateDict(self):
-        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1)
-        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))

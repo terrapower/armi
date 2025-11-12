@@ -22,7 +22,7 @@ import unittest
 import yamlize
 
 from armi import settings
-from armi.nucDirectory.elements import bySymbol
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import blueprints, parameters
 from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
@@ -307,7 +307,8 @@ grids:
 
         assem = design.constructAssem(cs, name="fuel a")
         # the assembly won't get non-naturally occurring nuclides
-        unnaturalZr = (n.name for n in bySymbol["ZR"].nuclides if n.abundance == 0.0)
+        nb = NuclideBases()
+        unnaturalZr = (n.name for n in nb.elements.bySymbol["ZR"].nuclides if n.abundance == 0.0)
         designNucs = set(design.allNuclidesInProblem).difference(unnaturalZr)
         self.assertTrue(set(assem.getNuclides()).issubset(designNucs))
 

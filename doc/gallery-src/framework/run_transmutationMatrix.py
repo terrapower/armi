@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 
 from armi.context import RES
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 
 def plotNuc(nb, ax):
@@ -63,9 +63,11 @@ def plotNuc(nb, ax):
 def plotAll(xlim, ylim):
     """Plot all nuclides and transformations."""
     # load the burn chain input that comes with ARMI
+    nuclideBases = NuclideBases()
     with open(os.path.join(RES, "burn-chain.yaml")) as burnChainStream:
         nuclideBases.imposeBurnChain(burnChainStream)
     nbs = nuclideBases.instances
+
     fig, ax = plt.subplots(figsize=(15, 10))
 
     patches = []
@@ -125,9 +127,3 @@ def plotAll(xlim, ylim):
     ax.set_ylabel("Protons (Z)")
     ax.set_title("Transmutations and Decays (with branching)")
     plt.show()
-
-
-if __name__ == "__main__":
-    # make two plots, one zoomed on actinides and another on light nuclides
-    plotAll(xlim=(139.5, 154.5), ylim=(89.5, 98.5))
-    plotAll(xlim=(0.5, 6.5), ylim=(0.5, 5.5))

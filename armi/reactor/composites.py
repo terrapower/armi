@@ -52,7 +52,7 @@ from typing import (
 import numpy as np
 
 from armi import context, runLog, utils
-from armi.nucDirectory import elements, nucDir, nuclideBases
+from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
@@ -438,6 +438,16 @@ class ArmiObject(metaclass=CompositeModelType):
     def __add__(self, other):
         """Return a list of all children in this and another object."""
         return self.getChildren() + other.getChildren()
+
+    @property
+    def nuclideBases(self):
+        from armi.reactor.reactors import Reactor
+
+        r = self.getAncestor(lambda c: isinstance(c, Reactor))
+        if r:
+            return r.nuclideBases
+        else:
+            return nuclideBases.nuclideBases
 
     def duplicate(self):
         """
@@ -935,10 +945,8 @@ class ArmiObject(metaclass=CompositeModelType):
         nucSpec : nuclide specifier
             Can be a string name of a nuclide or element, or a list of such strings.
 
-        This might get Zr isotopes when ZR is passed in if they exist, or it will get
-        elemental ZR if that exists. When expanding elements, all known nuclides are
-        returned, not just the natural ones.
-
+        This might get Zr isotopes when ZR is passed in if they exist, or it will get elemental ZR if that exists. When
+        expanding elements, all known nuclides are returned, not just the natural ones.
         """
         allNuclidesHere = self.getNuclides()
         if nucSpec is None:
@@ -961,7 +969,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 # has no natural isotopics!
                 nucs = [
                     nb.name
-                    for nb in elements.bySymbol[nucName].nuclides
+                    for nb in self.nuclideBases.elements.bySymbol[nucName].nuclides
                     if not isinstance(nb, nuclideBases.NaturalNuclideBase)
                 ]
                 convertedNucNames.extend(nucs)
@@ -1038,6 +1046,7 @@ class ArmiObject(metaclass=CompositeModelType):
             if nucName in oldMassFracs:
                 del oldMassFracs[nucName]
             totalFracSet += massFrac
+
         totalOther = sum(oldMassFracs.values())
         if totalOther:
             # we normalize the remaining mass fractions so their concentrations relative
@@ -1136,8 +1145,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         # determine which nuclides we're adjusting.
         # Rather than calling this material's getNuclides method, we call the
-        # nucDirectory to do this. this way, even zeroed-out nuclides will get in the
-        # mix
+        # nucDirectory to do this. this way, even zeroed-out nuclides will get in the mix
         adjustNuclides = set(
             nucDir.getNuclideNames(nucName=nuclideToAdjust, elementSymbol=elementToAdjust)
         ).intersection(nuclides)
@@ -1313,7 +1321,7 @@ class ArmiObject(metaclass=CompositeModelType):
             lfpMass = sum(
                 dens
                 for name, dens in numberDensities.items()
-                if isinstance(nuclideBases.byName[name], nuclideBases.LumpNuclideBase)
+                if isinstance(self.nuclideBases.byName[name], nuclideBases.LumpNuclideBase)
             )
             if lfpMass:
                 raise RuntimeError(
@@ -1411,7 +1419,6 @@ class ArmiObject(metaclass=CompositeModelType):
         If the nuclide doesn't exist in any of the children, then that's actually an
         error. This would only happen if some unnatural nuclide like Pu239 built up in
         fresh UZr. That should be anticipated and dealt with elsewhere.
-
         """
         activeChildren = self.getChildrenWithNuclides({nucName})
         if not activeChildren:
@@ -1440,7 +1447,6 @@ class ArmiObject(metaclass=CompositeModelType):
         -----
         We'd like to not have to call setNumberDensity for each nuclide because we don't
         want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
-
         """
         numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
         self.updateNumberDensities(numberDensities)
@@ -1861,6 +1867,7 @@ class ArmiObject(metaclass=CompositeModelType):
         for nucName in self.getNuclides():
             if nucDir.isHeavyMetal(nucName):
                 nucs.append(nucName)
+
         mass = self.getMass(nucs)
         return mass
 
@@ -1906,18 +1913,20 @@ class ArmiObject(metaclass=CompositeModelType):
         """A print out of some pertinent constituent information."""
         from armi.utils import iterables
 
+        elementz = self.nuclideBases.elements
+
         rows = [["Constituent", "HMFrac", "FuelFrac"]]
         columns = [-1, self.getHMMass(), self.getFuelMass()]
 
         for base_ele in ["U", "PU"]:
-            total = sum([self.getMass(nuclide.name) for nuclide in elements.bySymbol[base_ele]])
+            total = sum([self.getMass(nuclide.name) for nuclide in elementz.bySymbol[base_ele]])
             rows.append([base_ele, total, total])
 
         fp_total = self.getFPMass()
         rows.append(["FP", fp_total, fp_total])
 
         ma_nuclides = iterables.flatten(
-            [ele.nuclides for ele in [elements.byZ[key] for key in elements.byZ.keys() if key > 94]]
+            [ele.nuclides for ele in [elementz.byZ[key] for key in elementz.byZ.keys() if key > 94]]
         )
         ma_total = sum([self.getMass(nuclide.name) for nuclide in ma_nuclides])
         rows.append(["MA", ma_total, ma_total])
@@ -1949,13 +1958,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numerator = 0.0
         denominator = 0.0
-
         numDensities = self.getNumberDensities()
 
         for nucName, nDen in numDensities.items():
-            atomicWeight = nuclideBases.byName[nucName].weight
+            atomicWeight = self.nuclideBases.byName[nucName].weight
             numerator += atomicWeight * nDen
             denominator += nDen
+
         return numerator / denominator
 
     def getMasses(self):
@@ -2269,7 +2278,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
-        for elemental in nuclideBases.where(
+        for elemental in self.nuclideBases.where(
             lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
         ):
             self.expandElementalToIsotopics(elemental)
@@ -2936,7 +2945,7 @@ class Composite(ArmiObject):
 
         # ruff: noqa: SIM110
         for nucName in nuclides:
-            if isinstance(nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
+            if isinstance(self.nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
                 return True
 
         return False
@@ -2970,7 +2979,7 @@ class Composite(ArmiObject):
 
     def _getReactionRates(self, nucName, nDensity=None):
         """
-        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+        Wrapper around logic to get reaction rates for a certain nuclide, to handle any errors.
 
         Parameters
         ----------
@@ -2998,7 +3007,7 @@ class Composite(ArmiObject):
             nDensity = self.getNumberDensity(nucName)
 
         try:
-            return getReactionRateDict(
+            return self._getReactionRateDict(
                 nucName,
                 self.getAncestor(lambda c: isinstance(c, Core)).lib,
                 self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
@@ -3017,6 +3026,49 @@ class Composite(ArmiObject):
                 single=True,
             )
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+
+    def _getReactionRateDict(self, nucName, lib, xsSuffix, mgFlux, nDens):
+        """
+        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
+            the nucDirectory module for a description of the difference.
+        lib : isotxs
+            cross section library
+        xsSuffix : str
+            cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
+            second burnup group of type A
+        mgFlux : np.ndarray
+            integrated mgFlux (n-cm/s)
+        nDens : float
+            number density (atom/bn-cm)
+
+        Returns
+        -------
+        rxnRates - dict
+            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        Assume there is no n3n cross section in ISOTXS
+        """
+        nucLabel = self.nuclideBases.byName[nucName].label
+        key = f"{nucLabel}{xsSuffix}"
+        libNuc = lib[key]
+        rxnRates = {"n3n": 0}
+        for rxName, mgXSs in [
+            ("nG", libNuc.micros.nGamma),
+            ("nF", libNuc.micros.fission),
+            ("n2n", libNuc.micros.n2n),
+            ("nA", libNuc.micros.nalph),
+            ("nP", libNuc.micros.np),
+        ]:
+            rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
+
+        return rxnRates
 
     def getReactionRates(self, nucName, nDensity=None):
         """
@@ -3079,7 +3131,7 @@ class Composite(ArmiObject):
 
     def getPuMoles(self):
         """Returns total number of moles of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        nucNames = [nuc.name for nuc in self.nuclideBases.elements.byZ[94].nuclides]
         puN = np.sum(self.getNuclideNumberDensities(nucNames))
 
         return puN / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
@@ -3204,45 +3256,3 @@ def getDominantMaterial(objects: List[ArmiObject], typeSpec: TypeSpec = None, ex
         return samples[maxMatName]
 
     return None
-
-
-def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
-    """
-    Parameters
-    ----------
-    nucName : str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
-        the nucDirectory module for a description of the difference.
-    lib : isotxs
-        cross section library
-    xsSuffix : str
-        cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
-        second burnup group of type A
-    mgFlux : np.ndarray
-        integrated mgFlux (n-cm/s)
-    nDens : float
-        number density (atom/bn-cm)
-
-    Returns
-    -------
-    rxnRates - dict
-        dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-    Notes
-    -----
-    Assume there is no n3n cross section in ISOTXS
-    """
-    nucLabel = nuclideBases.byName[nucName].label
-    key = f"{nucLabel}{xsSuffix}"
-    libNuc = lib[key]
-    rxnRates = {"n3n": 0}
-    for rxName, mgXSs in [
-        ("nG", libNuc.micros.nGamma),
-        ("nF", libNuc.micros.fission),
-        ("n2n", libNuc.micros.n2n),
-        ("nA", libNuc.micros.nalph),
-        ("nP", libNuc.micros.np),
-    ]:
-        rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
-
-    return rxnRates

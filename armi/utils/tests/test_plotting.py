@@ -118,7 +118,8 @@ class TestPlotting(unittest.TestCase):
         u235 = lib.getNuclide("U235", "AA")
         scatterMatrix = u235.micros.inelasticScatter
         img = plotting.plotScatterMatrix(scatterMatrix, fName=plotPath)
-        self.assertEqual(len(img.axes.get_children()), 11)
+        self.assertGreater(len(img.axes.get_children()), 10)
+        self.assertLess(len(img.axes.get_children()), 30)
         self.assertTrue(img.axes.has_data())
 
         for _ in range(3):

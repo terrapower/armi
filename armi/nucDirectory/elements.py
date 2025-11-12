@@ -92,7 +92,7 @@ Retrieve elements that are classified as actinides:
     :ref:`nuclide bases summary table <nuclide-bases-table>`.
 
     .. exec::
-        from armi.nucDirectory import elements
+        from armi.nucDirectory.elements import Elements
         from armi.utils.tabulate import tabulate
         from dochelpers import createTable
 
@@ -117,6 +117,8 @@ Retrieve elements that are classified as actinides:
                 f'``{len(element.nuclides)}``',
             ]
 
+        elements = Elements()
+        elements.factory()
         sortedElements = sorted(elements.byZ.values())
         return createTable(tabulate(data=[getAttributes(elem) for elem in sortedElements],
                                     headers=attributes,
@@ -168,7 +170,7 @@ class ChemicalGroup(Enum):
 class Element:
     """Represents an element defined on the Periodic Table."""
 
-    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN", addToGlobal=True):
+    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
         """
         Creates an instance of an Element.
 
@@ -205,8 +207,6 @@ class Element:
         self.group = ChemicalGroup[group]
         self.standardWeight = None
         self.nuclides = []
-        if addToGlobal:
-            addGlobalElement(self)
 
     def __repr__(self):
         return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
@@ -288,7 +288,7 @@ def getElementZ(symbol: str = None, name: str = None) -> int:
     return elements.getElementZ(symbol, name)
 
 
-def factory():
+def factory(elementsFile: str = None):
     """Pass through to Elements.factory() for the global Elements object."""
     global elements
     global byZ
@@ -296,7 +296,7 @@ def factory():
     global bySymbol
 
     elements = Elements()
-    elements.factory()
+    elements.factory(elementsFile)
 
     byZ = elements.byZ
     byName = elements.byName
@@ -317,7 +317,7 @@ def destroyGlobalElements():
 
 class Elements:
     """
-    A container for all the elements information in the simulation.
+    A container for all the atomics elements information in the simulation.
 
     By design, you would only expect to have one instance of this object in memory during a simulation.
 
@@ -333,11 +333,13 @@ class Elements:
         File path to the custom ARMI "elements.dat" file.
     """
 
-    def __init__(self):
+    DEFAULT_ELEMENTS_FILE = os.path.join(context.RES, "elements.dat")
+
+    def __init__(self, elementsFile: str = None):
         self.byZ: dict[int, Element] = {}
         self.byName: dict[str, Element] = {}
         self.bySymbol: dict[str, Element] = {}
-        self.elementsFile: str = os.path.join(context.RES, "elements.dat")
+        self.elementsFile: str = elementsFile if elementsFile else self.DEFAULT_ELEMENTS_FILE
 
     def clear(self):
         """Empty all the data in this collection."""
@@ -360,9 +362,14 @@ class Elements:
         self.byName[element.name] = element
         self.bySymbol[element.symbol] = element
 
-    def factory(self):
+    def factory(self, elementsFile: str = None):
         """Generate the :class:`Elements <Element>` instances."""
         self.clear()
+
+        # If an input file is provided, use it, otherwise there is a class default.
+        if elementsFile:
+            self.elementsFile = elementsFile
+
         with open(self.elementsFile, "r") as f:
             for line in f:
                 # Skip header lines
@@ -376,7 +383,7 @@ class Elements:
                 phase = lineData[3]
                 group = lineData[4]
                 standardWeight = lineData[5]
-                e = Element(z, sym, name, phase, group, addToGlobal=False)
+                e = Element(z, sym, name, phase, group)
                 if standardWeight != "Derived":
                     e.standardWeight = float(standardWeight)
                 self.addElement(e)

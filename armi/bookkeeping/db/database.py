@@ -66,7 +66,6 @@ from armi.bookkeeping.db.layout import (
     replaceNonsenseWithNones,
 )
 from armi.bookkeeping.db.typedefs import Histories, History
-from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids, parameters
 from armi.reactor.assemblies import Assembly
@@ -1654,13 +1653,18 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     """
     Collect block-by-block homogenized number densities for each nuclide.
 
-    Long ago, composition was stored on block params. No longer; they are on the component numberDensity params. These
-    block-level params, are still useful to see compositions in some visualization tools. Rather than keep them on the
-    reactor model, we dynamically compute them here and slap them in the database. These are ignored upon reading and
-    will not affect the results.
-
-    Remove this once a better viz tool can view composition distributions. Also remove the try/except in ``_readParams``
+    Homogenize the component-level to the block level. These are written to the database and useful for visualization.
     """
+    # find the NuclidesBases object on the Reactor
+    nuclideBases = None
+    for b in blocks:
+        if b.nuclideBases is not None:
+            nuclideBases = b.nuclideBases
+            break
+
+    if not nuclideBases:
+        return {}
+
     nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
     nucBases = [nuclideBases.byName[nn] for nn in nucNames]
     # It's faster to loop over blocks first and get all number densities from each than it is to get one nuclide at a
