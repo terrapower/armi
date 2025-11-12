@@ -34,8 +34,6 @@ from armi.physics.neutronics.settings import (
 from armi.utils import densityTools, units
 from armi.utils.customExceptions import InputError
 
-ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
-
 
 class NuclideFlag(yamlize.Object):
     """
@@ -97,8 +95,9 @@ class NuclideFlag(yamlize.Object):
 
     @nuclideName.validator
     def nuclideName(self, value):
-        if value not in ALLOWED_KEYS:
-            raise ValueError(f"`{value}` is not a valid nuclide name, must be one of: {ALLOWED_KEYS}")
+        if value not in nuclideBases.byName and value not in elements.bySymbol:
+            allowedKeys = set(nuclideBases.byName.keys()).update(set(elements.bySymbol.keys()))
+            raise ValueError(f"`{value}` is not a valid nuclide name, must be one of: {allowedKeys}")
 
     burn = yamlize.Attribute(type=bool)
     xs = yamlize.Attribute(type=bool)
@@ -209,8 +208,9 @@ class CustomIsotopic(yamlize.Map):
         self.massFracs = {}
 
     def __setitem__(self, key, value):
-        if key not in ALLOWED_KEYS:
-            raise ValueError(f"Key `{key}` is not valid, must be one of: {ALLOWED_KEYS}")
+        if key not in nuclideBases.byName and key not in elements.bySymbol:
+            allowedKeys = set(nuclideBases.byName.keys()).update(set(elements.bySymbol.keys()))
+            raise ValueError(f"Key `{key}` is not valid, must be one of: {allowedKeys}")
 
         yamlize.Map.__setitem__(self, key, value)
 
@@ -583,7 +583,7 @@ def getAllNuclideBasesByLibrary(cs):
     nbs = []
     if cs[CONF_FP_MODEL] == "explicitFissionProducts":
         if not cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]:
-            nbs = []
+            pass
         if cs[CONF_FISSION_PRODUCT_LIBRARY_NAME] == "MC2-3":
             nbs = nuclideBases.byMcc3Id.values()
         else:

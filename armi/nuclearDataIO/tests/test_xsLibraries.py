@@ -22,7 +22,7 @@ import unittest
 
 import numpy as np
 
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 from armi.tests import mockRunLogs
@@ -306,6 +306,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.libAB = self.getReadFunc()(self.getLibABPath())
         self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
         self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
+        self.nuclideBases = NuclideBases()
 
     def getErrorType(self):
         raise NotImplementedError()
@@ -438,7 +439,7 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             "XE1357",
             "XE1367",
         ]:
-            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
@@ -487,7 +488,7 @@ class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             "XE1357",
             "XE1367",
         ]:
-            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
