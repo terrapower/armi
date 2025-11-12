@@ -127,8 +127,8 @@ class Material:
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
     thermalScatteringLaws = ()
-    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances
-    with information about thermal scattering."""
+    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScatteringLabels` instances with information
+    about thermal scattering."""
 
     def __init__(self):
         self.parent = None
@@ -259,8 +259,7 @@ class Material:
 
         Notes
         -----
-        For a detailed description of the linear expansion methodology, see
-        :ref:`thermalExpansion` in the documentation.
+        For a detailed description of the linear expansion methodology, see "thermalExpansion" in the documentation.
 
         Parameters
         ----------
@@ -833,9 +832,6 @@ class FuelMaterial(Material):
     class1_wt_frac = None
     class1_custom_isotopics = None
     class2_custom_isotopics = None
-    puFrac = 0.0
-    uFrac = 0.0
-    zrFrac = 0.0
 
     def applyInputParams(
         self,
@@ -908,8 +904,5 @@ class FuelMaterial(Material):
         m.class1_wt_frac = self.class1_wt_frac
         m.class1_custom_isotopics = self.class1_custom_isotopics
         m.class2_custom_isotopics = self.class2_custom_isotopics
-        m.puFrac = self.puFrac
-        m.uFrac = self.uFrac
-        m.zrFrac = self.zrFrac
 
         return m

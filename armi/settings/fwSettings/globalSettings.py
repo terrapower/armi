@@ -713,10 +713,11 @@ def defineSettings() -> List[setting.Setting]:
             CONF_TRACK_ASSEMS,
             default=False,
             label="Save Discharged Assemblies",
-            description="Track assemblies for detailed fuel histories. For instance, "
-            "assemblies are tracked after they come out of a reactor by putting them "
-            "in a Spent Fuel Pool. This might be necessary for your work, but it "
-            "certainly increases the memory usage of the program.",
+            description="Retain discharged assemblies in a spent fuel pool so their histories "
+            "can be analyzed or the assemblies reused. Turning this off removes "
+            "discharged assemblies to minimize memory and database size. "
+            "Assemblies explicitly discharged to the spent fuel pool remain "
+            "regardless, allowing selective tracking.",
         ),
         setting.Setting(
             CONF_VERBOSITY,
@@ -739,7 +740,7 @@ def defineSettings() -> List[setting.Setting]:
             default=[],
             label="Zone Definitions",
             description="Manual definitions of zones as lists of assembly locations "
-            "(e.g. 'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used "
+            '(e.g. "zoneName: loc1, loc2, loc3") . Zones are groups of assemblies used '
             f"by various summary and calculation routines. See also {CONF_ZONES_FILE} "
             "for an alternative method of specifying zones.",
         ),

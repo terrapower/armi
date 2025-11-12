@@ -438,7 +438,8 @@ class HexReactorTests(ReactorTests):
         blockMesh = self.r.core.getFirstAssembly(Flags.FUEL).spatialGrid._bounds[2]
         assert_allclose(blockMesh, mesh)
 
-    def test_findAllAxialMeshPoints_wSubmesh(self):
+    def test_findAxialMeshsSubmesh(self):
+        """Find all axial mesh points with a provided sub-mesh."""
         referenceMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
         mesh = self.r.core.findAllAxialMeshPoints(assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True)
         self.assertListEqual(referenceMesh, mesh)
@@ -586,13 +587,15 @@ class HexReactorTests(ReactorTests):
     def test_getAssemblyPitch(self):
         self.assertEqual(self.r.core.getAssemblyPitch(), 16.75)
 
-    def test_getNumAssembliesWithAllRingsFilledOut(self):
+    def test_getNumAssemsAllRingsFilled(self):
+        """Basic test of getNumAssembliesWithAllRingsFilledOut."""
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
     @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
-    def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
+    def test_getNumAssemsWithAllRingsBipass(self):
+        """Test edge case in getNumAssembliesWithAllRingsFilledOut by bypassing some of the logic."""
         nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
         self.assertEqual(19, nAssems)
 
@@ -971,7 +974,7 @@ class HexReactorTests(ReactorTests):
         aNew = self.r.core.createFreshFeed(cs=self.o.cs)
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
-    def test_createAssemblyOfTypeExpandedCore(self):
+    def test_createAssemOfTypeExpandCore(self):
         """Test creation of new assemblies in an expanded core."""
         # change the mesh of inner blocks
         mesh = self.r.core.p.referenceBlockAxialMesh[1:]
@@ -1032,7 +1035,7 @@ class HexReactorTests(ReactorTests):
         heights = [b.p.height for b in a]
         self.assertEqual(originalHeights, heights)
 
-    def test_applyThermalExpansion_CoreConstruct(self):
+    def test_applyThermalExpanCoreConst(self):
         r"""Test that assemblies in core are correctly expanded.
 
         Notes

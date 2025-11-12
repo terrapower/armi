@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """
-Tool to build SCR tables to be added to the RST docs.
+Tool to build SCR lists to be added to the RST docs.
 
-This script is meant to generate an RST-formatted list-table to the docs, to automate the process of
-generating an SCR in ARMI.
+This script is meant to be called by the docs build process, to help automate the process of generating lists of SCRs.
 """
 
+import argparse
 import subprocess
 
 import requests
@@ -30,8 +30,11 @@ GITHUB_USERS = {
     "alexhjames": "Alex James",
     "bsculac": "Brian Sculac",
     "clstocking": "Casey Stocking",
+    "crswong888": "Chris Wong",
     "drewj-tp": "Drew Johnson",
+    "HunterPSmith": "Hunter Smith",
     "jakehader": "Jake Hader",
+    "jasonbmeng": "Jason Meng",
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
     "mgjarrett": "Michael Jarrett",
@@ -48,6 +51,24 @@ PR_TYPES = {
     "fixes": "Code Changes, Bugs and Fixes",
     "trivial": "Code Changes, Maintenance, or Trivial",
 }
+
+
+def main():
+    """NOTE: This is not used during CI, but exists only for testing and dev purposes."""
+    # Instantiate the parser
+    parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
+
+    # Required positional argument
+    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
+    parser.add_argument("pastCommit", help="The commit hash of the last release.")
+
+    # Parse the command line
+    args = parser.parse_args()
+    prNum = int(args.prNum)
+    pastCommit = args.pastCommit
+
+    rstContent = buildScrListing(prNum, pastCommit)
+    print(rstContent)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -76,7 +97,7 @@ def _findOneLineData(lines: list, prNum: str, key: str):
 
 
 def _buildScrLine(prNum: str):
-    """Helper method to build a single RST list-table row in an SCR.
+    """Helper method to build a single RST list item in an SCR.
 
     Parameters
     ----------
@@ -86,7 +107,7 @@ def _buildScrLine(prNum: str):
     Returns
     -------
     str
-        RST-formatted list-table row.
+        RST-formatted list item.
     """
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
@@ -102,6 +123,7 @@ def _buildScrLine(prNum: str):
     reviewers = _findOneLineData(lines, prNum, "reviewers:")
     reviewers = [rr.split("(")[0].strip() for rr in reviewers.split(",")]
     reviewers = [GITHUB_USERS.get(rr, rr) for rr in reviewers]
+    reviewerHeader = "Reviewer(s)" if len(reviewers) > 1 else "Reviewer"
     reviewers = ", ".join(reviewers)
 
     # grab one-line description
@@ -111,27 +133,24 @@ def _buildScrLine(prNum: str):
         scrType = "trivial"
 
     # grab one-line description
-    desc = _findOneLineData(lines, prNum, "One-Sentence Description:")
+    desc = _findOneLineData(lines, prNum, "One-Sentence Rationale:")
 
     # grab impact on requirements
     impact = _findOneLineData(lines, prNum, "One-line Impact on Requirements:")
 
-    # build RST line for a list-table, representing this data
-    tab = "   "
-    col0 = f"{tab}* - "
-    coli = f"{tab}  - "
-    content = f"{col0}{title}\n"
-    content += f"{coli}{desc}\n"
-    content += f"{coli}{impact}\n"
-    content += f"{coli}{author}\n"
-    content += f"{coli}{reviewers}\n"
-    content += f"{coli}{prNum}\n"
+    # build RST list item, representing this data
+    tab = "  "
+    content = f"* PR #{prNum}: {title}\n\n"
+    content += f"{tab}* Change: {desc}\n"
+    content += f"{tab}* Impact on Requirements: {impact}\n"
+    content += f"{tab}* Author: {author}\n"
+    content += f"{tab}* {reviewerHeader}: {reviewers}\n\n"
 
     return content, scrType
 
 
-def _buildTableHeader(scrType: str):
-    """Build a RST list-table header for an SCR listing.
+def _buildHeader(scrType: str):
+    """Build a RST list header for an SCR listing.
 
     Parameters
     ----------
@@ -141,22 +160,9 @@ def _buildTableHeader(scrType: str):
     Returns
     -------
     str
-        RST-formatted list-table header.
+        RST-formatted header title.
     """
-    # build table header
-    tab = "   "
-    content = f".. list-table:: {PR_TYPES[scrType]}\n"
-    content += f"{tab}:widths: 20 25 25 13 12 5\n"
-    content += f"{tab}:header-rows: 1\n\n"
-    content += f"{tab}* - Title\n"
-    content += f"{tab}  - Change\n"
-    content += f"{tab}  - | Impact on\n"
-    content += f"{tab}    | Requirements\n"
-    content += f"{tab}  - Author\n"
-    content += f"{tab}  - Reviewer(s)\n"
-    content += f"{tab}  - PR\n"
-
-    return content
+    return f"\nList of SCRs of type: {PR_TYPES[scrType]}\n\n"
 
 
 def isMainPR(prNum: int):
@@ -181,8 +187,8 @@ def isMainPR(prNum: int):
         return True
 
 
-def buildScrTable(thisPrNum: int, pastCommit: str):
-    """Helper method to build an RST list-table for an SCR.
+def buildScrListing(thisPrNum: int, pastCommit: str):
+    """Helper method to build an RST-formatted lists of all SCRs, by category.
 
     Parameters
     ----------
@@ -195,49 +201,60 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     Returns
     -------
     str
-        RST-formatted list-table content.
+        RST-formatted list content.
     """
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
-    for num in range(100, 1001, 100):
+    for num in range(100, 2001, 100):
+        print(f"Looking back {num} commits...")
         gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
 
-    if not txt:
+    if not txt or pastCommit not in txt:
         return f"Could not find commit in git log: {pastCommit}"
 
-    # 2. arse commit history to get the PR numbers
-    prNums = []
+    # 2. Parse commit history to get the PR numbers
+    prNums = set()
     if thisPrNum > 0:
         # in case the docs are not being built from a PR
-        prNums.append(thisPrNum)
+        prNums.add(thisPrNum)
 
     for ln in txt.split("\n"):
         line = ln.strip()
         if pastCommit in line:
             # do not include the reference commit
             break
-        if line.endswith(")") and "(#" in line:
+        elif line.endswith(")") and "(#" in line:
             # get the PR number
-            prNums.append(int(line.split("(#")[-1].split(")")[0]))
+            try:
+                prNums.add(int(line.split("(#")[-1].split(")")[0]))
+            except ValueError:
+                # This is not a PR. Someone unwisely put some trash in the commit message.
+                pass
 
-    # 3. Build a table row for each SCR
+    # 3. Build a list for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
         if not isMainPR(prNum):
             continue
+
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
-    # 4. Build final RST for all four tables, to return to the docs
+    # 4. Build final RST for all four lists, to return to the docs
     content = ""
     for typ in ["features", "fixes", "trivial", "docs"]:
         if len(data[typ]):
-            content += _buildTableHeader(typ)
+            print(f"Found {len(data[typ])} SCRs in the {typ} category")
+            content += _buildHeader(typ)
             for line in data[typ]:
                 content += line
             content += "\n\n"
 
-    return content
+    return content + "\n\n"
+
+
+if __name__ == "__main__":
+    main()

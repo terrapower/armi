@@ -16,6 +16,7 @@
 
 import unittest
 import warnings
+from unittest.mock import patch
 
 import h5py
 import numpy as np
@@ -225,10 +226,9 @@ class TestCompareDB3(unittest.TestCase):
             srcData3.attrs["2"] = 22
             srcData3.attrs["numDens"] = a2
 
-            # there should a logged error, but no diff
+            # there should a logged error
             with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData, srcData3, out, dr)
-                self.assertEqual(dr.nDiffs(), 0)
                 self.assertIn("Special formatting parameters for", mock.getStdout())
 
             # make an H5 datasets that will cause unpackSpecialData to fail
@@ -316,3 +316,39 @@ class TestCompareDB3(unittest.TestCase):
             # there should be no difference
             _compareAuxData(out, refData, srcData, dr)
             self.assertEqual(dr.nDiffs(), 0)
+
+    def test_differentlySizedSpecialData(self):
+        """Ensure that special formatting data that are differently sized report a diff."""
+        differ = DiffResults(0.0)
+        with h5py.File(self._testMethodName + ".h5", "w") as f, OutputWriter(self._testMethodName + ".txt") as out:
+            # Create two datasets with no data, but with different attributes
+            # The attributes are used in the special data checks
+            short = f.create_dataset("short", dtype=float)
+            short.attrs["offsets"] = np.arange(10)
+            long = f.create_dataset("long", dtype=float)
+            long.attrs["offsets"] = np.arange(100)
+            with patch.object(out, "writeln") as writeln:
+                _diffSpecialData(short, long, out, differ)
+        # Ensure the user is alerted the datasets have different parameters
+        writeln.assert_called_once()
+        # Ensure this is treated as a diff
+        self.assertGreater(differ.nDiffs(), 0)
+
+    def test_nothingForDictionaries(self):
+        """Ensure we alert the user we do not perform diffs on dictionaries."""
+        differ = DiffResults(0.0)
+        with h5py.File(self._testMethodName + ".h5", "w") as f, OutputWriter(self._testMethodName + ".txt") as out:
+            first = f.create_dataset("first_dictionary", dtype=float)
+            first.attrs["dict"] = True
+            second = f.create_dataset("second_dictionary", dtype=float)
+            second.attrs["dict"] = True
+            with patch.object(out, "writeln") as writeln:
+                _diffSpecialData(first, second, out, differ)
+            # Not considered a diff
+            self.assertEqual(differ.nDiffs(), 0)
+            # But we've let the user know
+            writeln.assert_called_once()
+            # And the parameter is in the printed message
+            msg = writeln.call_args.args[0]
+            # NOTE If you try to grab first.name on the closed DB, you get None which is not helpful
+            self.assertIn(first.name, msg)

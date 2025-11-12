@@ -241,6 +241,27 @@ class TestGrid(unittest.TestCase):
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
 
+    def test_generateSortedHexLocationList(self):
+        for pitch in [1.0, 3.14]:
+            for rings in [3, 12]:
+                grid = grids.HexGrid.fromPitch(pitch, numRings=rings)
+
+                lst = grid.generateSortedHexLocationList(1)
+                self.assertEqual(len(lst), 1)
+                self.assertEqual(lst[0].indices.tolist(), [0, 0, 0])
+
+                lst = grid.generateSortedHexLocationList(2)
+                self.assertEqual(len(lst), 2)
+                self.assertEqual(lst[0].indices.tolist(), [0, 0, 0])
+                self.assertEqual(lst[1].indices.tolist(), [-1, 0, 0])
+
+                lst = grid.generateSortedHexLocationList(4)
+                self.assertEqual(len(lst), 4)
+                self.assertEqual(lst[0].indices.tolist(), [0, 0, 0])
+                self.assertEqual(lst[1].indices.tolist(), [-1, 0, 0])
+                self.assertEqual(lst[2].indices.tolist(), [-1, 1, 0])
+                self.assertEqual(lst[3].indices.tolist(), [0, -1, 0])
+
     def test_getitem(self):
         """
         Test that locations are created on demand, and the multi-index locations are

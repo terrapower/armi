@@ -35,15 +35,6 @@ def getAssemblyParameterDefinitions():
             default=None,
         )
 
-        pb.defParam(
-            "guideTubeTopElevation",
-            units=units.CM,
-            description=("Elevation of the top of the guide tube relative to the bottom of the duct."),
-            categories=[parameters.Category.assignInBlueprints],
-            saveToDB=True,
-            default=None,
-        )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
         pb.defParam(
             "arealPd",
@@ -120,6 +111,14 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam("timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6)
 
+        pb.defParam(
+            "guideTubeTopElevation",
+            units=units.CM,
+            description=("Elevation of the top of the guide tube relative to the bottom of the duct."),
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
         pb.defParam(
             "detailedNDens",
@@ -159,7 +158,7 @@ def getAssemblyParameterDefinitions():
             setter=_enforceNotesRestrictions,
         )
 
-    with pDefs.createBuilder(location="N/A", default=0.0, categories=["control rods"]) as pb:
+    with pDefs.createBuilder(location=ParamLocation.NA, default=0.0, categories=["control rods"]) as pb:
         pb.defParam(
             "crCriticalFraction",
             units=units.UNITLESS,
@@ -240,13 +239,6 @@ def getAssemblyParameterDefinitions():
         )
 
         pb.defParam(
-            "THmassFlowRate",
-            units=f"{units.KG}/{units.SECONDS}",
-            description="The nominal assembly flow rate",
-            categories=["broadcast"],
-        )
-
-        pb.defParam(
             "THlocalDTout",
             units=units.DEGC,
             description="Maximum delta-Ts for outlet temperatures of all assemblies",
@@ -265,6 +257,15 @@ def getAssemblyParameterDefinitions():
             units=units.UNITLESS,
             description="orifice zone for assembly; should be location specific",
             default=0,  # integer default
+        )
+
+    with pDefs.createBuilder(default=0.0, categories=["thermal hydraulics"]) as pb:
+        pb.defParam(
+            "THmassFlowRate",
+            units=f"{units.KG}/{units.SECONDS}",
+            description="The nominal assembly flow rate",
+            categories=["broadcast"],
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
     with pDefs.createBuilder() as pb:

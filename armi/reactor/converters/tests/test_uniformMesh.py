@@ -126,7 +126,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         sourceHeights = [b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)]
         self.assertListEqual(newHeights, sourceHeights)
 
-    def test_makeAssemUniformMeshParamMappingSameMesh(self):
+    def test_makeAssemUniformMeshParams(self):
         """Tests creating a uniform mesh assembly while mapping both number densities and specified parameters."""
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
         for b in sourceAssem:

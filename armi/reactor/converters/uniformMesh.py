@@ -55,14 +55,11 @@ The mesh mapping happens as described in the figure:
 
 import collections
 import copy
-import glob
-import re
 import typing
 from timeit import default_timer as timer
 
 import numpy as np
 
-import armi
 from armi import runLog
 from armi.physics.neutronics.globalFlux import RX_ABS_MICRO_LABELS, RX_PARAM_NAMES
 from armi.reactor import grids, parameters
@@ -70,7 +67,7 @@ from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.utils import iterables, plotting
+from armi.utils import plotting
 from armi.utils.mathematics import average1DWithinTolerance
 
 if typing.TYPE_CHECKING:
@@ -928,35 +925,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return cachedBlockParamData
 
     def plotConvertedReactor(self):
-        """Generate a radial layout image of the converted reactor core."""
-        bpAssems = list(self.convReactor.blueprints.assemblies.values())
-        assemsToPlot = []
-        for bpAssem in bpAssems:
-            coreAssems = self.convReactor.core.getAssemblies(bpAssem.p.flags)
-            if not coreAssems:
-                continue
-            assemsToPlot.append(coreAssems[0])
-
-        # Obtain the plot numbering based on the existing files so that existing plots
-        # are not overwritten.
-        start = 0
-        existingFiles = glob.glob(f"{self.convReactor.core.name}AssemblyTypes" + "*" + ".png")
-        # This loops over the existing files for the assembly types outputs
-        # and makes a unique integer value so that plots are not overwritten. The
-        # regular expression here captures the first integer as AssemblyTypesX and
-        # then ensures that the numbering in the next enumeration below is 1 above that.
-        for f in existingFiles:
-            newStart = int(re.search(r"\d+", f).group())
-            if newStart > start:
-                start = newStart
-        for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=start + 1):
-            assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
-            plotting.plotAssemblyTypes(
-                assemBatch,
-                assemPlotName,
-                maxAssems=6,
-                showBlockAxMesh=True,
-            )
+        """Generate a radial layout image of the converted reactor core. A pass-through to preserve the API."""
+        plotting.plotRadialReactorLayouts(self.convReactor)
 
     def reset(self):
         """Clear out stored attributes and reset the global assembly number."""
