@@ -86,11 +86,19 @@ jobs:
           set -x
 
           rm -rf .apidocs
-          rm -rf doc/.apidocs
-          rm -rf doc/*/.apidocs
-          rm -rf doc/*/*/.apidocs
-          rm -rf doc/*/*/*/.apidocs
-          rm -rf doc/*/*/*/*/.apidocs
+          rm -rf */.apidocs
+          rm -rf */*/.apidocs
+          rm -rf */*/*/.apidocs
+          rm -rf */*/*/*/.apidocs
+          rm -rf */*/*/*/*/.apidocs
+
+          rm -rf _modules
+          rm -rf */_modules
+          rm -rf */*/_modules
+          rm -rf */*/*/_modules
+          rm -rf */*/*/*/_modules
+          rm -rf */*/*/*/*/_modules
+
           rm -rf doc/_build/_modules
           rm -rf doc/_build/doctrees
           rm -rf doc/_build/doctrees/.apidocs
