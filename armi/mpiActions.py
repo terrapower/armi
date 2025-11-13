@@ -577,8 +577,7 @@ class DistributeStateAction(MpiAction):
             runLog.error(error)
             # workers are still waiting for a reactor object
             if context.MPI_RANK == 0:
-                _diagnosePickleError(self.o)
-                context.MPI_COMM.bcast("quit")  # try to get the workers to quit.
+                context.MPI_COMM.bcast("quit")  # try to get the workers to quit
 
             raise
 
@@ -735,44 +734,3 @@ class DistributeStateAction(MpiAction):
                     runLog.debug("Skipping broadcast of interface {0}".format(iName))
                     if iOld:
                         iOld.interactDistributeState()
-
-
-def _diagnosePickleError(o):
-    r"""
-    Scans through various parts of the reactor to identify which part cannot be pickled.
-
-    Notes
-    -----
-    So, you're having a pickle error and you don't know why. This method will help you
-    find the problem. It doesn't always catch everything, but it does help.
-
-    We also find that modifying the Python library as documented here tells us which
-    object can't be pickled by printing it out.
-    """
-    checker = utils.tryPickleOnAllContents3
-    runLog.info("-------- Pickle Error Detection -------")
-    runLog.info(
-        "For reference, the operator is {0} and the reactor is {1}\n"
-        "Watch for other reactors or operators, and think about where they came from.".format(o, o.r)
-    )
-    runLog.info("Scanning the Reactor for pickle errors")
-    checker(o.r)
-
-    runLog.info("Scanning all assemblies for pickle errors")
-    for a in o.r.core.getAssemblies(includeAll=True):
-        checker(a)
-
-    runLog.info("Scanning all blocks for pickle errors")
-    for b in o.r.core.getBlocks(includeAll=True):
-        checker(b)
-
-    runLog.info("Scanning blocks by name for pickle errors")
-    for _bName, b in o.r.core.blocksByName.items():
-        checker(b)
-
-    runLog.info("Scanning the ISOTXS library for pickle errors")
-    checker(o.r.core.lib)
-
-    for interface in o.getInterfaces():
-        runLog.info("Scanning {} for pickle errors".format(interface))
-        checker(interface)

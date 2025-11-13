@@ -22,7 +22,6 @@ from armi.mpiActions import (
     DistributeStateAction,
     DistributionAction,
     MpiAction,
-    _diagnosePickleError,
     _disableForExclusiveTasks,
     _makeQueue,
     runActions,
@@ -239,28 +238,6 @@ class MpiIterTests(unittest.TestCase):
         results = runActions(o, r, o.cs, [act])
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
-
-    def test_diagnosePickleErrorTestReactor(self):
-        """Run _diagnosePickleError() on the test reactor.
-
-        We expect this to run all the way through the pickle diagnoser, because the test reactor should be easily
-        picklable.
-        """
-        o, _ = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
-
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-
-            # Run the diagnosis on the test reactor
-            _diagnosePickleError(o)
-
-            # Hopefully, the test reactor can be pickled, and we get no errors
-            self.assertIn("Pickle Error Detection", mock.getStdout())
-            self.assertIn("Scanning the Reactor", mock.getStdout())
-            self.assertIn("Scanning all assemblies", mock.getStdout())
-            self.assertIn("Scanning all blocks", mock.getStdout())
-            self.assertIn("Scanning blocks by name", mock.getStdout())
-            self.assertIn("Scanning the ISOTXS library", mock.getStdout())
 
     def test_invokeAsMaster(self):
         """Verify that calling invokeAsMaster calls invoke."""

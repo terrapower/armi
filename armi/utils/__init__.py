@@ -24,7 +24,6 @@ import pickle
 import re
 import shutil
 import sys
-import tempfile
 import time
 
 from armi import runLog
@@ -424,38 +423,6 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
                 pickle.dumps(ob)  # dump as a string
             except Exception:
                 print(f"{name} in {obj} cannot be pickled.")
-
-
-class MyPickler(pickle.Pickler):
-    """
-    This will find your pickle errors if all else fails.
-
-    Use with tryPickleOnAllContents3.
-    """
-
-    def save(self, obj):
-        try:
-            pickle.Pickler.save(self, obj)
-        except Exception:
-            _excType, excValue, _excTraceback = sys.exc_info()
-            print(f"Object that failed: {obj}. Err: {excValue}")
-            raise
-
-
-def tryPickleOnAllContents3(obj):
-    """
-    Definitely find pickle errors.
-
-    Notes
-    -----
-    In this form, this just finds one pickle error and then crashes. If you want to make it work like the other
-    testPickle functions and handle errors, you could. But usually you just have to find one unpickleable SOB.
-    """
-    with tempfile.TemporaryFile() as output:
-        try:
-            MyPickler(output).dump(obj)
-        except (pickle.PicklingError, TypeError):
-            pass
 
 
 def classesInHierarchy(obj, classCounts, visited=None):
