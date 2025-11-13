@@ -85,7 +85,7 @@ jobs:
           echo "Cleaning out API docs from PDF..."
           set -x
 
-          rm -r .apidocs
+          #rm -r .apidocs
           rm -rf .apidocs
           rm -r docs/.apidocs
           rm -rf */.apidocs
