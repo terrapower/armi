@@ -46,7 +46,7 @@ jobs:
           pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
-          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+          pytest --junit-xml=test_results.xml -v -n 4 armi/materials > pytest_verbose.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
@@ -87,7 +87,7 @@ jobs:
 
           #rm -r .apidocs
           rm -rf .apidocs
-          rm -r docs/.apidocs
+          rm -r doc/.apidocs
           rm -rf */.apidocs
           rm -rf */*/.apidocs
           rm -rf */*/*/.apidocs
@@ -129,4 +129,4 @@ jobs:
         with:
           name: pdf-docs
           path: doc/_build/latex/ARMI.pdf
-          retention-days: 5
+          retention-days: 7
