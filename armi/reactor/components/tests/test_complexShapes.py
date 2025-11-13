@@ -89,6 +89,20 @@ class TestComplexShapes(unittest.TestCase):
         self.assertAlmostEqual(comp.getComponentArea(cold=True), comp2.getComponentArea(cold=True))
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp2.getComponentArea(cold=False))
 
+        compHoleRadFromCenter = HoledHexagon(
+            "TestHoledHexagon33",
+            material=self.material,
+            Tinput=20,
+            Thot=300,
+            op=op,
+            holeOD=holeOD,
+            nHoles=nHoles,
+            holeRadFromCenter=0.5,
+            mult=2,
+        )
+        self.assertEqual(compHoleRadFromCenter.getDimension("holeRadFromCenter", cold=True, Tc=500), 0.5)
+        self.assertGreater(compHoleRadFromCenter.getDimension("holeRadFromCenter", cold=False, Tc=500), 0.5)
+
     def test_holedRectangle(self):
         lo = 2.0
         wo = 3.0
