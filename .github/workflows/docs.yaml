@@ -93,7 +93,7 @@ jobs:
           ls -lah doc/_build/html
           sleep 1
 
-          rm -rf armi
+          #rm -rf armi
           rm -rf doc/armi
           rm -rf doc/*/armi
           rm -r doc/.apidocs
