@@ -38,6 +38,7 @@ GITHUB_USERS = {
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
     "mgjarrett": "Michael Jarrett",
+    "nipowell": "Nicole Powell",
     "ntouran": "Nick Touran",
     "onufer": "Mark Onufer",
     "opotowsky": "Arrielle Opotowsky",
