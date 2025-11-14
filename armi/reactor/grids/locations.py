@@ -100,7 +100,8 @@ class LocationBase(ABC):
             return (self.i, self.j, self.k) == other
         if isinstance(other, LocationBase):
             return self.i == other.i and self.j == other.j and self.k == other.k and self.grid is other.grid
-        return NotImplemented
+
+        raise NotImplementedError
 
     def __lt__(self, that: "LocationBase") -> bool:
         """
@@ -348,8 +349,9 @@ class MultiIndexLocation(IndexLocation):
         """
         if isinstance(other, type(self)):
             return self.grid == other.grid and self._locations == other._locations
+
         # Different objects -> let other.__eq__(self) handle it
-        return NotImplemented
+        raise NotImplementedError
 
     def __getstate__(self) -> List[IndexLocation]:
         """Used in pickling and deepcopy, this detaches the grid."""
@@ -433,7 +435,8 @@ class CoordinateLocation(IndexLocation):
             # Fuel pins may have a multi index location and the duct may
             # have a coordinate location and we don't want them to be equal
             return self.grid == other.grid and self.i == other.i and self.j == other.j and self.k == other.k
-        return NotImplemented
+
+        raise NotImplementedError
 
     def __hash__(self):
         """Hash based on the coordinates but not the grid."""
