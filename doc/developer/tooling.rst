@@ -136,9 +136,9 @@ Releasing a New Version of ARMI
 We use the common ``major.minor.bump`` version scheme where a version string might look like
 ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specific meaning:
 
-* ``major`` - Revved for DOE/NRC-sanctioned release or at the end of a long development cycle.
-* ``minor`` - Revved when we decide the code or our API has reached a stable point.
-* ``bump`` - Revved every time we modify the API, and any other time we want.
+* ``major`` - Revved for major milestones of the ARMI project.
+* ``minor`` - Revved for the usual release, real feature work completed.
+* ``bump`` - Revved for very small releases, but still well-tested with a stable API.
 
 **NOTE**: Changes to documentation or testing probably do not deserve a version bump.
 
