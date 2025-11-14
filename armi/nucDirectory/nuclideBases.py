@@ -157,19 +157,19 @@ class NuclideInterface:
 
     def getMcc2Id(self):
         """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getMcc3Id(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getMcc3IdEndfbVII1(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getSerpentId(self):
         """Get the Serpent nuclide identification label."""

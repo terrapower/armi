@@ -370,7 +370,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
 
 class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
-        return OSError
+        raise OSError
 
     def getReadFunc(self):
         return pmatrx.readBinary
@@ -400,7 +400,7 @@ class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
 
 class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
-        return OSError
+        raise OSError
 
     def getReadFunc(self):
         return isotxs.readBinary
@@ -449,7 +449,7 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
 
 class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
-        return OSError
+        raise OSError
 
     def getReadFunc(self):
         return gamiso.readBinary
