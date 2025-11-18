@@ -17,12 +17,10 @@ import unittest
 
 from armi.materials.lithium import Lithium
 from armi.materials.tests.test_materials import _Material_Test
-from armi.nucDirectory import nuclideBases as nb
 
 
 class Lithium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = Lithium
-    defaultMassFrac = nb.byName["LI6"].abundance
 
     def setUp(self):
         _Material_Test.setUp(self)
@@ -38,19 +36,17 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
         self.Lithium_both.applyInputParams(LI6_wt_frac=0.8)
 
     def test_Lithium_material_modifications(self):
-        self.assertEqual(self.mat.getMassFrac("LI6"), self.defaultMassFrac)
+        self.assertEqual(self.mat.getMassFrac("LI6"), 0.0759)
         self.assertAlmostEqual(self.Lithium_LI_wt_frac.getMassFrac("LI6"), 0.5, places=10)
         self.assertAlmostEqual(self.Lithium_LI6_wt_frac.getMassFrac("LI6"), 0.6, places=10)
         self.assertAlmostEqual(self.Lithium_both.getMassFrac("LI6"), 0.8, places=10)
 
     def test_pseudoDensity(self):
         ref = self.mat.pseudoDensity(Tc=100)
-        cur = 0.512
-        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+        self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
 
         ref = self.mat.pseudoDensity(Tc=200)
-        cur = 0.512
-        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+        self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
 
     def test_meltingPoint(self):
         ref = self.mat.meltingPoint()

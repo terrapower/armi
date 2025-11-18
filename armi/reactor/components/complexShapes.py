@@ -45,7 +45,7 @@ class HoledHexagon(basicShapes.Hexagon):
         op,
         holeOD,
         nHoles,
-        holeRadFromCenter=None,
+        holeRadFromCenter=0.0,
         mult=1.0,
         modArea=None,
         isotopics=None,
