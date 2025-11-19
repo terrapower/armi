@@ -33,9 +33,9 @@ class CartesianGrid(StructuredGrid):
     In Cartesian, (i, j, k) indices map to (x, y, z) coordinates.
     In an axial plane (i, j) are as follows::
 
-        (-1, 1) ( 0, 1) ( 1, 1)
-        (-1, 0) ( 0, 0) ( 1, 0)
-        (-1,-1) ( 0,-1) ( 1,-1)
+        (-1, 1)(0, 1)(1, 1)
+        (-1, 0)(0, 0)(1, 0)
+        (-1, -1)(0, -1)(1, -1)
 
     The concepts of ring and position are a bit tricker in Cartesian grids than in Hex,
     because unlike in the Hex case, there is no guaranteed center location. For example,
@@ -135,10 +135,10 @@ class CartesianGrid(StructuredGrid):
         This is needed to support GUI, but should not often be used.
         i, j (0-based) indices are much more useful. For example:
 
-        >>> locator = core.spatialGrid[i, j, 0] # 3rd index is 0 for assembly
+        >>> locator = core.spatialGrid[i, j, 0]  # 3rd index is 0 for assembly
         >>> a = core.childrenByLocator[locator]
 
-        >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]] # one liner
+        >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]]  # one liner
         """
         i, j = indices[0:2]
         split = self._isThroughCenter()

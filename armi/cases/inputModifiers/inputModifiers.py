@@ -135,9 +135,7 @@ class MultiSettingModifier(InputModifier):
 
     Examples
     --------
-    >>> inputModifiers.MultiSettingModifier(
-    ...    {CONF_NEUTRONICS_TYPE: "both", CONF_COARSE_MESH_REBALANCE: -1}
-    ... )
+    >>> inputModifiers.MultiSettingModifier({CONF_NEUTRONICS_TYPE: "both", CONF_COARSE_MESH_REBALANCE: -1})
 
     """
 

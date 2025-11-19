@@ -112,9 +112,9 @@ class GeometryConverter(GeometryChanger):
     >>> HexToRZConverter(useMostCommonXsId=False, expandReactor=False)
     >>> geomConv.convert(r)
     >>> newR = geomConv.convReactor
-    >>> dif3d = dif3dInterface.Dif3dInterface('dif3dRZ', newR)
+    >>> dif3d = dif3dInterface.Dif3dInterface("dif3dRZ", newR)
     >>> dif3d.o = self.o
-    >>> dif3d.writeInput('rzGeom_actual.inp')
+    >>> dif3d.writeInput("rzGeom_actual.inp")
     """
 
     def __init__(self, cs=None):

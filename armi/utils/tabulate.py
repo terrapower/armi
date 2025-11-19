@@ -579,9 +579,9 @@ def _type(string, hasInvisible=True, numparse=True):
     True
     >>> _type("1") is type(1)
     True
-    >>> _type('\x1b[31m42\x1b[0m') is type(42)
+    >>> _type("\x1b[31m42\x1b[0m") is type(42)
     True
-    >>> _type('\x1b[31m42\x1b[0m') is type(42)
+    >>> _type("\x1b[31m42\x1b[0m") is type(42)
     True
 
     """
@@ -639,7 +639,7 @@ def _afterpoint(string):
 def _padleft(width, s):
     r"""Flush right.
 
-    >>> _padleft(6, '\u044f\u0439\u0446\u0430') == '  \u044f\u0439\u0446\u0430'
+    >>> _padleft(6, "\u044f\u0439\u0446\u0430") == "  \u044f\u0439\u0446\u0430"
     True
 
     """
@@ -650,7 +650,7 @@ def _padleft(width, s):
 def _padright(width, s):
     r"""Flush left.
 
-    >>> _padright(6, '\u044f\u0439\u0446\u0430') == '\u044f\u0439\u0446\u0430  '
+    >>> _padright(6, "\u044f\u0439\u0446\u0430") == "\u044f\u0439\u0446\u0430  "
     True
 
     """
@@ -661,7 +661,7 @@ def _padright(width, s):
 def _padboth(width, s):
     r"""Center string.
 
-    >>> _padboth(6, '\u044f\u0439\u0446\u0430') == ' \u044f\u0439\u0446\u0430 '
+    >>> _padboth(6, "\u044f\u0439\u0446\u0430") == " \u044f\u0439\u0446\u0430 "
     True
 
     """
@@ -679,10 +679,10 @@ def _stripAnsi(s):
     CSI sequences are simply removed from the output, while OSC hyperlinks are replaced with the
     link text. Note: it may be desirable to show the URI instead but this is not supported.
 
-        >>> repr(_stripAnsi('\x1B]8;;https://example.com\x1B\\This is a link\x1B]8;;\x1B\\'))
+        >>> repr(_stripAnsi("\x1b]8;;https://example.com\x1b\\This is a link\x1b]8;;\x1b\\"))
         "'This is a link'"
 
-        >>> repr(_stripAnsi('\x1b[31mred\x1b[0m text'))
+        >>> repr(_stripAnsi("\x1b[31mred\x1b[0m text"))
         "'red text'"
 
     """
@@ -695,7 +695,7 @@ def _stripAnsi(s):
 def _visibleWidth(s):
     r"""Visible width of a printed string.
 
-    >>> _visibleWidth('\x1b[31mhello\x1b[0m'), _visibleWidth("world")
+    >>> _visibleWidth("\x1b[31mhello\x1b[0m"), _visibleWidth("world")
     (5, 5)
 
     """
@@ -855,14 +855,14 @@ def _columnType(strings, hasInvisible=True, numparse=True):
     True
     >>> _columnType(["1", "2.3", "four"]) is str
     True
-    >>> _columnType(["four", '\u043f\u044f\u0442\u044c']) is str
+    >>> _columnType(["four", "\u043f\u044f\u0442\u044c"]) is str
     True
     >>> _columnType([None, "brux"]) is str
     True
     >>> _columnType([1, 2, None]) is int
     True
     >>> import datetime as dt
-    >>> _columnType([dt.datetime(1991,2,19), dt.time(17,35)]) is str
+    >>> _columnType([dt.datetime(1991, 2, 19), dt.time(17, 35)]) is str
     True
 
     """
@@ -1146,10 +1146,10 @@ def _toStr(s, encoding="utf8", errors="ignore"):
     2. decode() is called for the given parameter and assumes utf8 encoding, but the default error
        behavior is changed from 'strict' to 'ignore'
 
-        >>> repr(_toStr(b'foo'))
+        >>> repr(_toStr(b"foo"))
         "'foo'"
 
-        >>> repr(_toStr('foo'))
+        >>> repr(_toStr("foo"))
         "'foo'"
 
         >>> repr(_toStr(42))

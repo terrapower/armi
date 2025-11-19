@@ -1098,7 +1098,7 @@ class Block(composites.Composite):
 
         Examples
         --------
-        >>> getDim(Flags.WIRE,'od')
+        >>> getDim(Flags.WIRE, "od")
         0.01
         """
         for c in self:
