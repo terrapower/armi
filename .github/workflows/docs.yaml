@@ -86,6 +86,10 @@ jobs:
           set -x
 
           sleep 1
+          git clean -xdn
+          sleep 1
+
+          sleep 1
           ls -lah doc/
           sleep 1
           ls -lah doc/_build
@@ -120,6 +124,10 @@ jobs:
           rm -rf doc/_build/html/_sources
           rm -rf doc/_build/html/_modules
 
+          # identified as existing
+          rm -rf doc/.apidocs
+          rm -rf doc/_build/html/.apidocs
+
           sleep 1
           ls -lah *
           sleep 1
@@ -138,6 +146,10 @@ jobs:
           ls -lah doc/*/*/*
           sleep 1
           ls -lah doc/*/*/*/*
+          sleep 1
+
+          sleep 1
+          git clean -xdn
           sleep 1
 
           echo "Build PDF docs..."
