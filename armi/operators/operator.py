@@ -752,12 +752,12 @@ class Operator:
         Raises
         ------
         RuntimeError
-            If an interface of the same name or function is already attached to the Operator.
+            If an interface of the same name or purpose is already attached to the Operator.
         """
         if self.getInterface(interface.name):
             raise RuntimeError(f"An interface with name {interface.name} is already attached.")
 
-        iFunc = self.getInterface(function=interface.function)
+        iFunc = self.getInterface(purpose=interface.purpose)
 
         if iFunc:
             if issubclass(type(iFunc), type(interface)):
@@ -777,7 +777,7 @@ class Operator:
                 raise RuntimeError(
                     "Cannot add {0}; the {1} already is designated "
                     "as the {2} interface. Multiple interfaces of the same "
-                    "function is not supported.".format(interface, iFunc, interface.function)
+                    "purpose is not supported.".format(interface, iFunc, interface.purpose)
                 )
 
         runLog.debug("Adding {0}".format(interface))
@@ -813,10 +813,10 @@ class Operator:
             for i in self.getInterfaces():
                 for dependency in i.getDependencies(self.cs):
                     name = dependency.name
-                    function = dependency.function
+                    purpose = dependency.purpose
                     klass = dependency
 
-                    if not self.getInterface(name, function=function):
+                    if not self.getInterface(name, purpose=purpose):
                         runLog.extra(
                             "Attaching {} interface (disabled, BOL forced) due to dependency in {}".format(
                                 klass.name, i.name
@@ -862,32 +862,32 @@ class Operator:
             runLog.warning("Cannot remove interface {0} because it is not in the interface stack.".format(interface))
             return False
 
-    def getInterface(self, name=None, function=None):
+    def getInterface(self, name=None, purpose=None):
         """
-        Returns a specific interface from the stack by its name or more generic function.
+        Returns a specific interface from the stack by its name or more generic purpose.
 
         Parameters
         ----------
         name : str, optional
             Interface name
-        function : str
-            Interface function (general, like 'globalFlux','th',etc.). This is useful when you need the ___ solver (e.g.
+        purpose : str
+            Interface purpose (general, like 'globalFlux','th',etc.). This is useful when you need the ___ solver (e.g.
             globalFlux) but don't care which particular one is active (e.g. SERPENT vs. DIF3D)
 
         Raises
         ------
         RuntimeError
-            If there are more than one interfaces of the given name or function.
+            If there are more than one interfaces of the given name or purpose.
         """
         candidateI = None
         for i in self.interfaces:
-            if (name and i.name == name) or (function and i.function == function):
+            if (name and i.name == name) or (purpose and i.purpose == purpose):
                 if candidateI is None:
                     candidateI = i
                 else:
                     raise RuntimeError(
                         "Cannot retrieve a single interface as there are multiple "
-                        "interfaces with name {} or function {} attached. ".format(name, function)
+                        "interfaces with name {} or purpose {} attached. ".format(name, purpose)
                     )
 
         return candidateI
