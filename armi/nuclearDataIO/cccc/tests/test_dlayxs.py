@@ -19,7 +19,7 @@ import unittest
 
 import numpy as np
 
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO.cccc import dlayxs
 from armi.nuclearDataIO.tests import test_xsLibraries
 from armi.tests import mockRunLogs
@@ -30,6 +30,7 @@ class DlayxsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.dlayxs3 = dlayxs.readBinary(test_xsLibraries.DLAYXS_MCC3)
+        cls.nuclideBases = NuclideBases()
 
     def test_decayConstants(self):
         """Test that all emission spectrum delayEmissionSpectrum is normalized.
@@ -41,13 +42,13 @@ class DlayxsTests(unittest.TestCase):
         delay = self.dlayxs3
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["PU239"]].precursorDecayConstants,
+                delay[self.nuclideBases.byName["PU239"]].precursorDecayConstants,
                 [0.013271, 0.030881, 0.11337, 0.29249999, 0.85749, 2.72970009],
             )
         )
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["U235"]].precursorDecayConstants,
+                delay[self.nuclideBases.byName["U235"]].precursorDecayConstants,
                 [0.013336, 0.032739, 0.12078, 0.30278, 0.84948999, 2.85299993],
             )
         )
@@ -57,7 +58,7 @@ class DlayxsTests(unittest.TestCase):
         delay = self.dlayxs3
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["PU239"]].delayEmissionSpectrum[0, :],
+                delay[self.nuclideBases.byName["PU239"]].delayEmissionSpectrum[0, :],
                 [
                     0.00000000e00,
                     0.00000000e00,
@@ -97,7 +98,7 @@ class DlayxsTests(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["U235"]].delayEmissionSpectrum[0, :],
+                delay[self.nuclideBases.byName["U235"]].delayEmissionSpectrum[0, :],
                 [
                     0.00000000e00,
                     0.00000000e00,
@@ -147,7 +148,7 @@ class DlayxsTests(unittest.TestCase):
         # being tested.
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["PU239"]].delayNeutronsPerFission[0, :],
+                delay[self.nuclideBases.byName["PU239"]].delayNeutronsPerFission[0, :],
                 [
                     0.00015611,
                     0.000159,
@@ -187,7 +188,7 @@ class DlayxsTests(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["PU239"]].delayNeutronsPerFission[1, :],
+                delay[self.nuclideBases.byName["PU239"]].delayNeutronsPerFission[1, :],
                 [
                     0.00101669,
                     0.0010355,
@@ -227,7 +228,7 @@ class DlayxsTests(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["U235"]].delayNeutronsPerFission[0, :],
+                delay[self.nuclideBases.byName["U235"]].delayNeutronsPerFission[0, :],
                 [
                     0.000315,
                     0.00032497,
@@ -267,7 +268,7 @@ class DlayxsTests(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                delay[nuclideBases.byName["U235"]].delayNeutronsPerFission[1, :],
+                delay[self.nuclideBases.byName["U235"]].delayNeutronsPerFission[1, :],
                 [
                     0.0016254,
                     0.00167686,
@@ -874,7 +875,7 @@ class DlayxsTests(unittest.TestCase):
         # DC -> decay constants
         try:
             dlayData = self.dlayxs3[
-                nuclideBases.byName[nucName.strip()]
+                self.nuclideBases.byName[nucName.strip()]
             ].precursorDecayConstants
             self.assertTrue(np.allclose(dlayData, endfProvidedData, 1e-3))
         except AssertionError:
@@ -907,7 +908,7 @@ class DlayxsTests(unittest.TestCase):
 
     def test_nuclides(self):
         nucs3 = set(
-            nuclideBases.byName[name]
+            self.nuclideBases.byName[name]
             for name in [
                 "TH232",
                 "U232",
@@ -932,7 +933,7 @@ class DlayxsTests(unittest.TestCase):
             _avg = self.dlayxs3.generateAverageDelayedNeutronConstants()
 
         fracs = dict(zip(self.dlayxs3.keys(), np.zeros(len(self.dlayxs3))))
-        u235 = nuclideBases.byName["U235"]
+        u235 = self.nuclideBases.byName["U235"]
         fracs[u235] = 1.0
         self.dlayxs3.nuclideContributionFractions = fracs
         avg = self.dlayxs3.generateAverageDelayedNeutronConstants()
