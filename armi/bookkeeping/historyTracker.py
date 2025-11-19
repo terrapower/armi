@@ -46,12 +46,12 @@ interface method called `getHistoryParams`. It should return a list of block par
 become available. For example::
 
     def getHistoryParams(self):
-        return ['flux', 'percentBu']
+        return ["flux", "percentBu"]
 
 When you'd like to access history information, you need to grab the history interface. The history
 interfaces is present by default in your interface stack. To get it, just call::
 
-    history = self.getInterface('history')
+    history = self.getInterface("history")
 
 Now you can do a few things, such as::
 
@@ -60,7 +60,7 @@ Now you can do a few things, such as::
     timeStepsAvailable = history.getTimeIndices()
 
     # now go out and get some time-dependent block params:
-    fluxAtTimeStep3 = history.getBlockHistoryVal('B1003A', 'flux', 3)
+    fluxAtTimeStep3 = history.getBlockHistoryVal("B1003A", "flux", 3)
 
 Specifying blocks and assemblies to track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

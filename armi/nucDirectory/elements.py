@@ -451,7 +451,7 @@ class Elements:
         --------
         >>> elements.getName(10)
         'Neon'
-        >>> elements.getName(symbol='Ne')
+        >>> elements.getName(symbol="Ne")
         'Neon'
         """
         element = None
@@ -477,7 +477,7 @@ class Elements:
         --------
         >>> elements.getSymbol(10)
         'Ne'
-        >>> elements.getSymbol(name='Neon')
+        >>> elements.getSymbol(name="Neon")
         'Ne'
 
         """
@@ -502,9 +502,9 @@ class Elements:
 
         Examples
         --------
-        >>> elements.getZ('Zr')
+        >>> elements.getZ("Zr")
         40
-        >>> elements.getZ(name='Zirconium')
+        >>> elements.getZ(name="Zirconium")
         40
 
         Notes

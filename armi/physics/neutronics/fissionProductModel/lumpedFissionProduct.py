@@ -45,7 +45,7 @@ class LumpedFissionProduct:
     Examples
     --------
     >>> fpd = FissionProductDefinitionFile(stream)
-    >>> lfp = fpd.createSingleLFPFromFile('LFP39')
+    >>> lfp = fpd.createSingleLFPFromFile("LFP39")
     >>> lfp[<nuclidebase for EU151>]
     2.9773e-05
 

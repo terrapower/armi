@@ -430,11 +430,9 @@ class FuelHandler:
         This returns the feed fuel assembly in ring 4 that has a burnup closest to 100%
         (the highest burnup assembly)::
 
-            feed = self.findAssembly(targetRing=4,
-                                     width=(0,0),
-                                     param='maxPercentBu',
-                                     compareTo=100,
-                                     typeSpec=Flags.FEED | Flags.FUEL)
+            feed = self.findAssembly(
+                targetRing=4, width=(0, 0), param="maxPercentBu", compareTo=100, typeSpec=Flags.FEED | Flags.FUEL
+            )
 
         """
         # list for storing multiple results if findMany is true.

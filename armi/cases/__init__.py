@@ -15,18 +15,14 @@
 """
 Case and CaseSuite objects for running and analyzing ARMI cases.
 
-A ``Case`` is a collection of inputs that represents one particular run.
-Cases have special knowledge about dependencies and can perform useful
-operations like compare, clone, and run.
+A ``Case`` is a collection of inputs that represents one particular run. Cases have special knowledge about dependencies
+and can perform useful operations like compare, clone, and run.
 
-A ``CaseSuite`` is a set of (often related) Cases. These are fundamental to
-parameter sweeps and test suites.
+A ``CaseSuite`` is a set of (often related) Cases. These are fundamental to parameter sweeps and test suites.
 
 See Also
 --------
-armi.cli : Entry points that build Cases and/or CaseSuites and send them off to
-    do work
-
+armi.cli : Entry points that build Cases and/or CaseSuites and send them off to do work
 armi.operators : Operations that ARMI will perform on a reactor model.
     Generally these are made by an individual Case.
 
@@ -34,29 +30,28 @@ Examples
 --------
 Create a Case and run it::
 
-    case = Case(settings.Settings('path-to-settings.yaml'))
+    case = Case(settings.Settings("path-to-settings.yaml"))
     case.run()
 
     # do something with output database
 
 Create a case suite from existing files, and run the suite::
 
-    cs = settings.Settings() # default settings
-    suite = CaseSuite(settings.Settings()) # default settings
-    suite.discover('my-cases*.yaml', recursive=True)
+    cs = settings.Settings()  # default settings
+    suite = CaseSuite(settings.Settings())  # default settings
+    suite.discover("my-cases*.yaml", recursive=True)
     suite.run()
 
 .. warning:: Suite running may not work yet if the cases have interdependencies.
 
 Create a ``burnStep`` sensitivity study from some base CS::
 
-    baseCase = Case(settings.Settings('base-settings.yaml')) # default settings
-    suite = CaseSuite(baseCase.cs) # basically just sets armiLocation
+    baseCase = Case(settings.Settings("base-settings.yaml"))  # default settings
+    suite = CaseSuite(baseCase.cs)  # basically just sets armiLocation
 
     for numSteps in range(3, 11):
-        with ForcedCreationDirectoryChanger('{}steps'.format(numSteps)):
-            case = baseCase.clone(title=baseCase.title + '-with{}steps'.format(numSteps),
-                                  settings={'burnSteps': numSteps})
+        with ForcedCreationDirectoryChanger("{}steps".format(numSteps)):
+            case = baseCase.clone(title=baseCase.title + f"-with{numSteps}steps", settings={"burnSteps": numSteps})
             suite.add(case)
 
     suite.writeInputs()

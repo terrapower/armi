@@ -216,6 +216,10 @@ ban-relative-imports = "all"
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 120
+
 
 #######################################################################
 #                            PYTEST CONFIG                            #

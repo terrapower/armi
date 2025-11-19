@@ -198,7 +198,6 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
         For example::
 
             class SettingModifier(InputModifier):
-
                 def __init__(self, settingName, value):
                     self.settingName = settingName
                     self.value = value
@@ -207,9 +206,10 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     cs = cs.modified(newSettings={self.settingName: self.value})
                     return cs, bp
 
+
             builder = FullFactorialSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier("settingName1", value) for value in (1, 2))
+            builder.addDegreeOfFreedom(SettingModifier("settingName2", value) for value in (3, 4, 5))
 
         would result in 6 cases:
 
@@ -289,7 +289,6 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
         For example::
 
             class SettingModifier(InputModifier):
-
                 def __init__(self, settingName, value):
                     self.settingName = settingName
                     self.value = value
@@ -298,9 +297,10 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     cs = cs.modified(newSettings={self.settignName: self.value})
                     return cs, bp
 
+
             builder = SeparateEffectsSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier("settingName1", value) for value in (1, 2))
+            builder.addDegreeOfFreedom(SettingModifier("settingName2", value) for value in (3, 4, 5))
 
         would result in 5 cases:
 
@@ -356,17 +356,15 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         For example::
 
             class InputParameterModifier(SamplingInputModifier):
-
                 def __init__(
                     self,
                     name: str,
-                    pararmType: str, # either 'continuous' or 'discrete'
-                    bounds: Optional[Tuple, List]
+                    pararmType: str,  # either 'continuous' or 'discrete'
+                    bounds: Optional[Tuple, List],
                 ):
                     super().__init__(name, paramType, bounds)
 
-                def __call__(self, cs, bp):
-                    ...
+                def __call__(self, cs, bp): ...
 
         If the modifier is discrete then bounds specifies a list of options the values can take. If
         continuous, then bounds specifies a range of values.
