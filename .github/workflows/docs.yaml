@@ -147,12 +147,11 @@ jobs:
           sleep 1
           ls -lah doc/*/*/*/*
           sleep 1
+          find . -type d
+          sleep 1
 
           echo "Build PDF docs..."
           cd doc/
-          sleep 1
-          find . -type d
-          sleep 1
           make --debug latex
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode -verbose ARMI.tex
