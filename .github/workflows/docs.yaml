@@ -154,6 +154,7 @@ jobs:
 
           echo "Build PDF docs..."
           cd doc/
+          find . -type d
           make --debug latex
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode -verbose ARMI.tex
