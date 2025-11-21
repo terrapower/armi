@@ -25,7 +25,8 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.tests import ISOAA_PATH, TEST_ROOT, getEmptyHexReactor
+from armi.testing import TESTING_ROOT
+from armi.tests import ISOAA_PATH, getEmptyHexReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -176,7 +177,7 @@ class TestPlotting(unittest.TestCase):
 
     def test_plotCartesianBlock(self):
         with TemporaryDirectoryChanger():
-            cs = settings.Settings(os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml"))
+            cs = settings.Settings(os.path.join(TESTING_ROOT, "c5g7", "c5g7-settings.yaml"))
             blueprint = blueprints.loadFromCs(cs)
             _ = reactors.factory(cs, blueprint)
             for name, bDesign in blueprint.blockDesigns.items():
