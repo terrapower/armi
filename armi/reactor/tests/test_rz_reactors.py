@@ -20,13 +20,13 @@ import unittest
 
 from armi import settings
 from armi.reactor import reactors
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT
 
 
 class TestRZTReactorModern(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml"))
+        cs = settings.Settings(fName=os.path.join(TESTING_ROOT, "reactors", "godiva", "godiva.armi.unittest.yaml"))
         cls.r = reactors.loadFromCs(cs)
 
     def test_loadRZT_reactor(self):

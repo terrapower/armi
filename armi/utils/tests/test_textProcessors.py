@@ -22,7 +22,8 @@ from io import StringIO
 import ruamel
 
 from armi import runLog
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import textProcessors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -34,7 +35,7 @@ class TestTextProcessor(unittest.TestCase):
     """Test Text processor."""
 
     def setUp(self):
-        godivaSettings = os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml")
+        godivaSettings = os.path.join(TESTING_ROOT, "reactors", "godiva", "godiva.armi.unittest.yaml")
         self.tp = textProcessors.TextProcessor(godivaSettings)
 
     def test_fsearch(self):
