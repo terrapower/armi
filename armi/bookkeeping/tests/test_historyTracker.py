@@ -75,7 +75,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(f"../../testing/reactors/{CASE_TITLE}/{CASE_TITLE}.yaml")
+        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 2
@@ -141,7 +141,7 @@ class TestHistoryTracker(ArmiTestHelper):
             else:
                 mgFluence += timeInSec * mgFlux
 
-        self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
+        self.assertGreater(len(mgFluence), 1, "mgFluence should have more than 1 group")
 
         # test that unloadBlockHistoryVals() is working
         self.assertIsNotNone(hti._preloadedBlockHistory)
@@ -277,5 +277,5 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
         block.spatialLocator = grids.IndexLocation(0, 0, 7, None)
         self.assertEqual(
             self.history._getBlockHistoryFileName(block),
-            "{}-blockName7-bHist.txt".format(self.history.cs.caseTitle),
+            f"{self.history.cs.caseTitle}-blockName7-bHist.txt",
         )
