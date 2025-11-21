@@ -35,7 +35,7 @@ class TestTextProcessor(unittest.TestCase):
     """Test Text processor."""
 
     def setUp(self):
-        godivaSettings = os.path.join(TESTING_ROOT, "godiva", "godiva.armi.unittest.yaml")
+        godivaSettings = os.path.join(TESTING_ROOT, "reactors", "godiva", "godiva.armi.unittest.yaml")
         self.tp = textProcessors.TextProcessor(godivaSettings)
 
     def test_fsearch(self):
