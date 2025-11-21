@@ -75,7 +75,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
+        cs = settings.Settings(f"../../testing/reactors/{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 2

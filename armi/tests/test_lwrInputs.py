@@ -48,7 +48,7 @@ class C5G7ReactorTests(unittest.TestCase):
 
             # load the reactor
             _o, r = test_reactors.loadTestReactor(
-                os.path.join(TESTING_ROOT, "c5g7"),
+                os.path.join(TESTING_ROOT, "reactors", "c5g7"),
                 inputFileName=TEST_INPUT_TITLE,
             )
 
