@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-A collection of miscellaneous functions used by ReportInterface to generate
-various reports.
-"""
+"""A collection of miscellaneous functions used by ReportInterface to generate various reports."""
 
 import collections
 import os
@@ -398,7 +395,7 @@ def getInterfaceStackSummary(o):
                 "{:02d}".format(ii),
                 i.__class__.__name__.replace("Interface", ""),
                 i.name,
-                i.function,
+                i.purpose,
                 "Yes" if i.enabled() else "No",
                 "Reversed" if i.reverseAtEOL else "Normal",
                 "Yes" if i.bolForce() else "No",
@@ -410,7 +407,7 @@ def getInterfaceStackSummary(o):
             "Index",
             "Type",
             "Name",
-            "Function",
+            "Purpose",
             "Enabled",
             "EOL order",
             "BOL forced",

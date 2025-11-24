@@ -31,9 +31,8 @@ The MPI-aware variant of the standard ARMI operator.
 
 Notes
 -----
-This is not *yet* smart enough to use shared memory when the MPI
-tasks are on the same machine. Everything goes through MPI. This can
-be optimized as needed.
+This is not *yet* smart enough to use shared memory when the MPI tasks are on the same machine. Everything goes through
+MPI. This can be optimized as needed.
 """
 
 import gc
@@ -71,7 +70,7 @@ class OperatorMPI(Operator):
         if context.MPI_RANK == 0:
             # this is the primary
             try:
-                # run the regular old operate function
+                # run the regular old operate method
                 Operator.operate(self)
                 runLog.important(time.ctime())
             except Exception as ee:
@@ -97,8 +96,7 @@ class OperatorMPI(Operator):
             except:
                 # grab the final command
                 runLog.warning("An error has occurred in one of the worker nodes. See STDERR for traceback.")
-                # bcasting quit won't work if the main is sitting around waiting for a
-                # different bcast or gather.
+                # bcasting quit won't work if the main is sitting around waiting for a different bcast or gather.
                 traceback.print_exc()
                 runLog.debug("Worker failed")
                 runLog.close()
@@ -150,12 +148,12 @@ class OperatorMPI(Operator):
                 runLog.debug("Worker syncing")
                 note = context.MPI_COMM.bcast("wait", root=0)
                 if note != "wait":
-                    raise RuntimeError('did not get "wait". Got {0}'.format(note))
+                    raise RuntimeError(f'did not get "wait". Got {note}')
             elif cmd == "reset":
                 runLog.extra("Workers are being reset.")
             else:
-                # we don't understand the command on our own. check the interfaces
-                # this allows all interfaces to have their own custom operation code.
+                # We don't understand the command on our own. Check the interfaces this allows all interfaces to have
+                # their own custom operation code.
                 handled = False
                 for i in self.interfaces:
                     handled = i.workerOperate(cmd)
@@ -168,12 +166,10 @@ class OperatorMPI(Operator):
                         "No interface understood worker command {0}\n check stdout for err\n"
                         "available interfaces:\n  {1}".format(
                             cmd,
-                            "\n  ".join(
-                                "name:{} typeName:{} {}".format(i.name, i.function, i) for i in self.interfaces
-                            ),
+                            "\n  ".join(f"name:{i.name} typeName:{i.purpose} {i}" for i in self.interfaces),
                         )
                     )
-                    raise RuntimeError("Failed to delegate worker command {} to an interface.".format(cmd))
+                    raise RuntimeError(f"Failed to delegate worker command {cmd} to an interface.")
 
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
@@ -181,8 +177,7 @@ class OperatorMPI(Operator):
             if all(resetFlags) or cmd == "reset":
                 self._resetWorker()
 
-            # might be an mpi action which has a reactor and everything, preventing
-            # garbage collection
+            # might be an mpi action which has a reactor and everything, preventing garbage collection
             del cmd
             gc.collect()
 
@@ -212,7 +207,9 @@ class OperatorMPI(Operator):
         or transforming their geometry is one approach. We hope to implement
         more efficient solutions in the future.
 
-        .. warning:: This should build empty non-core systems too.
+        Warning
+        -------
+        This should build empty non-core systems too.
         """
         # Nothing to do if we never had anything
         if self.r is None:

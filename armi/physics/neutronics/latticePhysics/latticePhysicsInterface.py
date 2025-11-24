@@ -67,7 +67,7 @@ def setBlockNeutronVelocities(r, neutronVelocities):
 class LatticePhysicsInterface(interfaces.Interface):
     """Class for interacting with lattice physics codes."""
 
-    function = LATTICE_PHYSICS
+    purpose = LATTICE_PHYSICS
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
