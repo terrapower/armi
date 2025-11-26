@@ -20,7 +20,8 @@ from logging import WARNING
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import directoryChangers
 
 TEST_INPUT_TITLE = "c5g7-settings.yaml"
@@ -47,7 +48,7 @@ class C5G7ReactorTests(unittest.TestCase):
 
             # load the reactor
             _o, r = test_reactors.loadTestReactor(
-                os.path.join(TEST_ROOT, "c5g7"),
+                os.path.join(TESTING_ROOT, "reactors", "c5g7"),
                 inputFileName=TEST_INPUT_TITLE,
             )
 

@@ -26,10 +26,11 @@ import unittest
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 
+from armi.testing import TESTING_ROOT
 from armi.tests import TEST_ROOT
 
 TUTORIALS = os.path.join(TEST_ROOT, "tutorials")
-ANL_ACFI_177 = os.path.join(TEST_ROOT, "anl-afci-177")
+ANL_ACFI_177 = os.path.join(TESTING_ROOT, "reactors", "anl-afci-177")
 
 
 class NotebookTests(unittest.TestCase):
