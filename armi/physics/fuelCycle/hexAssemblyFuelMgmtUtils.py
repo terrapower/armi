@@ -147,17 +147,17 @@ def buildRingSchedule(
     Jump ring behavior can be generalized by first building a base ring list
     where assemblies get charged to H and discharge from A::
 
-        [A,B,C,D,E,F,G,H]
+        [A, B, C, D, E, F, G, H]
 
     If a jump should be placed where it jumps from ring G to C, reversed back to F, and then discharges from A,
     we simply reverse the sublist [C,D,E,F], leaving us with::
 
-        [A,B,F,E,D,C,G,H]
+        [A, B, F, E, D, C, G, H]
 
     A less-complex, more standard convergent-divergent scheme is a subcase of this, where the
     sublist [A,B,C,D,E] or so is reversed, leaving::
 
-        [E,D,C,B,A,F,G,H]
+        [E, D, C, B, A, F, G, H]
 
     So the task of this function is simply to determine what subsection, if any, to reverse of
     the baselist.
@@ -193,7 +193,7 @@ def buildRingSchedule(
 
     Examples
     --------
-    >>> f.buildRingSchedule(17,1,jumpRingFrom=14)
+    >>> f.buildRingSchedule(17, 1, jumpRingFrom=14)
     ([13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     """

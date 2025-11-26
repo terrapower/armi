@@ -383,6 +383,7 @@ class Parameter:
         --------
         >>> class MyParameterCollection(parameters.ParameterCollection):
         ...     mass = parameters.Parameter(...)
+        ...
         ...     @mass.setter
         ...     def mass(self, value):
         ...         if value < 0:

@@ -120,16 +120,16 @@ MC2-2, and MC2-3). The software-specific labels are incorporated into the framew
 may be extended as needed by end-users as needs arise.
 
     >>> r = Reactor("testReactor", bp)
-    >>> pu239 = r.nuclideBases.byName['PU239']
+    >>> pu239 = r.nuclideBases.byName["PU239"]
     >>> pu239.z
     94
 
 Just like with elements, the item retrieved from the various dictionaries are the same object.
 
-    >>> tinFromName = r.nuclideBases.byName['SN112']
-    >>> tinFromLabel = r.nuclideBases.byLabel['SN112']
-    >>> tinFromMcc2Id = r.nuclideBases.byName['SN1125']
-    >>> tinFromMcc3Id = r.nuclideBases.byLabel['SN1127']
+    >>> tinFromName = r.nuclideBases.byName["SN112"]
+    >>> tinFromLabel = r.nuclideBases.byLabel["SN112"]
+    >>> tinFromMcc2Id = r.nuclideBases.byName["SN1125"]
+    >>> tinFromMcc3Id = r.nuclideBases.byLabel["SN1127"]
     >>> tinFromName == tinFromLabel == tinFromMcc2Id == tinFromMcc3Id
     True
     >>> id(tinFromName) == id(tinFromLabel) == id(tinFromMcc2Id) == id(tinFromMcc3Id)

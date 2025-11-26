@@ -269,12 +269,12 @@ class SequentialReader:
     always started with the same text followed by information, you could do something
     like this:
 
-    >>> with SequentialReader('somefile') as sr:
+    >>> with SequentialReader("somefile") as sr:
     ...     data = []
-    ...     while sr.searchForText('start of data chunk'):
+    ...     while sr.searchForText("start of data chunk"):
     ...         # this needs to repeat for as many chunks as there are.
-    ...         if sr.searchForPatternOnNextLine('some-(?P<data>\w+)-pattern'):
-    ...             data.append(sr.match['data'])
+    ...         if sr.searchForPatternOnNextLine("some-(?P<data>\w+)-pattern"):
+    ...             data.append(sr.match["data"])
     """
 
     def __init__(self, filePath):
@@ -488,12 +488,12 @@ class SequentialStringIOReader(SequentialReader):
     always started with the same text followed by information, you could do something
     like this:
 
-    >>> with SequentialReader('somefile') as sr:
+    >>> with SequentialReader("somefile") as sr:
     ...     data = []
-    ...     while sr.searchForText('start of data chunk'):
+    ...     while sr.searchForText("start of data chunk"):
     ...         # this needs to repeat for as many chunks as there are.
-    ...         if sr.searchForPatternOnNextLine('some-(?P<data>\\w+)-pattern'):
-    ...             data.append(sr.match['data'])
+    ...         if sr.searchForPatternOnNextLine("some-(?P<data>\\w+)-pattern"):
+    ...             data.append(sr.match["data"])
     """
 
     def __init__(self, stringIO):

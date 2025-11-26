@@ -47,14 +47,14 @@ See Also
 Examples
 --------
     >>> from armi.nuclearDataIO import compxs
-    >>> lib = compxs.readBinary('COMPXS')
+    >>> lib = compxs.readBinary("COMPXS")
     >>> r0 = lib.regions[0]
     >>> r0.macros.fission
     # returns fission XS for this region
     >>> r0.macros.higherOrderScatter[1]
     # returns P1 scattering matrix
     >>> r0.macros.higherOrderScatter[5] *= 0  # zero out P5 scattering matrix
-    >>> compxs.writeBinary(lib, 'COMPXS2')
+    >>> compxs.writeBinary(lib, "COMPXS2")
 
 Notes
 -----
@@ -449,7 +449,7 @@ class CompxsRegion:
 
     Examples
     --------
-    >>> lib = compxs.readBinary('COMPXS')
+    >>> lib = compxs.readBinary("COMPXS")
     >>> lib.regions
         <Region REG00>
         <Region REG01>

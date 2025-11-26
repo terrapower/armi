@@ -132,13 +132,13 @@ def getMc2Label(name):
 
     Examples
     --------
-    >>> nucDir.getMc2Label('U235')
+    >>> nucDir.getMc2Label("U235")
     'U235'
     >> nucDir.getMc2Label('FE')
     'FE'
-    >>> nucDir.getMc2Label('IRON')
+    >>> nucDir.getMc2Label("IRON")
     'FE'
-    >>> nucDir.getMc2Label('AM242')
+    >>> nucDir.getMc2Label("AM242")
     A242
 
     """
@@ -162,7 +162,7 @@ def getElementName(z=None, symbol=None):
     --------
     >>> nucDir.getElementName(10)
     'Neon'
-    >>> nucDir.getElementName(symbol='Zr')
+    >>> nucDir.getElementName(symbol="Zr")
     'Neon'
 
     """
@@ -189,7 +189,7 @@ def getElementSymbol(z=None, name=None):
     --------
     >>> nucDir.getElementSymbol(10)
     'Ne'
-    >>> nucDir.getElementSymbol(name='Neon')
+    >>> nucDir.getElementSymbol(name="Neon")
     'Ne'
 
     """
@@ -290,16 +290,16 @@ def getAtomicWeight(lab=None, z=None, a=None):
     Examples
     --------
     >>> from armi.nucDirectory import nucDir
-    >>> nucDir.getAtomicWeight('U235')
+    >>> nucDir.getAtomicWeight("U235")
     235.0439299
 
-    >>> nucDir.getAtomicWeight('U239')
+    >>> nucDir.getAtomicWeight("U239")
     239
 
-    >>> nucDir.getAtomicWeight('U238')
+    >>> nucDir.getAtomicWeight("U238")
     238.0507882
 
-    >>> nucDir.getAtomicWeight(z=94,a=239)
+    >>> nucDir.getAtomicWeight(z=94, a=239)
     239.0521634
     """
     if lab:

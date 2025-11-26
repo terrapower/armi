@@ -25,7 +25,7 @@ def flatten(lst):
 
     Examples
     --------
-    >>> flatten([[1,2,3,4],[5,6,7,8],[9,10]])
+    >>> flatten([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10]])
     [1,2,3,4,5,6,7,8,9,10]
     """
     return [item for sublist in lst for item in sublist]
@@ -39,7 +39,7 @@ def chunk(lst, n):
 
     Examples
     --------
-    >>> list(chunk([1,2,3,4,5,6,7,8,9,10], 4))
+    >>> list(chunk([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4))
      [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10]]
     """
     for i in range(0, len(lst), n):
@@ -70,10 +70,10 @@ def split(a, n, padWith=()):
 
     Examples
     --------
-    >>> split([1,2,3,4,5,6,7,8,9,10],4)
+    >>> split([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4)
      [[1, 2, 3], [4, 5, 6], [7, 8], [9, 10]]
 
-    >>> split([0,1,2], 5, padWith=None)
+    >>> split([0, 1, 2], 5, padWith=None)
      [[0], [1], [2], None, None]
     """
     a = list(a)  # in case `a` is not list-like
@@ -129,7 +129,7 @@ class Sequence:
     e.g.
 
     >>> s = Sequence(range(1000000))
-    >>> tuple(s.drop(lambda i: i%2 == 0).select(lambda i: i < 20).transform(lambda i: i*10))
+    >>> tuple(s.drop(lambda i: i % 2 == 0).select(lambda i: i < 20).transform(lambda i: i * 10))
     (10, 30, 50, 70, 90, 110, 130, 150, 170, 190)
 
     This starts with a Sequence over 1 million elements (not stored in memory),
@@ -141,11 +141,11 @@ class Sequence:
     drop, select, and transform act in-place, so the following is equivalent to
     the chained expression given above:
     >>> s = Sequence(range(1000000))
-    >>> s.drop(lambda i: i%2 == 0)
+    >>> s.drop(lambda i: i % 2 == 0)
     <Sequence at 0x...>
     >>> s.select(lambda i: i < 20)
     <Sequence at 0x...>
-    >>> s.transform(lambda i: i*10)
+    >>> s.transform(lambda i: i * 10)
     <Sequence at 0x...>
     >>> tuple(s)
     (10, 30, 50, 70, 90, 110, 130, 150, 170, 190)
@@ -154,11 +154,10 @@ class Sequence:
     to use with infinite generators. For instance, the following will not work:
 
     >>> def counter():
-    ...    i = 0
-    ...    while True:
-    ...        yield i
-    ...        i += 1
-    ...
+    ...     i = 0
+    ...     while True:
+    ...         yield i
+    ...         i += 1
     >>> s = Sequence(counter()).select(lambda i: i < 10)
     >>> tuple(s)  # DON'T DO THIS!
 

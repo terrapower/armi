@@ -969,10 +969,10 @@ class Assembly(composites.Composite):
 
         Then,
 
-        >>> a.getBlocksBetweenElevations(0,50)
+        >>> a.getBlocksBetweenElevations(0, 50)
         [(Block1, 25.0), (Block2, 25.0)]
 
-        >>> a.getBlocksBetweenElevations(0,30)
+        >>> a.getBlocksBetweenElevations(0, 30)
         [(Block1, 25.0), (Block2, 5.0)]
 
         """

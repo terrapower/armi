@@ -24,8 +24,8 @@ API usage
 ---------
 Getting a cached file::
 
-    exe = 'MC2-2018-blah.exe'
-    inpFiles = ['mccAA.inp', 'rmzflx']
+    exe = "MC2-2018-blah.exe"
+    inpFiles = ["mccAA.inp", "rmzflx"]
     outputFound = crc.retrieveOutput(exe, inp, output)
     if not outputFound:
         mc2.run(exe, inp, output)
