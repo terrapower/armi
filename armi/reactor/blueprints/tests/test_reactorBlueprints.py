@@ -27,7 +27,8 @@ from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core, loadFromCs
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.caseSettings import Settings
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT
+from armi.tests import mockRunLogs
 
 CORE_BLUEPRINT = """
 core:
@@ -240,7 +241,7 @@ class TestReactorBlueprints(unittest.TestCase):
 
     def test_fullCoreAreNotConverted(self):
         """Prove that geometries aren't being converted when reading in a full-core BP."""
-        cs = Settings(os.path.join(TEST_ROOT, "smallHexReactor/smallHexReactor.yaml"))
+        cs = Settings(os.path.join(TESTING_ROOT, "reactors", "smallHexReactor", "smallHexReactor.yaml"))
         runLog.setVerbosity(logging.INFO)
         with mockRunLogs.BufferLog() as log:
             self.assertEqual("", log.getStdout())

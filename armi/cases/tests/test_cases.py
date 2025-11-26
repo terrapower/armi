@@ -27,6 +27,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor.tests import test_reactors
+from armi.testing import TESTING_ROOT
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
@@ -648,7 +649,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
 
         pluginPath = "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
-        settingFiles = ["COMPXS.ascii", "ISOAA"]
+        settingFiles = [str(os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii")), "ISOAA"]
         testName = "test_copyInterfaceInputs_multipleFiles"
         testSetting = "multipleFilesSetting"
 
@@ -665,7 +666,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
             for newFilePath in newFilePaths:
                 self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting], settingFiles)
+            self.assertEqual([str(s) for s in newSettings[testSetting]], [str(s) for s in settingFiles])
 
     def test_copyInterfaceInputsOneFile(self):
         # register the new Plugin
@@ -673,7 +674,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
 
         pluginPath = "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
-        settingFiles = ["COMPXS.ascii"]
+        settingFiles = [str(os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii"))]
         testName = "test_copyInterfaceInputsOneFile"
         testSetting = "multipleFilesSetting"
 
@@ -690,7 +691,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
             for newFilePath in newFilePaths:
                 self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting], settingFiles)
+            self.assertEqual([str(s) for s in newSettings[testSetting]], [str(s) for s in settingFiles])
 
     def test_copyInterfaceInputsWildcardFile(self):
         testSetting = CONF_SHUFFLE_LOGIC
