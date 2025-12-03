@@ -47,6 +47,7 @@ from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
+from armi.testing import TESTING_ROOT
 from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import InputError
@@ -577,8 +578,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def test_repeatShuffles(self):
-        """Loads the ARMI test reactor with a custom shuffle logic file and shuffles assemblies
-        twice.
+        """Loads the ARMI test reactor with a custom shuffle logic file and shuffles assemblies twice.
 
         .. test:: Execute user-defined shuffle operations based on a reactor model.
             :id: T_ARMI_SHUFFLE
@@ -588,10 +588,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
         -----
         The custom shuffle logic is executed by
         :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` in
-        :py:meth:`armi.physics.fuelCycle.tests.test_fuelHandlers.TestFuelHandler.runShuffling`.
-        There are two primary assertions: spent fuel pool assemblies are in the correct location and
-        the assemblies were shuffled into their correct locations. This process is repeated twice to
-        ensure repeatability.
+        :py:meth:`armi.physics.fuelCycle.tests.test_fuelHandlers.TestFuelHandler.runShuffling`. There are two primary
+        assertions: spent fuel pool assemblies are in the correct location and the assemblies were shuffled into their
+        correct locations. This process is repeated twice to ensure repeatability.
         """
         # check labels before shuffling:
         for a in self.r.excore["sfp"]:
@@ -601,10 +600,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = self.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
-        # Make sure the generated shuffles file matches the tracked one.  This will need to be
-        # updated if/when more assemblies are added to the test reactor but must be done carefully.
-        # Do not blindly rebaseline this file.
-        self.compareFilesLineByLine("armiRun-SHUFFLES.txt", "armiRun2-SHUFFLES.txt")
+        # Make sure the generated shuffles file matches the tracked one.  This will need to be updated if/when more
+        # assemblies are added to the test reactor but must be done carefully. Do not blindly rebaseline this file.
+        self.compareFilesLineByLine(
+            os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"), "armiRun2-SHUFFLES.txt"
+        )
 
         # store locations of each assembly
         firstPassResults = {}
@@ -618,7 +618,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         newSettings = {CONF_PLOT_SHUFFLE_ARROWS: True}
         # now repeat shuffles
-        newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
+        newSettings["explicitRepeatShuffles"] = os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt")
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
         fh = self.o.getInterface("fuelHandler")
@@ -632,8 +632,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for a in self.r.excore["sfp"]:
             self.assertEqual(a.getLocation(), "SFP")
 
-        # Do some cleanup, since the fuelHandler Interface has code that gets
-        # around the TempDirectoryChanger
+        # Do some cleanup, since the fuelHandler Interface has code that gets around the TempDirectoryChanger
         os.remove("armiRun2-SHUFFLES.txt")
         os.remove("armiRun2.shuffles_0.png")
         os.remove("armiRun2.shuffles_1.png")
@@ -649,7 +648,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         """
         numblocks = len(self.r.core.getFirstAssembly())
         fh = fuelHandlers.FuelHandler(self.o)
-        moves = fh.readMoves("armiRun-SHUFFLES.txt")
+        moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
         self.assertEqual(len(moves), 3)
         firstMove = moves[1][0]
         self.assertEqual(firstMove.fromLoc, "002-001")
@@ -670,7 +669,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_readMovesYaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves, swaps = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        moves, swaps = fh.readMovesYaml(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml"))
         self.maxDiff = None
         expected = {
             1: [
@@ -815,7 +814,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves = fh.readMoves("armiRun-SHUFFLES.txt")
+        moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
         result = fh.processMoveList(moves[2])
         self.assertIn("A0073", result.loadNames)
         self.assertIn(None, result.loadNames)
@@ -826,7 +825,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_processMoveList_yaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        moves, _ = fh.readMovesYaml(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml"))
         result = fh.processMoveList(moves[1])
         self.assertEqual(len(result.loadChains), 2)
         self.assertTrue(any(result.enriches))
