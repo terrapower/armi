@@ -31,10 +31,9 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
         :id: I_ARMI_UTIL_MASS2N_DENS
         :implements: R_ARMI_UTIL_MASS2N_DENS
 
-        Loops over all provided nuclides (given as keys in the ``massFracs`` vector) and calculates
-        number densities of each, at a given material ``density``. Mass fractions can be provided
-        either as normalized to 1, or as unnormalized with subsequent normalization calling
-        ``normalizeNuclideList`` via the ``normalize`` flag.
+        Loops over all provided nuclides (given as keys in the ``massFracs`` vector) and calculates number densities of
+        each, at a given material ``density``. Mass fractions can be provided either as normalized to 1, or as
+        unnormalized with subsequent normalization calling ``normalizeNuclideList`` via the ``normalize`` flag.
 
     Parameters
     ----------
@@ -75,8 +74,7 @@ def getMassFractions(numberDensities):
     Returns
     -------
     massFracs : dict
-        mass fractions -- normalized to 1 -- keyed by their nuclide
-        name
+        mass fractions -- normalized to 1 -- keyed by their nuclide name
     """
     nucMassFracs = {}
     totalWeight = 0.0
@@ -188,32 +186,26 @@ def formatMaterialCard(
         :id: I_ARMI_UTIL_MCNP_MAT_CARD
         :implements: R_ARMI_UTIL_MCNP_MAT_CARD
 
-        Loops over a vector of nuclides (of type ``nuclideBase``) provided in ``densities`` and
-        formats them into a list of strings consistent with MCNP material card syntax, skipping
-        dummy nuclides and LFPs.
+        Loops over a vector of nuclides (of type ``nuclideBase``) provided in ``densities`` and formats them into a list
+        of strings consistent with MCNP material card syntax, skipping dummy nuclides and LFPs.
 
-        A ``matNum`` may optionally be provided for the created material card: if not provided, it
-        is left blank. The desired number of significant figures for the created card can be
-        optionally provided by ``sigFigs``. Nuclides whose number density falls below a threshold
-        (optionally specified by ``minDens``) are set to the threshold value.
+        A ``matNum`` may optionally be provided for the created material card: if not provided, it is left blank. The
+        desired number of significant figures for the created card can be optionally provided by ``sigFigs``. Nuclides
+        whose number density falls below a threshold (optionally specified by ``minDens``) are set to the threshold.
 
-        The boolean ``mcnp6Compatible`` may optionally be provided to include the nuclide library at
-        the end of the vector of individual nuclides using the "nlib=" syntax leveraged by MCNP. If
-        this boolean is turned on, the associated value ``mcnpLibrary`` should generally also be
-        provided, as otherwise, the library will be left blank in the resulting material card
-        string.
+        The boolean ``mcnp6Compatible`` may optionally be provided to include the nuclide library at the end of the
+        vector of individual nuclides using the "nlib=" syntax leveraged by MCNP. If this boolean is turned on, the
+        associated value ``mcnpLibrary`` should generally also be provided, as otherwise, the library will be left blank
+        in the resulting material card string.
 
     Parameters
     ----------
     densities : dict
         number densities indexed by nuclideBase
-
     matNum : int
         mcnp material number
-
     minDens : float
         minimum density
-
     sigFigs : int
         significant figures for the material card
 
@@ -235,7 +227,7 @@ def formatMaterialCard(
             runLog.important("The material card returned will ignore LFPs.", single=True)
             continue
         elif isinstance(nuc, nuclideBases.DummyNuclideBase):
-            runLog.info("Omitting dummy nuclides such as {}".format(nuc), single=True)
+            runLog.info(f"Omitting dummy nuclides such as {nuc}", single=True)
             continue
         mcnpNucName = nuc.getMcnpId()
         newEntry = ("      {nucName:5d} {ndens:." + str(sigFigs) + "e}\n").format(
@@ -287,8 +279,7 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     Parameters
     ----------
     nuclideVector : dict
-        dictionary of values -- e.g. floats, ints -- indexed by nuclide identifiers -- e.g. nucNames
-        or nuclideBases
+        dictionary of values -- e.g. floats, ints -- indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
     normalization : float
 
     Returns
@@ -321,25 +312,22 @@ def expandElementalMassFracsToNuclides(
         :id: I_ARMI_UTIL_EXP_MASS_FRACS
         :implements: R_ARMI_UTIL_EXP_MASS_FRACS
 
-        Given a vector of elements and nuclides with associated mass fractions (``massFracs``),
-        expands the elements in-place into a set of nuclides using
-        ``expandElementalNuclideMassFracs``. Isotopes to expand into are provided for each element
-        by specifying them with ``elementExpansionPairs``, which maps each element to a list of
-        particular NuclideBases; if left unspecified, all naturally-occurring isotopes are included.
+        Given a vector of elements and nuclides with associated mass fractions (``massFracs``), expands the elements in-
+        place into a set of nuclides using ``expandElementalNuclideMassFracs``. Isotopes to expand into are provided for
+        each element by specifying them with ``elementExpansionPairs``, which maps each element to a list of particular
+        NuclideBases; if left unspecified, all naturally-occurring isotopes are included.
 
-        Explicitly specifying the expansion isotopes provides a way for particular
-        naturally-occurring isotopes to be excluded from the expansion, e.g. excluding O-18 from an
-        expansion of elemental oxygen.
+        Explicitly specifying the expansion isotopes provides a way for particular naturally-occurring isotopes to be
+        excluded from the expansion, e.g. excluding O-18 from an expansion of elemental oxygen.
 
     Parameters
     ----------
     massFracs : dict(str, float)
-        dictionary of nuclide or element names with mass fractions. Elements will be expanded in
-        place using natural isotopics.
-
+        dictionary of nuclide or element names with mass fractions. Elements will be expanded in place using natural
+        isotopics.
     elementExpansionPairs : (Element, [NuclideBase]) pairs
-        element objects to expand (from nuclidBase.element) and list of NuclideBases to expand into
-        (or None for all natural)
+        element objects to expand (from nuclidBase.element) and list of NuclideBases to expand into (or None for all
+        natural)
     """
     # expand elements
     for element, isotopicSubset in elementExpansionPairs:
@@ -352,7 +340,7 @@ def expandElementalMassFracsToNuclides(
 
         total = sum(expandedNucs.values())
         if massFrac > 0.0 and abs(total - massFrac) / massFrac > 1e-6:
-            raise ValueError("Mass fractions not normalized properly {}!".format((total, massFrac)))
+            raise ValueError(f"Mass fractions not normalized properly {(total, massFrac)}!")
 
 
 def expandElementalNuclideMassFracs(
@@ -363,8 +351,7 @@ def expandElementalNuclideMassFracs(
     """
     Return a dictionary of nuclide names to isotopic mass fractions.
 
-    If an isotopic subset is passed in, the mass fractions get scaled up
-    s.t. the total mass fraction remains constant.
+    If an isotopic subset is passed in, the mass fractions get scaled up s.t. the total mass fraction remains constant.
 
     Parameters
     ----------
@@ -373,8 +360,7 @@ def expandElementalNuclideMassFracs(
     massFrac : float
         Mass fraction of the initial element
     isotopicSubset : list of NuclideBases
-        Natural isotopes to include in the expansion. Useful e.g. for
-        excluding O18 from an expansion of Oxygen.
+        Natural isotopes to include in the expansion. Useful e.g. for excluding O18 from an expansion of Oxygen.
     """
     elementNucBases = element.getNaturalIsotopics()
     if isotopicSubset:
@@ -420,12 +406,11 @@ def applyIsotopicsMix(material, enrichedMassFracs: Dict[str, float], fertileMass
     """
     Update material heavy metal mass fractions based on its enrichment and two nuclide feeds.
 
-    This will remix the heavy metal in a Material object based on the object's
-    ``class1_wt_frac`` parameter and the input nuclide information.
+    This will remix the heavy metal in a Material object based on the object's ``class1_wt_frac`` parameter and the
+    input nuclide information.
 
-    This can be used for inputting mixtures of two external custom isotopic feeds
-    as well as for fabricating assemblies from two  closed-cycle collections
-    of material.
+    This can be used for inputting mixtures of two external custom isotopic feeds as well as for fabricating assemblies
+    from two  closed-cycle collections of material.
 
     See Also
     --------
@@ -446,6 +431,7 @@ def applyIsotopicsMix(material, enrichedMassFracs: Dict[str, float], fertileMass
         nb = nuclideBases.byName[nucName]
         if nb.isHeavyMetal():
             hm += massFrac
+
     hmFrac = hm / total
     hmEnrich = material.class1_wt_frac
     for nucName in (
