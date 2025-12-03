@@ -26,7 +26,7 @@ import numpy as np
 from scipy.optimize import fsolve
 
 from armi import runLog
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NaturalNuclideBase
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
@@ -352,6 +352,9 @@ class Material:
             raise ValueError(f"Cannot enrich to massFraction of {massFraction}, must be between 0 and 1")
 
         nucsNames = list(self.massFrac)
+        nuclideBases = self.parent.nuclideBases if self.parent else None
+        if nuclideBases is None:
+            print('crap TODO JOHN')
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
@@ -365,13 +368,13 @@ class Material:
 
         if len(allIndicesUpdated) == 1:
             if isinstance(
-                nuclideBases.byName[nuclideName], nuclideBases.NaturalNuclideBase
+                nuclideBases.byName[nuclideName], NaturalNuclideBase
             ) or nuclideBases.isMonoIsotopicElement(nuclideName):
                 # If there are not any other nuclides, assume we are enriching an entire element.
                 # Consequently, allIndicesUpdated is no longer the element's indices, but the materials indices
                 allIndicesUpdated = range(len(nucsNames))
             else:
-                raise ValueError(  # could be warning if problematic
+                raise ValueError(
                     f"Nuclide {nuclideName} was to be enriched in material {self}, but there were no other isotopes of "
                     "that element. Could not assume the enrichment of the entire element as there were other possible "
                     "isotopes that did not exist in this material."

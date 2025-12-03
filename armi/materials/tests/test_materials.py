@@ -23,6 +23,7 @@ from numpy import testing
 from armi import context, materials, settings
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
 from armi.reactor import blueprints
+from armi.reactor.reactors import Reactor
 from armi.tests import mockRunLogs
 from armi.utils import units
 
@@ -34,6 +35,7 @@ class _Material_Test:
 
     def setUp(self):
         self.mat = self.MAT_CLASS()
+        self.mat.parent = Reactor(self.mat.__class__.__name__, None)
 
     def test_isPicklable(self):
         """Test that all materials are picklable so we can do MPI communication of state."""
