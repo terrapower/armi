@@ -84,7 +84,7 @@ class StructuredGrid(Grid):
     --------
     A 2D a rectangular grid with width (x) 2 and height (y) 3 would be::
 
-    >>> grid = Grid(unitSteps=((2, 0, 0), (0, 3, 0),(0, 0, 0)))
+    >>> grid = Grid(unitSteps=((2, 0, 0), (0, 3, 0), (0, 0, 0)))
 
     A regular hex grid with pitch 1 is::
 

@@ -1452,11 +1452,11 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
     Examples
     --------
     >>> l = ISOTXS()
-    >>> plotNucXs(l, 'U238NA','fission')
+    >>> plotNucXs(l, "U238NA", "fission")
 
     >>> # Plot n,g for all xenon and krypton isotopes
-    >>> f = lambda name: 'XE' in name or 'KR' in name
-    >>> plotNucXs(l, sorted(filter(f,l.nuclides.keys())),itertools.repeat('nGamma'))
+    >>> f = lambda name: "XE" in name or "KR" in name
+    >>> plotNucXs(l, sorted(filter(f, l.nuclides.keys())), itertools.repeat("nGamma"))
 
     See Also
     --------

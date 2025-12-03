@@ -65,7 +65,8 @@ def createImmutableProperty(name, dependencyAction, doc):
     The following example is essentially exactly how this should be used.
 
     >>> class SomeClass:
-    ...     myNum = createImmutableProperty('myNum', 'You must invoke the initialize() method', 'My random number')
+    ...     myNum = createImmutableProperty("myNum", "You must invoke the initialize() method", "My random number")
+    ...
     ...     def initialize(self, val):
     ...         unlockImmutableProperties(self)
     ...         try:
@@ -75,15 +76,15 @@ def createImmutableProperty(name, dependencyAction, doc):
     >>> sc = SomeClass()
     >>> sc.myNum.__doc__
     My Random Number
-    >>> sc.myNum # raises error, because it hasn't been assigned
+    >>> sc.myNum  # raises error, because it hasn't been assigned
     ImmutablePropertyError
     >>> sc.myNum = 42.1
     >>> sc.myNum
     42.1
-    >>> sc.myNum = 21.05 * 2 # raises error, because the value cannot change after it has been assigned.
+    >>> sc.myNum = 21.05 * 2  # raises error, because the value cannot change after it has been assigned.
     ImmutablePropertyError
-    >>> sc.initialize(42.1) # this works, because the values are the same.
-    >>> sc.initialize(100) # this fails, because the value cannot change
+    >>> sc.initialize(42.1)  # this works, because the values are the same.
+    >>> sc.initialize(100)  # this fails, because the value cannot change
     ImmutablePropertyError
     """
     privateName = "_" + name
