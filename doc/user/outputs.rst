@@ -92,6 +92,8 @@ method to get a recovered ``Reactor`` object. For instance, given a database fil
    with db:
        r = db.load(5, 2)
 
+.. note:: The cycles are 0-indexed, but the time nodes, in practice, are not. Therefore, cycle 5 above is actually the 6th cycle in the simulation. For cycle 5 with two time nodes, there will be three time steps saved to the database: c5n0 (BOC), c5n1 (time node 1), and c5n2 (time node 2).
+
 Extracting Reactor History
 --------------------------
 Not only can the database reproduce reactor state for a given time node, it can also
