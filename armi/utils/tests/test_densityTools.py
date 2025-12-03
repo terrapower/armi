@@ -130,7 +130,7 @@ class TestDensityTools(unittest.TestCase):
             :id: T_ARMI_UTIL_MASS2N_DENS
             :tests: R_ARMI_UTIL_MASS2N_DENS
         """
-        nucs, nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2})
+        nucs, nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2}, nb=self.nuclideBases)
         O = np.where(nucs == "O".encode())[0]
         H = np.where(nucs == "H".encode())[0]
 

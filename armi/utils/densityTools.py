@@ -20,10 +20,11 @@ import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import elements, nucDir, nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.utils import units
 
 
-def getNDensFromMasses(rho, massFracs, normalize=False):
+def getNDensFromMasses(rho, massFracs, normalize=False, nb=None):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
 
@@ -41,6 +42,10 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
         density in (g/cc)
     massFracs : dict
         vector of mass fractions -- normalized to 1 -- keyed by their nuclide name
+    normalize : bool
+        Do you want to normalize the nuclide list? (Optional, default is False)
+    nb : NuclideBases
+        You should provide a NuclideBases object, but a default one can be produced.
 
     Returns
     -------
@@ -52,11 +57,14 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     if normalize:
         massFracs = normalizeNuclideList(massFracs, normalization=normalize)
 
+    if nb is None:
+        nb = NuclideBases()
+
     nuclides = []
     numberDensities = []
     rho = rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
     for nucName, massFrac in massFracs.items():
-        atomicWeight = nuclideBases.byName[nucName].weight
+        atomicWeight = nb.byName[nucName].weight
         nuclides.append(nucName.encode())
         numberDensities.append(massFrac * rho / atomicWeight)
     return np.array(nuclides), np.array(numberDensities)
