@@ -332,11 +332,10 @@ class Material:
         """
         Change the mass fraction of the specified nuclide.
 
-        This adjusts the mass fraction of a specified nuclide relative to other nuclides of the same
-        element. If there are no other nuclides within the element, then it is enriched relative to
-        the entire material. For example, enriching U235 in UZr would enrich U235 relative to U238
-        and other naturally occurring uranium isotopes. Likewise, enriching ZR in UZr would enrich
-        ZR relative to uranium.
+        This adjusts the mass fraction of a specified nuclide relative to other nuclides of the same element. If there
+        are no other nuclides within the element, then it is enriched relative to the entire material. For example,
+        enriching U235 in UZr would enrich U235 relative to U238 and other naturally occurring uranium isotopes.
+        Likewise, enriching ZR in UZr would enrich ZR relative to uranium.
 
         The method maintains a constant number of atoms, and adjusts ``refDens`` accordingly.
 
@@ -344,7 +343,6 @@ class Material:
         ----------
         nuclideName : str
             Name of nuclide to enrich.
-
         massFraction : float
             New mass fraction to achieve.
         """
@@ -354,7 +352,7 @@ class Material:
         nucsNames = list(self.massFrac)
         nuclideBases = self.parent.nuclideBases if self.parent else None
         if nuclideBases is None:
-            print('crap TODO JOHN')
+            raise ValueError("You cannot adjust the mass fractions in a material that does not have a parent.")
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
@@ -367,9 +365,9 @@ class Material:
         allIndicesUpdated = [nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac]
 
         if len(allIndicesUpdated) == 1:
-            if isinstance(
-                nuclideBases.byName[nuclideName], NaturalNuclideBase
-            ) or nuclideBases.isMonoIsotopicElement(nuclideName):
+            if isinstance(nuclideBases.byName[nuclideName], NaturalNuclideBase) or nuclideBases.isMonoIsotopicElement(
+                nuclideName
+            ):
                 # If there are not any other nuclides, assume we are enriching an entire element.
                 # Consequently, allIndicesUpdated is no longer the element's indices, but the materials indices
                 allIndicesUpdated = range(len(nucsNames))
@@ -399,8 +397,8 @@ class Material:
                 # derived from solving the following equation for enrchedWeight:
                 # massFraction = enrichedWeight / (enrichedWeight + balanceWeight)
                 massDensities[enrichedIndex] = massFraction * balanceWeight / (1 - massFraction)
-        # ratio is set by here but atoms not conserved yet
 
+        # ratio is set by here but atoms not conserved yet
         updatedNucsMolesPerCC = massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
         updatedNucsMolesPerCC *= molesPerCC[allIndicesUpdated].sum() / updatedNucsMolesPerCC.sum()  # conserve atoms
         molesPerCC[allIndicesUpdated] = updatedNucsMolesPerCC
