@@ -97,9 +97,9 @@ class LocationBase(ABC):
         Examples
         --------
         >>> grid = grids.HexGrid.fromPitch(1.0)
-        >>> grid[0, 0, 0] < grid[2, 3, 4]   # the "radius" is less
+        >>> grid[0, 0, 0] < grid[2, 3, 4]  # the "radius" is less
         True
-        >>> grid[2, 3, 4] < grid[2, 3, 4]   # they are equal
+        >>> grid[2, 3, 4] < grid[2, 3, 4]  # they are equal
         False
         >>> grid[2, 3, 4] < grid[-2, 3, 4]  # 2 is greater than -2
         False

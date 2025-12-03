@@ -24,7 +24,7 @@ Examples
 --------
 >>> geo = geodst.readBinary("GEODST")
 >>> print(geo.xmesh)
->>> geo.zmesh[-1]*=2  # make a modification to data
+>>> geo.zmesh[-1] *= 2  # make a modification to data
 >>> geodst.writeBinary(geo, "GEODST2")
 
 """

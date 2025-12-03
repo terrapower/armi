@@ -757,8 +757,7 @@ class ArmiObject(metaclass=CompositeModelType):
         >>> obj.hasFlags(Flags.INNER | Flags.FUEL, exact=True)
         False
 
-        >>> obj.hasFlags([Flags.INNER | Flags.DRIVER | Flags.FUEL,
-        ... Flags.OUTER | Flags.DRIVER | Flags.FUEL], exact=True)
+        >>> obj.hasFlags([Flags.INNER | Flags.DRIVER | Flags.FUEL, Flags.OUTER | Flags.DRIVER | Flags.FUEL], exact=True)
         False
 
         """
