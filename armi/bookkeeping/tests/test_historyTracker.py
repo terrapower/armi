@@ -24,6 +24,7 @@ import os
 import pathlib
 import shutil
 import unittest
+from unittest import mock
 
 from armi import settings, utils
 from armi.bookkeeping import historyTracker
@@ -32,6 +33,7 @@ from armi.cases import case
 from armi.context import ROOT
 from armi.reactor import blocks, grids
 from armi.reactor.flags import Flags
+from armi.testing import loadTestReactor
 from armi.tests import ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -231,6 +233,48 @@ class TestHistoryTracker(ArmiTestHelper):
         with self.assertRaises(RuntimeError):
             aShield = self.o.r.core.getFirstAssembly(Flags.SHIELD)
             history._getBlockInAssembly(aShield)
+
+
+class TestDetailHistory(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.BOL_LOCATIONS = ("001-001", "002-001")
+        cls.o, cls.r = loadTestReactor(customSettings={"detailAssemLocationsBOL": cls.BOL_LOCATIONS})
+        cls.hti: historyTracker.HistoryTrackerInterface = cls.o.getInterface("history")
+        if cls.hti is None:
+            raise RuntimeError("Test incorrectly configured: no history tracker interface")
+        cls.hti.interactBOL()
+        if not cls.hti.getDetailAssemblies():
+            raise RuntimeError("Test incorrectly configured: no detail assemblies")
+
+    def test_getDetailAssemblies(self):
+        """Test the ability to obtain all detailed assemblies."""
+        assemblies = self.hti.getDetailAssemblies()
+        self.assertEqual(len(assemblies), len(self.hti.detailAssemblyNames))
+        for a in assemblies:
+            loc = a.getLocation()
+            self.assertIn(loc, self.BOL_LOCATIONS)
+            self.assertTrue(self.hti.isDetailedAssembly(a), msg=a)
+
+    def test_isDetailedBlock(self):
+        detailBlocks = self.hti.getDetailBlocks()
+        for b in self.r.core.iterBlocks():
+            if b in detailBlocks:
+                self.assertTrue(self.hti.isDetailedBlock(b), msg=f"{b} in {b.parent}")
+            else:
+                self.assertFalse(self.hti.isDetailedBlock(b), msg=f"{b} in {b.parent}")
+
+    def test_isDetailedAssembly(self):
+        """Test the ability to query if an assembly is considered detailed."""
+        nonDetailed = self.r.core.getAssemblyWithStringLocation("003-003")
+        self.assertFalse(self.hti.isDetailedAssembly(nonDetailed), msg=nonDetailed)
+
+        detailed = self.hti.getDetailAssemblies()[0]
+        # Same name as a detailed assembly but not in the reactor by that name
+        # Unlikely we'd see this in production because we attempt to keep all assemblies
+        # with unique names. But let's be extra certain
+        with mock.patch.object(nonDetailed, "getName", return_value=detailed.getName()):
+            self.assertFalse(self.hti.isDetailedAssembly(nonDetailed))
 
 
 class TestHistoryTrackerNoModel(unittest.TestCase):
