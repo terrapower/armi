@@ -23,14 +23,11 @@ than usual.
 import os
 import pathlib
 import shutil
-import unittest
 
 from armi import settings, utils
-from armi.bookkeeping import historyTracker
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
 from armi.cases import case
 from armi.context import ROOT
-from armi.reactor import blocks, grids
 from armi.reactor.flags import Flags
 from armi.tests import ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -231,51 +228,3 @@ class TestHistoryTracker(ArmiTestHelper):
         with self.assertRaises(RuntimeError):
             aShield = self.o.r.core.getFirstAssembly(Flags.SHIELD)
             history._getBlockInAssembly(aShield)
-
-
-class TestHistoryTrackerNoModel(unittest.TestCase):
-    """History tracker tests that do not require a Reactor Model."""
-
-    def setUp(self):
-        cs = settings.Settings()
-        self.history = historyTracker.HistoryTrackerInterface(None, cs=cs)
-        self._origCaseTitle = self.history.cs.caseTitle  # to avoid parallel test interference.
-        self.history.cs.caseTitle = self._testMethodName + self._origCaseTitle
-
-    def tearDown(self):
-        self.history.cs.caseTitle = self._origCaseTitle
-
-    def test_timestepFiltering(self):
-        times = range(30)
-        self.history.cs = self.history.cs.modified(newSettings={"burnSteps": 2})
-
-        inputs = [
-            {"boc": True},
-            {"moc": True},
-            {"eoc": True},
-            {"boc": True, "eoc": True},
-        ]
-        results = [
-            [0, 3, 6, 9, 12, 15, 18, 21, 24, 27],
-            [1, 4, 7, 10, 13, 16, 19, 22, 25, 28],
-            [2, 5, 8, 11, 14, 17, 20, 23, 26, 29],
-            [0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26, 27, 29],
-        ]
-        for i, expectedResults in zip(inputs, results):
-            runResults = self.history.filterTimeIndices(times, **i)
-            self.assertEqual(runResults, expectedResults)
-
-    def test_timestepFilteringWithGap(self):
-        times = list(range(10)) + list(range(15, 20))
-        self.history.cs = self.history.cs.modified(newSettings={"burnSteps": 2})
-
-        runResults = self.history.filterTimeIndices(times, boc=True)
-        self.assertEqual(runResults, [0, 3, 6, 9, 15, 18])
-
-    def test_blockName(self):
-        block = blocks.HexBlock("blockName")
-        block.spatialLocator = grids.IndexLocation(0, 0, 7, None)
-        self.assertEqual(
-            self.history._getBlockHistoryFileName(block),
-            f"{self.history.cs.caseTitle}-blockName7-bHist.txt",
-        )

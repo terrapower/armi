@@ -204,13 +204,6 @@ class HistoryTrackerInterface(interfaces.Interface):
     def _getAssemHistoryFileName(self, assem):
         return self._getHistoryFileName(assem.getName(), "a")
 
-    def _getBlockHistoryFileName(self, block):
-        """Get name for block."""
-        return self._getHistoryFileName(block.getName() + "{}".format(block.spatialLocator.k), "b")
-
-    def _getLocationHistoryFileName(self, location):
-        return self._getHistoryFileName(str(location) + "{}".format(location.axial), "l")
-
     def _getHistoryFileName(self, label, letter):
         return f"{self.cs.caseTitle}-{label}-{letter}Hist.txt"
 
@@ -252,24 +245,6 @@ class HistoryTrackerInterface(interfaces.Interface):
     def getDetailBlocks(self) -> list["Block"]:
         """Get all blocks in all detail assemblies."""
         return [block for a in self.getDetailAssemblies() for block in a]
-
-    def filterTimeIndices(self, timeIndices, boc=False, moc=False, eoc=False):
-        """Takes a list of time indices and filters them down to boc moc or eoc."""
-        filtered = []
-
-        steps = self.cs["burnSteps"] + 1
-
-        for i in timeIndices:
-            if boc and i % steps == 0:
-                filtered.append(i)
-            if moc and i % steps == steps // 2:
-                filtered.append(i)
-            if eoc and i % steps == steps - 1:
-                filtered.append(i)
-            if not boc and not moc and not eoc:
-                filtered.append(i)
-
-        return filtered
 
     def writeAssemHistory(self, a: "Assembly", fName: str = ""):
         """Write the assembly history report to a text file."""
