@@ -13,15 +13,15 @@
 # limitations under the License.
 
 """
-The History Tracker is a bookkeeping interface that accesses and reports time-dependent state
-information from the database.
+The History Tracker is a bookkeeping interface that accesses and reports time-dependent state information from the
+database.
 
-At the end of a run, these write text files to show the histories for various follow-on mechanical
-analysis, fuel performance analysis, etc.
+At the end of a run, these write text files to show the histories for various follow-on mechanical analysis, fuel
+performance analysis, etc.
 
-Other interfaces may find this useful as well, to get an assembly history for fuel performance
-analysis, etc. This is particularly useful in equilibrium runs, where the
-``EqHistoryTrackerInterface`` will unravel the full history from a single equilibrium cycle.
+Other interfaces may find this useful as well, to get an assembly history for fuel performance analysis, etc. This is
+particularly useful in equilibrium runs, where the ``EqHistoryTrackerInterface`` will unravel the full history from a
+single equilibrium cycle.
 
 Getting history information
 ---------------------------
@@ -35,21 +35,19 @@ You can pre-load information before gathering it to get much better performance:
 
     history.preloadBlockHistoryVals(blockNames, historyKeys, timeSteps)
 
-This is essential for performance when history information is going to be accessed in loops over
-assemblies or blocks. Reading each param directly from the database individually in loops is
-paralyzingly slow.
+This is essential for performance when history information is going to be accessed in loops over assemblies or blocks.
+Reading each param directly from the database individually in loops is paralyzingly slow.
 
 Specifying parameters to add to the EOL history report
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To add state parameters to the list of things that get their history reported, you need to define an
-interface method called `getHistoryParams`. It should return a list of block parameters that will
-become available. For example::
+To add state parameters to the list of things that get their history reported, you need to define an interface method
+called `getHistoryParams`. It should return a list of block parameters that will become available. For example::
 
     def getHistoryParams(self):
         return ["flux", "percentBu"]
 
-When you'd like to access history information, you need to grab the history interface. The history
-interfaces is present by default in your interface stack. To get it, just call::
+When you'd like to access history information, you need to grab the history interface. The history interfaces is present
+by default in your interface stack. To get it, just call::
 
     history = self.getInterface("history")
 
@@ -101,22 +99,19 @@ class HistoryTrackerInterface(interfaces.Interface):
         :id: I_ARMI_HIST_TRACK
         :implements: R_ARMI_HIST_TRACK
 
-        This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
-        designed to store assembly and cross section data throughout time. This is done
-        directly, with time-based lists of assembly data, and dictionaries of cross-
-        section data. Users turn this feature on or off using the ``"detailAllAssems"``
-        setting.
+        This is a special :py:class:`Interface <armi.interfaces.Interface>` that is designed to store assembly and cross
+        section data throughout time. This is done directly, with time-based lists of assembly data, and dictionaries of
+        cross- section data. Users turn this feature on or off using the ``"detailAllAssems"`` setting.
 
     Notes
     -----
-    This pre-dates the ARMI database system, and we would like to stop supporting this.
-    Please don't find new uses for this; use the databases.
+    This pre-dates the ARMI database system, and we would like to stop supporting this. Please don't find new uses for
+    this; use the databases.
 
     Attributes
     ----------
     detailAssemblyNames : list
         List of detail assembly names in the reactor
-
     time : list
         list of reactor time in years
     """
@@ -127,21 +122,17 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def __init__(self, r, cs):
         """
-        HistoryTracker that uses the database to look up parameter history rather than
-        storing them in memory.
+        HistoryTracker that uses the database to look up parameter history rather than storing them in memory.
 
         Warning
         -------
-        If the current timestep history is requested and the database has not yet been written this
-        timestep, the current value of the requested parameter is provided. It is possible that this
-        is not the value that will be written to the database during this time step since many
-        interfaces that change parameters may interact between this call and the database write.
+        If the current timestep history is requested and the database has not yet been written this timestep, the
+        current value of the requested parameter is provided. It is possible that this is not the value that will be
+        written to the database during this time step since many interfaces that change parameters may interact between
+        this call and the database write.
         """
         interfaces.Interface.__init__(self, r, cs)
         self.detailAssemblyNames = []
-        self.time = []  # time in years
-        self.fullCoreLocations = {}
-        self.xsHistory = {}
         self._preloadedBlockHistory = None
 
     def interactBOL(self):
@@ -168,9 +159,8 @@ class HistoryTrackerInterface(interfaces.Interface):
                     a = self.r.core.childrenByLocator[aLoc]
                 except KeyError:
                     runLog.error(
-                        "Detail assembly in location {} (requested via "
-                        "`detailAssemLocationsBOL`) is not in core. "
-                        "Update settings.".format(locLabel)
+                        f"Detail assembly in location {locLabel} (requested via `detailAssemLocationsBOL`) is not in "
+                        "the core. Update settings."
                     )
                     raise
                 self.addDetailAssembly(a)
@@ -178,8 +168,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         if self.cs["detailAllAssems"]:
             self.addAllDetailedAssems()
 
-        # This also gets called at BOC but we still
-        # do it here for operators that do not call BOC.
+        # This also gets called at BOC but we still do it here for operators that do not call BOC.
         self.addDetailAssemsByAssemNums()
 
     def addAllDetailedAssems(self):
@@ -192,8 +181,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         """
         Activate detail assemblies from input based on assembly number.
 
-        This is used to activate detail assembly tracking on assemblies
-        that are not present in the core at BOL.
+        This is used to activate detail assembly tracking on assemblies that are not present in the core at BOL.
 
         See Also
         --------
@@ -216,15 +204,8 @@ class HistoryTrackerInterface(interfaces.Interface):
     def _getAssemHistoryFileName(self, assem):
         return self._getHistoryFileName(assem.getName(), "a")
 
-    def _getBlockHistoryFileName(self, block):
-        """Get name for block."""
-        return self._getHistoryFileName(block.getName() + "{}".format(block.spatialLocator.k), "b")
-
-    def _getLocationHistoryFileName(self, location):
-        return self._getHistoryFileName(str(location) + "{}".format(location.axial), "l")
-
     def _getHistoryFileName(self, label, letter):
-        return "{0}-{1}-{2}Hist.txt".format(self.cs.caseTitle, label, letter)
+        return f"{self.cs.caseTitle}-{label}-{letter}Hist.txt"
 
     def getTrackedParams(self):
         """Give the list of block parameters that are being tracked."""
@@ -265,24 +246,6 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Get all blocks in all detail assemblies."""
         return [block for a in self.getDetailAssemblies() for block in a]
 
-    def filterTimeIndices(self, timeIndices, boc=False, moc=False, eoc=False):
-        """Takes a list of time indices and filters them down to boc moc or eoc."""
-        filtered = []
-
-        steps = self.cs["burnSteps"] + 1
-
-        for i in timeIndices:
-            if boc and i % steps == 0:
-                filtered.append(i)
-            if moc and i % steps == steps // 2:
-                filtered.append(i)
-            if eoc and i % steps == steps - 1:
-                filtered.append(i)
-            if not boc and not moc and not eoc:
-                filtered.append(i)
-
-        return filtered
-
     def writeAssemHistory(self, a: "Assembly", fName: str = ""):
         """Write the assembly history report to a text file."""
         fName = fName or self._getAssemHistoryFileName(a)
@@ -290,8 +253,8 @@ class HistoryTrackerInterface(interfaces.Interface):
         times = dbi.getHistory(self.r, ["time"])["time"]
 
         with open(fName, "w") as out:
-            # ts is a tuple, remove the spaces from the string representation so it is easy to load
-            # into a spreadsheet or whatever
+            # ts is a tuple, remove the spaces from the string representation so it is easy to load into a spreadsheet
+            # or whatever
             headers = [str(ts).replace(" ", "") for ts in times.keys()]
             out.write(
                 tabulate.tabulate(
@@ -314,8 +277,8 @@ class HistoryTrackerInterface(interfaces.Interface):
                 out.write(tabulate.tabulate(data, tableFmt="plain", floatFmt="11.5E"))
                 out.write("\n")
 
-            # loc is a tuple, remove the spaces from the string representation so it is easy to load
-            # into a spreadsheet or whatever
+            # loc is a tuple, remove the spaces from the string representation so it is easy to load into a spreadsheet
+            # or whatever
             location = [str(loc).replace(" ", "") for loc in dbi.getHistory(a, ["location"])["location"].values()]
             out.write("\n\nkey: location\n")
             out.write(tabulate.tabulate((location,), tableFmt="plain"))
@@ -336,12 +299,10 @@ class HistoryTrackerInterface(interfaces.Interface):
 
         Notes
         -----
-        Pre-loading has value because the database is organized in a fashion that is
-        easy/inexpensive to look up data for many of time steps simultaneously. These
-        can then be stored and provided when the specific timestep is requested. The
-        method ``getBlockHistoryVal`` still looks at the database if the preloaded
-        values don't have the needed data, so the same results should be given if this
-        method is not called.
+        Pre-loading has value because the database is organized in a fashion that is easy/inexpensive to look up data
+        for many of time steps simultaneously. These can then be stored and provided when the specific timestep is
+        requested. The method ``getBlockHistoryVal`` still looks at the database if the preloaded values don't have the
+        needed data, so the same results should be given if this method is not called.
         """
         try:
             dbi = self.getInterface("database")
@@ -361,14 +322,12 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def getBlockHistoryVal(self, name: str, paramName: str, ts: tuple[int, int]):
         """
-        Use the database interface to return the parameter values for the supplied block
-        names, and timesteps.
+        Use the database interface to return the parameter values for the supplied block names, and timesteps.
 
         Notes
         -----
-        If the current timestep history is requested and the database has not yet
-        been written this timestep, the current value of the requested parameter is
-        returned.
+        If the current timestep history is requested and the database has not yet been written this timestep, the
+        current value of the requested parameter is returned.
 
         Parameters
         ----------
@@ -387,9 +346,8 @@ class HistoryTrackerInterface(interfaces.Interface):
         block = self.r.core.getBlockByName(name)
 
         if self._isCurrentTimeStep(ts) and not self._databaseHasDataForTimeStep(ts):
-            # current timenode may not have been written to the DB. Use the current
-            # value in the param system.  works for fuel performance, for some params,
-            # e.g. burnup, dpa.
+            # Current timenode may not have been written to the DB. Use the current value in the param system. Works for
+            # fuel performance, for some params, e.g. burnup, dpa.
             return block.p[paramName]
 
         try:
@@ -401,8 +359,9 @@ class HistoryTrackerInterface(interfaces.Interface):
                 data = dbi.database.getHistory(block, [paramName], [ts])
                 val = data[paramName][ts]
             except KeyError:
-                runLog.error("No value in DB. param name: {} requested index: {}".format(paramName, ts))
+                runLog.error(f"No value in DB. param name: {paramName} requested index: {ts}")
                 raise
+
         return val
 
     def _isCurrentTimeStep(self, ts: tuple[int, int]) -> bool:
@@ -421,8 +380,8 @@ class HistoryTrackerInterface(interfaces.Interface):
         Parameters
         ----------
         a
-            A fuel assembly that has been designated a detail assem. If passed, only timesteps
-            where this assembly is in the core will be tracked.
+            A fuel assembly that has been designated a detail assem. If passed, only timesteps where this assembly is in
+            the core will be tracked.
 
         Returns
         -------
@@ -449,10 +408,11 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Get a representative fuel block from a fuel assembly."""
         b = a.getFirstBlock(Flags.FUEL)
         if not b:
-            runLog.error("Assembly {} does not contain fuel".format(a))
+            runLog.error(f"Assembly {a} does not contain fuel")
             for b in a:
-                runLog.error("Block {}".format(b))
+                runLog.error(f"Block {b}")
             raise RuntimeError(
                 "A tracked assembly does not contain fuel and has caused this error, see the details in stdout."
             )
+
         return b
