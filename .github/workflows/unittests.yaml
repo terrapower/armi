@@ -1,0 +1,39 @@
+name: ARMI unit tests
+
+permissions:
+  contents: read
+
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: [3.9, '3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - name: Install mpi libs
+        run: sudo apt-get -y install libopenmpi-dev
+      - name: Run Tests
+        run: |
+          set -x
+          pip install -e .[memprof,mpi,test]
+          pytest -n 4 armi
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiFeatures.py
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiParameters.py
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/utils/tests/test_directoryChangersMpi.py
