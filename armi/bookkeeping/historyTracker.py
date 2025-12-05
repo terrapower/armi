@@ -140,7 +140,6 @@ class HistoryTrackerInterface(interfaces.Interface):
         interfaces.Interface.__init__(self, r, cs)
         self.detailAssemblyNames = []
         self.time = []  # time in years
-        self.xsHistory = {}
         self._preloadedBlockHistory = None
 
     def interactBOL(self):
