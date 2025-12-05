@@ -100,8 +100,9 @@ MPI_NODENAMES = [LOCAL]
 try:
     # Check for MPI
     from mpi4py import MPI
+    from mpi4py.util import pkl5
 
-    MPI_COMM = MPI.COMM_WORLD
+    MPI_COMM = pkl5.Intracomm(MPI.COMM_WORLD)
     MPI_RANK = MPI_COMM.Get_rank()
     MPI_SIZE = MPI_COMM.Get_size()
     MPI_NODENAME = MPI.Get_processor_name()
