@@ -104,8 +104,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
         designed to store assembly and cross section data throughout time. This is done
         directly, with time-based lists of assembly data, and dictionaries of cross-
-        section data. Users turn this feature on or off using the ``"detailAllAssems"``
-        setting.
+        section data. Users turn this feature on or off using the ``"detailAllAssems"`` setting.
 
     Notes
     -----
@@ -116,7 +115,6 @@ class HistoryTrackerInterface(interfaces.Interface):
     ----------
     detailAssemblyNames : list
         List of detail assembly names in the reactor
-
     time : list
         list of reactor time in years
     """
@@ -166,9 +164,8 @@ class HistoryTrackerInterface(interfaces.Interface):
                     a = self.r.core.childrenByLocator[aLoc]
                 except KeyError:
                     runLog.error(
-                        "Detail assembly in location {} (requested via "
-                        "`detailAssemLocationsBOL`) is not in core. "
-                        "Update settings.".format(locLabel)
+                        f"Detail assembly in location {locLabel} (requested via `detailAssemLocationsBOL`) is not in "
+                        "the core. Update settings."
                     )
                     raise
                 self.addDetailAssembly(a)
@@ -176,8 +173,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         if self.cs["detailAllAssems"]:
             self.addAllDetailedAssems()
 
-        # This also gets called at BOC but we still
-        # do it here for operators that do not call BOC.
+        # This also gets called at BOC but we still do it here for operators that do not call BOC.
         self.addDetailAssemsByAssemNums()
 
     def addAllDetailedAssems(self):
@@ -190,8 +186,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         """
         Activate detail assemblies from input based on assembly number.
 
-        This is used to activate detail assembly tracking on assemblies
-        that are not present in the core at BOL.
+        This is used to activate detail assembly tracking on assemblies that are not present in the core at BOL.
 
         See Also
         --------
@@ -359,14 +354,12 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def getBlockHistoryVal(self, name: str, paramName: str, ts: tuple[int, int]):
         """
-        Use the database interface to return the parameter values for the supplied block
-        names, and timesteps.
+        Use the database interface to return the parameter values for the supplied block names, and timesteps.
 
         Notes
         -----
         If the current timestep history is requested and the database has not yet
-        been written this timestep, the current value of the requested parameter is
-        returned.
+        been written this timestep, the current value of the requested parameter is returned.
 
         Parameters
         ----------
@@ -386,8 +379,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
         if self._isCurrentTimeStep(ts) and not self._databaseHasDataForTimeStep(ts):
             # current timenode may not have been written to the DB. Use the current
-            # value in the param system.  works for fuel performance, for some params,
-            # e.g. burnup, dpa.
+            # value in the param system.  works for fuel performance, for some params, e.g. burnup, dpa.
             return block.p[paramName]
 
         try:
@@ -399,7 +391,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 data = dbi.database.getHistory(block, [paramName], [ts])
                 val = data[paramName][ts]
             except KeyError:
-                runLog.error("No value in DB. param name: {} requested index: {}".format(paramName, ts))
+                runLog.error(f"No value in DB. param name: {paramName} requested index: {ts}")
                 raise
         return val
 
@@ -447,9 +439,9 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Get a representative fuel block from a fuel assembly."""
         b = a.getFirstBlock(Flags.FUEL)
         if not b:
-            runLog.error("Assembly {} does not contain fuel".format(a))
+            runLog.error(f"Assembly {a} does not contain fuel")
             for b in a:
-                runLog.error("Block {}".format(b))
+                runLog.error(f"Block {b}")
             raise RuntimeError(
                 "A tracked assembly does not contain fuel and has caused this error, see the details in stdout."
             )
