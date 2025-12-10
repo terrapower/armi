@@ -17,18 +17,15 @@ Welcome to the Advanced Reactor Modeling Interface (ARMI).
 This module initializes the ARMI platform. The bootstrap process is broken into several phases:
 
 * Import fundamental dependencies in Python library and some third-party libs
-* Investigate environment: Check Python version, check code version, check MPI situation,
-  check for TTY/GUI/interactivity,
+* Investigate environment: Check Python version, code version, MPI situation, and TTY/GUI/interactivity,
 * Set up temp dirs
 * Set up printout table formats (in preparation of logging info)
 * Initialize all possible nuclide objects in the nuclide directory
-* Discover and register available built-in :py:mod:`plugins <armi.plugins>`
-  (custom ones registered after input available)
+* Discover and register available built-in :py:mod:`plugins <armi.plugins>` (custom ones are registered after inputs)
 * Discover and define all potential configuration settings from available plugins
 * Read input files
 * Update :py:mod:`nuclide directory <armi.nucDirectory>` with depletion info based on config
-* Discover and define all state :py:mod:`Parameters <armi.reactor.parameters>` on data model
-  (possibly dependent on config)
+* Discover and define all state :py:mod:`Parameters <armi.reactor.parameters>` on data model (maybe dependent on config)
 * Discover :py:mod:`Entry points <armi.cli>` from plugins
 * Choose entry point based on user command
 
@@ -57,8 +54,8 @@ from typing import List, Optional, Type
 
 import __main__ as main
 
-# The _bootstrap module performs operations that may need to occur before it is
-# necessarily safe to import the rest of the ARMI system. Things like:
+# The _bootstrap module performs operations that may need to occur before it is necessarily safe to import the rest of
+# the ARMI system. Things like:
 # - configure the MPI environment
 # - detect the nature of interaction with the user (terminal UI, GUI, unsupervized, etc)
 # - Initialize the nuclide database
@@ -84,10 +81,9 @@ from armi.meta import __version__
 from armi.nucDirectory import nuclideBases
 from armi.reactor import flags, parameters
 
-# ARMI does not configure its own application by default. This is mostly to catch issues
-# involving calling code that requires the framework to be configured before that has
-# explicitly taken place. An application should call `configure()` with its App class in
-# order for ARMI to work properly
+# ARMI does not configure its own application by default. This is mostly to catch issues involving calling code that
+# requires the framework to be configured before that has explicitly taken place. An application should call
+# `configure()` with its App class in order for ARMI to work properly
 _app: Optional[apps.App] = None
 
 _ARMI_CONFIGURE_CONTEXT: Optional[str] = None
@@ -116,28 +112,20 @@ def init(choice=None, fName=None, cs=None, skipInspection=False):
         :id: I_ARMI_SETTING1
         :implements: R_ARMI_SETTING
 
-        This method initializes an ARMI run, and if successful returns an Operator.
-        That operator is designed to drive the reactor simulation through time steps to
-        simulate its operation. This method takes in a settings file or object to
-        initialize the operator. Whether a settings file or object is supplied, the
-        operator will be built based on the those settings. Because the total
-        collection of settings can be modified by developers of ARMI applications,
-        providing these settings allow ARMI end-users to define their simulation as
-        granularly as they need.
+        This method initializes an ARMI run, and if successful returns an Operator. That operator is designed to drive
+        the reactor simulation through time steps to simulate its operation. This method takes in a settings file or
+        object to initialize the operator. Whether a settings file or object is supplied, the operator will be built
+        based on the those settings. Because the total collection of settings can be modified by developers of ARMI
+        applications, providing these settings allow ARMI end-users to granularly define their simulations.
 
     Parameters
     ----------
     choice : int, optional
-        Automatically run with this item out of the menu that would be produced by the
-        existing YAML files.
-
+        Automatically run with this item out of the menu that would be produced by the existing YAML files.
     fName : str, optional
         The path to a settings file to load: my_case.yaml
-
     cs : Settings, optional
-        If supplied, this CS object will supersede the other case input methods and use
-        the object directly.
-
+        If supplied, this CS object will supersede the other case input methods and use the object directly.
     skipInspection : bool, optional
         Whether or not the inputs should be checked for valid settings. Default is False.
 
@@ -168,8 +156,7 @@ def getDefaultPlugins() -> List[Type[plugins.ArmiPlugin]]:
     """
     Return a list containing the default set of ARMI Framework plugins.
 
-    This is useful for an application to fold all of the ARMI Framework's capabilities
-    into its own set of plugins.
+    This is useful for an application to fold all of the ARMI Framework's capabilities into its own set of plugins.
     """
     from armi import bookkeeping, cli, reactor
     from armi.physics import fuelCycle, neutronics, safety
@@ -190,8 +177,7 @@ def getDefaultPluginManager() -> pluginManager.ArmiPluginManager:
     """
     Return a plugin manager containing the default set of ARMI Framework plugins.
 
-    This is useful when using standalone facilities of ARMI without a specific
-    application.
+    This is useful when using standalone facilities of ARMI without a specific application.
     """
     pm = plugins.getNewPluginManager()
     for plugin in getDefaultPlugins():
@@ -217,9 +203,8 @@ def getPluginManagerOrFail() -> pluginManager.ArmiPluginManager:
     """Return the plugin manager. Raise an error if there is none."""
     global _app
     assert _app is not None, (
-        "The ARMI plugin manager was requested, no App has been configured. Ensure "
-        "that `armi.configure()` has been called before attempting to interact with "
-        "the plugin manager."
+        "The ARMI plugin manager was requested, no App has been configured. Ensure that `armi.configure()` has been "
+        "called before attempting to interact with the plugin manager."
     )
 
     return _app.pluginManager
@@ -232,10 +217,7 @@ def getApp() -> Optional[apps.App]:
 
 def _cleanupOnCancel(signum, _frame):
     """Helper function to clean up upon cancellation."""
-    print(
-        "Caught Cancel signal ({}); cleaning temporary files and exiting...".format(signum),
-        file=sys.stderr,
-    )
+    print(f"Caught Cancel signal ({signum}); cleaning temporary files and exiting...", file=sys.stderr)
     context.cleanTempDirs()
     sys.stdout.flush()
     sys.stderr.flush()
@@ -254,27 +236,24 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     Parameters
     ----------
     app :
-        An :py:class:`armi.apps.App` instance with which the framework is to be
-        configured. If it is not provided, then the default ARMI App will be used.
+        An :py:class:`armi.apps.App` instance with which the framework is to be configured. If it is not provided, then
+        the default ARMI App will be used.
     permissive :
-        Whether or not an error should be produced if ``configure`` is called more than
-        once. This should only be set to ``True`` under testing or demonstration
-        purposes, where the contents of otherwise independent scripts need to be run
-        under the same python instance.
+        Whether or not an error should be produced if ``configure`` is called more than once. This should only be set to
+        ``True`` under testing or demonstration purposes, where the contents of otherwise independent scripts need to be
+        run under the same python instance.
 
     Important
     ---------
-    Since this affects the behavior of several modules at their import time, it is
-    generally not safe to re-configure the ARMI framework once it has been configured.
-    Therefore this will raise an ``RuntimeError`` if such a re-configuration is
-    attempted, unless ``permissive`` is set to ``True``.
+    Since this affects the behavior of several modules at their import time, it is generally not safe to re-configure
+    the ARMI framework once it has been configured. Therefore this will raise an ``RuntimeError`` if such a
+    re-configuration is attempted, unless ``permissive`` is set to ``True``.
 
     Notes
     -----
-    We are planning on encapsulating much of the global ARMI state that gets configured
-    with an App into the App object itself (with some other things going into the Case
-    object). This will provide a number of benefits, the main one being that it will
-    become trivial to re-configure the framework, which is currently not possible.
+    We are planning on encapsulating much of the global ARMI state that gets configured with an App into the App object
+    itself (with some other things going into the Case object). This will provide a number of benefits, the main one
+    being that it will become trivial to re-configure the framework, which is currently not possible.
     """
     global _app
     global _ARMI_CONFIGURE_CONTEXT
@@ -289,14 +268,12 @@ def configure(app: Optional[apps.App] = None, permissive=False):
             return
         else:
             raise RuntimeError(
-                "Multiple calls to armi.configure() are not allowed. Previous call from:\n{}".format(
-                    _ARMI_CONFIGURE_CONTEXT
-                )
+                f"Multiple calls to armi.configure() are not allowed. Previous call from:\n{_ARMI_CONFIGURE_CONTEXT}"
             )
 
     assert not context.BLUEPRINTS_IMPORTED, (
-        "ARMI can no longer be configured after blueprints have been imported. "
-        "Blueprints were imported from:\n{}".format(context.BLUEPRINTS_IMPORT_CONTEXT)
+        "ARMI can no longer be configured after blueprints have been imported. Blueprints were imported from"
+        f":\n{context.BLUEPRINTS_IMPORT_CONTEXT}"
     )
 
     _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
@@ -318,9 +295,8 @@ def applyAsyncioWindowsWorkaround() -> None:
     """
     Apply Asyncio workaround for Windows and Python 3.8.
 
-    This prevents a NotImplementedError on Windows with Python 3.8
-    his error showed up during jupyter notebook built-tests and documentation.
-    See https://bugs.python.org/issue37373
+    This prevents a NotImplementedError on Windows with Python 3.8 his error showed up during jupyter notebook built-
+    tests and documentation. See https://bugs.python.org/issue37373
     """
     import asyncio
 
@@ -333,9 +309,8 @@ applyAsyncioWindowsWorkaround()
 # The ``atexit`` handler is like putting it in a finally after everything.
 atexit.register(context.cleanTempDirs)
 
-# register cleanups upon HPC cancellations. Linux clusters will send a different signal.
-# SIGBREAK doesn't exist on non-windows
-# This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
+# register cleanups upon HPC cancellations. Linux clusters will send a different signal. SIGBREAK doesn't exist on
+# non-windows This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
 if os.name == "nt":
     signal.signal(signal.SIGBREAK, _cleanupOnCancel)
 signal.signal(signal.SIGINT, _cleanupOnCancel)
