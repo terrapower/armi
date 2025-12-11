@@ -32,7 +32,7 @@ from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
 
 # globals
-FAIL_ON_RANGE = False
+FAIL_ON_RANGE = True
 
 
 def parentAwareDensityRedirect(f):
