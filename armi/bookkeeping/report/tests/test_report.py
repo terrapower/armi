@@ -35,7 +35,6 @@ from armi.bookkeeping.report.reportingUtils import (
     makeCoreDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
-    summarizePower,
     summarizePowerPeaking,
     writeAssemblyMassSummary,
     writeCycleSummary,
@@ -213,10 +212,6 @@ class TestReport(unittest.TestCase):
             self.assertIn("Assembly Design Summary", mock.getStdout())
             self.assertIn("Design & component information", mock.getStdout())
             self.assertIn("Multiplicity", mock.getStdout())
-            mock.emptyStdout()
-
-            summarizePower(r.core)
-            self.assertIn("Power in igniter fuel", mock.getStdout())
             mock.emptyStdout()
 
             writeCycleSummary(r.core)

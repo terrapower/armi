@@ -740,27 +740,6 @@ def summarizePowerPeaking(core):
     )
 
 
-def summarizePower(core):
-    """Provide an edit showing where the power is based on assembly types.
-
-    Parameters
-    ----------
-    core : armi.reactor.reactors.Core
-    """
-    sums = collections.defaultdict(lambda: 0.0)
-    pmult = core.powerMultiplier
-    for a in core:
-        sums[a.getType()] += a.calcTotalParam("power") * pmult
-
-    # calculate total power
-    tot = sum(sums.values()) or float("inf")
-    # NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
-
-    runLog.important("Power summary")
-    for atype, val in sums.items():
-        runLog.important(" Power in {0:35s}: {1:0.3E} Watts, {2:0.5f}%".format(atype, val, val / tot * 100))
-
-
 def makeCoreDesignReport(core, cs):
     """Builds report to summarize core design inputs.
 

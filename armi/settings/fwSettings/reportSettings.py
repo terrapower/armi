@@ -19,7 +19,6 @@ import voluptuous as vol
 from armi.settings import setting
 
 CONF_GEN_REPORTS = "genReports"
-CONF_ASSEM_POW_SUMMARY = "assemPowSummary"
 CONF_SUMMARIZE_ASSEM_DESIGN = "summarizeAssemDesign"
 CONF_TIMELINE_INCLUSION_CUTOFF = "timelineInclusionCutoff"
 
@@ -34,12 +33,6 @@ def defineSettings():
             description="Employ the use of the reporting utility for ARMI, generating "
             "HTML and ASCII summaries of the run",
             oldNames=[("summarizer", None)],
-        ),
-        setting.Setting(
-            CONF_ASSEM_POW_SUMMARY,
-            default=False,
-            label="Summarize Assembly Power",
-            description="Print a summary of how much power is in each assembly type at every timenode",
         ),
         setting.Setting(
             CONF_SUMMARIZE_ASSEM_DESIGN,
