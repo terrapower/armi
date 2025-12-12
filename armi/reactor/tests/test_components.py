@@ -678,7 +678,7 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_EXPANSION1
             :tests: R_ARMI_COMP_EXPANSION
         """
-        for hotTemp in range(600, 901, 25):
+        for hotTemp in range(200, 400, 25):
             ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
             cur = self.component.getDimension("od", Tc=hotTemp)
             self.assertAlmostEqual(cur, ref)
@@ -855,7 +855,7 @@ class TestCircle(TestShapedComponent):
 
 
 class TestComponentExpansion(unittest.TestCase):
-    tCold = 20
+    tCold = 25
     tWarm = 50
     tHot = 500
     coldOuterDiameter = 1.0

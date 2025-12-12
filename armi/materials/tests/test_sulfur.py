@@ -21,6 +21,7 @@ from armi.materials.tests.test_materials import _Material_Test
 
 class Sulfur_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = Sulfur
+    VALID_TEMP_K = 400
 
     def setUp(self):
         _Material_Test.setUp(self)
@@ -36,15 +37,16 @@ class Sulfur_TestCase(_Material_Test, unittest.TestCase):
         self.Sulfur_both.applyInputParams(sulfur_density_frac=0.5, TD_frac=0.4)
 
     def test_sulfur_density_frac(self):
-        ref = self.mat.pseudoDensity(500)
+        tk = 410
+        ref = self.mat.pseudoDensity(tk)
 
-        reduced = self.Sulfur_sulfur_density_frac.pseudoDensity(500)
+        reduced = self.Sulfur_sulfur_density_frac.pseudoDensity(tk)
         self.assertAlmostEqual(ref * 0.5, reduced)
 
-        reduced = self.Sulfur_TD_frac.pseudoDensity(500)
+        reduced = self.Sulfur_TD_frac.pseudoDensity(tk)
         self.assertAlmostEqual(ref * 0.4, reduced)
 
-        reduced = self.Sulfur_both.pseudoDensity(500)
+        reduced = self.Sulfur_both.pseudoDensity(tk)
         self.assertAlmostEqual(ref * 0.4, reduced)
 
     def test_propertyValidTemperature(self):

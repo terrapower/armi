@@ -674,8 +674,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         controlComponent = components.Circle(
             "control",
             baseComponents[0].material,
-            20.0,
-            20.0,
+            100.0,
+            100.0,
             id=0.0,
             od=0.6,
             mult=multiplicity,
@@ -683,8 +683,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         cladComponent = components.Circle(
             "clad",
             baseComponents[2].material,
-            20.0,
-            20.0,
+            100.0,
+            100.0,
             id=0.6,
             od=0.7,
             mult=multiplicity,
@@ -692,8 +692,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         coolantComponent = components.Circle(
             "coolant",
             baseComponents[4].material,
-            20.0,
-            20.0,
+            100.0,
+            100.0,
             id=0.7,
             od=0.8,
             mult=multiplicity,
