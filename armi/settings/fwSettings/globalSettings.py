@@ -77,7 +77,6 @@ CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_N_CYCLES = "nCycles"
 CONF_N_TASKS = "nTasks"
 CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
-CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PHYSICS_FILES = "savePhysicsFiles"
@@ -606,12 +605,6 @@ def defineSettings() -> List[setting.Setting]:
         ),
         tightCouplingSettings.TightCouplingSettingDef(
             CONF_TIGHT_COUPLING_SETTINGS,
-        ),
-        setting.Setting(
-            CONF_OPERATOR_LOCATION,
-            default="",
-            label="Operator Location",
-            description="The path to the operator code to execute for this run (for custom behavior)",
         ),
         setting.Setting(
             CONF_OUTPUT_FILE_EXTENSION,
