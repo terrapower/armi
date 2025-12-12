@@ -31,7 +31,6 @@ from armi.utils.mathematics import isMonotonic
 
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP = "assemFlagsToSkipAxialExpansion"
-CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
@@ -221,12 +220,6 @@ def defineSettings() -> List[setting.Setting]:
                 "hot dimensions. If false, block heights are at cold/as-built dimensions and will "
                 "be thermally expanded as appropriate."
             ),
-        ),
-        setting.Setting(
-            CONF_AUTOMATIC_VARIABLE_MESH,
-            default=False,
-            label="Automatic Neutronics Variable Mesh",
-            description="Flag to let ARMI add additional mesh points if the neutronics mesh is too irregular",
         ),
         setting.Setting(
             CONF_TRACE,
