@@ -14,13 +14,11 @@
 
 """Settings related to the report generation."""
 
-import voluptuous as vol
 
 from armi.settings import setting
 
 CONF_GEN_REPORTS = "genReports"
 CONF_SUMMARIZE_ASSEM_DESIGN = "summarizeAssemDesign"
-CONF_TIMELINE_INCLUSION_CUTOFF = "timelineInclusionCutoff"
 
 
 def defineSettings():
@@ -39,14 +37,6 @@ def defineSettings():
             default=True,
             label="Summarize Assembly Design",
             description="Print a summary of the assembly design details at BOL",
-        ),
-        setting.Setting(
-            CONF_TIMELINE_INCLUSION_CUTOFF,
-            default=0.03,
-            label="Timer Cutoff",
-            description="Timers who are not active for this percent of the run will "
-            "not be presented in the timeline graphic",
-            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=100)),
         ),
     ]
     return settings
