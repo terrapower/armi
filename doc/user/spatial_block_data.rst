@@ -1,6 +1,6 @@
-************************
-Spatial block parameters
-************************
+******************
+Spatial block data
+******************
 
 Many parameters assigned on a ``Block`` are scalar quantities that are useful for visualization and
 simple queries (e.g., block with the maximum burnup in an assembly). Spatial parameters in a block,
