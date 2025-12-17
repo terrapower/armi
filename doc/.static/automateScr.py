@@ -142,7 +142,7 @@ def _buildScrLine(prNum: str):
     # build RST list item, representing this data
     tab = "  "
     content = f"* PR #{prNum}: {title}\n\n"
-    content += f"{tab}* Change: {desc}\n"
+    content += f"{tab}* Rationale: {desc}\n"
     content += f"{tab}* Impact on Requirements: {impact}\n"
     content += f"{tab}* Author: {author}\n"
     content += f"{tab}* {reviewerHeader}: {reviewers}\n\n"
