@@ -68,8 +68,7 @@ def main():
     prNum = int(args.prNum)
     pastCommit = args.pastCommit
 
-    rstContent = buildScrListing(prNum, pastCommit)
-    print(rstContent)
+    buildScrListing(prNum, pastCommit)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -254,7 +253,10 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
-    return content + "\n\n"
+    content += "\n\n"
+
+    print(content)
+    return content
 
 
 if __name__ == "__main__":
