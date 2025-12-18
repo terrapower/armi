@@ -1630,7 +1630,7 @@ Settings Report
 .. exec::
     from armi import settings
     cs = settings.Settings()
-    numSettings = len(cs)
+    numSettings = len(cs.values())
 
     return f"This document lists all {numSettings} `settings <#the-settings-input-file>`_ in ARMI.\n"
 
