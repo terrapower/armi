@@ -327,12 +327,14 @@ exclude_patterns = [
     "**_reqs.rst",  # needed so included reqs files render
     ".DS_Store",
     "_build",
+    "gallery-src/analysis/README.rst",
+    "gallery-src/framework/README.rst",
     "gallery/**/*.ipynb",  # prevent sphinx-gallery from causing duplicate source file errors
     "gallery/**/*.json",
     "gallery/**/*.md5",
     "gallery/**/*.zip",
-    "gallery/**/README.rst",
-    "gallery-src/**/README.rst",
+    "gallery/analysis/README.rst",
+    "gallery/framework/README.rst",
     "logs",
     "Thumbs.db",
 ]
