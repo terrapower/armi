@@ -522,7 +522,7 @@ class TestPluginWithDuplicateSetting(plugins.ArmiPlugin):
         ]
 
 
-class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
+class TestPluginCopyInterfaceFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
@@ -646,9 +646,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
     def test_copyInterfaceInputsMultipleFiles(self):
         # register the new Plugin
         app = getApp()
-        app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
+        app.pluginManager.register(TestPluginCopyInterfaceFiles)
 
-        pluginPath = "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
+        pluginPath = "armi.cases.tests.test_cases.TestPluginCopyInterfaceFiles"
         settingFiles = [str(os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii")), "ISOAA"]
         testName = "test_copyInterfaceInputs_multipleFiles"
         testSetting = "multipleFilesSetting"
@@ -671,9 +671,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
     def test_copyInterfaceInputsOneFile(self):
         # register the new Plugin
         app = getApp()
-        app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
+        app.pluginManager.register(TestPluginCopyInterfaceFiles)
 
-        pluginPath = "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
+        pluginPath = "armi.cases.tests.test_cases.TestPluginCopyInterfaceFiles"
         settingFiles = [str(os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii"))]
         testName = "test_copyInterfaceInputsOneFile"
         testSetting = "multipleFilesSetting"

@@ -548,7 +548,7 @@ assemblies:
         self.assertEqual(nucDict["NI"], entry)
 
 
-class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
+class TestCustomIsotopicsErrors(unittest.TestCase):
     def test_densityMustBePositive(self):
         with self.assertRaises(yamlize.YamlizingError):
             _ = isotopicOptions.CustomIsotopic.load(

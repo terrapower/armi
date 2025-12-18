@@ -25,7 +25,7 @@ from armi.reactor.cores import Core
 from armi.testing import symmetryTesting
 
 
-class TestArmiNeutronicsParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
+class TestNeutronicsParamSym(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getNeutronicsParameterDefinitions()
         self.coreParamsToTest = pluginParameters[Core]
