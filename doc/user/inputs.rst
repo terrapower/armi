@@ -1626,7 +1626,13 @@ The **best** result from the branch search is determined by comparing the *keff*
 
 Settings Report
 ===============
-This document lists all the `settings <#the-settings-input-file>`_ in ARMI.
+
+.. exec::
+    from armi import settings
+    cs = settings.Settings()
+    numSettings = len(cs.values())
+
+    return f"This document lists all {numSettings} `settings <#the-settings-input-file>`_ in ARMI.\n"
 
 They are all accessible to developers through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named ``cs``. Interfaces have access to a simulation's settings through ``self.cs``.
 
