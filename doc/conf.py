@@ -332,6 +332,7 @@ exclude_patterns = [
     "gallery/**/*.md5",
     "gallery/**/*.zip",
     "gallery/**/README.rst",
+    "gallery-src/**/README.rst",
     "logs",
     "Thumbs.db",
 ]
