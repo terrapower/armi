@@ -97,7 +97,7 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
             self.assertLess(error, 1e-6)
 
 
-class TestLumpedFissionProduct(unittest.TestCase):
+class TestLFP(unittest.TestCase):
     """Test of the lumped fission product yields."""
 
     def setUp(self):
@@ -138,7 +138,7 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertTrue(lumpedFissionProduct.isGas(nb))
 
 
-class TestLumpedFissionProductCollection(unittest.TestCase):
+class TestLFPCollection(unittest.TestCase):
     """Test of the fission product collection."""
 
     def setUp(self):
@@ -202,7 +202,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
             self.assertAlmostEqual(newMassFrac, refMassFrac[fp.name])
 
 
-class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
+class TestLFPFromRefFile(unittest.TestCase):
     """Tests loading from the `referenceFissionProducts.dat` file."""
 
     def test_fissionProductYields(self):
@@ -215,7 +215,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
             self.assertAlmostEqual(lfp.getTotalYield(), 2.0, places=3)
 
 
-class TestLumpedFissionProductsExplicit(unittest.TestCase):
+class TestLFPExplicit(unittest.TestCase):
     """Tests loading fission products with explicit modeling."""
 
     def test_explicitFissionProducts(self):

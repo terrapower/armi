@@ -52,7 +52,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class TestBlockCollection(unittest.TestCase):
+class TestBlockColl(unittest.TestCase):
     def setUp(self):
         self.blockList = makeBlocks()
         self.bc = BlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
@@ -78,7 +78,7 @@ class TestBlockCollection(unittest.TestCase):
         self.assertEqual(self.bc.weightingParam, newBc.weightingParam)
 
 
-class TestBlockCollectionMedian(unittest.TestCase):
+class TestBlockCollMedian(unittest.TestCase):
     def setUp(self):
         self.blockList = makeBlocks(5)
         for bi, b in enumerate(self.blockList):
@@ -108,7 +108,7 @@ class TestBlockCollectionMedian(unittest.TestCase):
         self.assertAlmostEqual(avgTemp, crossSectionGroupManager.getBlockNuclideTemperature(testBlock, nuc))
 
 
-class TestBlockCollectionAverage(unittest.TestCase):
+class TestBlockCollAvg(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
@@ -317,8 +317,8 @@ class TestComponentAveraging(unittest.TestCase):
             )
 
 
-class TestBlockCollectionComponentAverage(unittest.TestCase):
-    """Tests for ZPPR 1D XS gen cases."""
+class TestBlockCollCompAvg(unittest.TestCase):
+    """Test Block collection component averages."""
 
     def setUp(self):
         r"""
@@ -403,8 +403,8 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         )
 
 
-class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
-    """tests for 1D cylinder XS gen cases."""
+class TestBlockCollCompAvg1DCyl(unittest.TestCase):
+    """Test Block collection component averages for 1D cylinder."""
 
     def setUp(self):
         """First part of setup same as test_Cartesian.
@@ -706,7 +706,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         return controlComponent, cladComponent, coolantComponent
 
 
-class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
+class TestBlockCollFluxWeightAvg(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
@@ -736,7 +736,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             self.bc.createRepresentativeBlock()
 
 
-class TestCrossSectionGroupManager(unittest.TestCase):
+class TestXSGM(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)
@@ -1075,7 +1075,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             self.assertTrue(os.path.exists("rzmflxYA"))
 
 
-class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
+class TestXSGMWithTempGrouping(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         cs["tempGroups"] = [300, 400, 500]

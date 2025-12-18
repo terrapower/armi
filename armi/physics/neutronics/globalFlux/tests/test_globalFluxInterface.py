@@ -143,7 +143,7 @@ class TestGlobalFluxOptions(unittest.TestCase):
         self.assertFalse(opts.savePhysicsFiles)
 
 
-class TestGlobalFluxInterface(unittest.TestCase):
+class TestGFI(unittest.TestCase):
     def test_computeDpaRate(self):
         """
         Compute DPA and DPA rates from multi-group neutron flux and cross sections.
@@ -217,7 +217,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
             gfi.checkEnergyBalance()
 
 
-class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
+class TestGFIWithExecuters(unittest.TestCase):
     """Tests for the default global flux execution."""
 
     @classmethod
@@ -291,7 +291,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self.cs["tightCoupling"] = False
 
 
-class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
+class TestGFIWithExecutersNonUniform(unittest.TestCase):
     """Tests for global flux execution with non-uniform assemblies."""
 
     @classmethod

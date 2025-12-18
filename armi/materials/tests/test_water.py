@@ -19,10 +19,10 @@ import unittest
 from armi.materials.water import SaturatedSteam, SaturatedWater, Water
 
 
-class Test_Water(unittest.TestCase):
+class TestWater(unittest.TestCase):
     """Unit tests for water materials."""
 
-    def test_water_at_freezing(self):
+    def test_waterAtFreezing(self):
         """
         Reproduce verification results from IAPWS-IF97 for water at 0C.
 
@@ -68,7 +68,7 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_saturated_water_entropy, water.entropy(Tk=Tk), 3)
         self.assertAlmostEqual(ref_saturated_steam_entropy / steam.entropy(Tk=Tk), 1, 3)
 
-    def test_water_at_boiling(self):
+    def test_waterAtBoiling(self):
         """
         Reproduce verification results from IAPWS-IF97 for water at 100C.
 
@@ -110,7 +110,7 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_saturated_water_entropy / water.entropy(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_saturated_steam_entropy / steam.entropy(Tk=Tk), 1, 3)
 
-    def test_water_at_critcalPoint(self):
+    def test_waterAtCritcalPoint(self):
         """
         Reproduce verification results from IAPWS-IF97 for water at 647.096K.
 
