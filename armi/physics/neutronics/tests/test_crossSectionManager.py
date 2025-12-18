@@ -1075,7 +1075,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             self.assertTrue(os.path.exists("rzmflxYA"))
 
 
-class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
+class TestXSGMWithTempGrouping(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         cs["tempGroups"] = [300, 400, 500]
