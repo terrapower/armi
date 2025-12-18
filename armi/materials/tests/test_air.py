@@ -178,7 +178,7 @@ REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K = [
 ]
 
 
-class Test_Air(unittest.TestCase):
+class TestAir(unittest.TestCase):
     """unit tests for air materials.
 
     .. test:: There is a base class for fluid materials.
