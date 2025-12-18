@@ -45,7 +45,6 @@ from armi.reactor import (
 from armi.reactor.flags import Flags
 from armi.reactor.zones import Zone, Zones
 from armi.settings.fwSettings.globalSettings import (
-    CONF_AUTOMATIC_VARIABLE_MESH,
     CONF_CIRCULAR_RING_PITCH,
     CONF_DETAILED_AXIAL_EXPANSION,
     CONF_FRESH_FEED_TYPE,
@@ -111,7 +110,6 @@ class Core(composites.Composite):
         self._trackAssems = False
         self._circularRingMode = False
         self._circularRingPitch = 1.0
-        self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
         self._detailedAxialExpansion = False
 
@@ -127,7 +125,6 @@ class Core(composites.Composite):
         self._trackAssems = cs[CONF_TRACK_ASSEMS]
         self._circularRingMode = cs[CONF_CIRCULAR_RING_MODE]
         self._circularRingPitch = cs[CONF_CIRCULAR_RING_PITCH]
-        self._automaticVariableMesh = cs[CONF_AUTOMATIC_VARIABLE_MESH]
         self._minMeshSizeRatio = cs[CONF_MIN_MESH_SIZE_RATIO]
         self._detailedAxialExpansion = cs[CONF_DETAILED_AXIAL_EXPANSION]
 
