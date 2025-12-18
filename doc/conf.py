@@ -464,7 +464,6 @@ sphinx_gallery_conf = {
         [
             os.path.join("gallery-src", "framework"),
             os.path.join("gallery-src", "analysis"),
-            os.path.join("gallery-src", "applications"),
         ]
     ),
     "within_subsection_order": FileNameSortKey,
