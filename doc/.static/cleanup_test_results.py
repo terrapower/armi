@@ -16,6 +16,7 @@
 from sys import argv
 
 CLASS_NAME = 'classname="'
+SKIPPED = "</skipped>"
 
 
 def main():
@@ -37,10 +38,18 @@ def cleanup_test_results(filePath: str):
 
     newTxt = bits[0]
     for i in range(1, len(bits)):
+        # split the line up into bits, using quotes
         assert '"' in bits[i], f"Something is wrong with the file: {bits[i]}"
         row = bits[i].split('"')
-        print(row)
+
+        # just grab the test class name, not the whole import path
         row[0] = row[0].split(".")[-1]
+
+        # skipped tests include a long file path we want to remove
+        if row[-1].startswith(">/home/runner/") and SKIPPED in row[-1]:
+            row[-1] = ">" + SKIPPED + row[-1].split(SKIPPED)[-1]
+
+        # Add the classname we split on back into this line
         newTxt += CLASS_NAME + '"'.join(row)
 
     with open(filePath, "w") as f:
