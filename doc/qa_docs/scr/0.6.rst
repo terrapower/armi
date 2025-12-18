@@ -3,6 +3,55 @@ Release Notes for ARMI 0.6
 
 Here you will find the release notes for previous ARMI releases.
 
+ARMI v0.6.2
+-----------
+Release Date: 2025-12-17
+
+This was a minor release. There was a refactoring cleanup done to NulcideBases. And there were some very minor API-breaking changes to the HistoryTrackerInterface and Interface.function was renamed to Interface.purpose. The coolest new feature is the improvements made to loadTestReactor, which can now cache a variety of test reactors to improve your test performance.
+
+Code Changes, Features
+^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2335 <https://github.com/terrapower/armi/pull/2335>`_) Moving to use Reactor.nuclideBases, where possible
+#. (`PR#2374 <https://github.com/terrapower/armi/pull/2374>`_) Changing MPI_COMM to the Pickle Protocol 5
+
+
+Code Changes, Bugs and Fixes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2364 <https://github.com/terrapower/armi/pull/2364>`_) Fixing HoledHexagon.holeRadFromCenter type
+
+
+Code Changes, Maintenance, or Trivial
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2177 <https://github.com/terrapower/armi/pull/2177>`_) Changing Interface.function to Interface.purpose
+#. (`PR#2334 <https://github.com/terrapower/armi/pull/2334>`_) Refactoring loadTestReactor to pickle multiple test reactors
+#. (`PR#2358 <https://github.com/terrapower/armi/pull/2358>`_) Adding code coverage
+#. (`PR#2359 <https://github.com/terrapower/armi/pull/2359>`_) Cleaning up DB version logic
+#. (`PR#2360 <https://github.com/terrapower/armi/pull/2360>`_) Cleaning out broken tryPickleOnAllContents3
+#. (`PR#2366 <https://github.com/terrapower/armi/pull/2366>`_) Raising instead of returning errors
+#. (`PR#2369 <https://github.com/terrapower/armi/pull/2369>`_) Moving three test reactors to the testing module
+#. (`PR#2371 <https://github.com/terrapower/armi/pull/2371>`_) Moving more ARMI testing tools to the testing module
+#. (`PR#2375 <https://github.com/terrapower/armi/pull/2375>`_) Cleaning unused parts of HistoryTrackerInterface
+#. (`PR#2387 <https://github.com/terrapower/armi/pull/2387>`_) Removing Five Unused Settings
+#. (`PR#2389 <https://github.com/terrapower/armi/pull/2389>`_) Improving HexBlock.hasPinPitch
+
+
+Documentation-Only Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2351 <https://github.com/terrapower/armi/pull/2351>`_) Updating PR form to use the word Rationale
+#. (`PR#2363 <https://github.com/terrapower/armi/pull/2363>`_) Starting 0.6.2 release cycle
+#. (`PR#2365 <https://github.com/terrapower/armi/pull/2365>`_) Improving and correcting the ARMI version semantics
+#. (`PR#2367 <https://github.com/terrapower/armi/pull/2367>`_) Formatting code in docstrings
+#. (`PR#2372 <https://github.com/terrapower/armi/pull/2372>`_) Documenting database cycle and node values
+#. (`PR#2373 <https://github.com/terrapower/armi/pull/2373>`_) Fixing docs deploying across GitHub repos
+#. (`PR#2383 <https://github.com/terrapower/armi/pull/2383>`_) Clarifying parameter doc headers
+#. (`PR#2388 <https://github.com/terrapower/armi/pull/2388>`_) Updating SCR to use the term Rationale
+
+
+
 ARMI v0.6.1
 -----------
 Release Date: 2025-11-05
