@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.6.2"
+version = "0.6.3"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
 requires-python = ">3.8"
@@ -241,8 +241,7 @@ exclude_also = [
     ]
 source = ["armi"]
 parallel = true
-# Change default .coverage file to something that doesn't have a dot
-# because some Windows services can't handle dots.
+# Change default .coverage file to something that doesn't have a dot because some Windows services can't handle dots.
 data_file = "coverage_results.cov"
 
 [tool.coverage.report]
