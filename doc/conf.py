@@ -455,6 +455,7 @@ sphinx_gallery_conf = {
     "gallery_dirs": ["gallery"],
     "line_numbers": False,
     "download_all_examples": False,
+    "nested_sections": False,
     "subsection_order": ExplicitOrder(
         [
             os.path.join("gallery-src", "framework"),
