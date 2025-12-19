@@ -110,6 +110,9 @@ try:
 except ImportError:
     # stick with defaults
     pass
+except RuntimeError:
+    # likely from MPI not being on system, this is OK for many armi invocations
+    pass
 
 if sys.platform.startswith("win"):
     # trying a Windows approach
