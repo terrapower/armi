@@ -110,6 +110,10 @@ try:
 except ImportError:
     # stick with defaults
     pass
+except RuntimeError:
+    # likely from MPI not being on system, this is OK for many ARMI invocations
+    # Note this exception was introduced upon upgrading to mpi4py 4.1.1
+    pass
 
 if sys.platform.startswith("win"):
     # trying a Windows approach
