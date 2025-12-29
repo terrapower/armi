@@ -34,7 +34,7 @@ class B4C(material.Material):
     DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
     enrichedNuclide = "B10"
     NATURAL_B10_NUM_FRAC = 0.199
-    propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
+    propertyValidTemperature = {"linear expansion percent": ((25, 600), "C")}
 
     def __init__(self):
         self.b10NumFrac = self.NATURAL_B10_NUM_FRAC

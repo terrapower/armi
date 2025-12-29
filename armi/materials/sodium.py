@@ -41,7 +41,7 @@ class Sodium(material.Fluid):
     propertyValidTemperature = {
         "density": ((97.85, 2230.55), "C"),
         "enthalpy": ((371.0, 2000.0), "K"),
-        "thermal conductivity": ((3715, 1500), "K"),
+        "thermal conductivity": ((371.5, 1500), "K"),
     }
 
     def setDefaultMassFracs(self):

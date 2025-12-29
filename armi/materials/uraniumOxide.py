@@ -52,7 +52,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     propertyUnits = {"heat capacity": "J/mol-K"}
 
     propertyValidTemperature = {
-        "density": ((300, 3100), "K"),
+        "density": ((293.15, 3100), "K"),
         "heat capacity": ((298.15, 3120), "K"),
         "linear expansion": ((273, 3120), "K"),
         "linear expansion percent": ((273, __meltingPoint), "K"),
