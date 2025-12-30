@@ -252,6 +252,11 @@ class TemporaryDirectoryChanger(DirectoryChanger):
             outputPath,
         )
 
+        # If an application sets this environment variable, all root args in all `TempDirChanger` uses are overriden
+        # with a different root path. This is useful for running unit tests in a read-only environment.
+        if os.environ.get("TEMP_ROOT_PATH"):
+            root = os.environ["TEMP_ROOT_PATH"]
+
         # If no root dir is given, the default path comes from context.getFastPath, which
         # *might* be relative to the cwd, making it possible to delete unintended files.
         # So this check is here to ensure that if we grab a path from context, it is a
