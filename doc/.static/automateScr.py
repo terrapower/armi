@@ -60,16 +60,17 @@ def main():
     parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
 
     # Required positional argument
-    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
     parser.add_argument("pastCommit", help="The commit hash of the last release.")
+    parser.add_argument(
+        "prNum", nargs="?", type=int, default=-1, help="The current PR number (use -1 if there is no PR)."
+    )
 
     # Parse the command line
     args = parser.parse_args()
-    prNum = int(args.prNum)
     pastCommit = args.pastCommit
+    prNum = int(args.prNum)
 
-    rstContent = buildScrListing(prNum, pastCommit)
-    print(rstContent)
+    buildScrListing(pastCommit, prNum)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -188,16 +189,16 @@ def isMainPR(prNum: int):
         return True
 
 
-def buildScrListing(thisPrNum: int, pastCommit: str):
+def buildScrListing(pastCommit: str, thisPrNum: int = -1):
     """Helper method to build an RST-formatted lists of all SCRs, by category.
 
     Parameters
     ----------
-    thisPrNum : int
-        The number of this PR. If this is not a PR, this is a -1.
     pastCommit : str
-        The shortened commit hash for a past reference commit. (This is the last commit of the last
-        release. It will not be included.)
+        The shortened commit hash for a past reference commit. (This is the last commit of the last release. It will not
+        be included.)
+    thisPrNum : int
+        The number of this PR. If this is not a PR, the default is -1.
 
     Returns
     -------
@@ -254,7 +255,10 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
-    return content + "\n\n"
+    content += "\n\n"
+
+    print(content)
+    return content
 
 
 if __name__ == "__main__":
