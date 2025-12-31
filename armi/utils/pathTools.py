@@ -17,7 +17,6 @@ This module contains commonly used functions relating to directories, files and 
 manipulations.
 """
 
-import getpass
 import importlib
 import os
 import pathlib
@@ -27,6 +26,7 @@ from time import sleep
 from armi import context, runLog
 from armi.utils import safeCopy
 
+# TODO: This needs to be updated, since I don't think any of these are in common use anymore
 DO_NOT_CLEAN_PATHS = [
     "armiruns",
     "failedruns",
@@ -34,7 +34,6 @@ DO_NOT_CLEAN_PATHS = [
     "mongoose",
     "shufflebranches",
     "snapshot",
-    "tests",
 ]
 
 
@@ -187,19 +186,14 @@ def moduleAndAttributeExist(pathAttr):
     return moduleAttributeName in userSpecifiedModule.__dict__
 
 
-def cleanPath(path, mpiRank=0):
+def cleanPath(path, mpiRank=0, tempDir=False):
     """Recursively delete a path.
 
-    !!! Be careful with this !!! It can delete the entire cluster.
+    !!! Be careful with this !!! It can delete anything a user has write privileges to.
 
-    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything
-    at the same time. Always check filenames for some special flag when calling this, especially
-    with full permissions on the cluster. You could accidentally delete everyone's work with one
-    misplaced line! This doesn't ask questions.
-
-    Safety nets include an allow-list of paths.
-
-    This makes use of shutil.rmtree and os.remove
+    This function checks for a few cases we know to be OK to delete: (1) Any temporary directory and (2) anything under
+    _FAST_PATH. Before moving on with deletion, it ensures the path doesn't contain any of the ``DO_NOT_CLEAN_PATHS``
+    keywords. This will undo any path that was set to ``valid=True`` for deletion.
 
     Returns
     -------
@@ -210,21 +204,25 @@ def cleanPath(path, mpiRank=0):
     if not os.path.exists(path):
         return True
 
-    for validPath in DO_NOT_CLEAN_PATHS:
-        if validPath in path.lower():
-            valid = True
-
-    # Hack for now, so I can test
-    if getpass.getuser() in path:
+    # Any tempDir can be deleted
+    if tempDir:
         valid = True
 
-    if pathlib.Path(context.APP_DATA) in pathlib.Path(path).parents:
+    # If the path slated for deletion is a subdirectory of _FAST_PATH, then cool, delete.
+    # _FAST_PATH itself gets deleted on program exit.
+    if path.is_relative_to(context.getFastPath()):
         valid = True
+
+    # Make sure the path we want to delete isn't in our do-not-delete list. Run this last in case anything was set to
+    # True before that is in `DO_NOT_CLEAN_PATHS`
+    for dndPath in DO_NOT_CLEAN_PATHS:
+        if dndPath in path.lower():
+            valid = False
 
     if not valid:
         raise Exception(f"You tried to delete {path}, but it does not seem safe to do so.")
 
-    # delete the file/directory from only one process
+    # Delete the file/directory from only one process
     if mpiRank == context.MPI_RANK:
         if os.path.exists(path) and os.path.isdir(path):
             shutil.rmtree(path)
@@ -232,7 +230,7 @@ def cleanPath(path, mpiRank=0):
             # it's just a file. Delete it.
             os.remove(path)
 
-    # Potentially, wait for the deletion to finish.
+    # Deletions are not immediate, so wait for it to finish.
     maxLoops = 6
     waitTime = 0.5
     loopCounter = 0

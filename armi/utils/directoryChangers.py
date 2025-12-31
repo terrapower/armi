@@ -298,7 +298,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     def __exit__(self, exc_type, exc_value, traceback):
         DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
         try:
-            pathTools.cleanPath(self.destination, context.MPI_RANK)
+            pathTools.cleanPath(self.destination, mpiRank=context.MPI_RANK, tempDir=True)
         except PermissionError:
             if os.name == "nt":
                 runLog.warning(
