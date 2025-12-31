@@ -210,7 +210,7 @@ def cleanPath(path, mpiRank=0, tempDir=False):
 
     # If the path slated for deletion is a subdirectory of _FAST_PATH, then cool, delete.
     # _FAST_PATH itself gets deleted on program exit.
-    if path.is_relative_to(context.getFastPath()):
+    if pathlib.Path(path).is_relative_to(pathlib.Path(context.getFastPath())):
         valid = True
 
     # Make sure the path we want to delete isn't in our do-not-delete list. Run this last in case anything was set to
