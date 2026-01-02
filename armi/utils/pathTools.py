@@ -26,16 +26,6 @@ from time import sleep
 from armi import context, runLog
 from armi.utils import safeCopy
 
-# TODO: This needs to be updated, since I don't think any of these are in common use anymore
-DO_NOT_CLEAN_PATHS = [
-    "armiruns",
-    "failedruns",
-    "mc2run",
-    "mongoose",
-    "shufflebranches",
-    "snapshot",
-]
-
 
 def armiAbsPath(*pathParts):
     """Convert a list of path components to an absolute path, without drive letters if possible."""
@@ -187,13 +177,11 @@ def moduleAndAttributeExist(pathAttr):
 
 
 def cleanPath(path, mpiRank=0, tempDir=False):
-    """Recursively delete a path.
+    """Recursively delete a path. This function checks for a few cases we know to be OK to delete: (1) Any
+    `TemporaryDirectoryChanger` instance and (2) anything under the ARMI `_FAST_PATH`.
 
-    !!! Be careful with this !!! It can delete anything a user has write privileges to.
-
-    This function checks for a few cases we know to be OK to delete: (1) Any temporary directory and (2) anything under
-    _FAST_PATH. Before moving on with deletion, it ensures the path doesn't contain any of the ``DO_NOT_CLEAN_PATHS``
-    keywords. This will undo any path that was set to ``valid=True`` for deletion.
+    Be careful with editing this! Do not make it a generic can-delete-anything function, because it could in theory
+    delete anything a user has write permissions on.
 
     Returns
     -------
@@ -212,12 +200,6 @@ def cleanPath(path, mpiRank=0, tempDir=False):
     # _FAST_PATH itself gets deleted on program exit.
     if path.is_relative_to(context.getFastPath()):
         valid = True
-
-    # Make sure the path we want to delete isn't in our do-not-delete list. Run this last in case anything was set to
-    # True before that is in `DO_NOT_CLEAN_PATHS`
-    for dndPath in DO_NOT_CLEAN_PATHS:
-        if dndPath in path.lower():
-            valid = False
 
     if not valid:
         raise Exception(f"You tried to delete {path}, but it does not seem safe to do so.")
