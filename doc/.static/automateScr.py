@@ -60,15 +60,17 @@ def main():
     parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
 
     # Required positional argument
-    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
     parser.add_argument("pastCommit", help="The commit hash of the last release.")
+    parser.add_argument(
+        "prNum", nargs="?", type=int, default=-1, help="The current PR number (use -1 if there is no PR)."
+    )
 
     # Parse the command line
     args = parser.parse_args()
-    prNum = int(args.prNum)
     pastCommit = args.pastCommit
+    prNum = int(args.prNum)
 
-    buildScrListing(prNum, pastCommit)
+    buildScrListing(pastCommit, prNum)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -109,6 +111,7 @@ def _buildScrLine(prNum: str):
     str
         RST-formatted list item.
     """
+    print(prNum)
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
@@ -187,16 +190,16 @@ def isMainPR(prNum: int):
         return True
 
 
-def buildScrListing(thisPrNum: int, pastCommit: str):
+def buildScrListing(pastCommit: str, thisPrNum: int = -1):
     """Helper method to build an RST-formatted lists of all SCRs, by category.
 
     Parameters
     ----------
-    thisPrNum : int
-        The number of this PR. If this is not a PR, this is a -1.
     pastCommit : str
-        The shortened commit hash for a past reference commit. (This is the last commit of the last
-        release. It will not be included.)
+        The shortened commit hash for a past reference commit. (This is the last commit of the last release. It will not
+        be included.)
+    thisPrNum : int
+        The number of this PR. If this is not a PR, the default is -1.
 
     Returns
     -------
@@ -236,6 +239,7 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
 
     # 3. Build a list for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
+    print(sorted(prNums))
     for prNum in sorted(prNums):
         if not isMainPR(prNum):
             continue
