@@ -54,6 +54,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
     initialVols = {}
     relativeVols = collections.defaultdict(list)
     for tempInC in uniformTemps:
+        print(f"tempInC:   {tempInC}")
         print(f"Updating fuel/structure components to {tempInC} °C")
         # Modify the fuel/structure components to the same uniform temperature
         for c in componentsToModify:
@@ -83,7 +84,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
     plt.show()
 
 
-uniformTempsInC = [400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1200.0]
+uniformTempsInC = [300.0, 400.0, 500.0, 600.0, 700.0]
 b = buildSimpleFuelBlock()
 
 writeInitialVolumeFractions(b)
