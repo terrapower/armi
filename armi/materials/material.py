@@ -32,7 +32,7 @@ from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
 
 # globals
-FAIL_ON_RANGE = False
+FAIL_ON_RANGE = True
 
 
 def parentAwareDensityRedirect(f):
@@ -627,12 +627,12 @@ class Material:
             msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(val, minT, maxT, self.name, label)
             if FAIL_ON_RANGE or np.isnan(val):
                 runLog.error(msg)
-                raise ValueError
+                raise ValueError(msg)
             else:
                 runLog.warning(
                     msg,
                     single=True,
-                    label="T out of bounds for {} {}".format(self.name, label),
+                    label=f"T out of bounds for {self.name} {label}",
                 )
 
     def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:

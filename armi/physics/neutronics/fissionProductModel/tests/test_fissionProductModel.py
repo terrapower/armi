@@ -31,7 +31,7 @@ from armi.reactor.tests.test_reactors import (
 )
 
 
-class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
+class TestFPMLumpedFP(unittest.TestCase):
     """
     Tests the fission product model interface behavior when lumped fission products are enabled.
 
@@ -90,7 +90,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
             self.assertTrue(False, "All blocks have all nuclides!")
 
 
-class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
+class TestFPMExplicitMC2Lib(unittest.TestCase):
     """
     Tests the fission product model interface behavior when explicit fission products are enabled.
 
@@ -132,7 +132,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
             self.assertIn(nb.name, nuclideList)
 
 
-class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
+class TestFPMExplicitMC2LibSlow(unittest.TestCase):
     """
     Tests the fission product model interface behavior when explicit fission products are enabled.
 

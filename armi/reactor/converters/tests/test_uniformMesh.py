@@ -672,7 +672,7 @@ class TestParamConversion(unittest.TestCase):
             )
 
 
-class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
+class TestUMNonUAssemFlags(unittest.TestCase):
     """
     Tests a reactor conversion with only a subset of assemblies being
     defined as having a non-uniform mesh.

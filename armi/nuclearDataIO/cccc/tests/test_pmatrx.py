@@ -186,7 +186,7 @@ class TestPmatrx(unittest.TestCase):
         # bravo!
 
 
-class TestProductionMatrix_FromWritten(TestPmatrx):
+class TestProdMatrix(TestPmatrx):
     """
     Tests related to reading a PMATRX that was written by ARMI.
 
@@ -209,7 +209,7 @@ class TestProductionMatrix_FromWritten(TestPmatrx):
         self.assertTrue(filecmp.cmp(test_xsLibraries.PMATRX_AA, fname))
 
 
-class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
+class TestProdMatrixFromAscii(TestPmatrx):
     """
     Tests that show you can read and write pmatrx files from ascii libraries.
 

@@ -24,7 +24,7 @@ from armi.reactor.blocks import Block
 from armi.testing import symmetryTesting
 
 
-class TestArmiFuelPerformanceParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
+class TestFPParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getFuelPerformanceParameterDefinitions()
         self.blockParamsToTest = pluginParameters[Block]
