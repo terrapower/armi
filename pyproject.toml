@@ -40,9 +40,7 @@ dependencies = [
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml>=0.19.1 ; python_version >= '3.11.0'", # Our foundational YAML library
-    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
-    "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml; python_version >= '3.11.0'", # Our foundational YAML library
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
     "toml>0.9.5", # Needed to parse the pyproject.toml file
