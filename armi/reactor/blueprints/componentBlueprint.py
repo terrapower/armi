@@ -180,7 +180,7 @@ class ComponentBlueprint(yamlize.Object):
 
             Allows for user input to impact a component's materials by applying the "material modifications" section of
             a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`) to the material during construction. This takes place
-            during lower calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``, which operate using
+            during lower calls to ``_conformComponetnKwargs()`` and subsequently ``_constructMaterial()``, which operate using
             the component blueprint and associated material modifications from the component's block.
 
             Within ``_constructMaterial()``, the material class is resolved into a material object by calling
@@ -198,7 +198,7 @@ class ComponentBlueprint(yamlize.Object):
             See the case setting of the same name.
         """
         runLog.debug(f"Constructing component {self.name}")
-        kwargs = self._conformKwargs(blueprint, matMods)
+        cKwargs = self._conformComponetnKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
         if shape == COMPONENT_GROUP_SHAPE:
             group = blueprint.componentGroups[self.name]
@@ -213,7 +213,7 @@ class ComponentBlueprint(yamlize.Object):
                 constructedObject.add(component)
 
         else:
-            constructedObject = components.factory(shape, [], kwargs)
+            constructedObject = components.factory(shape, [], cKwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
             constructedObject.p.theoreticalDensityFrac = constructedObject.material.getTD()
@@ -302,7 +302,7 @@ class ComponentBlueprint(yamlize.Object):
                 single=True,
             )
 
-    def _conformKwargs(self, blueprint, matMods):
+    def _conformComponetnKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component."""
         kwargs = {"mergeWith": self.mergeWith or "", "isotopics": self.isotopics or ""}
 

@@ -217,10 +217,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating
+        if not self.dbLoad:
+            self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+    dbLoad = False
 
     @property
     def temperatureInC(self):
@@ -338,15 +340,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         - After the expansion, the density of the component should reflect the 3d
           density of the material
         """
-        # note, that this is not the actual material density, but rather 2D expanded
-        # `density` is 3D density
-        # call getProperty to cache and improve speed
-        density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-        self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
+
+        # set material to initial density so it has populated nuclides and material can access nuclide fracs
+        # (some properties like thermal expansion depend on nuclide fracs)
+        density = 100.0 #  non-physical placeholder density to initialize number density fractions
+        self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
 
         # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
         # setting number densities can sometimes change thermal expansion behavior. Call again so
         # the material has access to its parent's comp when providing the reference initial density.
+        # pseudoDensity is not the actual material density, but rather 2D expanded, `density` is 3D density
         densityBasedOnParentComposition = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
         self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
