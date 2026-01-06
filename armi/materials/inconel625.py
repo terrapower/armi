@@ -88,49 +88,6 @@ class Inconel625(Material):
         thermalCond = 2.7474e-6 * Tc**2 + 0.012907 * Tc + 9.62532
         return thermalCond  # W/m-C
 
-    def polyfitHeatCapacity(self, power=2):
-        r"""
-        Calculates the coefficients of a polynomial fit for heatCapacity.
-        Based on data from http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf
-        Fits a polynomial to the data set and returns the coefficients.
-
-        Parameters
-        ----------
-        power : int, optional
-            power of the polynomial fit equation
-
-        Returns
-        -------
-        list of length 'power' containing the polynomial fit coefficients for heat capacity.
-        """
-        Tc = [
-            21.0,
-            93.0,
-            204.0,
-            316.0,
-            427.0,
-            538.0,
-            649.0,
-            760.0,
-            871.0,
-            982.0,
-            1093.0,
-        ]
-        cp = [
-            410.0,
-            427.0,
-            456.0,
-            481.0,
-            511.0,
-            536.0,
-            565.0,
-            590.0,
-            620.0,
-            645.0,
-            670.0,
-        ]
-        return np.polyfit(np.array(Tc), np.array(cp), power).tolist()
-
     def heatCapacity(self, Tk=None, Tc=None):
         """
         Returns the specific heat capacity of Inconel625.
