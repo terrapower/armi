@@ -19,7 +19,6 @@ this file for a fully worked example of an ARMI material. And this material has 
 contained in this file should not be used in production simulations.
 """
 
-
 from armi.materials.material import Material
 from armi.utils.units import getTc
 
