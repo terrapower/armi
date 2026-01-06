@@ -111,7 +111,6 @@ def _buildScrLine(prNum: str):
     str
         RST-formatted list item.
     """
-    print(prNum)
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
@@ -239,7 +238,6 @@ def buildScrListing(pastCommit: str, thisPrNum: int = -1):
 
     # 3. Build a list for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
-    print(sorted(prNums))
     for prNum in sorted(prNums):
         if not isMainPR(prNum):
             continue
