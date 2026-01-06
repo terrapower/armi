@@ -67,25 +67,6 @@ class Inconel625(Material):
         for element, massFrac in massFracs.items():
             self.setMassFrac(element, massFrac)
 
-    def polyfitThermalConductivity(self, power=2):
-        r"""
-        Calculates the coefficients of a polynomial fit for thermalConductivity.
-        Based on data from http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf
-        Fits a polynomial to the data set and returns the coefficients.
-
-        Parameters
-        ----------
-        power : int, optional
-            power of the polynomial fit equation
-
-        Returns
-        -------
-        list of length 'power' containing the polynomial fit coefficients for thermal conductivity.
-        """
-        Tc = [21.0, 38.0, 93.0, 204.0, 316.0, 427.0, 538.0, 649.0, 760.0, 871.0, 982.0]
-        k = [9.8, 10.1, 10.8, 12.5, 14.1, 15.7, 17.5, 19.0, 20.8, 22.8, 25.2]
-        return np.polyfit(np.array(Tc), np.array(k), power).tolist()
-
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
         Returns the thermal conductivity of Inconel625.
