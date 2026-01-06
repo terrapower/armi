@@ -19,7 +19,6 @@ this file for a fully worked example of an ARMI material. And this material has 
 contained in this file should not be used in production simulations.
 """
 
-import numpy as np
 
 from armi.materials.material import Material
 from armi.utils.units import getTc
@@ -108,46 +107,6 @@ class InconelX750(Material):
         self.checkPropertyTempRange("heat capacity", Tc)
         heatCapacity = 9.2261e-7 * Tc**3 - 9.6368e-4 * Tc**2 + 4.7778e-1 * Tc + 420.55
         return heatCapacity  # J/kg-C
-
-    def polyfitLinearExpansionPercent(self, power=2):
-        r"""
-        Calculates the coefficients of a polynomial fit for linearExpansionPercent.
-        Based on data from http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf.
-
-        Uses mean CTE values to find percent thermal strain values. Fits a polynomial
-        to the data set and returns the coefficients.
-
-        Parameters
-        ----------
-        power : int, optional
-            power of the polynomial fit equation
-
-        Returns
-        -------
-        list of length 'power' containing the polynomial fit coefficients for linearExpansionPercent
-        """
-        refTempC = getTc(None, Tk=self.refTempK)
-        Tc = [93.3, 204.4, 315.6, 426.7, 537.8, 648.9, 760.0, 871.1, 982.2]
-        alpha_mean = [
-            1.260e-05,
-            1.296e-05,
-            1.350e-05,
-            1.404e-05,
-            1.458e-05,
-            1.512e-05,
-            1.584e-05,
-            1.674e-05,
-            1.764e-05,
-        ]
-
-        linExpPercent = [0.0]
-        for i, alpha in enumerate(alpha_mean):
-            linExpPercentVal = 100.0 * alpha * (Tc[i] - refTempC)
-            linExpPercent.append(linExpPercentVal)
-
-        Tc.insert(0, refTempC)
-
-        return np.polyfit(np.array(Tc), np.array(linExpPercent), power).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
