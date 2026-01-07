@@ -204,6 +204,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         isotopics="",
         mergeWith="",
         components=None,
+        loadFromDb=False,
     ):
         if components and name in components:
             raise ValueError(f"Non-unique component name {name} repeated in same block.")
@@ -214,13 +215,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        if not self.dbLoad:
+        if loadFromDb:
             self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
-
-    dbLoad = False
 
     @property
     def temperatureInC(self):

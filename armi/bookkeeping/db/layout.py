@@ -92,32 +92,27 @@ NONE_MAP.update({floatType: floatType("nan") for floatType in (float, np.float64
 
 class Layout:
     """
-    The Layout class describes the hierarchical layout of the Composite Reactor model
-    in a flat representation for
+    The Layout class describes the hierarchical layout of the Composite Reactor model in a flat representation for
     :py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
-    A Layout is built by starting at the root of a composite tree and recursively
-    appending each node in the tree to a list of data. So the data will be ordered by
-    depth-first search: [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2, a1b2c1, ..., a2, ...].
+    A Layout is built by starting at the root of a composite tree and recursively appending each node in the tree to a
+    list of data. So the data will be ordered by depth-first search:
+    [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2, a1b2c1, ..., a2, ...].
 
-    The layout is also responsible for storing Component attributes, like location,
-    material, and temperatures, which aren't stored as Parameters. Temperatures,
-    specifically, are rather complicated in ARMI.
+    The layout is also responsible for storing Component attributes, like location, material, and temperatures, which
+    aren't stored as Parameters. Temperatures, specifically, are rather complicated in ARMI.
 
     Notes
     -----
-     * Elements in Layout are stored in depth-first order. This permits use of
-       algorithms such as Pre-Order Tree Traversal for efficient traversal of regions
-       of the model.
+     * Elements in Layout are stored in depth-first order. This permits use of algorithms such as Pre-Order Tree
+       Traversal for efficient traversal of regions of the model.
 
-     * ``indexInData`` increases monotonically within each object ``type``. For
-       example, the data for all ``HexBlock`` children of a given parent are stored
-       contiguously within the ``HexBlock`` group, and will not be interleaved with
-       data from the ``HexBlock`` children of any of the parent's siblings.
+     * ``indexInData`` increases monotonically within each object ``type``. For example, the data for all ``HexBlock``
+       children of a given parent are stored contiguously within the ``HexBlock`` group, and will not be interleaved
+       with data from the ``HexBlock`` children of any of the parent's siblings.
 
-     * Aside from the hierarchy, there is no guarantee what order objects are stored
-       in the layout.  The ``Core`` is not necessarily the first child of the
-       ``Reactor``, and is not guaranteed to use the zeroth grid.
+     * Aside from the hierarchy, there is no guarantee what order objects are stored in the layout. The ``Core`` is not
+       necessarily the first child of the ``Reactor``, and is not guaranteed to use the zeroth grid.
     """
 
     def __init__(self, version: Tuple[int, int], h5group=None, comp=None):
@@ -130,30 +125,24 @@ class Layout:
         self.indexInData: List[int] = []
         # The number of direct children this object has.
         self.numChildren: List[int] = []
-        # The type of location that specifies the object's physical location; see the
-        # associated pack/unpackLocation functions for more information about how
-        # locations are handled.
+        # The type of location that specifies the object's physical location; see the associated pack/unpackLocation
+        # functions for more information about how locations are handled.
         self.locationType: List[str] = []
-        # There is a minor asymmetry here in that before writing to the DB, this is
-        # truly a flat list of tuples. However when reading, this may contain lists of
-        # tuples, which represent MI locations. This comes from the fact that we map the
-        # tuples to Location objects in Database._compose, but map from Locations to
-        # tuples in Layout._createLayout. Ideally we would handle both directions in the
-        # same place so this can be less surprising. Resolving this would require
-        # changing the interface of the various pack/unpack functions, which have
-        # multiple versions, so the update would need to be done with care.
+        # There is a minor asymmetry here in that before writing to the DB, this is truly a flat list of tuples. However
+        # when reading, this may contain lists of tuples, which represent MI locations. This comes from the fact that we
+        # map the tuples to Location objects in Database._compose, but map from Locations to tuples in
+        # Layout._createLayout. Ideally we would handle both directions in the same place so this can be less
+        # surprising. Resolving this would require changing the interface of the various pack/unpack functions, which
+        # have multiple versions, so the update would need to be done with care.
         self.location: List[Tuple[int, int, int]] = []
-        # Which grid, as stored in the database, this object uses to arrange its
-        # children
+        # Which grid, as stored in the database, this object uses to arrange its children
         self.gridIndex: List[int] = []
         self.temperatures: List[float] = []
         self.material: List[str] = []
-        # Used to cache all of the spatial locators so that we can pack them all at
-        # once. The benefit here is that the version checking can happen up front and
-        # less branching down below
+        # Used to cache all of the spatial locators so that we can pack them all at once. The benefit here is that the
+        # version checking can happen up front and less branching down below
         self._spatialLocators: List[grids.LocationBase] = []
-        # set of grid parameters that have been seen in _createLayout. For efficient
-        # checks for uniqueness
+        # set of grid parameters that have been seen in _createLayout. For efficient checks for uniqueness
         self._seenGridParams: Dict[Any, Any] = dict()
         # actual list of grid parameters, with stable order for safe indexing
         self.gridParams: List[Any] = []
@@ -236,9 +225,7 @@ class Layout:
             comps = sorted(list(comp))
         except ValueError:
             runLog.error(
-                "Failed to sort some collection of ArmiObjects for database output: {} value {}".format(
-                    type(comp), list(comp)
-                )
+                f"Failed to sort some collection of ArmiObjects for database output: {type(comp)} value {list(comp)}"
             )
             raise
 
@@ -306,7 +293,7 @@ class Layout:
                 )
 
         except KeyError as e:
-            runLog.error("Failed to get layout information from group: {}".format(h5group.name))
+            runLog.error(f"Failed to get layout information from group: {h5group.name}")
             raise e
 
     def _initComps(self, caseTitle, bp):
@@ -350,9 +337,8 @@ class Layout:
                 kwargs["name"] = name
                 kwargs["Tinput"] = temperatures[0]
                 kwargs["Thot"] = temperatures[1]
-                Component.dbLoad = True
+                kwargs["loadFromDb"] = True
                 comp = Klass(**kwargs)
-                Component.dbLoad = False
             else:
                 comp = Klass(name)
 
@@ -372,43 +358,23 @@ class Layout:
             :id: I_ARMI_DB_TIME0
             :implements: R_ARMI_DB_TIME
 
-            This method writes a snapshot of the current state of the reactor to the
-            database. It takes a pointer to an existing HDF5 file as input, and it
-            writes the reactor data model to the file in depth-first search order.
-            Other than this search order, there are no guarantees as to what order the
-            objects are written to the file. Though, this turns out to still be very
-            powerful. For instance, the data for all ``HexBlock`` children of a given
-            parent are stored contiguously within the ``HexBlock`` group, and will not
-            be interleaved with data from the ``HexBlock`` children of any of the parent's siblings.
+            This method writes a snapshot of the current state of the reactor to the database. It takes a pointer to an
+            existing HDF5 file as input, and it writes the reactor data model to the file in depth-first search order.
+            Other than this search order, there are no guarantees as to what order the objects are written to the file.
+            Though, this turns out to still be very powerful. For instance, the data for all ``HexBlock`` children of a
+            given parent are stored contiguously within the ``HexBlock`` group, and will not be interleaved with data
+            from the ``HexBlock`` children of any of the parent's siblings.
         """
         if "layout/type" in h5group:
             # It looks like we have already written the layout to DB, skip for now
             return
         try:
-            h5group.create_dataset(
-                "layout/type",
-                data=np.array(self.type).astype("S"),
-                compression="gzip",
-            )
-            h5group.create_dataset(
-                "layout/name",
-                data=np.array(self.name).astype("S"),
-                compression="gzip",
-            )
+            h5group.create_dataset("layout/type", data=np.array(self.type).astype("S"), compression="gzip")
+            h5group.create_dataset("layout/name", data=np.array(self.name).astype("S"), compression="gzip")
             h5group.create_dataset("layout/serialNum", data=self.serialNum, compression="gzip")
             h5group.create_dataset("layout/indexInData", data=self.indexInData, compression="gzip")
-            h5group.create_dataset(
-                "layout/numChildren",
-                data=self.numChildren,
-                compression="gzip",
-                track_order=True,
-            )
-            h5group.create_dataset(
-                "layout/location",
-                data=self.location,
-                compression="gzip",
-                track_order=True,
-            )
+            h5group.create_dataset("layout/numChildren", data=self.numChildren, compression="gzip", track_order=True)
+            h5group.create_dataset("layout/location", data=self.location, compression="gzip", track_order=True)
             h5group.create_dataset(
                 "layout/locationType",
                 data=np.array(self.locationType).astype("S"),
@@ -466,19 +432,16 @@ class Layout:
     @staticmethod
     def computeAncestors(serialNum, numChildren, depth=1) -> List[Optional[int]]:
         """
-        Return a list containing the serial number of the parent corresponding to each
-        object at the given depth.
+        Return a list containing the serial number of the parent corresponding to each object at the given depth.
 
-        Depth in this case means how many layers to reach up to find the desired
-        ancestor. A depth of 1 will yield the direct parent of each element, depth of 2
-        would yield the elemen's parent's parent, and so on.
+        Depth in this case means how many layers to reach up to find the desired ancestor. A depth of 1 will yield the
+        direct parent of each element, depth of 2 would yield the elemen's parent's parent, and so on.
 
-        The zero-th element will always be None, as the first object is the root element
-        and so has no parent. Subsequent depths will result in more Nones.
+        The zero-th element will always be None, as the first object is the root element and so has no parent.
+        Subsequent depths will result in more Nones.
 
-        This function is useful for forming a lightweight sense of how the database
-        contents stitch together, without having to go to the trouble of fully unpacking
-        the Reactor model.
+        This function is useful for forming a lightweight sense of how the database contents stitch together, without
+        having to go to the trouble of fully unpacking the Reactor model.
 
         Parameters
         ----------
@@ -489,12 +452,10 @@ class Layout:
 
         Note
         ----
-        This is not using a recursive approach for a couple of reasons. First, the
-        iterative form isn't so bad; we just need two stacks. Second, the interface of
-        the recursive function would be pretty unwieldy. We are progressively
-        consuming two lists, of which we would need to keep passing down with an
-        index/cursor, or progressively slice them as we go, which would be pretty
-        inefficient.
+        This is not using a recursive approach for a couple of reasons. First, the iterative form isn't so bad; we just
+        need two stacks. Second, the interface of the recursive function would be pretty unwieldy. We are progressively
+        consuming two lists, of which we would need to keep passing down with an index/cursor, or progressively slice
+        them as we go, which would be pretty inefficient.
         """
         ancestors: List[Optional[int]] = [None]
 
@@ -515,11 +476,9 @@ class Layout:
                 ncStack.pop()
 
         if depth > 1:
-            # handle deeper scenarios. This is a bit tricky. Store the original
-            # ancestors for the first generation, since that ultimately contains all of
-            # the information that we need. Then in a loop, keep hopping one more layer
-            # of indirection, and indexing into the corresponding location in the
-            # original ancestor array
+            # Handle deeper scenarios. This is a bit tricky. Store the original ancestors for the first generation,
+            # since that ultimately contains all of the information that we need. Then in a loop, keep hopping one more
+            # layer of indirection, and indexing into the corresponding location in the original ancestor array.
             indexMap = {sn: i for i, sn in enumerate(serialNum)}
             origAncestors = ancestors
             for _ in range(depth - 1):
@@ -539,17 +498,15 @@ def _packLocations(
     """
     Extract information from a location needed to write it to this DB.
 
-    Each locator has one locationType and up to N location-defining datums,
-    where N is the number of entries in a possible multiindex, or just 1
-    for everything else.
+    Each locator has one locationType and up to N location-defining datums, where N is the number of entries in a
+    possible multiindex, or just 1 for everything else.
 
     Shrink grid locator names for storage efficiency.
 
     Notes
     -----
-    Contains some conditionals to still load databases made before
-    db version 3.3 which can be removed once no users care about
-    those DBs anymore.
+    Contains some conditionals to still load databases made before DB version 3.3 which can be removed once no users
+    care about those DBs anymore.
     """
     if minorVersion <= 2:
         locationTypes, locationData = _packLocationsV1(locations)
@@ -562,9 +519,7 @@ def _packLocations(
     return locationTypes, locationData
 
 
-def _packLocationsV1(
-    locations: List[grids.LocationBase],
-) -> Tuple[List[str], List[Tuple[int, int, int]]]:
+def _packLocationsV1(locations: List[grids.LocationBase]) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """Delete when reading v <=3.2 DB's no longer wanted."""
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
@@ -645,8 +600,7 @@ def _unpackLocations(locationTypes, locData, minorVersion: int = DB_MINOR):
     """
     Convert location data as read from DB back into data structure for building reactor model.
 
-    location and locationType will only have different lengths when multiindex locations
-    are used.
+    location and locationType will only have different lengths when multiindex locations are used.
     """
     if minorVersion < 3:
         return _unpackLocationsV1(locationTypes, locData)
@@ -704,29 +658,24 @@ def _unpackLocationsV2(locationTypes, locData):
 
 def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray = None) -> np.ndarray:
     """
-    Replace instances of ``None`` with nonsense values that can be detected/recovered
-    when reading.
+    Replace instances of ``None`` with nonsense values that can be detected/recovered when reading.
 
     Parameters
     ----------
     data
         The numpy array containing ``None`` values that need to be replaced.
-
     paramName
         The name of the parameter who's data we are treating. Only used for diagnostics.
-
     nones
-        An array containing the index locations on the ``None`` elements. It is a little
-        strange to pass these, in but we find these indices to determine whether we need
-        to call this function in the first place, so might as well pass it in, so that
-        we don't need to perform the operation again.
+        An array containing the index locations on the ``None`` elements. It is a little strange to pass these, in but
+        we find these indices to determine whether we need to call this function in the first place, so might as well
+        pass it in, so that we do not need to perform the operation again.
 
     Notes
     -----
-    This only supports situations where the data is a straight-up ``None``, or a valid,
-    database-storable numpy array (or easily convertible to one (e.g. tuples/lists with
-    numerical values)). This does not support, for instance, a numpy ndarray with some
-    Nones in it.
+    This only supports situations where the data is a straight-up ``None``, or a valid, database-storable numpy array
+    (or easily convertible to one (e.g. tuples/lists with numerical values)). This does not support, for instance, a
+    numpy ndarray with some Nones in it.
 
     For example, the following is supported::
 
@@ -745,17 +694,15 @@ def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray
         nones = np.where([d is None for d in data])[0]
 
     try:
-        # loop to find what the default value should be. This is the first non-None
-        # value that we can find.
+        # Loop to find what the default value should be. This is the first non-None value that we can find.
         defaultValue = None
         realType = None
         val = None
 
         for val in data:
             if isinstance(val, np.ndarray):
-                # if multi-dimensional, val[0] could still be an array, val.flat is
-                # a flattened iterator, so next(val.flat) gives the first value in
-                # an n-dimensional array
+                # If multi-dimensional, val[0] could still be an array, val.flat is a flattened iterator, so
+                # next(val.flat) gives the first value in an n-dimensional array
                 realType = type(next(val.flat))
 
                 if realType is type(None):
@@ -772,8 +719,8 @@ def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray
                 defaultValue = NONE_MAP[realType]
                 break
         else:
-            # Couldn't find any non-None entries, so it really doesn't matter what type we
-            # use. Using float, because NaN is nice.
+            # Could not find any non-None entries, so it really does not matter what type we use. Using float, because
+            # NaN is nice.
             realType = float
             defaultValue = NONE_MAP[realType]
 
@@ -783,9 +730,7 @@ def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray
             data[nones] = defaultValue
 
     except Exception as ee:
-        runLog.error(
-            "Error while attempting to determine default for {}.\nvalue: {}\nError: {}".format(paramName, val, ee)
-        )
+        runLog.error(f"Error while attempting to determine default for {paramName}.\nvalue: {val}\nError: {ee}")
         raise TypeError(
             "Could not determine None replacement for {} with type {}, val {}, default {}".format(
                 paramName, realType, val, defaultValue
@@ -795,10 +740,10 @@ def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray
     try:
         data = data.astype(realType)
     except Exception:
-        raise ValueError("Could not coerce data for {} to {}, data:\n{}".format(paramName, realType, data))
+        raise ValueError(f"Could not coerce data for {paramName} to {realType}, data:\n{data}")
 
     if data.dtype.kind == "O":
-        raise TypeError("Failed to convert data to valid HDF5 type {}, data:{}".format(paramName, data))
+        raise TypeError(f"Failed to convert data to valid HDF5 type {paramName}, data:{data}")
 
     return data
 
@@ -807,14 +752,12 @@ def replaceNonsenseWithNones(data: np.ndarray, paramName: str) -> np.ndarray:
     """
     Replace special nonsense values with ``None``.
 
-    This essentially reverses the operations performed by
-    :py:func:`replaceNonesWithNonsense`.
+    This essentially reverses the operations performed by :py:func:`replaceNonesWithNonsense`.
 
     Parameters
     ----------
     data
         The array from the database that contains special ``None`` nonsense values.
-
     paramName
         The param name who's data we are dealing with. Only used for diagnostics.
 
@@ -830,7 +773,7 @@ def replaceNonsenseWithNones(data: np.ndarray, paramName: str) -> np.ndarray:
     elif np.issubdtype(data.dtype, np.str_):
         isNone = data == "<!None!>"
     else:
-        raise TypeError("Unable to resolve values that should be None for `{}`".format(paramName))
+        raise TypeError(f"Unable to resolve values that should be None for `{paramName}`")
 
     if data.ndim > 1:
         result = np.ndarray(data.shape[0], dtype=np.dtype("O"))
