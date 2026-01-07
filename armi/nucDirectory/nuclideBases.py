@@ -1065,7 +1065,7 @@ class NuclideBases:
         A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
     byMcc3IdEndfbVII1: dict[str, INuclide]
         A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
-    byMcnpId: dict[int, INuclide]
+    byMcnpId: dict[str, INuclide]
         A dictionary of the nuclides in this class, keyed by MCNP ID, e.g., 92235.
     byAAAZZZSId: dict[int, INuclide]
         A dictionary of the nuclides in this class, keyed by AAAZZZS, e.g., 2350920.
@@ -1093,7 +1093,7 @@ class NuclideBases:
         self.byMcc3Id: dict[str, INuclide] = {}
         self.byMcc3IdEndfbVII0: dict[str, INuclide] = {}
         self.byMcc3IdEndfbVII1: dict[str, INuclide] = {}
-        self.byMcnpId: dict[int, INuclide] = {}
+        self.byMcnpId: dict[str, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
         self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
         self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
