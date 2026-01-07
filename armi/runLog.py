@@ -60,6 +60,8 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
 LOG_DIR = os.path.join(os.getcwd(), "logs")
+if os.environ.get("TEMP_ROOT_PATH"):
+    LOG_DIR = os.path.join(os.environ["TEMP_ROOT_PATH"], "logs")
 OS_SECONDS_TIMEOUT = 2 * 60
 SEP = "|"
 STDERR_LOGGER_NAME = "ARMI_ERROR"
