@@ -63,7 +63,7 @@ If you are using an older version of Python, say 3.9 or older, you should ensure
 
     (armi-venv) $ pip install pip>=22.1
 
-or, again, probably it will be enough to just do::
+or it will be enough to just do::
 
     (armi-venv) $ pip install -U pip
 
