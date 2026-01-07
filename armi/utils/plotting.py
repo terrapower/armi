@@ -683,13 +683,13 @@ class DepthSlider(Slider):
 
 
 def plotAssemblyTypes(
-    assems=None,
-    fileName=None,
-    maxAssems=None,
-    showBlockAxMesh=True,
-    yAxisLabel=None,
-    title=None,
-    hot=True,
+    assems: list = None,
+    fileName: str = None,
+    maxAssems: int = None,
+    showBlockAxMesh: bool = True,
+    yAxisLabel: str = None,
+    title: str = None,
+    hot: bool = True,
 ) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
@@ -698,22 +698,16 @@ def plotAssemblyTypes(
     ----------
     assems: list
         list of assembly objects to be plotted.
-
     fileName : str or None
         Base for filename to write, or None for just returning the fig
-
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
-
     showBlockAxMesh: bool
         if true, the axial mesh information will be displayed on the right side of the assembly plot.
-
     yAxisLabel: str
         Optionally, provide a label for the Y-axis.
-
     title: str
         Optionally, provide a title for the plot.
-
     hot : bool, optional
         If True, plot the hot block heights. If False, use cold heights from the inputs.
 
@@ -723,7 +717,7 @@ def plotAssemblyTypes(
         The figure object created
     """
     if maxAssems is not None and not isinstance(maxAssems, int):
-        raise TypeError("Maximum assemblies should be an integer")
+        raise TypeError(f"Maximum assemblies should be an integer: {maxAssems} was of type {type(maxAssems)}.")
 
     numAssems = len(assems)
     if maxAssems is None:
@@ -921,9 +915,13 @@ def plotRadialReactorLayouts(reactor):
         if newStart > start:
             start = newStart
 
+    figs = []
     for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=start + 1):
         assemPlotName = f"{reactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
-        plotAssemblyTypes(assemBatch, assemPlotName, maxAssems=6, showBlockAxMesh=True)
+        fig = plotAssemblyTypes(assemBatch, assemPlotName, maxAssems=6, showBlockAxMesh=True)
+        figs.append(fig)
+
+    return figs
 
 
 def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
@@ -1114,12 +1112,11 @@ def makeHistogram(x, y):
 
 
 def _makeBlockPinPatches(block, cold):
-    """Return lists of block component patches and corresponding data and names (which relates to
-    material of the component for later plot-coloring/legend) for a single block.
+    """Return lists of block component patches and corresponding data and names (which relates to material of the
+    component for later plot-coloring/legend) for a single block.
 
-    Takes in a block that must have a spatialGrid attached as well as a variable which signifies
-    whether the dimensions of the components are at hot or cold temps. When cold is set to true, you
-    would get the BOL cold temp dimensions.
+    Takes in a block that must have a spatialGrid attached as well as a variable which signifies whether the dimensions
+    of the components are at hot or cold temps. When cold is set to true, you would get the BOL cold temp dimensions.
 
     Parameters
     ----------
@@ -1352,8 +1349,7 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
 
 
 def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"):
-    """Given a Block with a spatial Grid, plot the diagram of it with all of its components (wire,
-    duct, coolant, etc).
+    """Given a Block with a spatial Grid, plot the diagram of it with all of its components (wire, duct, coolant, etc).
 
     Parameters
     ----------
@@ -1365,8 +1361,8 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, f
     cmapName : str
         name of a colorMap to use for block colors
     materialList : list
-        A list of material names across all blocks to be plotted
-        so that same material on all diagrams will have the same color
+        A list of material names across all blocks to be plotted so that same material on all diagrams will have the
+        same color
     fileFormat : str
         The format to save the picture as, e.g. svg, png, jpg, etc.
     """
@@ -1418,7 +1414,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, f
 
 def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
     """Plots a matrix to show scattering."""
-    plt.imshow(scatterMatrix.todense(), interpolation="nearest")
+    img = plt.imshow(scatterMatrix.todense(), interpolation="nearest")
     plt.grid(color="0.70")
     plt.xlabel("From group")
     plt.ylabel("To group")
@@ -1430,6 +1426,8 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
         plt.close()
     else:
         plt.show()
+
+    return img
 
 
 def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None):
@@ -1454,11 +1452,11 @@ def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, t
     Examples
     --------
     >>> l = ISOTXS()
-    >>> plotNucXs(l, 'U238NA','fission')
+    >>> plotNucXs(l, "U238NA", "fission")
 
     >>> # Plot n,g for all xenon and krypton isotopes
-    >>> f = lambda name: 'XE' in name or 'KR' in name
-    >>> plotNucXs(l, sorted(filter(f,l.nuclides.keys())),itertools.repeat('nGamma'))
+    >>> f = lambda name: "XE" in name or "KR" in name
+    >>> plotNucXs(l, sorted(filter(f, l.nuclides.keys())), itertools.repeat("nGamma"))
 
     See Also
     --------

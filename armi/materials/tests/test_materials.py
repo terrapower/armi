@@ -22,9 +22,7 @@ from numpy import testing
 
 from armi import context, materials, settings
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
-from armi.nucDirectory import nuclideBases
 from armi.reactor import blueprints
-from armi.tests import mockRunLogs
 from armi.utils import units
 
 
@@ -32,6 +30,7 @@ class _Material_Test:
     """Base for all specific material test cases."""
 
     MAT_CLASS = None
+    VALID_TEMP_K = 500
 
     def setUp(self):
         self.mat = self.MAT_CLASS()
@@ -42,11 +41,11 @@ class _Material_Test:
         mat = pickle.loads(stream)
 
         # check a property that is sometimes interpolated.
-        self.assertEqual(self.mat.thermalConductivity(500), mat.thermalConductivity(500))
+        self.assertEqual(self.mat.thermalConductivity(self.VALID_TEMP_K), mat.thermalConductivity(self.VALID_TEMP_K))
 
     def test_density(self):
         """Test that all materials produce a non-zero density from density."""
-        self.assertNotEqual(self.mat.density(500), 0)
+        self.assertNotEqual(self.mat.density(self.VALID_TEMP_K), 0)
 
     def test_TD(self):
         """Test the material density."""
@@ -84,14 +83,14 @@ class _Material_Test:
 
     def test_densityKgM3(self):
         """Test the density for kg/m^3."""
-        dens = self.mat.density(500)
-        densKgM3 = self.mat.densityKgM3(500)
+        dens = self.mat.density(self.VALID_TEMP_K)
+        densKgM3 = self.mat.densityKgM3(self.VALID_TEMP_K)
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_pseudoDensityKgM3(self):
         """Test the pseudo density for kg/m^3."""
-        dens = self.mat.pseudoDensity(500)
-        densKgM3 = self.mat.pseudoDensityKgM3(500)
+        dens = self.mat.pseudoDensity(self.VALID_TEMP_K)
+        densKgM3 = self.mat.pseudoDensityKgM3(self.VALID_TEMP_K)
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_wrappedDensity(self):
@@ -224,6 +223,7 @@ class Cesium_TestCase(_Material_Test, unittest.TestCase):
 
 class Magnesium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Magnesium
+    VALID_TEMP_K = 1000
 
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(923)
@@ -249,7 +249,7 @@ class MagnesiumOxide_TestCase(_Material_Test, unittest.TestCase):
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-        cur = self.mat.pseudoDensity(1390)
+        cur = self.mat.pseudoDensity(1250)
         ref = 3.418434
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
@@ -435,8 +435,8 @@ class Sodium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Sodium
 
     def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(300)
-        ref = 0.941
+        cur = self.mat.pseudoDensity(372)
+        ref = 0.92546
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
@@ -446,8 +446,8 @@ class Sodium_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_specificVolumeLiquid(self):
-        cur = self.mat.specificVolumeLiquid(300)
-        ref = 0.001062
+        cur = self.mat.specificVolumeLiquid(372)
+        ref = 0.0010805
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
@@ -457,8 +457,8 @@ class Sodium_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_enthalpy(self):
-        cur = self.mat.enthalpy(300)
-        ref = 107518.523
+        cur = self.mat.enthalpy(372)
+        ref = 208100.1914
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
@@ -468,13 +468,13 @@ class Sodium_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_thermalConductivity(self):
-        cur = self.mat.thermalConductivity(300)
-        ref = 95.1776
+        cur = self.mat.thermalConductivity(372)
+        ref = 89.36546
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-        cur = self.mat.thermalConductivity(1700)
-        ref = 32.616
+        cur = self.mat.thermalConductivity(1500)
+        ref = 38.24675
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
@@ -601,21 +601,12 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
         ):
             lowerBound = self.mat.propertyValidTemperature[propName][0][0]
             upperBound = self.mat.propertyValidTemperature[propName][0][1]
-            with mockRunLogs.BufferLog() as mock:
-                getattr(self.mat, methodName)(lowerBound - 1)
-                self.assertIn(
-                    f"Temperature {float(lowerBound - 1)} out of range ({lowerBound} "
-                    f"to {upperBound}) for {self.mat.name} {propName}",
-                    mock.getStdout(),
-                )
 
-            with mockRunLogs.BufferLog() as mock:
+            with self.assertRaises(ValueError):
+                getattr(self.mat, methodName)(lowerBound - 1)
+
+            with self.assertRaises(ValueError):
                 getattr(self.mat, methodName)(upperBound + 1)
-                self.assertIn(
-                    f"Temperature {float(upperBound + 1)} out of range ({lowerBound} "
-                    f"to {upperBound}) for {self.mat.name} {propName}",
-                    mock.getStdout(),
-                )
 
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(Tc=500)
@@ -631,9 +622,9 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.UraniumOxide
 
     def test_adjustMassEnrichment(self):
-        o16 = nuclideBases.byName["O"].weight
-        u235 = nuclideBases.byName["U235"].weight
-        u238 = nuclideBases.byName["U238"].weight
+        o16 = 15.999304875697801
+        u235 = 235.043929425
+        u238 = 238.050788298
         self.mat.adjustMassEnrichment(0.02)
 
         gPerMol = 2 * o16 + 0.02 * u235 + 0.98 * u238
@@ -653,8 +644,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_meltingPoint(self):
         cur = self.mat.meltingPoint()
-        ref = 3123.0
-        self.assertEqual(cur, ref)
+        self.assertEqual(cur, 3123.0)
 
     def test_density(self):
         # Reference data taken from ORNL/TM-2000/351. "Thermophysical Properties of MOX and UO2
@@ -922,6 +912,7 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
 class Lead_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Lead
+    VALID_TEMP_K = 600
 
     def test_volumetricExpansion(self):
         self.assertAlmostEqual(
@@ -1046,8 +1037,8 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
     def test_dynamicVisc(self):
-        ref = self.mat.dynamicVisc(Tc=100)
-        cur = 0.0037273
+        ref = self.mat.dynamicVisc(Tc=150)
+        cur = 0.0029355
         self.assertAlmostEqual(ref, cur, delta=ref * 0.001)
 
         ref = self.mat.dynamicVisc(Tc=200)
@@ -1087,6 +1078,7 @@ class Copper_TestCase(_Material_Test, unittest.TestCase):
 
 class Sulfur_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Sulfur
+    VALID_TEMP_K = 400
 
     def test_setDefaultMassFracs(self):
         cur = self.mat.massFrac
@@ -1521,12 +1513,12 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
             self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
 
     def test_heatCapacity(self):
-        ref = self.mat.heatCapacity(Tc=100)
-        cur = 429.206223
+        ref = self.mat.heatCapacity(Tc=300)
+        cur = 478.776007
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
-        ref = self.mat.heatCapacity(Tc=200)
-        cur = 454.044892
+        ref = self.mat.heatCapacity(Tc=400)
+        cur = 503.399568
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
     def test_propertyValidTemperature(self):
@@ -1730,16 +1722,14 @@ class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.HastelloyN
 
     def test_thermalConductivity(self):
-        TcList = [100, 200, 300, 400, 500, 600, 700, 800]
+        TcList = [200, 300, 400, 500, 600, 700]
         refList = [
-            12.280014,
             13.171442,
             14.448584,
             16.11144,
             18.16001,
             20.594294,
             23.414292,
-            26.620004,
         ]
 
         for Tc, val in zip(TcList, refList):

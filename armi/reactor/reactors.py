@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Reactor objects represent the highest level in the hierarchy of structures that compose the system
-to be modeled.
-"""
+"""Reactor objects represent the highest level in the hierarchy of structures that compose the system to be modeled."""
 
 import copy
 
@@ -79,11 +76,20 @@ class Reactor(composites.Composite):
     def __deepcopy__(self, memo):
         memo[id(self)] = newR = self.__class__.__new__(self.__class__)
         newR.__setstate__(copy.deepcopy(self.__getstate__(), memo))
-        newR.name = self.name + "-copy"
+        newR.name = f"{self.name}-copy"
         return newR
 
     def __repr__(self):
-        return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
+        return f"<{self.__class__.__name__}: {self.name} id:{id(self)}>"
+
+    @property
+    def nuclideBases(self):
+        from armi.nucDirectory import nuclideBases
+
+        if nuclideBases.nuclideBases is None:
+            nuclideBases.factory()
+
+        return nuclideBases.nuclideBases
 
     def add(self, container):
         composites.Composite.add(self, container)
@@ -109,8 +115,8 @@ class Reactor(composites.Composite):
 
         Notes
         -----
-        The "max assembly number" is not currently used in the Reactor. So the idea is that we
-        return the current number, then iterate it for the next assembly.
+        The "max assembly number" is not currently used in the Reactor. So the idea is that we return the current
+        number, then iterate it for the next assembly.
 
         Obviously, this method will be unused for non-assembly-based reactors.
 

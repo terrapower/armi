@@ -16,7 +16,7 @@
 import unittest
 
 from armi import nuclearDataIO
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import isotxs
 from armi.tests import ISOAA_PATH
@@ -119,6 +119,7 @@ class TestIsotxs(unittest.TestCase):
             self.assertAlmostEqual(v1, v2)
 
     def test_getNuclide(self):
+        nuclideBases = NuclideBases()
         self.assertEqual(nuclideBases.byName["U235"], self.lib.getNuclide("U235", "AA")._base)
         self.assertEqual(nuclideBases.byName["PU239"], self.lib.getNuclide("PU239", "AA")._base)
 

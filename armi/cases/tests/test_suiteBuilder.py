@@ -33,7 +33,8 @@ cs = settings.Settings(
         os.path.dirname(os.path.abspath(__file__)),
         "..",
         "..",
-        "tests",
+        "testing",
+        "reactors",
         "anl-afci-177",
         "anl-afci-177.yaml",
     )

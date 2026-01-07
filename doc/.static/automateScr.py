@@ -38,6 +38,7 @@ GITHUB_USERS = {
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
     "mgjarrett": "Michael Jarrett",
+    "nipowell": "Nicole Powell",
     "ntouran": "Nick Touran",
     "onufer": "Mark Onufer",
     "opotowsky": "Arrielle Opotowsky",
@@ -59,16 +60,17 @@ def main():
     parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
 
     # Required positional argument
-    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
     parser.add_argument("pastCommit", help="The commit hash of the last release.")
+    parser.add_argument(
+        "prNum", nargs="?", type=int, default=-1, help="The current PR number (use -1 if there is no PR)."
+    )
 
     # Parse the command line
     args = parser.parse_args()
-    prNum = int(args.prNum)
     pastCommit = args.pastCommit
+    prNum = int(args.prNum)
 
-    rstContent = buildScrListing(prNum, pastCommit)
-    print(rstContent)
+    buildScrListing(pastCommit, prNum)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -133,7 +135,7 @@ def _buildScrLine(prNum: str):
         scrType = "trivial"
 
     # grab one-line description
-    desc = _findOneLineData(lines, prNum, "One-Sentence Description:")
+    desc = _findOneLineData(lines, prNum, "One-Sentence Rationale:")
 
     # grab impact on requirements
     impact = _findOneLineData(lines, prNum, "One-line Impact on Requirements:")
@@ -141,7 +143,7 @@ def _buildScrLine(prNum: str):
     # build RST list item, representing this data
     tab = "  "
     content = f"* PR #{prNum}: {title}\n\n"
-    content += f"{tab}* Change: {desc}\n"
+    content += f"{tab}* Rationale: {desc}\n"
     content += f"{tab}* Impact on Requirements: {impact}\n"
     content += f"{tab}* Author: {author}\n"
     content += f"{tab}* {reviewerHeader}: {reviewers}\n\n"
@@ -187,16 +189,16 @@ def isMainPR(prNum: int):
         return True
 
 
-def buildScrListing(thisPrNum: int, pastCommit: str):
+def buildScrListing(pastCommit: str, thisPrNum: int = -1):
     """Helper method to build an RST-formatted lists of all SCRs, by category.
 
     Parameters
     ----------
-    thisPrNum : int
-        The number of this PR. If this is not a PR, this is a -1.
     pastCommit : str
-        The shortened commit hash for a past reference commit. (This is the last commit of the last
-        release. It will not be included.)
+        The shortened commit hash for a past reference commit. (This is the last commit of the last release. It will not
+        be included.)
+    thisPrNum : int
+        The number of this PR. If this is not a PR, the default is -1.
 
     Returns
     -------
@@ -253,7 +255,10 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
-    return content + "\n\n"
+    content += "\n\n"
+
+    print(content)
+    return content
 
 
 if __name__ == "__main__":

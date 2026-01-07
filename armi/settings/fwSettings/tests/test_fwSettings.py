@@ -106,11 +106,6 @@ class TestSchema(unittest.TestCase):
                 "invalid": -274,
                 "error": vol.error.MultipleInvalid,
             },
-            "timelineInclusionCutoff": {
-                "valid": 1,
-                "invalid": 105,
-                "error": vol.error.MultipleInvalid,
-            },
         }
 
     def test_schema(self):

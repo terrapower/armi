@@ -76,8 +76,14 @@ class Water(Fluid):
     }
 
     def setDefaultMassFracs(self) -> None:
-        massHydrogen = elements.bySymbol["H"].standardWeight
-        massOxygen = elements.bySymbol["O"].standardWeight
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            massHydrogen = 1.007976004510346
+            massOxygen = 15.999304715704756
+        else:
+            massHydrogen = elements.bySymbol["H"].standardWeight
+            massOxygen = elements.bySymbol["O"].standardWeight
+
         totalMass = 2 * massHydrogen + massOxygen
         massFrac = {"H": 2.0 * massHydrogen / totalMass, "O": massOxygen / totalMass}
         for nucName, mfrac in massFrac.items():
@@ -91,8 +97,8 @@ class Water(Fluid):
         """
         Returns 1 - temperature normalized to the critical temperature.
 
-        Note
-        ----
+        Notes
+        -----
         thermophysical correlations are give in Tau rather than Tk or Tc
         """
         return 1.0 - self.theta(Tc=Tc, Tk=Tk)

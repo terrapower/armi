@@ -27,7 +27,8 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
 from armi import materials, runLog, settings, tests
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
@@ -1782,17 +1783,17 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        holedRectangle = complexShapes.HoledRectangle("holedRectangle", "HT9", 1, 1, 0.5, 1.0, 1.0)
+        holedRectangle = complexShapes.HoledRectangle("holedRectangle", "HT9", 100, 100, 0.5, 1.0, 1.0)
         holedRectangle.setType("component", flags=Flags.CONTROL)
         emptyBlock.add(holedRectangle)
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        hexagon = basicShapes.Hexagon("hexagon", "HT9", 1, 1, 1)
+        hexagon = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1)
         hexagon.setType("component", flags=Flags.SHIELD)
         emptyBlock.add(hexagon)
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        pins = basicShapes.Circle("circle", "HT9", 1, 1, 1, 0, 8)
+        pins = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
         pins.setType("component", flags=Flags.PLENUM)
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
@@ -1920,7 +1921,8 @@ class Block_TestCase(unittest.TestCase):
         """Tests the expand to elementals capability."""
         initialN = {}
         initialM = {}
-        elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
+        byName = NuclideBases().byName
+        elementals = [byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
         for elemental in elementals:
             initialN[elemental] = self.block.getNumberDensity(elemental.name)  # homogenized
             initialM[elemental] = self.block.getMass(elemental.name)
@@ -1952,7 +1954,8 @@ class Block_TestCase(unittest.TestCase):
         """Tests the expand all elementals simlutaneously capability."""
         initialN = {}
         initialM = {}
-        elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
+        byName = NuclideBases().byName
+        elementals = [byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
         for elemental in elementals:
             initialN[elemental] = self.block.getNumberDensity(elemental.name)  # homogenized
             initialM[elemental] = self.block.getMass(elemental.name)
@@ -2068,11 +2071,10 @@ class Block_TestCase(unittest.TestCase):
 
         Notes
         -----
-        This test calculates a reference coolant area by subtracting the areas of the intercoolant,
-        duct, wire wrap, and pins from the total hex block area. The area of the pins is calculated
-        using only the outer radius of the clad. This avoids the use of negative areas as
-        implemented in Block.getVolumeFractions. Na-23 mass will not be conserved as when duct/clad
-        expands sodium is evacuated.
+        This test calculates a reference coolant area by subtracting the areas of the intercoolant, duct, wire wrap, and
+        pins from the total hex block area. The area of the pins is calculated using only the outer radius of the clad.
+        This avoids the use of negative areas as implemented in Block.getVolumeFractions. Na-23 mass will not be
+        conserved as when duct/clad expands sodium is evacuated.
 
         See Also
         --------
@@ -2081,7 +2083,7 @@ class Block_TestCase(unittest.TestCase):
         numFE56 = self.block.getNumberOfAtoms("FE56")
         numU235 = self.block.getNumberOfAtoms("U235")
         for c in self.block:
-            c.setTemperature(800)
+            c.setTemperature(700)
         hasNegativeArea = any(c.getArea() < 0 for c in self.block)
         self.assertTrue(hasNegativeArea)
         self.block.getVolumeFractions()  # sets coolant area

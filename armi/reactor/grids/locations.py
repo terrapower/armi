@@ -32,15 +32,6 @@ class LocationBase(ABC):
     A namedtuple-like object for storing location information.
 
     It's immutable (you can't set things after construction) and has names.
-
-    Notes
-    -----
-    This was originally a namedtuple but there was a somewhat unbelievable
-    bug in Python 2.7.8 where unpickling a reactor full of these ended up
-    inexplicably replacing one of them with an AssemblyParameterCollection.
-    The bug did not show up in Python 3.
-
-    Converting to this class solved that problem.
     """
 
     __slots__ = ("_i", "_j", "_k", "_grid")
@@ -59,10 +50,7 @@ class LocationBase(ABC):
         return (self._i, self._j, self._k, None)
 
     def __setstate__(self, state: Hashable):
-        """
-        Unpickle a locator, the grid will attach itself if it was also pickled, otherwise this will
-        be detached.
-        """
+        """Unpickle a locator, the grid will attach itself if it was also pickled, otherwise this will be detached."""
         self.__init__(*state)
 
     @property
@@ -90,8 +78,8 @@ class LocationBase(ABC):
 
         Notes
         -----
-        Including the ``grid`` attribute may be more robust; however, using only (i, j, k) allows
-        dictionaries to use IndexLocations and (i,j,k) tuples interchangeably.
+        Including the ``grid`` attribute may be more robust; however, using only (i, j, k) allows dictionaries to use
+        IndexLocations and (i,j,k) tuples interchangeably.
         """
         return hash((self.i, self.j, self.k))
 
@@ -104,15 +92,14 @@ class LocationBase(ABC):
 
     def __lt__(self, that: "LocationBase") -> bool:
         """
-        A Locationbase is less than another if the pseudo-radius is less, or if equal, in order
-        any index is less.
+        A Locationbase is less than another if the pseudo-radius is less, or if equal, in order any index is less.
 
         Examples
         --------
         >>> grid = grids.HexGrid.fromPitch(1.0)
-        >>> grid[0, 0, 0] < grid[2, 3, 4]   # the "radius" is less
+        >>> grid[0, 0, 0] < grid[2, 3, 4]  # the "radius" is less
         True
-        >>> grid[2, 3, 4] < grid[2, 3, 4]   # they are equal
+        >>> grid[2, 3, 4] < grid[2, 3, 4]  # they are equal
         False
         >>> grid[2, 3, 4] < grid[-2, 3, 4]  # 2 is greater than -2
         False
@@ -154,13 +141,12 @@ class LocationBase(ABC):
     def indices(self) -> np.ndarray:
         """Get the non-grid indices (i,j,k) of this locator.
 
-        This strips off the annoying ``grid`` tagalong which is there to ensure proper
-        equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
+        This strips off the annoying ``grid`` tagalong which is there to ensure proper equality (i.e. (0,0,0) in a
+        storage rack is not equal to (0,0,0) in a core).
 
         It is a numpy array for two reasons:
 
-        1. It can be added and subtracted for the recursive computations
-           through different coordinate systems
+        1. It can be added and subtracted for the recursive computations through different coordinate systems.
         2. It can be written/read from the database.
         """
 
@@ -172,10 +158,9 @@ class IndexLocation(LocationBase):
     The locator is intimately tied to a grid and together, they represent a grid cell somewhere in
     the coordinate system of the grid.
 
-    ``grid`` is not in the constructor (must be added after construction ) because the extra
-    argument (grid) gives an inconsistency between __init__ and __new__. Unfortunately this decision
-    makes whipping up IndexLocations on the fly awkward. But perhaps that's ok because they should
-    only be created by their grids.
+    ``grid`` is not in the constructor (must be added after construction ) because the extra argument (grid) gives an
+    inconsistency between __init__ and __new__. Unfortunately this decision makes whipping up IndexLocations on the fly
+    awkward. But perhaps that's ok because they should only be created by their grids.
     """
 
     __slots__ = ()
@@ -207,9 +192,8 @@ class IndexLocation(LocationBase):
         """
         Get the spatialLocator of the ArmiObject that this locator's grid is anchored to.
 
-        For example, if this is one of many spatialLocators in a 2-D grid representing
-        a reactor, then the ``parentLocation`` is the spatialLocator of the reactor, which
-        will often be a ``CoordinateLocation``.
+        For example, if this is one of many spatialLocators in a 2-D grid representing a reactor, then the
+        ``parentLocation`` is the spatialLocator of the reactor, which will often be a ``CoordinateLocation``.
         """
         grid = self.grid  # performance matters a lot here so we remove a dot
         # check for None rather than __nonzero__ for speed (otherwise it checks the length)
@@ -222,13 +206,12 @@ class IndexLocation(LocationBase):
         """
         Get the non-grid indices (i,j,k) of this locator.
 
-        This strips off the annoying ``grid`` tagalong which is there to ensure proper
-        equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
+        This strips off the annoying ``grid`` tagalong which is there to ensure proper equality (i.e. (0,0,0) in a
+        storage rack is not equal to (0,0,0) in a core).
 
         It is a numpy array for two reasons:
 
-        1. It can be added and subtracted for the recursive computations
-           through different coordinate systems
+        1. It can be added and subtracted for the recursive computations through different coordinate systems.
         2. It can be written/read from the database.
 
         """
@@ -238,18 +221,15 @@ class IndexLocation(LocationBase):
         """
         Transform the indices of this object up to the top mesh.
 
-        The top mesh is either the one where there's no more parent (true top)
-        or when an axis gets added twice. Unlike with coordinates,
-        you can only add each index axis one time. Thus a *complete*
-        set of indices is one where an index for each axis has been defined
-        by a set of 1, 2, or 3 nested grids.
+        The top mesh is either the one where there's no more parent (true top) or when an axis gets added twice. Unlike
+        with coordinates, you can only add each index axis one time. Thus a *complete* set of indices is one where an
+        index for each axis has been defined by a set of 1, 2, or 3 nested grids.
 
-        This is useful for getting the reactor-level (i,j,k) indices of an object
-        in a multi-layered 2-D(assemblies in core)/1-D(blocks in assembly) mesh
-        like the one mapping blocks up to reactor in Hex reactors.
+        This is useful for getting the reactor-level (i,j,k) indices of an object in a multi-layered 2-D(assemblies in
+        core)/1-D(blocks in assembly) mesh like the one mapping blocks up to reactor in Hex reactors.
 
-        The benefit of that particular mesh over a 3-D one is that different
-        assemblies can have different axial meshes, a common situation.
+        The benefit of that particular mesh over a 3-D one is that different assemblies can have different axial meshes,
+        a common situation.
 
         It will just return local indices for pin-meshes inside of blocks.
 
@@ -314,24 +294,22 @@ class MultiIndexLocation(IndexLocation):
     """
     A collection of index locations that can be used as a spatialLocator.
 
-    This allows components with multiplicity>1 to have location information within a
-    parent grid. The implication is that there are multiple discrete components, each
-    one residing in one of the actual locators underlying this collection.
+    This allows components with multiplicity>1 to have location information within a parent grid. The implication is
+    that there are multiple discrete components, each one residing in one of the actual locators underlying this
+    collection.
 
     .. impl:: Store components with multiplicity greater than 1
         :id: I_ARMI_GRID_MULT
         :implements: R_ARMI_GRID_MULT
 
-        As not all grids are "full core symmetry", ARMI will sometimes need to track
-        multiple positions for a single object: one for each symmetric portion of the
-        reactor. This class doesn't calculate those positions in the reactor, it just
-        tracks the multiple positions given to it. In practice, this class is mostly
-        just a list of ``IndexLocation`` objects.
+        As not all grids are "full core symmetry", ARMI will sometimes need to track multiple positions for a single
+        object: one for each symmetric portion of the reactor. This class doesn't calculate those positions in the
+        reactor, it just tracks the multiple positions given to it. In practice, this class is mostly just a list of
+        ``IndexLocation`` objects.
     """
 
-    # MIL's cannot be hashed, so we need to scrape off the implementation from
-    # LocationBase. This raises some interesting questions of substitutability of the
-    # various Location classes, which should be addressed.
+    # MIL's cannot be hashed, so we need to scrape off the implementation from LocationBase. This raises some
+    # interesting questions of substitutability of the various Location classes, which should be addressed.
     __hash__ = None
 
     _locations: List[IndexLocation]
@@ -356,15 +334,12 @@ class MultiIndexLocation(IndexLocation):
         return self._locations
 
     def __setstate__(self, state: List[IndexLocation]):
-        """
-        Unpickle a locator, the grid will attach itself if it was also pickled,
-        otherwise this will be detached.
-        """
+        """Unpickle a locator, the grid will attach itself if it was also pickled, otherwise this will be detached."""
         self.__init__(None)
         self._locations = state
 
     def __repr__(self) -> str:
-        return "<{} with {} locations>".format(self.__class__.__name__, len(self._locations))
+        return f"<{self.__class__.__name__} with {len(self._locations)} locations>"
 
     def __getitem__(self, index: int) -> IndexLocation:
         return self._locations[index]
@@ -410,9 +385,9 @@ class MultiIndexLocation(IndexLocation):
             :id: I_ARMI_GRID_ELEM_LOC
             :implements: R_ARMI_GRID_ELEM_LOC
 
-            This method returns the indices of all the ``IndexLocation`` objects. To be
-            clear, this does not return the ``IndexLocation`` objects themselves. This
-            is designed to be consistent with the Grid's ``__getitem__()`` method.
+            This method returns the indices of all the ``IndexLocation`` objects. To be clear, this does not return the
+            ``IndexLocation`` objects themselves. This is designed to be consistent with the Grid's ``__getitem__()``
+            method.
         """
         return [loc.indices for loc in self._locations]
 
@@ -421,17 +396,16 @@ class CoordinateLocation(IndexLocation):
     """
     A triple representing a point in space.
 
-    This is still associated with a grid. The grid defines the continuous coordinate
-    space and axes that the location is within. This also links to the composite tree.
+    This is still associated with a grid. The grid defines the continuous coordinate space and axes that the location is
+    within. This also links to the composite tree.
     """
 
     __slots__ = ()
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            # Mainly to avoid comparing against MultiIndexLocations
-            # Fuel pins may have a multi index location and the duct may
-            # have a coordinate location and we don't want them to be equal
+            # Mainly to avoid comparing against MultiIndexLocations. Fuel pins may have a multi index location and the
+            # duct may have a coordinate location and we don't want them to be equal.
             return self.grid == other.grid and self.i == other.i and self.j == other.j and self.k == other.k
         return NotImplemented
 
@@ -458,8 +432,7 @@ def addingIsValid(myGrid: "Grid", parentGrid: "Grid"):
     """
     True if adding a indices from one grid to another is considered valid.
 
-    In ARMI we allow the addition of a 1-D axial grid with a 2-D grid. We do not allow
-    any other kind of adding. This enables the 2D/1D grid layout in Assemblies/Blocks
-    but does not allow 2D indexing in pins to become inconsistent.
+    In ARMI we allow the addition of a 1-D axial grid with a 2-D grid. We do not allow any other kind of adding. This
+    enables the 2D/1D grid layout in Assemblies/Blocks but does not allow 2D indexing in pins to become inconsistent.
     """
     return myGrid.isAxialOnly and not parentGrid.isAxialOnly

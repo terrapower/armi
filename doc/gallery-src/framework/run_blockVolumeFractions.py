@@ -48,23 +48,20 @@ def writeInitialVolumeFractions(b):
 
 def plotVolFracsWithComponentTemps(b, uniformTemps):
     """Plot the percent change in vol. fractions as fuel/structure temperatures are uniformly increased."""
-    # Perform uniform temperature modifications of the fuel and structural
-    # components.
+    # Perform uniform temperature modifications of the fuel and structural components.
     componentsToModify = b.getComponents([Flags.FUEL, Flags.CLAD, Flags.DUCT])
 
     initialVols = {}
     relativeVols = collections.defaultdict(list)
     for tempInC in uniformTemps:
         print(f"Updating fuel/structure components to {tempInC} °C")
-        # Modify the fuel/structure components to the
-        # same uniform temperature
+        # Modify the fuel/structure components to the same uniform temperature
         for c in componentsToModify:
             c.setTemperature(tempInC)
 
         writeInitialVolumeFractions(b)
 
-        # Iterate over all components and calculate the mass
-        # and volume fractions
+        # Iterate over all components and calculate the mass and volume fractions
         for c in b:
             # Set the initial volume fractions at the first uniform temperature
             if tempInC == uniformTempsInC[0]:
@@ -86,7 +83,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
     plt.show()
 
 
-uniformTempsInC = [400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1200.0]
+uniformTempsInC = [300.0, 400.0, 500.0, 600.0, 700.0]
 b = buildSimpleFuelBlock()
 
 writeInitialVolumeFractions(b)

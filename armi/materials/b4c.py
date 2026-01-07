@@ -26,7 +26,6 @@ contained in this file should not be used in production simulations.
 
 from armi import runLog
 from armi.materials import material
-from armi.nucDirectory import nuclideBases
 from armi.utils.units import getTc
 
 
@@ -35,7 +34,7 @@ class B4C(material.Material):
     DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
     enrichedNuclide = "B10"
     NATURAL_B10_NUM_FRAC = 0.199
-    propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
+    propertyValidTemperature = {"linear expansion percent": ((25, 600), "C")}
 
     def __init__(self):
         self.b10NumFrac = self.NATURAL_B10_NUM_FRAC
@@ -95,16 +94,22 @@ class B4C(material.Material):
         mB10 = nB10*AB10 /(nB10*AB10 + nB11*AB11)
         """
         if massEnrichment < 0 or massEnrichment > 1:
-            raise ValueError("massEnrichment {} is unphysical for B4C".format(massEnrichment))
+            raise ValueError(f"massEnrichment {massEnrichment} is unphysical for B4C")
 
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            b10AtomicMass = 10.01293728
+            b11AtomicMass = 11.0093054803
+            cAtomicMass = 12.011137118560828
+        else:
+            b10AtomicMass = nb.byName["B10"].weight
+            b11AtomicMass = nb.byName["B11"].weight
+            cAtomicMass = nb.byName["C"].weight
+
         b10NumEnrich = (massEnrichment / b10AtomicMass) / (
             massEnrichment / b10AtomicMass + (1 - massEnrichment) / b11AtomicMass
         )
         b11NumEnrich = 1.0 - b10NumEnrich
-
-        cAtomicMass = nuclideBases.byName["C"].weight
 
         boron10MassGrams = b10AtomicMass * b10NumEnrich * 4.0
         boron11MassGrams = b11AtomicMass * b11NumEnrich * 4.0
@@ -134,7 +139,15 @@ class B4C(material.Material):
         total=55.2547 g.
         Mass fractions are computed from this.
         """
-        massEnrich = self.getMassEnrichmentFromNumEnrich(self.b10NumFrac)
+        nb = self.parent.nuclideBases if self.parent else None
+        if nb is None:
+            b10AtomicMass = 10.01293728
+            b11AtomicMass = 11.0093054803
+        else:
+            b10AtomicMass = nb.byName["B10"].weight
+            b11AtomicMass = nb.byName["B11"].weight
+
+        massEnrich = self.getMassEnrichmentFromNumEnrich(self.b10NumFrac, b10AtomicMass, b11AtomicMass)
 
         gBoron10, gBoron11, gCarbon = self.setNewMassFracsFromMassEnrich(massEnrichment=massEnrich)
         self.setMassFrac("B10", gBoron10)
@@ -146,10 +159,15 @@ class B4C(material.Material):
         self.theoreticalDensityFrac = self.DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
 
     @staticmethod
-    def getMassEnrichmentFromNumEnrich(b10NumFrac: float) -> float:
+    def getMassEnrichmentFromNumEnrich(
+        b10NumFrac: float, b10AtomicMass: float = None, b11AtomicMass: float = None
+    ) -> float:
         """Given a B10 number fraction, give the B10 weight fraction."""
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
+        if b10AtomicMass is None:
+            b10AtomicMass = 10.01293728
+        if b11AtomicMass is None:
+            b11AtomicMass = 11.0093054803
+
         return b10NumFrac * b10AtomicMass / (b10NumFrac * b10AtomicMass + (1.0 - b10NumFrac) * b11AtomicMass)
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:

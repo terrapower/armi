@@ -20,7 +20,7 @@ import os
 import unittest
 
 from armi.context import RES
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.physics.neutronics.fissionProductModel import (
     REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
     lumpedFissionProduct,
@@ -55,11 +55,12 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
 
     def setUp(self):
         self.fpd = getDummyLFPFile()
+        self.nuclideBases = NuclideBases()
 
     def test_createLFPs(self):
         """Test of the fission product model creation."""
         lfps = self.fpd.createLFPsFromFile()
-        xe135 = nuclideBases.fromName("XE135")
+        xe135 = self.nuclideBases.fromName("XE135")
         self.assertEqual(len(lfps), 3)
         self.assertIn("LFP35", lfps)
         for lfp in lfps.values():
@@ -85,7 +86,7 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
         for lfp_id in LFP_IDS:
             self.assertIn(lfp_id, lfps)
 
-        mo99 = nuclideBases.fromName("MO99")
+        mo99 = self.nuclideBases.fromName("MO99")
         ref_mo99_yields = [0.00091, 0.00112, 0.00099, 0.00108, 0.00101]
 
         for ref_fp_yield, lfp_id in zip(ref_mo99_yields, LFP_IDS):
@@ -96,15 +97,16 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
             self.assertLess(error, 1e-6)
 
 
-class TestLumpedFissionProduct(unittest.TestCase):
+class TestLFP(unittest.TestCase):
     """Test of the lumped fission product yields."""
 
     def setUp(self):
         self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
+        self.nuclideBases = NuclideBases()
 
     def test_getYield(self):
         """Test of the yield of a fission product."""
-        xe135 = nuclideBases.fromName("XE135")
+        xe135 = self.nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP39")
         lfp[xe135] = 1.2
         val3 = lfp[xe135]
@@ -119,29 +121,30 @@ class TestLumpedFissionProduct(unittest.TestCase):
 
     def test_isGas(self):
         """Tests that a nuclide is a gas or not at STP based on its chemical phase."""
-        nb = nuclideBases.byName["H1"]
+        nb = self.nuclideBases.byName["H1"]
         self.assertTrue(lumpedFissionProduct.isGas(nb))
-        nb = nuclideBases.byName["H2"]
+        nb = self.nuclideBases.byName["H2"]
         self.assertTrue(lumpedFissionProduct.isGas(nb))
-        nb = nuclideBases.byName["H3"]
+        nb = self.nuclideBases.byName["H3"]
         self.assertTrue(lumpedFissionProduct.isGas(nb))
 
-        nb = nuclideBases.byName["U235"]
+        nb = self.nuclideBases.byName["U235"]
         self.assertFalse(lumpedFissionProduct.isGas(nb))
 
-        nb = nuclideBases.byName["O16"]
+        nb = self.nuclideBases.byName["O16"]
         self.assertTrue(lumpedFissionProduct.isGas(nb))
 
-        nb = nuclideBases.byName["XE135"]
+        nb = self.nuclideBases.byName["XE135"]
         self.assertTrue(lumpedFissionProduct.isGas(nb))
 
 
-class TestLumpedFissionProductCollection(unittest.TestCase):
+class TestLFPCollection(unittest.TestCase):
     """Test of the fission product collection."""
 
     def setUp(self):
         fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
         self.lfps = fpd.createLFPsFromFile()
+        self.nuclideBases = NuclideBases()
 
     def test_getAllFissionProductNames(self):
         """Test to ensure the fission product names are present."""
@@ -152,15 +155,15 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
     def test_getAllFissionProductNuclideBases(self):
         """Test to ensure the fission product nuclide bases are present."""
         clideBases = self.lfps.getAllFissionProductNuclideBases()
-        xe135 = nuclideBases.fromName("XE135")
-        kr85 = nuclideBases.fromName("KR85")
+        xe135 = self.nuclideBases.fromName("XE135")
+        kr85 = self.nuclideBases.fromName("KR85")
         self.assertIn(xe135, clideBases)
         self.assertIn(kr85, clideBases)
 
     def test_duplicate(self):
         """Test to ensure that when we duplicate, we don't adjust the original file."""
         newLfps = self.lfps.duplicate()
-        ba = nuclideBases.fromName("XE135")
+        ba = self.nuclideBases.fromName("XE135")
         lfp1 = self.lfps["LFP39"]
         lfp2 = newLfps["LFP39"]
         v1 = lfp1[ba]
@@ -199,7 +202,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
             self.assertAlmostEqual(newMassFrac, refMassFrac[fp.name])
 
 
-class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
+class TestLFPFromRefFile(unittest.TestCase):
     """Tests loading from the `referenceFissionProducts.dat` file."""
 
     def test_fissionProductYields(self):
@@ -212,7 +215,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
             self.assertAlmostEqual(lfp.getTotalYield(), 2.0, places=3)
 
 
-class TestLumpedFissionProductsExplicit(unittest.TestCase):
+class TestLFPExplicit(unittest.TestCase):
     """Tests loading fission products with explicit modeling."""
 
     def test_explicitFissionProducts(self):

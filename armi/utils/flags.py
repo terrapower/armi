@@ -239,9 +239,7 @@ class Flag(metaclass=_FlagMeta):
         ...     FOO = auto()
         ...     BAR = 1
         ...     BAZ = auto()
-        >>> MyFlags.extend({
-        ...     "SUPER": auto()
-        ... })
+        >>> MyFlags.extend({"SUPER": auto()})
         >>> print(MyFlags.SUPER)
         <MyFlags.SUPER: 8>
         """

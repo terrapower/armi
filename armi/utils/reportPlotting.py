@@ -39,7 +39,6 @@ from matplotlib import colors as mpltcolors
 
 from armi import runLog, settings
 from armi.bookkeeping import report
-from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor.flags import Flags
 
 
@@ -108,7 +107,6 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         ymin=1.0,
         extension=extension,
     )
-    xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
     movesVsCycle(reactor.name, scalars, extension=extension)
 
 
@@ -204,55 +202,6 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     plt.close(1)
 
     report.setData("K-Eff", os.path.abspath(figName), report.KEFF_PLOT)
-
-
-def xsHistoryVsTime(name, history, buGroups, extension=None):
-    r"""
-    Plot cross section history vs. time.
-
-    Parameters
-    ----------
-    name : str
-        reactor.name
-    history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
-        The history interface.
-    buGroups : list of float
-        The burnup groups in the problem
-    extension : str, optional
-        The file extension for saving the figure
-    """
-    extension = extension or settings.Settings()["outputFileExtension"]
-
-    if history is None or not history.xsHistory:
-        return
-
-    colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
-    plt.figure()
-    maxbu = 0.0
-    for typeNum, dataList in history.xsHistory.items():
-        times = [d[0] for d in dataList]
-        burnups = [d[1] for d in dataList]
-        maxb = max(burnups)
-        if maxb > maxbu:
-            maxbu = maxb
-        xsType = crossSectionGroupManager.getXSTypeLabelFromNumber(typeNum)
-        color = next(colors)
-        plt.plot(times, burnups, color + ".", label="Type {0} XS".format(xsType))
-
-    for upperBu in [0.0] + buGroups:
-        # draw a hline at the limits of each burnup group
-        plt.axhline(y=upperBu)
-
-    plt.legend()
-    plt.title("Block burnups used to generate XS for {0}".format(name))
-    plt.xlabel("Time (years)")
-    plt.ylabel(r"Burnup (% FIMA)")
-
-    plt.ylim(0, maxbu * 1.05)
-    figName = name + ".bugroups." + extension
-    plt.savefig(figName)
-    plt.close(1)
-    report.setData("Xs Plot", os.path.abspath(figName), report.XS_PLOT)
 
 
 def movesVsCycle(name, scalars, extension=None):

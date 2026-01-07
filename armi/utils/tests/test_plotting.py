@@ -25,7 +25,8 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.tests import ISOAA_PATH, TEST_ROOT, getEmptyHexReactor
+from armi.testing import TESTING_ROOT
+from armi.tests import ISOAA_PATH, getEmptyHexReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -88,17 +89,41 @@ class TestPlotting(unittest.TestCase):
                 os.remove(plotPath)
 
             plotPath = "coreAssemblyTypes2.png"
-            plotting.plotAssemblyTypes(
+            fig = plotting.plotAssemblyTypes(
                 list(self.r.core.parent.blueprints.assemblies.values()),
                 plotPath,
                 yAxisLabel="y axis",
                 title="title",
             )
+            self.assertFalse(fig.subfigures(1, 1).subplots().has_data())
+            self.assertEqual(fig.axes[0]._children[0].xy, (0.5, 0))
             self._checkFileExists(plotPath)
 
+            for _ in range(3):
+                if os.path.exists(plotPath):
+                    os.remove(plotPath)
+
+    def test_plotRadialReactorLayouts(self):
+        figs = plotting.plotRadialReactorLayouts(self.r)
+        self.assertEqual(len(figs), 1)
+        self.assertEqual(figs[0].axes[0]._children[0].xy, (0.5, 0))
+
+        plotPath = "coreAssemblyTypes1-rank0.png"
+        for _ in range(3):
             if os.path.exists(plotPath):
                 os.remove(plotPath)
 
+    def test_plotScatterMatrix(self):
+        plotPath = "test_plotScatterMatrix.png"
+        lib = isotxs.readBinary(ISOAA_PATH)
+        u235 = lib.getNuclide("U235", "AA")
+        scatterMatrix = u235.micros.inelasticScatter
+        img = plotting.plotScatterMatrix(scatterMatrix, fName=plotPath)
+        self.assertGreater(len(img.axes.get_children()), 10)
+        self.assertLess(len(img.axes.get_children()), 30)
+        self.assertTrue(img.axes.has_data())
+
+        for _ in range(3):
             if os.path.exists(plotPath):
                 os.remove(plotPath)
 
@@ -152,7 +177,7 @@ class TestPlotting(unittest.TestCase):
 
     def test_plotCartesianBlock(self):
         with TemporaryDirectoryChanger():
-            cs = settings.Settings(os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml"))
+            cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "c5g7", "c5g7-settings.yaml"))
             blueprint = blueprints.loadFromCs(cs)
             _ = reactors.factory(cs, blueprint)
             for name, bDesign in blueprint.blockDesigns.items():

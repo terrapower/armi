@@ -12,37 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 r"""
-This module provides fundamental nuclide information to be used throughout the framework and applications.
+This module provides access to fundamental nuclide information to be used throughout the framework and applications.
 
 .. impl:: Isotopes and isomers can be queried by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.
     :id: I_ARMI_ND_ISOTOPES0
     :implements: R_ARMI_ND_ISOTOPES
 
-    The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module defines
-    the :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-    class which is used to organize and store metadata about each nuclide. The
-    metadata is read from ``nuclides.dat`` file in the ARMI resources folder,
-    which contains metadata for 4,614 isotopes. The module also contains classes
-    for special types of nuclides, including :py:class:`DummyNuclideBase
-    <armi.nucDirectory.nuclideBases.DummyNuclideBase>` for dummy nuclides,
-    :py:class:`LumpNuclideBase
-    <armi.nucDirectory.nuclideBases.LumpNuclideBase>`, for lumped fission
-    product nuclides, and :py:class:`NaturalNuclideBase
-    <armi.nucDirectory.nuclideBases.NaturalNuclideBase>` for when data is given
-    collectively for an element at natural abundance rather than for individual
-    isotopes.
+    The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module defines the
+    :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` class which is used to organize and store
+    metadata about each nuclide. The metadata is read from a provided ``nuclides.dat`` file, which contains metadata for
+    thousands of isotopes. The module also contains classes for special types of nuclides, including
+    :py:class:`DummyNuclideBase <armi.nucDirectory.nuclideBases.DummyNuclideBase>` for dummy nuclides,
+    :py:class:`LumpNuclideBase <armi.nucDirectory.nuclideBases.LumpNuclideBase>`, for lumped fission product nuclides,
+    and :py:class:`NaturalNuclideBase <armi.nucDirectory.nuclideBases.NaturalNuclideBase>` for when data is given
+    collectively for an element at natural abundance rather than for individual isotopes.
 
-    The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-    provides a data structure for information about a single nuclide, including
-    the atom number, atomic weight, element, isomeric state, half-life, and
-    name.
+    The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` provides a data structure for information
+    about a single nuclide, including the atom number, atomic weight, element, isomeric state, half-life, and name.
 
-    The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module provides
-    a factory and associated functions for instantiating the
-    :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` objects
-    and building the global nuclide dictionaries, including:
+    The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module provides a factory and associated functions for
+    instantiating the :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` objects. It is expected that
+    during a simulation, the ``Reactor`` will contain an instance of ``NuclideBases`` to handle building the nuclide
+    data dictionaries, including:
 
-    * ``instances`` (list of nuclides)
+    * ``elements`` (collection of Element objects)
+    * ``instances`` (list of INuclide objects)
     * ``byName`` (keyed by name, e.g., ``U235``)
     * ``byDBName`` (keyed by database name, e.g., ``nU235``)
     * ``byLabel`` (keyed by label, e.g., ``U235``)
@@ -53,8 +47,7 @@ This module provides fundamental nuclide information to be used throughout the f
     * ``byMcnpId`` (keyed by MCNP ID, e.g., ``92235``)
     * ``byAAAZZZSId`` (keyed by AAAZZZS, e.g., ``2350920``)
 
-The nuclide class structure is outlined :ref:`here
-<nuclide-bases-class-diagram>`.
+The nuclide class structure is outlined :ref:`here <nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
 
@@ -66,30 +59,31 @@ The nuclide class structure is outlined :ref:`here
 
 Examples
 --------
->>> nuclideBases.byName['U235']
+>>> r = Reactor("ExampleReactor", bp)
+>>> r.nuclideBases.byName["U235"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
->>> nuclideBases.byLabel['U235']
+>>> r.nuclideBases.byLabel["U235"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the MC2-2 ID:
 
->>> nuclideBases.byMcc2Id['U-2355']
+>>> r.nuclideBases.byMcc2Id["U-2355"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the MC2-3 ID:
 
->>> nuclideBases.byMcc3IdEndfVII0['U235_7']
+>>> r.nuclideBases.byMcc3IdEndfVII0["U235_7"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the MCNP ID:
 
->>> nuclideBases.byMcnpId['92235']
+>>> r.nuclideBases.byMcnpId["92235"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the AAAZZZS ID:
 
->>> nuclideBases.byAAAZZZSId['2350920']
+>>> r.nuclideBases.byAAAZZZSId["2350920"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Notes
@@ -163,19 +157,19 @@ class NuclideInterface:
 
     def getMcc2Id(self):
         """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getMcc3Id(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getMcc3IdEndfbVII1(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getSerpentId(self):
         """Get the Serpent nuclide identification label."""
@@ -317,7 +311,6 @@ class INuclide(NuclideInterface):
         mcc2id=None,
         mcc3idEndfbVII0=None,
         mcc3idEndfbVII1=None,
-        addToGlobal=True,
     ):
         """
         Create an instance of an INuclide.
@@ -326,10 +319,6 @@ class INuclide(NuclideInterface):
         -------
         Do not call this constructor directly; use the factory instead.
         """
-        if element not in elements.byName.values():
-            raise ValueError(
-                f"Error in initializing nuclide {name}. Element {element} does not exist in the global element list."
-            )
         if state < 0:
             raise ValueError(
                 f"Error in initializing nuclide {name}. An invalid state {state} is provided. The state must be a "
@@ -353,8 +342,6 @@ class INuclide(NuclideInterface):
         self.mcc2id = mcc2id or ""
         self.mcc3idEndfbVII0 = mcc3idEndfbVII0 or ""
         self.mcc3idEndfbVII1 = mcc3idEndfbVII1 or ""
-        if addToGlobal:
-            addGlobalNuclide(self)
         self.element.append(self)
 
     def __hash__(self):
@@ -497,7 +484,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         an AAAZZZS ID and an ENDF MAT number.
     """
 
-    def __init__(self, element, a, weight, abundance, state, halflife, addToGlobal=True):
+    def __init__(self, element, a, weight, abundance, state, halflife):
         IMcnpNuclide.__init__(self)
         INuclide.__init__(
             self,
@@ -509,7 +496,6 @@ class NuclideBase(INuclide, IMcnpNuclide):
             halflife=halflife,
             name=NuclideBase._createName(element, a, state),
             label=NuclideBase._createLabel(element, a, state),
-            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -712,7 +698,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
     forced to zero here so that it does not have any interactions with the NuclideBase objects.
     """
 
-    def __init__(self, name, element, addToGlobal=True):
+    def __init__(self, name, element):
         INuclide.__init__(
             self,
             element=element,
@@ -723,7 +709,6 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             halflife=np.inf,
             name=name,
             label=name,
-            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -802,10 +787,10 @@ class DummyNuclideBase(INuclide):
     truncated.
     """
 
-    def __init__(self, name, weight, addToGlobal=True):
+    def __init__(self, element, name, weight):
         INuclide.__init__(
             self,
-            element=elements.byName["Dummy"],
+            element=element,
             a=0,
             state=0,
             weight=weight,
@@ -813,7 +798,6 @@ class DummyNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label="DMP" + name[4],
-            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -877,10 +861,10 @@ class LumpNuclideBase(INuclide):
         Describes what nuclides LumpNuclideBase is expend to.
     """
 
-    def __init__(self, name, weight, addToGlobal=True):
+    def __init__(self, element, name, weight):
         INuclide.__init__(
             self,
-            element=elements.byName["LumpedFissionProduct"],
+            element=element,
             a=0,
             state=0,
             weight=weight,
@@ -888,7 +872,6 @@ class LumpNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label=name[1:],
-            addToGlobal=addToGlobal,
         )
 
     def __repr__(self):
@@ -1082,10 +1065,12 @@ class NuclideBases:
         A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
     byMcc3IdEndfbVII1: dict[str, INuclide]
         A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
-    byMcnpId: dict[int, INuclide]
+    byMcnpId: dict[str, INuclide]
         A dictionary of the nuclides in this class, keyed by MCNP ID, e.g., 92235.
     byAAAZZZSId: dict[int, INuclide]
         A dictionary of the nuclides in this class, keyed by AAAZZZS, e.g., 2350920.
+    elements: Elements
+        A container for all the atomics elements information in the simulation.
     nuclidesFile: str
         File path to the custom ARMI "nuclides.dat" file, containing a plain text description of all the nuclides to be
         modeled including: Z, number of neutrons, mass number, amu, natural abundance, half life and nu-bar and more.
@@ -1094,8 +1079,12 @@ class NuclideBases:
         various ENDF/B-V mappings.
     """
 
-    def __init__(self):
+    DEFAULT_NUCLIDES_FILE = os.path.join(context.RES, "nuclides.dat")
+    DEFAULT_MCC_NUCLIDES_FILE = os.path.join(context.RES, "mcc-nuclides.yaml")
+
+    def __init__(self, nuclidesFile=None, mccNuclidesFile=None):
         self.burnChainImposed: bool = False
+        self.elements = None
         self.instances: list[INuclide] = []
         self.byName: dict[str, INuclide] = {}
         self.byDBName: dict[str, INuclide] = {}
@@ -1104,10 +1093,10 @@ class NuclideBases:
         self.byMcc3Id: dict[str, INuclide] = {}
         self.byMcc3IdEndfbVII0: dict[str, INuclide] = {}
         self.byMcc3IdEndfbVII1: dict[str, INuclide] = {}
-        self.byMcnpId: dict[int, INuclide] = {}
+        self.byMcnpId: dict[str, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
-        self.nuclidesFile: str = os.path.join(context.RES, "nuclides.dat")
-        self.mccNuclidesFile: str = os.path.join(context.RES, "mcc-nuclides.yaml")
+        self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
+        self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
         self.factory()
 
     def clear(self):
@@ -1127,6 +1116,7 @@ class NuclideBases:
 
         # reset the class attributes
         self.burnChainImposed = False
+        self.elements = None
         self.instances = []
         self.byName = {}
         self.byDBName = {}
@@ -1170,7 +1160,7 @@ class NuclideBases:
         if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
             self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
-    def factory(self):
+    def factory(self, nuclidesFile: str = None, mccNuclidesFile: str = None, elementsFile: str = None):
         """
         Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
 
@@ -1178,6 +1168,17 @@ class NuclideBases:
         fills in the class attibues: instances, byName, byLabel, byMcc3IdEndfbVII0, and byMcc3IdEndfbVII1. This method
         is automatically run upon initializing the class, hence it is not usually necessary to re-run it unless there is
         a change to the data files, which should not happen during run time, or a *bad* :py:class`INuclide` is created.
+
+        Parameters
+        ----------
+        nuclidesFile: str
+            File path to the custom ARMI "nuclides.dat" file, containing a plain text description of all nuclides to be
+            modeled including: Z, number of neutrons, mass number, AMU, natural abundance, half life, nu-bar and more.
+        mccNuclidesFile: str
+            File path to the "mcc-nuclides.yaml" file, containing nuclides defined by the MC2-2 and MC2-3 codes, with
+            various ENDF/B-V mappings.
+        elementsFile: str
+            File path to the custom ARMI "elements.dat" file.
 
         Notes
         -----
@@ -1190,12 +1191,24 @@ class NuclideBases:
                 "first."
             )
 
-        self.addNuclideBases()
+        # If an input file is provided, use it, otherwise there is a class default.
+        if nuclidesFile:
+            self.nuclidesFile = nuclidesFile
+
+        if mccNuclidesFile:
+            self.mccNuclidesFile = mccNuclidesFile
+
+        # load the fundamental elements library
+        elements.factory(elementsFile)
+        self.elements = elements.elements
+
+        # load the isotopes and isomers library
+        self.addNuclideBases(self.nuclidesFile)
         self.__addNaturalNuclideBases()
         self.__addDummyNuclideBases()
         self.__addLumpedFissionProductNuclideBases()
         self.updateNuclideBasesForSpecialCases()
-        self.readMCCNuclideData()
+        self.readMCCNuclideData(self.mccNuclidesFile)
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
@@ -1298,7 +1311,7 @@ class NuclideBases:
 
         Returns an iterator of :py:class:`INuclides <INuclide>` matching the specified condition.
 
-        Attributes
+        Parameters
         ----------
         predicate: lambda
             A lambda, or function, accepting a :py:class:`INuclide` as a parameter
@@ -1307,13 +1320,14 @@ class NuclideBases:
         --------
         >>> from armi.nucDirectory.nuclideBases import NuclideBases
         >>> nuclideBases = NuclideBases()
-        >>> [nn.name for nn in nuclideBases.where(lambda nb: 'Z' in nb.name)]
+        >>> [nn.name for nn in nuclideBases.where(lambda nb: "Z" in nb.name)]
         ['ZN64', 'ZN66', 'ZN67', 'ZN68', 'ZN70', 'ZR90', 'ZR91', 'ZR92', 'ZR94', 'ZR96', 'ZR93', 'ZR95', 'ZR']
         >>> # in order to get length, convert to list
         >>> isomers90 = list(nuclideBases.where(lambda nb: nb.a == 95))
         >>> len(isomers90)
         3
-        >>> for iso in isomers: print(iso)
+        >>> for iso in isomers:
+        ...     print(iso)
         <NuclideBase MO95: Z:42, A:95, S:0, label:MO2N>
         <NuclideBase NB95: Z:41, A:95, S:0, label:NB2N>
         <NuclideBase ZR95: Z:40, A:95, S:0, label:ZR2N>
@@ -1331,7 +1345,7 @@ class NuclideBases:
         Examples
         --------
         >>> from armi.nucDirectory import nuclideBases
-        >>> nuclideBases.single(lambda nb: nb.name == 'C')
+        >>> nuclideBases.single(lambda nb: nb.name == "C")
         <NaturalNuclideBase C: Z:6, w:12.0107358968, label:C>
         >>> nuclideBases.single(lambda nb: nb.z == 95 and nb.a == 242 and nb.state == 1)
         <NuclideBase AM242M: Z:95, A:242, S:1, label:AM4C>
@@ -1391,7 +1405,7 @@ class NuclideBases:
             # think of this protected stuff as "module level protection" rather than class.
             nuclide._processBurnData(burnInfo)
 
-    def addNuclideBases(self):
+    def addNuclideBases(self, nuclidesFile: str):
         """
         Read natural abundances of any natural nuclides.
 
@@ -1406,8 +1420,14 @@ class NuclideBases:
             symbol, atomic mass, natural abundance, half-life, and spontaneous fission yield. The data in
             ``nuclides.dat`` have been collected from multiple different sources; the references are given in comments
             at the top of that file.
+
+        Parameters
+        ----------
+        nuclidesFile: str
+            File path to the custom ARMI "nuclides.dat" file, containing a plain text description of all nuclides to be
+            modeled including: Z, number of neutrons, mass number, AMU, natural abundance, half life, nu-bar and more.
         """
-        with open(self.nuclidesFile, "r") as f:
+        with open(nuclidesFile, "r") as f:
             for line in f:
                 # Skip header lines
                 if line.startswith("#") or line.startswith("Z"):
@@ -1427,17 +1447,17 @@ class NuclideBases:
                     halflife = float(halflife)
                 nuSF = float(lineData[8])
 
-                element = elements.bySymbol[sym]
-                nb = NuclideBase(element, a, mass, abun, state, halflife, addToGlobal=False)
+                element = self.elements.bySymbol[sym]
+                nb = NuclideBase(element, a, mass, abun, state, halflife)
                 nb.nuSF = nuSF
                 self.addNuclide(nb)
 
     def __addNaturalNuclideBases(self):
         """Generates a complete set of nuclide bases for each naturally occurring element."""
-        for element in elements.byZ.values():
+        for element in self.elements.byZ.values():
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
-                    self.addNuclide(NaturalNuclideBase(element.symbol, element, addToGlobal=False))
+                    self.addNuclide(NaturalNuclideBase(element.symbol, element))
 
     def __addDummyNuclideBases(self):
         """
@@ -1447,19 +1467,29 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the MC2 program.
         """
-        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, addToGlobal=False))
-        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, addToGlobal=False))
+        self.addNuclide(DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP1", weight=10.0))
+        self.addNuclide(DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP2", weight=240.0))
 
     def __addLumpedFissionProductNuclideBases(self):
         """Generates a set of nuclides for use as lumped fission products."""
-        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812, addToGlobal=False))
-        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0, addToGlobal=False))
+        self.addNuclide(
+            LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP35", weight=233.273)
+        )
+        self.addNuclide(
+            LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP38", weight=235.78)
+        )
+        self.addNuclide(
+            LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP39", weight=236.898)
+        )
+        self.addNuclide(
+            LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP40", weight=237.7)
+        )
+        self.addNuclide(
+            LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP41", weight=238.812)
+        )
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LREGN", weight=1.0))
 
-    def readMCCNuclideData(self):
+    def readMCCNuclideData(self, mccNuclidesFile):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
 
         .. impl:: Separating MCC data from code.
@@ -1473,7 +1503,7 @@ class NuclideBases:
             read, and the global dictionaries ``byMcc2Id`` ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated
             with the nuclide bases keyed by their corresponding ID for each code.
         """
-        with open(self.mccNuclidesFile, "r") as f:
+        with open(mccNuclidesFile, "r") as f:
             yaml = YAML(typ="rt")
             nuclides = yaml.load(f)
 
@@ -1530,12 +1560,12 @@ class NuclideBases:
         """Fill in the missing element data for each nuclide."""
         for nuc in self.instances:
             if nuc.element is None:
-                nuc.element = elements.byZ[nuc.z]
+                nuc.element = self.elements.byZ[nuc.z]
                 nuc.element.append(nuc)
 
     def __deriveElementalWeightsByNaturalNuclideAbundances(self):
         """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
-        for element in elements.byName.values():
+        for element in self.elements.byName.values():
             numer = 0.0
             denom = 0.0
             for nb in element.getNaturalIsotopics():

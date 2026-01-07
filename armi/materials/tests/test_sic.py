@@ -19,7 +19,7 @@ from armi.materials.siC import SiC
 from armi.materials.tests import test_materials
 
 
-class Test_SiC(test_materials._Material_Test, unittest.TestCase):
+class TestSiC(test_materials._Material_Test, unittest.TestCase):
     """SiC tests."""
 
     MAT_CLASS = SiC

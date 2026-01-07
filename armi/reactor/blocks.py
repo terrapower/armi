@@ -29,7 +29,7 @@ from typing import Callable, ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases, runLog
+from armi import runLog
 from armi.bookkeeping import report
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
@@ -1098,7 +1098,7 @@ class Block(composites.Composite):
 
         Examples
         --------
-        >>> getDim(Flags.WIRE,'od')
+        >>> getDim(Flags.WIRE, "od")
         0.01
         """
         for c in self:
@@ -1272,7 +1272,7 @@ class Block(composites.Composite):
         numDensities = self.getNumberDensities()
 
         for nucName, nDen in numDensities.items():
-            nucMc = nuclideBases.byName[nucName].label + self.getMicroSuffix()
+            nucMc = self.nuclideBases.byName[nucName].label + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
             else:
@@ -1283,6 +1283,7 @@ class Block(composites.Composite):
             mfpNumerator += nDen * total  # [cm]
             absMfpNumerator += nDen * absorb
             transportNumerator += nDen * transport
+
         denom = sum(flux)
         mfp = 1.0 / (sum(mfpNumerator * flux) / denom)
         sigmaA = sum(absMfpNumerator * flux) / denom
@@ -2223,9 +2224,13 @@ class HexBlock(Block):
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
-        return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
-            self.getComponent(Flags.WIRE, quiet=True) is not None
-        )
+        try:
+            return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
+                self.getComponent(Flags.WIRE, quiet=True) is not None
+            )
+        except Exception:
+            # not well defined pitch due to multiple pin and/or wire components
+            return False
 
     def getPinPitch(self, cold=False):
         """

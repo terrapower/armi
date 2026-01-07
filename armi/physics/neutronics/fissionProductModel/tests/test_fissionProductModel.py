@@ -15,7 +15,6 @@
 
 import unittest
 
-from armi import nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
@@ -32,7 +31,7 @@ from armi.reactor.tests.test_reactors import (
 )
 
 
-class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
+class TestFPMLumpedFP(unittest.TestCase):
     """
     Tests the fission product model interface behavior when lumped fission products are enabled.
 
@@ -91,7 +90,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
             self.assertTrue(False, "All blocks have all nuclides!")
 
 
-class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
+class TestFPMExplicitMC2Lib(unittest.TestCase):
     """
     Tests the fission product model interface behavior when explicit fission products are enabled.
 
@@ -107,6 +106,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
         self.r = r
+        self.nuclideBases = self.r.nuclideBases
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         # Set up the global LFPs and check that they are setup.
         self.assertFalse(self.fpModel._useGlobalLFPs)
@@ -117,7 +117,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         # products in the reactor data model.
         self.fpModel.interactBOL()
 
-        for nb in nuclideBases.byMcc3Id.values():
+        for nb in self.nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, self.r.blueprints.nuclideFlags.keys())
 
     def test_nuclidesInModelFuel(self):
@@ -128,11 +128,11 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
 
         b = self.r.core.getFirstBlock(Flags.FUEL)
         nuclideList = b.getNuclides()
-        for nb in nuclideBases.byMcc3Id.values():
+        for nb in self.nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, nuclideList)
 
 
-class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
+class TestFPMExplicitMC2LibSlow(unittest.TestCase):
     """
     Tests the fission product model interface behavior when explicit fission products are enabled.
 
@@ -147,6 +147,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
             }
         )
         self.r = r
+        self.nuclideBases = self.r.nuclideBases
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         # Set up the global LFPs and check that they are setup.
         self.assertFalse(self.fpModel._useGlobalLFPs)
@@ -197,7 +198,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
         for b in self.r.core.iterBlocks():
             nuclideList = b.getNuclides()
             if isDepletable(b):
-                for nb in nuclideBases.byMcc3Id.values():
+                for nb in self.nuclideBases.byMcc3Id.values():
                     self.assertIn(nb.name, nuclideList)
             else:
-                self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
+                self.assertLess(len(b.getNuclides()), len(self.nuclideBases.byMcc3Id))

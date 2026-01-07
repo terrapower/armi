@@ -51,6 +51,7 @@ from armi.reactor.components import (
     UnshapedVolumetricComponent,
     materials,
 )
+from armi.reactor.reactors import Reactor
 from armi.testing import loadTestReactor
 from armi.utils.units import getTc
 
@@ -677,7 +678,7 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_EXPANSION1
             :tests: R_ARMI_COMP_EXPANSION
         """
-        for hotTemp in range(600, 901, 25):
+        for hotTemp in range(200, 400, 25):
             ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
             cur = self.component.getDimension("od", Tc=hotTemp)
             self.assertAlmostEqual(cur, ref)
@@ -854,7 +855,7 @@ class TestCircle(TestShapedComponent):
 
 
 class TestComponentExpansion(unittest.TestCase):
-    tCold = 20
+    tCold = 25
     tWarm = 50
     tHot = 500
     coldOuterDiameter = 1.0
@@ -1851,14 +1852,19 @@ class TestMaterialAdjustments(unittest.TestCase):
         dims = {"Tinput": 25.0, "Thot": 600.0, "od": 10.0, "id": 5.0, "mult": 1.0}
         self.fuel = Circle("fuel", "UZr", **dims)
 
-        class fakeBlock:
+        class FakeBlock:
+            reactor = Reactor("testMatReactor", None)
+
             def getHeight(self):  # unit height
                 return 1.0
 
             def getSymmetryFactor(self):
                 return 1.0
 
-        self.fuel.parent = fakeBlock()
+            def getAncestor(self, fn):
+                return self.reactor
+
+        self.fuel.parent = FakeBlock()
 
     def test_setMassFrac(self):
         """Make sure we can set a mass fraction properly."""

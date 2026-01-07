@@ -22,7 +22,7 @@ import unittest
 
 import numpy as np
 
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 from armi.tests import mockRunLogs
@@ -235,7 +235,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
 
-class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
+class TestGetISOTXSFilesWorkDir(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
         shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [
@@ -306,6 +306,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.libAB = self.getReadFunc()(self.getLibABPath())
         self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
         self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
+        self.nuclideBases = NuclideBases()
 
     def getErrorType(self):
         raise NotImplementedError()
@@ -367,9 +368,9 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
 
 
-class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+class TestPmatrxMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
-        return OSError
+        raise OSError
 
     def getReadFunc(self):
         return pmatrx.readBinary
@@ -397,9 +398,9 @@ class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             dummyXsLib.merge(self.libCombined)
 
 
-class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+class TestIsotxsMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
-        return OSError
+        raise OSError
 
     def getReadFunc(self):
         return isotxs.readBinary
@@ -438,7 +439,7 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             "XE1357",
             "XE1367",
         ]:
-            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
@@ -446,9 +447,9 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
-class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
-        return OSError
+        raise OSError
 
     def getReadFunc(self):
         return gamiso.readBinary
@@ -487,7 +488,7 @@ class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             "XE1357",
             "XE1367",
         ]:
-            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
@@ -495,7 +496,7 @@ class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
-class Combined_Merge_Tests(unittest.TestCase):
+class TestCombinedMerge(unittest.TestCase):
     def setUp(self):
         # Load a library that is in the ARMI tree. This should be a small library with LFPs,
         # Actinides, structure, and coolant
