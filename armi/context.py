@@ -198,7 +198,7 @@ def getFastPath() -> str:
     return _FAST_PATH
 
 
-def cleanFastPathAfterSimulation(olderThanDays=None):
+def cleanFastPathAfterSimulation():
     """
     Clean up temporary files after a run.
 
@@ -208,11 +208,6 @@ def cleanFastPathAfterSimulation(olderThanDays=None):
     zero. This sets the period between SIGBREAK and SIGTERM/SIGINT. To do cleanups in this case, we
     must use the ``signal`` module. Actually, even then it does not work because MS ``mpiexec`` does
     not pass signals through.
-
-    Parameters
-    ----------
-    olderThanDays: int, optional
-        If provided, deletes other ARMI directories if they are older than the requested time.
     """
     from armi import runLog
     from armi.utils.pathTools import cleanPath
@@ -234,42 +229,6 @@ def cleanFastPathAfterSimulation(olderThanDays=None):
                         "Failed to delete temporary files in: {}\n    error: {}".format(_FAST_PATH, error),
                         file=outputStream,
                     )
-
-    if olderThanDays is not None:
-        cleanAllArmiTempDirs(olderThanDays)
-
-
-def cleanAllArmiTempDirs(olderThanDays: int) -> None:
-    """
-    Delete all ARMI-related files from other unrelated runs after `olderThanDays` days (in case this
-    failed on earlier runs).
-
-    This is a useful utility in HPC environments when some runs crash sometimes.
-
-    Warning
-    -------
-    This will break any concurrent runs that are still running.
-    """
-    from armi.utils.pathTools import cleanPath
-
-    gracePeriod = datetime.timedelta(days=olderThanDays)
-    now = datetime.datetime.now()
-    thisRunFolder = os.path.basename(_FAST_PATH)
-
-    for dirname in os.listdir(APP_DATA):
-        dirPath = os.path.join(APP_DATA, dirname)
-        if not os.path.isdir(dirPath):
-            continue
-        try:
-            fromThisRun = dirname == thisRunFolder  # second chance to delete
-            _rank, dateString = dirname.split("-")
-            dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
-            runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
-            if runIsOldAndLikleyComplete or fromThisRun:
-                # Delete old files
-                cleanPath(dirPath, mpiRank=MPI_RANK)
-        except Exception:
-            pass
 
 
 def disconnectAllHdfDBs() -> None:
