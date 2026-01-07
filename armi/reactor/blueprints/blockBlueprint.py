@@ -64,8 +64,7 @@ class BlockBlueprint(yamlize.KeyedList):
         larger :py:class:`~armi.reactor.blueprints.Blueprints` class.
 
         Includes a ``construct`` method, which instantiates an instance of
-        :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the
-        blueprints.
+        :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the blueprints.
     """
 
     item_type = componentBlueprint.ComponentBlueprint
@@ -90,9 +89,8 @@ class BlockBlueprint(yamlize.KeyedList):
                 return blockCls
 
         raise ValueError(
-            "Block input for {} has outer component {} which is "
-            " not a supported Block geometry subclass. Update geometry."
-            "".format(self.name, outerComponent)
+            f"Block input for {self.name} has outer component {outerComponent} which is not a supported Block geometry "
+            "subclass. Update geometry."
         )
 
     def construct(self, cs, blueprint, axialIndex, axialMeshPoints, height, xsType, materialInput):
@@ -103,27 +101,21 @@ class BlockBlueprint(yamlize.KeyedList):
         ----------
         cs : Settings
             Settings object for the appropriate simulation.
-
         blueprint : Blueprints
             Blueprints object containing various detailed information, such as nuclides to model
-
         axialIndex : int
             The Axial index this block exists within the parent assembly
-
         axialMeshPoints : int
             number of mesh points for use in the neutronics kernel
-
         height : float
             initial height of the block
-
         xsType : str
             String representing the xsType of this block.
-
         materialInput : dict
             Double-layered dict.
-            Top layer groups the by-block material modifications under the `byBlock` key
-            and the by-component material modifications under the component's name.
-            The inner dict under each key contains material modification names and values.
+            Top layer groups the by-block material modifications under the `byBlock` key and the by-component material
+            modifications under the component's name. The inner dict under each key contains material modification names
+            and values.
         """
         runLog.debug("Constructing block {}".format(self.name))
         components = collections.OrderedDict()
@@ -150,8 +142,7 @@ class BlockBlueprint(yamlize.KeyedList):
             # check that the mat mods for this component are valid options
             # this will only examine by-component mods, block mods are done later
             if isinstance(c, Component):
-                # there are other things like composite groups that don't get
-                # material modifications -- skip those
+                # there are other things like composite groups that don't get material modifications -- skip those
                 validMatModOptions = self._getMaterialModsFromBlockChildren(c)
                 for key in byComponentMatModKeys:
                     if key not in validMatModOptions:
@@ -160,17 +151,15 @@ class BlockBlueprint(yamlize.KeyedList):
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(spatialGrid, componentDesign.latticeIDs)
                 if componentLocators:
-                    # this component is defined in the block grid
-                    # We can infer the multiplicity from the grid.
-                    # Otherwise it's a component that is in a block
-                    # with grids but that's not in the grid itself.
+                    # This component is defined in the block grid. We can infer the multiplicity from the grid.
+                    # Otherwise it's a component that is in a block with grids but that's not in the grid itself.
                     c.spatialLocator = componentLocators
                     mult = c.getDimension("mult")
                     if mult and mult != 1.0 and mult != len(c.spatialLocator):
                         raise ValueError(
-                            f"For {c} in {self.name} there is a conflicting ``mult`` input ({mult}) "
-                            f"and number of lattice positions ({len(c.spatialLocator)}). "
-                            "Recommend leaving off ``mult`` input when using grids."
+                            f"For {c} in {self.name} there is a conflicting ``mult`` input ({mult}) and number of "
+                            f"lattice positions ({len(c.spatialLocator)}). Recommend leaving off ``mult`` input when "
+                            "using grids."
                         )
                     elif not mult or mult == 1.0:
                         # learn mult from grid definition
@@ -185,9 +174,9 @@ class BlockBlueprint(yamlize.KeyedList):
                         # their blueprints are probably wrong
                         if len([i for i in idsInGrid if i == str(latticeID)]) == 0:
                             raise ValueError(
-                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected "
-                                "to be present in the associated block grid. "
-                                "Check that the component's latticeIDs align with the block's grid."
+                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected to be present in "
+                                "the associated block grid. Check that the component's latticeIDs align with the "
+                                "block's grid."
                             )
 
         # for every id in grid, confirm that at least one component had it
@@ -385,6 +374,7 @@ def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
             f"An axial mesh refinement factor of {factor} is applied to blueprint based on setting specification.",
             single=True,
         )
+
     return int(meshPoints) * factor
 
 
