@@ -218,7 +218,7 @@ def getApp() -> Optional[apps.App]:
 def _cleanupOnCancel(signum, _frame):
     """Helper function to clean up upon cancellation."""
     print(f"Caught Cancel signal ({signum}); cleaning temporary files and exiting...", file=sys.stderr)
-    context.cleanTempDirs()
+    context.cleanFastPathAfterSimulation()
     sys.stdout.flush()
     sys.stderr.flush()
     sys.exit(1)  # since we're handling the signal we have to cancel
@@ -307,7 +307,7 @@ def applyAsyncioWindowsWorkaround() -> None:
 applyAsyncioWindowsWorkaround()
 
 # The ``atexit`` handler is like putting it in a finally after everything.
-atexit.register(context.cleanTempDirs)
+atexit.register(context.cleanFastPathAfterSimulation)
 
 # register cleanups upon HPC cancellations. Linux clusters will send a different signal. SIGBREAK doesn't exist on
 # non-windows This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.

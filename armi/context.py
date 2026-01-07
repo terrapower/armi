@@ -198,7 +198,7 @@ def getFastPath() -> str:
     return _FAST_PATH
 
 
-def cleanTempDirs(olderThanDays=None):
+def cleanFastPathAfterSimulation(olderThanDays=None):
     """
     Clean up temporary files after a run.
 
