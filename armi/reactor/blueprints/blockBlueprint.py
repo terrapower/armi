@@ -233,14 +233,14 @@ class BlockBlueprint(yamlize.KeyedList):
                 b.setAxialExpTargetComp(components[self.axialExpTargetComponent])
             except KeyError as noMatchingComponent:
                 raise RuntimeError(
-                    f"Block {b} --> axial expansion target component {self.axialExpTargetComponent} "
-                    "specified in the blueprints does not match any component names. "
-                    "Revise axial expansion target component in blueprints "
-                    "to match the name of a component and retry."
+                    f"Block {b} --> axial expansion target component {self.axialExpTargetComponent} specified in the "
+                    "blueprints does not match any component names. Revise axial expansion target component in "
+                    "blueprints to match the name of a component and retry."
                 ) from noMatchingComponent
 
         for c in components.values():
             b.add(c)
+
         b.p.nPins = b.getNumPins()
         b.p.axMesh = _setBlueprintNumberOfAxialMeshes(axialMeshPoints, cs["axialMeshRefinementFactor"])
         b.p.height = height
@@ -266,8 +266,7 @@ class BlockBlueprint(yamlize.KeyedList):
         perChildModifiers = set()
         for material in self._getMaterialsInComposite(c):
             for materialParentClass in material.__class__.__mro__:
-                # we must loop over parents as well, since applyInputParams
-                # could call to Parent.applyInputParams()
+                # we must loop over parents as well, since applyInputParams could call to Parent.applyInputParams()
                 if issubclass(materialParentClass, Material):
                     perChildModifiers.update(signature(materialParentClass.applyInputParams).parameters.keys())
         # self is a parameter to methods, so it gets picked up here
@@ -281,8 +280,7 @@ class BlockBlueprint(yamlize.KeyedList):
         if isinstance(child, Component):
             yield child.material
             return
-        # Don't apply modifications to other things that could reside
-        # in a block e.g., component groups
+        # Don't apply modifications to other things that could reside in a block e.g., component groups.
 
     def _checkByComponentMaterialInput(self, materialInput):
         for component in materialInput:
@@ -297,11 +295,10 @@ class BlockBlueprint(yamlize.KeyedList):
     @staticmethod
     def _filterMaterialInput(materialInput, componentDesign):
         """
-        Get the by-block material modifications and those specifically for this
-        component.
+        Get the by-block material modifications and those specifically for this component.
 
-        If a material modification is specified both by-block and by-component
-        for a given component, the by-component value will be used.
+        If a material modification is specified both by-block and by-component for a given component, the by-component
+        value will be used.
         """
         filteredMaterialInput = {}
         byComponentMatModKeys = set()
@@ -330,8 +327,8 @@ class BlockBlueprint(yamlize.KeyedList):
         """
         Get the appropriate grid design.
 
-        This happens when a lattice input is provided on the block. Otherwise all
-        components are ambiguously defined in the block.
+        This happens when a lattice input is provided on the block. Otherwise all components are ambiguously defined in
+        the block.
         """
         if self.gridName:
             if self.gridName not in blueprint.gridDesigns:
@@ -385,9 +382,7 @@ def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
 
     if factor != 1:
         runLog.important(
-            "An axial mesh refinement factor of {} is applied to blueprint based on setting specification.".format(
-                factor
-            ),
+            f"An axial mesh refinement factor of {factor} is applied to blueprint based on setting specification.",
             single=True,
         )
     return int(meshPoints) * factor

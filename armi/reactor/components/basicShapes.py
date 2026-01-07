@@ -56,6 +56,7 @@ class Circle(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -66,6 +67,7 @@ class Circle(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, od=od, id=id, mult=mult, modArea=modArea)
 
@@ -126,6 +128,7 @@ class Hexagon(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -136,6 +139,7 @@ class Hexagon(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, op=op, ip=ip, mult=mult, modArea=modArea)
 
@@ -204,6 +208,7 @@ class Rectangle(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -214,6 +219,7 @@ class Rectangle(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -283,6 +289,7 @@ class SolidRectangle(Rectangle):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -293,6 +300,7 @@ class SolidRectangle(Rectangle):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -327,10 +335,9 @@ class Square(Rectangle):
         :id: I_ARMI_COMP_SHAPES3
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation for a square Component. This class
-        subclasses the ``Rectangle`` class because a square is a type of rectangle.
-        This includes setting key parameters such as its material, temperature, and
-        dimensions.
+        This class provides the implementation for a square Component. This class subclasses the ``Rectangle`` class
+        because a square is a type of rectangle. This includes setting key parameters such as its material, temperature,
+        and dimensions.
     """
 
     is3D = False
@@ -348,6 +355,7 @@ class Square(Rectangle):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -358,6 +366,7 @@ class Square(Rectangle):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -438,6 +447,7 @@ class Triangle(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -448,6 +458,7 @@ class Triangle(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, base=base, height=height, mult=mult, modArea=modArea)
 

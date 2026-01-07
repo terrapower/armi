@@ -43,6 +43,7 @@ class Sphere(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -53,6 +54,7 @@ class Sphere(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, od=od, id=id, mult=mult, modArea=modArea)
 
@@ -107,6 +109,7 @@ class Cube(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -117,6 +120,7 @@ class Cube(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -189,6 +193,7 @@ class RadialSegment(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -199,6 +204,7 @@ class RadialSegment(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -292,6 +298,7 @@ class DifferentialRadialSegment(RadialSegment):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -302,6 +309,7 @@ class DifferentialRadialSegment(RadialSegment):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,

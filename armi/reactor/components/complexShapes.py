@@ -51,6 +51,7 @@ class HoledHexagon(basicShapes.Hexagon):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -61,6 +62,7 @@ class HoledHexagon(basicShapes.Hexagon):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -115,6 +117,7 @@ class HexHoledCircle(basicShapes.Circle):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -125,6 +128,7 @@ class HexHoledCircle(basicShapes.Circle):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, od=od, holeOP=holeOP, mult=mult, modArea=modArea)
 
@@ -170,6 +174,7 @@ class FilletedHexagon(basicShapes.Hexagon):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -180,6 +185,7 @@ class FilletedHexagon(basicShapes.Hexagon):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea)
 
@@ -227,6 +233,7 @@ class HoledRectangle(basicShapes.Rectangle):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -237,6 +244,7 @@ class HoledRectangle(basicShapes.Rectangle):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,
@@ -293,6 +301,7 @@ class HoledSquare(basicShapes.Square):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -303,6 +312,7 @@ class HoledSquare(basicShapes.Square):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, widthOuter=widthOuter, holeOD=holeOD, mult=mult, modArea=modArea)
 
@@ -369,6 +379,7 @@ class Helix(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         ShapedComponent.__init__(
             self,
@@ -379,6 +390,7 @@ class Helix(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(
             components,

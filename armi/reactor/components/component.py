@@ -114,6 +114,7 @@ class ComponentType(composites.CompositeModelType):
         "name",
         "components",
         "area",
+        "loadFromDb",
     )
 
     def __new__(cls, name, bases, attrs):
@@ -215,7 +216,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        if loadFromDb:
+        if not loadFromDb:
             self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating
         self.setType(name)
         self.p.mergeWith = mergeWith

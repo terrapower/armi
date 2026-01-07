@@ -134,6 +134,7 @@ class UnshapedComponent(Component):
         isotopics=None,
         mergeWith=None,
         components=None,
+        loadFromDb=False,
     ):
         Component.__init__(
             self,
@@ -145,6 +146,7 @@ class UnshapedComponent(Component):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, modArea=modArea)
 
@@ -246,6 +248,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         mergeWith=None,
         components=None,
         volume=np.nan,
+        loadFromDb=False,
     ):
         Component.__init__(
             self,
@@ -257,6 +260,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            loadFromDb=loadFromDb,
         )
         self._linkAndStoreDimensions(components, op=op, userDefinedVolume=volume)
 
