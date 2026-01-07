@@ -180,8 +180,8 @@ class ComponentBlueprint(yamlize.Object):
 
             Allows for user input to impact a component's materials by applying the "material modifications" section of
             a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`) to the material during construction. This takes place
-            during lower calls to ``_conformComponetnKwargs()`` and subsequently ``_constructMaterial()``, which operate using
-            the component blueprint and associated material modifications from the component's block.
+            during lower calls to ``_conformComponetnKwargs()`` and subsequently ``_constructMaterial()``, which operate
+            using the component blueprint and associated material modifications from the component's block.
 
             Within ``_constructMaterial()``, the material class is resolved into a material object by calling
             :py:func:`~armi.materials.resolveMaterialClassByName`. The ``applyInputParams()`` method of that material

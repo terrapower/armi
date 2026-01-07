@@ -13,8 +13,7 @@
 # limitations under the License.
 
 """
-Components represent geometric objects within an assembly such as fuel, bond, coolant, ducts, wires,
-etc.
+Components represent geometric objects within an assembly such as fuel, bond, coolant, ducts, wires, etc.
 
 This module contains the abstract definition of a Component.
 """
@@ -93,16 +92,15 @@ class ComponentType(composites.CompositeModelType):
     """
     ComponetType is a metaclass for storing and initializing Component subclass types.
 
-    The construction of Component subclasses is being done through factories for ease of user input.
-    As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
-    to the correct format. Additionally, the constructors arguments can be used to determine the
-    Component subclasses dimensions.
+    The construction of Component subclasses is being done through factories for ease of user input. As a consequence,
+    the ``__init__`` methods' arguments need to be known in order to conform them to the correct format. Additionally,
+    the constructors arguments can be used to determine the Component subclasses dimensions.
 
     Warning
     -------
-    The import-time metaclass-based component subclass registration was a good idea, but in practice
-    has caused significant confusion and trouble. We will replace this soon with an explicit
-    plugin-based component subclass registration system.
+    The import-time metaclass-based component subclass registration was a good idea, but in practice has caused
+    significant confusion and trouble. We will replace this soon with an explicit plugin-based component subclass
+    registration system.
     """
 
     TYPES = dict()  #: :meta hide-value:
@@ -122,8 +120,7 @@ class ComponentType(composites.CompositeModelType):
         newType = composites.CompositeModelType.__new__(cls, name, bases, attrs)
         ComponentType.TYPES[name.lower()] = newType
 
-        # the co_varnames attribute contains arguments and then locals so we must
-        # restrict it to just the arguments.
+        # The co_varnames attribute contains arguments and then locals so we must restrict it to just the arguments.
         signature = newType.__init__.__code__.co_varnames[1 : newType.__init__.__code__.co_argcount]
 
         # INIT_SIGNATURE and DIMENSION_NAMES are in the same order as the method signature
@@ -222,6 +219,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+
     dbLoad = False
 
     @property
@@ -241,11 +239,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def __lt__(self, other):
         """
-        True if a circle encompassing this object has a smaller diameter than one encompassing
-        another component.
+        True if a circle encompassing this object has a smaller diameter than one encompassing another component.
 
-        If the bounding circles for both components have identical size, then revert to checking the
-        inner diameter of each component for sorting.
+        If the bounding circles for both components have identical size, then revert to checking the inner diameter of
+        each component for sorting.
 
         This allows sorting because the Python sort functions only use this method.
         """
@@ -286,10 +283,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_FLUID1
             :implements: R_ARMI_COMP_FLUID
 
-            Some Components are fluids and are thus defined by the shapes surrounding
-            them. This method cycles through each dimension defining the border of this
-            Component and converts the name of that Component to a link to the object
-            itself. This series of links is then used downstream to resolve dimensional information.
+            Some Components are fluids and are thus defined by the shapes surrounding them. This method cycles through
+            each dimension defining the border of this Component and converts the name of that Component to a link to
+            the object itself. This series of links is then used downstream to resolve dimensional information.
         """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
@@ -321,8 +317,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Apply thermo-mechanical properties of a Material."""
         if isinstance(properties, str):
             mat = materials.resolveMaterialClassByName(properties)()
-            # note that the material will not be expanded to natural isotopics
-            # here because the user-input blueprints information is not available
+            # note that the material will not be expanded to natural isotopics here because the user-input blueprints
+            # information is not available
         else:
             mat = properties
         self.material = mat
@@ -335,31 +331,28 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        - the density returned accounts for the expansion of the component
-          due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - After the expansion, the density of the component should reflect the 3d
-          density of the material
+        - the density returned accounts for the expansion of the component due to the difference in
+          self.inputTemperatureInC and self.temperatureInC
+        - After the expansion, the density of the component should reflect the 3D density of the material
         """
-
         # set material to initial density so it has populated nuclides and material can access nuclide fracs
         # (some properties like thermal expansion depend on nuclide fracs)
-        density = 100.0 #  non-physical placeholder density to initialize number density fractions
+        density = 100.0  #  non-physical placeholder density to initialize number density fractions
         self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
 
-        # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
-        # setting number densities can sometimes change thermal expansion behavior. Call again so
-        # the material has access to its parent's comp when providing the reference initial density.
-        # pseudoDensity is not the actual material density, but rather 2D expanded, `density` is 3D density
+        # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so setting number
+        # densities can sometimes change thermal expansion behavior. Call again so the material has access to its
+        # parent's comp when providing the reference initial density. "pseudoDensity" is not the actual material
+        # density, but a 2D version of the normal 3D "density" defined for linear expansion.
         densityBasedOnParentComposition = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
         self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
 
-        # material needs to be expanded from the material's cold temp to hot,
-        # not components cold temp, so we don't use mat.linearExpansionFactor or
-        # component.getThermalExpansionFactor.
-        # Materials don't typically define the temperature for which their references
-        # density is defined so linearExpansionPercent must be called
+        # material needs to be expanded from the material's cold temp to hot, not components cold temp, so we don't use
+        # mat.linearExpansionFactor or component.getThermalExpansionFactor.
+        # Materials don't typically define the temperature for which their references density is defined so
+        # linearExpansionPercent must be called
         coldMatAxialExpansionFactor = 1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
@@ -369,10 +362,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Call before setTemperature since we need old hot temp. This works well if there is only 1
-        solid component. If there are multiple components expanding at different rates during
-        thermal expansion this becomes more complicated and, and axial expansion should be used.
-        Multiple expansion rates cannot trivially be accommodated.
+        Call before setTemperature since we need old hot temp. This works well if there is only 1 solid component. If
+        there are multiple components expanding at different rates during thermal expansion this becomes more
+        complicated and, and axial expansion should be used. Multiple expansion rates cannot trivially be accommodated.
         """
         self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
 
@@ -432,8 +424,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         try:
             self.getProperties().setLumpedFissionProducts(lfpCollection)
         except AttributeError:
-            # This material doesn't setLumpedFissionProducts because it's a regular
-            # material, not a lumpedFissionProductCompatable material
+            # This material doesn't setLumpedFissionProducts because it's a regular material, not a
+            # lumpedFissionProductCompatable material
             pass
 
     def getArea(self, cold=False, Tc=None):
@@ -475,9 +467,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        ``self.p.volume`` is not set until this method is called, so under most circumstances it is
-        probably not safe to access ``self.p.volume`` directly. This is because not all components
-        (e.g., ``DerivedShape``) can compute their volume during initialization.
+        ``self.p.volume`` is not set until this method is called, so under most circumstances it is probably not safe to
+        access ``self.p.volume`` directly. This is because not all components (e.g., ``DerivedShape``) can compute their
+        volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -489,9 +481,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Invalidate the volume so that it will be recomputed from current dimensions upon next access.
 
-        The updated value will be based on its shape and current dimensions.
-        If there is a parent container and that container contains a DerivedShape, then that must be
-        updated as well since its volume may be changing.
+        The updated value will be based on its shape and current dimensions. If there is a parent container and that
+        container contains a DerivedShape, then that must be updated as well since its volume may be changing.
 
         See Also
         --------
@@ -519,12 +510,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Check for negative area and warn/error when appropriate.
 
-        Negative component area is allowed for Void materials (such as gaps) which may be placed
-        between components that will overlap during thermal expansion (such as liners and cladding
-        and annular fuel).
+        Negative component area is allowed for Void materials (such as gaps) which may be placed between components that
+        will overlap during thermal expansion (such as liners and cladding and annular fuel).
 
-        Overlapping is allowed to maintain conservation of atoms while sticking close to the
-        as-built geometry. Modules that need true geometries will have to handle this themselves.
+        Overlapping is allowed to maintain conservation of atoms while sticking close to the as-built geometry. Modules
+        that need true geometries will have to handle this themselves.
         """
         if np.isnan(area):
             return
@@ -588,18 +578,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         r"""
         Adjust temperature of this component.
 
-        This will cause thermal expansion or contraction of solid or liquid components and will
-        accordingly adjust number densities to conserve mass.
+        This will cause thermal expansion or contraction of solid or liquid components and will accordingly adjust
+        number densities to conserve mass.
 
-        Liquids still have a number density adjustment, but some mass tends to expand in or out of
-        the bounding area.
+        Liquids still have a number density adjustment, but some mass tends to expand in or out of the bounding area.
 
-        Since some composites have multiple materials in them that thermally expand differently,
-        the axial dimension is generally left unchanged. Hence, this a 2-D thermal expansion.
+        Since some composites have multiple materials in them that thermally expand differently, the axial dimension is
+        generally left unchanged. Hence, this a 2-D thermal expansion.
 
-        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`.
-        A multiplicative factor :math:`f_N` to apply to number densities when going from T to T'
-        is as follows:
+        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`. A multiplicative factor
+        :math:`f_N` to apply to number densities when going from T to T' is as follows:
 
         .. math::
 
@@ -672,9 +660,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Get number densities using direct array lookup.
 
-        When only a small subset of nuclide number densities are requested, it is
-        likely faster to lookup the index for each nuclide than to recreate the
-        entire dictionary for a lookup.
+        When only a small subset of nuclide number densities are requested, it is likely faster to lookup the index for
+        each nuclide than to recreate the entire dictionary for a lookup.
 
         Parameters
         ----------
@@ -754,26 +741,24 @@ class Component(composites.Composite, metaclass=ComponentType):
         numberDensities : dict
             nucName: ndens pairs.
         wipe : bool, optional
-            Controls whether the old number densities are wiped. Any nuclide densities not provided
-            in numberDensities will be effectively set to 0.0.
+            Controls whether the old number densities are wiped. Any nuclide densities not provided in numberDensities
+            will be effectively set to 0.0.
 
         Notes
         -----
-        Sometimes volume/dimensions change due to number density change when the material thermal
-        expansion depends on the component's composition (e.g. its plutonium fraction). In this
-        case, changing the density will implicitly change the area/volume. Since it is difficult to
-        predict the new dimensions, and perturbation/depletion calculations almost exclusively
-        assume constant volume, the densities sent are automatically adjusted to conserve mass with
-        the original dimensions. That is, the component's densities are not exactly as passed, but
-        whatever they would need to be to preserve volume integrated number densities (moles) from
-        the pre-perturbed component's volume/dimensions.
+        Sometimes volume/dimensions change due to number density change when the material thermal expansion depends on
+        the component's composition (e.g. its plutonium fraction). In this case, changing the density will implicitly
+        change the area/volume. Since it is difficult to predict the new dimensions, and perturbation/depletion
+        calculations almost exclusively assume constant volume, the densities sent are automatically adjusted to
+        conserve mass with the original dimensions. That is, the component's densities are not exactly as passed, but
+        whatever they would need to be to preserve volume integrated number densities (moles) from the pre-perturbed
+        component's volume/dimensions.
 
-        This has no effect if the material thermal expansion has no dependence on component
-        composition. If this is not desired, `self.p.numberDensities` and `self.p.nuclides` can be
-        set directly.
+        This has no effect if the material thermal expansion has no dependence on component composition. If this is not
+        desired, `self.p.numberDensities` and `self.p.nuclides` can be set directly.
         """
-        # prepare to change the densities with knowledge that dims could change due to material
-        # thermal expansion dependence on composition
+        # prepare to change the densities with knowledge that dims could change due to material thermal expansion
+        # dependence on composition
         if self.p.numberDensities is not None and self.p.numberDensities.size > 0:
             dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             materialExpansion = True
@@ -916,16 +901,14 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION1
             :implements: R_ARMI_COMP_EXPANSION
 
-            Dimensions should be set considering the impact of thermal expansion. This
-            method allows for a user or plugin to set a dimension and indicate if the
-            dimension is for a cold configuration or not. If it is not for a cold
-            configuration, the thermal expansion factor is considered when setting the dimension.
+            Dimensions should be set considering the impact of thermal expansion. This method allows for a user or
+            plugin to set a dimension and indicate if the dimension is for a cold configuration or not. If it is not for
+            a cold configuration, the thermal expansion factor is considered when setting the dimension.
 
-            If the ``retainLink`` argument is ``True``, any Components linked to this one will also
-            have its dimensions changed consistently. After a dimension is updated, the
-            ``clearLinkedCache`` method is called which sets the volume of this Component to
-            ``None``. This ensures that when the volume is next accessed it is recomputed using the
-            updated dimensions.
+            If the ``retainLink`` argument is ``True``, any Components linked to this one will also have its dimensions
+            changed consistently. After a dimension is updated, the ``clearLinkedCache`` method is called which sets the
+            volume of this Component to ``None``. This ensures that when the volume is next accessed it is recomputed
+            using the updated dimensions.
 
         Parameters
         ----------
@@ -1041,11 +1024,10 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
 
-            This method enables the calculation of the thermal expansion factor for a given
-            material. If the material is solid, the difference between ``T0`` and ``Tc`` is used to
-            calculate the thermal expansion factor. If a solid material does not have a linear
-            expansion factor defined and the temperature difference is greater than a predetermined
-            tolerance, an error is raised. Thermal expansion of fluids or custom materials is
+            This method enables the calculation of the thermal expansion factor for a given material. If the material is
+            solid, the difference between ``T0`` and ``Tc`` is used to calculate the thermal expansion factor. If a
+            solid material does not have a linear expansion factor defined and the temperature difference is greater
+            than a predetermined tolerance, an error is raised. Thermal expansion of fluids or custom materials is
             neglected, currently.
 
         Parameters
@@ -1150,8 +1132,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set another component's number densities to reflect this one merged into it.
 
-        You must also modify the geometry of the other component and remove this component to
-        conserve atoms.
+        You must also modify the geometry of the other component and remove this component to conserve atoms.
         """
         # record pre-merged number densities and areas
         aMe = self.getArea()
@@ -1173,8 +1154,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Create and store a backup of the state.
 
-        This needed to be overridden due to linked components which actually have a parameter value
-        of another ARMI component.
+        This needed to be overridden due to linked components which actually have a parameter value of another ARMI
+        component.
         """
         linkedDims = self._getLinkedDimsAndValues()
         composites.Composite.backUp(self)
@@ -1184,8 +1165,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Restore the parameters from previously created backup.
 
-        This needed to be overridden due to linked components which actually have a parameter value
-        of another ARMI component.
+        This needed to be overridden due to linked components which actually have a parameter value of another ARMI
+        component.
         """
         linkedDims = self._getLinkedDimsAndValues()
         composites.Composite.restoreBackup(self, paramsToApply)
@@ -1195,9 +1176,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         linkedDims = []
 
         for dimName in self.DIMENSION_NAMES:
-            # backUp and restore are called in tight loops, getting the value and checking here is
-            # faster than calling self.dimensionIsLinked because that requires and extra
-            # p.__getitem__
+            # backUp and restore are called in tight loops, getting the value and checking here is faster than calling
+            # self.dimensionIsLinked because that requires and extra p.__getitem__
             try:
                 val = self.p[dimName]
             except Exception:
@@ -1226,9 +1206,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         Conceptually, you could hold number of atoms, volume, or mass constant during this
         operation. Historically ARMI adjusted mass fractions which was meant to keep mass constant.
 
-        If you have 20 mass % Uranium and adjust the enrichment, you will still have 20% Uranium
-        mass. But, the actual mass actually might change a bit because the enriched nuclide weighs
-        less.
+        If you have 20 mass % Uranium and adjust the enrichment, you will still have 20% Uranium mass. But, the actual
+        mass actually might change a bit because the enriched nuclide weighs less.
 
         See Also
         --------
@@ -1236,6 +1215,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         if self.material.enrichedNuclide is None:
             raise ValueError(f"Cannot adjust enrichment of {self.material} because `enrichedNuclide` is not defined.")
+
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracsBefore = self.getMassFracs()
@@ -1286,8 +1266,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Return the multigroup neutron tracklength in [n-cm/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional group is the
-        next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the next energy group, as
+        set in the ISOTXS library.
 
         Parameters
         ----------
@@ -1335,18 +1315,17 @@ class Component(composites.Composite, metaclass=ComponentType):
         Returns
         -------
         np.ndarray
-            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the
-            multiplicity of the component (``self.p.mult``) and ``nGroup`` is the number of energy
-            groups of the flux.
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the multiplicity of the
+            component (``self.p.mult``) and ``nGroup`` is the number of energy groups of the flux.
 
         Raises
         ------
         ValueError
-            If the location(s) of the component are not aligned with pin indices from the block.
-            This would happen if this component is not actually a pin.
+            If the location(s) of the component are not aligned with pin indices from the block. This would happen if
+            this component is not actually a pin.
         """
-        # If we get a None, for a non-pin thing, the exception block at the bottom will catch
-        # that and inform the user. so we don't need to add extra guard rails here
+        # If we get a None, for a non-pin thing, the exception block at the bottom will catch that and inform the user.
+        # So we don't need to add extra guard rails here.
         indexMap = self.getPinIndices()
 
         # Get the parameter name we are trying to retrieve
@@ -1375,16 +1354,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         Returns
         -------
         np.array[int]
-            The indices in various Block-level pin methods,
-            e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`, that correspond to
-            this component.
+            The indices in various Block-level pin methods, e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`,
+            that correspond to this component.
 
         Raises
         ------
         ValueError
-            If this does not have pin indices. This can be the case for components that live
-            on blocks without spatial grids, or if they do not share lattice sites, via
-            ``spatialLocator`` with other pins.
+            If this does not have pin indices. This can be the case for components that live on blocks without spatial
+            grids, or if they do not share lattice sites, via ``spatialLocator`` with other pins.
 
         See Also
         --------
@@ -1398,6 +1375,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         for sibling in withPinIndices:
             if sibling.spatialLocator == self.spatialLocator:
                 return sibling.p.pinIndices
+
         msg = f"{self} on {self.parent} has no pin indices."
         raise ValueError(msg)
 
@@ -1406,9 +1384,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         density = composites.Composite.density(self)
 
         if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case,
-            # defer to Material. Material.density is wrapped to warn if it's attached
-            # to a parent. Avoid that by calling the inner function directly
+            # Possible that there are no nuclides in this component yet. In that case, defer to Material.
+            # Material.density is wrapped to warn if it's attached to a parent. Avoid that by calling the inner function
+            # directly
             density = self.material.density.__wrapped__(self.material, Tc=self.temperatureInC)
 
         return density
@@ -1440,8 +1418,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        This pitch data should only be used if this is the pitch defining component in a block. The
-        block is responsible for determining which component in it is the pitch defining component.
+        This pitch data should only be used if this is the pitch defining component in a block. The block is responsible
+        for determining which component in it is the pitch defining component.
         """
         raise NotImplementedError(
             f"Method not implemented on component {self}. "
@@ -1455,14 +1433,14 @@ class Component(composites.Composite, metaclass=ComponentType):
     def finalizeLoadingFromDB(self):
         """Apply any final actions after creating the component from database.
 
-        This should **only** be called internally by the database loader. Otherwise some properties
-        could be doubly applied.
+        This should **only** be called internally by the database loader. Otherwise some properties could be doubly
+        applied.
 
-        This exists because the theoretical density is initially defined as a material modification,
-        and then stored as a Material attribute. When reading from blueprints, the blueprint loader
-        sets the theoretical density parameter from the Material attribute. Component parameters are
-        also set when reading from the database. But, we need to set the Material attribute so
-        routines that fetch a material's density property account for the theoretical density.
+        This exists because the theoretical density is initially defined as a material modification, and then stored as
+        a Material attribute. When reading from blueprints, the blueprint loader sets the theoretical density parameter
+        from the Material attribute. Component parameters are also set when reading from the database. But, we need to
+        set the Material attribute so routines that fetch a material's density property account for the theoretical
+        density.
         """
         self.material.adjustTD(self.p.theoreticalDensityFrac)
 
