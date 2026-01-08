@@ -286,6 +286,9 @@ class _RunLog:
 
 
 def getLogDir():
+    """This returns a file path for the `logs` directory, first checking if the user set the ARMI_TEMP_ROOT_PATH
+    environment variable.
+    """
     if os.environ.get("ARMI_TEMP_ROOT_PATH"):
         return os.path.join(os.environ["ARMI_TEMP_ROOT_PATH"], "logs")
     else:
