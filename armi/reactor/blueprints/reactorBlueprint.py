@@ -230,8 +230,11 @@ class SystemBlueprint(yamlize.Object):
             if loc in a.NOT_IN_CORE:
                 a.p.ringPosHist = [loc]
             else:
-                ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())
-                a.p.ringPosHist = [(ring, pos)]
+                try:
+                    ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())
+                    a.p.ringPosHist = [(ring, pos)]
+                except ValueError: # some ex-core structures do not appear to have valid locator label indices.
+                    a.p.ringPosHist = [None]
 
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""

@@ -187,7 +187,7 @@ class FuelHandler:
         else:
             # Normal shuffle from user-provided shuffle logic input
             self.chooseSwaps(factor)
-            self.updateAllLocationHistParams(self.cycle+1)
+            self.updateAllLocationHistParams(self.cycle + 1)
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
         if self.cs["fluxRecon"] and self.cs[CONF_ASSEMBLY_ROTATION_ALG]:
@@ -309,10 +309,10 @@ class FuelHandler:
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
         """
         for a in self.r.core:
-            self._updateLocationHistParam(a, cycle)
+            self._updateAssemLocationHistParam(a, cycle)
         sfpAssems = list(self.r.excore["sfp"])
         for a in sfpAssems:
-            self._updateLocationHistParam(a, cycle)
+            self._updateAssemLocationHistParam(a, cycle)
 
     def chooseSwaps(self, shuffleFactors=None):
         """Moves the fuel around or otherwise processes it between cycles."""
