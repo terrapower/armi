@@ -155,7 +155,7 @@ jobs:
           sleep 5
           find . -type d
           sleep 5
-          find . | grep apidoc
+          find .
           sleep 5
 
           echo "Build PDF docs..."
@@ -166,7 +166,7 @@ jobs:
           sleep 5
           find . -type d
           sleep 5
-          find . | grep apidoc
+          find .
           sleep 5
 
           cd _build/latex/
