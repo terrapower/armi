@@ -2228,7 +2228,7 @@ class HexBlock(Block):
             return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
                 self.getComponent(Flags.WIRE, quiet=True) is not None
             )
-        except Exception:
+        except ValueError:
             # not well defined pitch due to multiple pin and/or wire components
             return False
 
