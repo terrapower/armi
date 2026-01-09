@@ -51,7 +51,8 @@ class Assembly(composites.Composite):
     DATABASE = "database"
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
-    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
+    DELETE = "Delete"
+    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, DELETE]
 
     def __init__(self, typ, assemNum=None):
         """

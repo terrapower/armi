@@ -1442,6 +1442,34 @@ class Core(composites.Composite):
         assem = self.childrenByLocator.get(loc)
         return assem
 
+    def _checkIfAssemAtRingPosCycle(self, a, ring, pos, cycleNum):
+        """
+        Interrogate location history param of specified assembly object
+        Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
+        """
+        nCycles = len(a.p.ringPosHist)
+        if nCycles >= cycleNum: # requested cycleNum has data populated
+            if a.p.ringPosHist[cycleNum] == (ring, pos):
+                return True
+        return False
+
+    def getAssemblyWithRingPosHist(self, ring, pos, cycleNum):
+        """
+        Search the Core and SFP for assembly which resided at specified ring and position at specified cycle.
+        This is an alternative to getting an assembly by number or string location.
+        """
+        # search core
+        for a in self:
+            if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
+                return a
+        # search sfp
+        if self.parent.excore.get("sfp") is not None:
+            sfpAssems = list(self.r.excore["sfp"])
+            for a in sfpAssems:
+                if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
+                    return a
+        return
+    
     def getAssemblyPitch(self):
         """
         Find the assembly pitch for the whole core.
@@ -1609,11 +1637,11 @@ class Core(composites.Composite):
             raise ValueError("Too many neighbors found!")
         return None
 
-    def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
+    def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, ringPosCycle=None):
         """Tracks the movements in terms of locations and enrichments."""
         from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
 
-        data = AssemblyMove(oldLoc, newLoc, enrichList, assemblyType, assemName)
+        data = AssemblyMove(oldLoc, newLoc, enrichList, assemblyType, ringPosCycle)
         if self.moves.get(cycle) is None:
             self.moves[cycle] = []
         if data in self.moves[cycle]:

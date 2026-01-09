@@ -224,6 +224,18 @@ class SystemBlueprint(yamlize.Object):
         if badLocations:
             raise ValueError(f"Attempted to add objects to non-existent locations on the grid: {badLocations}.")
 
+        # init position history param on each assembly
+        for a in container:
+            loc = a.getLocation()
+            if loc in a.NOT_IN_CORE:
+                a.p.ringPosHist = [loc]
+            else:
+                try:
+                    ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())
+                    a.p.ringPosHist = [(ring, pos)]
+                except ValueError: # some ex-core structures do not appear to have valid locator label indices.
+                    a.p.ringPosHist = [None]
+
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
         # all cases should have no edge assemblies. They are added ephemerally when needed
