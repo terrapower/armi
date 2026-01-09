@@ -1849,7 +1849,7 @@ class HexBlock(Block):
             This method assumes you are rotating something on a hexagonal grid, and do not want to break the 60-degree
             symmetry of the grid. It first determines how many times you want to rotate the block based on the 60-degree
             hex grid. Then it uses that "rotation number" to do a few things: reset the orientation parameter, rotate
-            the children, and rotate the boundary parameters. It also set the "displacement in X" and "displacement in
+            the children, and rotate the boundary parameters. It also sets the "displacement in X" and "displacement in
             Y" parameters.
 
         Parameters
@@ -1928,7 +1928,7 @@ class HexBlock(Block):
                 )
 
     def _rotateDisplacement(self, rad: float):
-        # This specifically uses the .get() functionality to avoid an error if this parameter doesnot exist.
+        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
