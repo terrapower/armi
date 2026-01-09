@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This is a selection of fuel management utilities that seem generally useful enough to
-keep in ARMI, but they still only apply to hex assembly reactors.
+This is a selection of fuel management utilities that seem generally useful enough to keep in ARMI, but they still only
+apply to hex assembly reactors.
 
 Notes
 -----
@@ -37,9 +37,9 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     """
     Get optimal hex assembly orientation/rotation to minimize peak burnup.
 
-    Works by placing the highest-burnup pin in the location (of 6 possible locations) with lowest
-    expected pin power. We evaluated "expected pin power" based on the power distribution in
-    ``aPrev``, the previous assembly located where ``a`` is going. The algorithm goes as follows.
+    Works by placing the highest-burnup pin in the location (of 6 possible locations) with lowest expected pin power. We
+    evaluated "expected pin power" based on the power distribution in ``aPrev``, the previous assembly located where
+    ``a`` is going. The algorithm goes as follows.
 
     1. Get all the pin powers and ``IndexLocation`` s from the block at the previous location/timenode.
     2. Obtain the ``IndexLocation`` of the pin with the highest burnup in the current assembly.
@@ -53,20 +53,21 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
 
     This algorithm assumes a few things.
 
-    1. ``len(HexBlock.getPinCoordinates()) == len(HexBlock.p.linPowByPin)`` and,
-       by extension, ``linPowByPin[i]`` is found at ``getPinCoordinates()[i]``.
-    2. Your assembly has at least 60 degree symmetry of fuel pins and
-       powers. This means if we find a fuel pin and rotate it 60 degrees, there should
-       be another fuel pin at that lattice site. This is mostly a safe assumption
-       since many hexagonal reactors have at least 60 degree symmetry of fuel pin layout.
-       This assumption holds if you have a full hexagonal lattice of fuel pins as well.
-    3. Fuel pins in ``a`` have similar locations in ``aPrev``. This is mostly a safe
-       assumption in that most fuel assemblies have similar layouts so it's plausible
-       that if ``a`` has a fuel pin at ``(1, 0, 0)``, so does ``aPrev``.
+    1. ``len(HexBlock.getPinCoordinates()) == len(HexBlock.p.linPowByPin)`` and, by extension, ``linPowByPin[i]`` is
+       found at ``getPinCoordinates()[i]``.
+    2. Your assembly has at least 60 degree symmetry of fuel pins and powers. This means if we find a fuel pin and
+       rotate it 60 degrees, there should be another fuel pin at that lattice site. This is mostly a safe assumption
+       since many hexagonal reactors have at least 60 degree symmetry of fuel pin layout. This assumption holds if you
+       have a full hexagonal lattice of fuel pins as well.
+    3. Fuel pins in ``a`` have similar locations in ``aPrev``. This is a safe assumption in that most fuel assemblies
+       have similar layouts so it's plausible that if ``a`` has a fuel pin at ``(1, 0, 0)`` so does ``aPrev``.
 
     .. impl:: Provide an algorithm for rotating hexagonal assemblies to equalize burnup
         :id: I_ARMI_ROTATE_HEX_BURNUP
         :implements: R_ARMI_ROTATE_HEX_BURNUP
+
+        This method will return a rotation such that the highest-burnup pin moves to the hex location with the lowest
+        expect pin number. This rotation will be optimal in the sense that it will minimize peak burnup.
 
     Parameters
     ----------
@@ -79,14 +80,14 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     Returns
     -------
     int
-        An integer from 0 to 5 representing the number of pi/3 (60 degree) counterclockwise
-        rotations from where ``a`` is currently oriented to the "optimal" orientation
+        An integer from 0 to 5 representing the number of pi/3 (60 degree) counterclockwise rotations from where ``a``
+        is currently oriented to the "optimal" orientation
 
     Raises
     ------
     ValueError
-        If there is insufficient information to determine the rotation of ``a``. This could
-        be due to a lack of fuel blocks or parameters like ``linPowByPin``.
+        If there is insufficient information to determine the rotation of ``a``. This could be due to a lack of fuel
+        blocks or parameters like ``linPowByPin``.
     """
     maxBuBlock = maxBurnupBlock(a)
     if maxBuBlock.spatialGrid is None:
@@ -124,6 +125,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
         if newPower < candidatePower:
             candidateRotation = rot
             candidatePower = newPower
+
     return candidateRotation
 
 
