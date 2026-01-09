@@ -115,7 +115,7 @@ class HexGrid(StructuredGrid):
     @staticmethod
     def fromPitch(pitch, numRings=25, armiObject=None, cornersUp=False, symmetry=""):
         """
-        Build a finite step-based 2-D hex grid from a hex pitch in cm.
+        Build a finite step-based 2D hex grid from a hex pitch in cm.
 
         .. impl:: Hexagonal grids can be points-up or flats-up.
             :id: I_ARMI_GRID_HEX_TYPE
@@ -221,8 +221,7 @@ class HexGrid(StructuredGrid):
 
         Notes
         -----
-        ``self`` is not used because hex grids always behave the same w.r.t.
-        rings/positions.
+        ``self`` is not used because hex grids always behave the same w.r.t. rings/positions.
         """
         return hexagon.numRingsToHoldNumCells(n)
 
@@ -235,8 +234,8 @@ class HexGrid(StructuredGrid):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
-        Note that these neighbors are ordered counter-clockwise beginning from the
-        30 or 60 degree direction. Exact direction is dependent on cornersUp arg.
+        Note that these neighbors are ordered counter-clockwise beginning from the 30 or 60 degree direction. Exact
+        direction is dependent on cornersUp arg.
         """
         return [
             (i + 1, j, k),
@@ -251,9 +250,8 @@ class HexGrid(StructuredGrid):
         """
         Hex labels start at 1, and are ring/position based rather than i,j.
 
-        This difference is partially because ring/pos is easier to understand in hex
-        geometry, and partially because it is used in some codes ARMI originally was focused
-        on.
+        This difference is partially because ring/pos is easier to understand in hex geometry, and partially because it
+        is used in some codes ARMI originally was focused on.
         """
         ring, pos = self.getRingPos(indices)
         if len(indices) == 2:
@@ -263,8 +261,7 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def _indicesAndEdgeFromRingAndPos(ring, position):
-        """Given the ring and position, return the (I,J) coordinates, and which edge the grid
-        cell is on.
+        """Given the ring and position, return the (I,J) coordinates, and which edge the grid cell is on.
 
         Parameters
         ----------
@@ -384,8 +381,8 @@ class HexGrid(StructuredGrid):
         Returns
         -------
         None or int
-            None if not line of symmetry goes through the object at the requested index. Otherwise,
-            some grid constants like ``BOUNDARY_CENTER`` will be returned.
+            None if not line of symmetry goes through the object at the requested index. Otherwise, some grid constants
+            like ``BOUNDARY_CENTER`` will be returned.
 
         Notes
         -----
