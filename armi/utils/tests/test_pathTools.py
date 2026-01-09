@@ -125,14 +125,14 @@ class PathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir2, mpiRank=0)
             self.assertFalse(os.path.exists(dir2))
 
-            # TEST 3: Delete an empty directory with tempDir=True
+            # TEST 3: Delete an empty directory with forceClean=True
             dir3 = "noyoureadirectory"
             os.mkdir(dir3)
             self.assertTrue(os.path.exists(dir3))
-            pathTools.cleanPath(dir3, mpiRank=0, tempDir=True)
+            pathTools.cleanPath(dir3, mpiRank=0, forceClean=True)
             self.assertFalse(os.path.exists(dir3))
 
-            # TEST 4: Delete a directory with two files inside with tempDir=True
+            # TEST 4: Delete a directory with two files inside with forceClean=True
             dir4 = "dirplease"
             os.mkdir(dir4)
             open(os.path.join(dir4, "file1.txt"), "w").write("something1")
@@ -141,7 +141,7 @@ class PathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(dir4))
             self.assertTrue(os.path.exists(os.path.join(dir4, "file1.txt")))
             self.assertTrue(os.path.exists(os.path.join(dir4, "file2.txt")))
-            pathTools.cleanPath(dir4, mpiRank=0, tempDir=True)
+            pathTools.cleanPath(dir4, mpiRank=0, forceClean=True)
             self.assertFalse(os.path.exists(dir4))
 
     def test_isFilePathNewer(self):

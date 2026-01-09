@@ -321,15 +321,15 @@ class MpiPathToolsTests(unittest.TestCase):
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir2))
 
-            # TEST 3: Delete an empty directory with tempDir=True
+            # TEST 3: Delete an empty directory with forceClean=True
             dir3 = "tostayhere"
             os.mkdir(dir3)
             self.assertTrue(os.path.exists(dir3))
-            pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK, tempDir=True)
+            pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK, forceClean=True)
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir3))
 
-            # TEST 3: Delete a directory with two files inside with tempDir=True
+            # TEST 3: Delete a directory with two files inside with forceClean=True
             dir4 = "andilldirrightbackaround"
             os.mkdir(dir4)
             open(os.path.join(dir4, "file1.txt"), "w").write("something1")
@@ -337,7 +337,7 @@ class MpiPathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(dir4))
             self.assertTrue(os.path.exists(os.path.join(dir4, "file1.txt")))
             self.assertTrue(os.path.exists(os.path.join(dir4, "file2.txt")))
-            pathTools.cleanPath(dir4, mpiRank=context.MPI_RANK, tempDir=True)
+            pathTools.cleanPath(dir4, mpiRank=context.MPI_RANK, forceClean=True)
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir4))
 

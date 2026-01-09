@@ -176,9 +176,9 @@ def moduleAndAttributeExist(pathAttr):
     return moduleAttributeName in userSpecifiedModule.__dict__
 
 
-def cleanPath(path, mpiRank=0, tempDir=False):
+def cleanPath(path, mpiRank=0, forceClean=False):
     """Recursively delete a path. This function checks for a few cases we know to be OK to delete: (1) Any
-    `TemporaryDirectoryChanger` instance and (2) anything under the ARMI `_FAST_PATH`.
+    `TemporaryDirectoryChanger` or output cache instance and (2) anything under the ARMI `_FAST_PATH`.
 
     Be careful with editing this! Do not make it a generic can-delete-anything function, because it could in theory
     delete anything a user has write permissions on.
@@ -192,8 +192,8 @@ def cleanPath(path, mpiRank=0, tempDir=False):
     if not os.path.exists(path):
         return True
 
-    # Any tempDir can be deleted
-    if tempDir:
+    # Any forceClean can be deleted
+    if forceClean:
         valid = True
 
     # If the path slated for deletion is a subdirectory of _FAST_PATH, then cool, delete.
