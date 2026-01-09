@@ -225,14 +225,16 @@ class DirectoryChanger:
 
 class TemporaryDirectoryChanger(DirectoryChanger):
     """
-    Create temporary directory, changes into it, and if there is no error/exception
-    generated when using a :code:`with` statement, it deletes the directory.
+    Create a temporary directory, change into it, and if there is no error/exception generated when using a
+    :code:`with` statement, delete the directory.
 
     Notes
     -----
-    If there is an error/exception generated while in a :code:`with` statement, the
-    temporary directory contents will be copied to the original directory and then the
-    temporary directory will be deleted.
+    If there is an error/exception generated while in a :code:`with` statement, the temporary directory contents will
+    be copied to the original directory and then the temporary directory will be deleted.
+
+    There is the ability for a user to set the environment variable ARMI_TEMP_ROOT_PATH, which will globally override
+    the `root` argument being passed in. This is a useful tool for running code or tests in a read-only environment.
     """
 
     def __init__(
