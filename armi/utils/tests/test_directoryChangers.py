@@ -19,6 +19,8 @@ import shutil
 import unittest
 from pathlib import Path
 
+import pytest
+
 from armi.utils import directoryChangers, directoryChangersMpi
 
 
@@ -150,3 +152,23 @@ class TestDirectoryChangers(unittest.TestCase):
         self.assertTrue(os.path.exists(f("file1.txt")))
         self.assertFalse(os.path.exists(f("file2.txt")))
         os.remove(f("file1.txt"))
+
+
+class TestDirectoryChangersEnvEdits(unittest.TestCase):
+    """Tests that will use monkeypatch to alter an environment variable."""
+
+    def setUp(self):
+        self.monkeypatch = pytest.MonkeyPatch()
+
+    def tearDown(self):
+        self.monkeypatch.undo()
+
+    def test_tempDirChangerNonDefault(self):
+        """Make sure TemporaryDirectoyChanger uses an alternative root when user edits the appropriate environment
+        variable.
+        """
+        # Alter the root path to be in this directory
+        altRoot = Path(__file__).parent / "altRoot"
+        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", altRoot)
+        with directoryChangers.TemporaryDirectoryChanger() as td:
+            self.assertEqual(Path(td.destination).parent, altRoot)

@@ -17,7 +17,10 @@ import logging
 import os
 import unittest
 from io import StringIO
+from pathlib import Path
 from shutil import rmtree
+
+import pytest
 
 from armi import runLog
 from armi.tests import mockRunLogs
@@ -455,6 +458,37 @@ class TestRunLog(unittest.TestCase):
             for _ in range(10):
                 runLog.createLogDir(logDir)
                 self.assertTrue(os.path.exists(logDir))
+
+
+class TestRunLogEnvEdits(unittest.TestCase):
+    """Tests that will use monkeypatch to alter an environment variable."""
+
+    def setUp(self):
+        self.monkeypatch = pytest.MonkeyPatch()
+
+    def tearDown(self):
+        self.monkeypatch.undo()
+
+    def test_createLogDirNonDefault(self):
+        """Test the scenario where a user sets the environment variable that edits the log dir location."""
+        with TemporaryDirectoryChanger() as td:
+            self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", Path(td.destination) / "logzGoHere")
+            runLog.createLogDir()
+            # assert the env variable-edits logs path exists
+            p = Path(td.destination) / "logzGoHere" / "logs"
+            self.assertTrue(p.exists())
+            # assert the default logs path doesn't exist
+            p = Path(os.getcwd()) / "logs"
+            self.assertFalse(p.exists())
+
+    def test_getLogDir(self):
+        """Test getLogDir with and without an environment variable edit."""
+        default = Path(runLog.getLogDir())
+        self.assertEqual(default, Path(os.getcwd()) / "logs")
+        root = Path("somewhere") / "else"
+        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", root)
+        altered = Path(runLog.getLogDir())
+        self.assertEqual(altered, root / "logs")
 
 
 class TestRunLogger(unittest.TestCase):
