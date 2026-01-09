@@ -380,8 +380,7 @@ class MultiIndexLocation(IndexLocation):
         """
         Return indices for all locations.
 
-        .. impl:: Return the location of all instances of grid components with
-            multiplicity greater than 1.
+        .. impl:: Return the location of all instances of grid components with multiplicity greater than 1.
             :id: I_ARMI_GRID_ELEM_LOC
             :implements: R_ARMI_GRID_ELEM_LOC
 

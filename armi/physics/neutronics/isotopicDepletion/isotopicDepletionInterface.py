@@ -62,25 +62,23 @@ class AbstractIsotopicDepleter:
     """
     Interact with a depletion code.
 
-    This interface and subClasses deplete under a flux defined outside this
-    interface
+    This interface and subClasses deplete under a flux defined outside this interface
 
-    The depletion in this analysis only depends on the flux, material vectors,
-    nuclear data and continuous source and loss objects.
+    The depletion in this analysis only depends on the flux, material vectors, nuclear data and continuous source and
+    loss objects.
 
-    The depleters derived from this abstract class use all the fission products
-    armi can handle -- i.e. do not form lumped fission products.
+    The depleters derived from this abstract class use all the fission products ARMI can handle -- i.e. do not form
+    lumped fission products.
 
-    _depleteByName contains a ARMI objects to deplete keyed by name.
+    The class attribute _depleteByName contains a ARMI objects to deplete keyed by name.
 
     .. impl:: ARMI provides a base class to deplete isotopes.
         :id: I_ARMI_DEPL_ABC
         :implements: R_ARMI_DEPL_ABC
 
-        This class provides some basic infrastructure typically needed in depletion
-        calculations within the ARMI framework. It stores a reactor, operator,
-        and case settings object, and also defines methods to store and retrieve
-        the objects which should be depleted based on their names.
+        This class provides some basic infrastructure typically needed in depletion calculations within the ARMI
+        framework. It stores a reactor, operator, and case settings object, and also defines methods to store and
+        retrieve the objects which should be depleted based on their names.
     """
 
     name = None
@@ -91,8 +89,7 @@ class AbstractIsotopicDepleter:
         self.cs = cs
         self.o = o
 
-        # ARMI objects to deplete keyed by name
-        # order is important for consistency in iterating through objects
+        # ARMI objects to deplete keyed by name order is important for consistency in iterating through objects
         self._depleteByName = collections.OrderedDict()
 
         self.efpdToBurn = None
@@ -115,8 +112,7 @@ class AbstractIsotopicDepleter:
         """
         Submit depletion case with external solver to the cluster.
 
-        In addition to running the physics kernel, this method calls the waitForJob method
-        to wait for it job to finish
+        In addition to running the physics kernel, this method calls the waitForJob method to wait for it job to finish.
 
         comm = MPI.COMM_SELF.Spawn(sys.executable,args=['cpi.py'],maxprocs=5)
         """
@@ -137,18 +133,17 @@ def makeXsecTable(
     Parameters
     ----------
     armiObject: armiObject
-        an armi object --  batch or block --
-        with a .p.xsType and a getMgFlux method
+        an armi object --  batch or block -- with a .p.xsType and a getMgFlux method
     activeNuclides: list
         a list of the nucNames of active isotopes
     isotxs: isotxs object
     headerFormat: string (optional)
-        this is the format in which the elements of the header with be returned -- i.e. if you use a
-        .format() call with  the case name you'll return a formatted list of string elements
+        this is the format in which the elements of the header with be returned -- i.e. if you use a .format() call with
+        the case name you'll return a formatted list of string elements
     tableFormat: string (optional)
-        This is the format in which the elements of the table with be returned -- i.e. if you use a
-        .format() call with mcnpId, nG, nF, n2n, n3n, nA, and nP you'll get the format you want. If
-        you use a .format() call with the case name you'll return a formatted list of strings.
+        This is the format in which the elements of the table with be returned -- i.e. if you use a .format() call with
+        mcnpId, nG, nF, n2n, n3n, nA, and nP you'll get the format you want. If you use a .format() call with the case
+        name you'll return a formatted list of strings.
 
     Results
     -------
@@ -196,8 +191,7 @@ class Csrc:
 
     Notes
     -----
-    The chemical vector is a dictionary of chemicals and their removal rate constant -- this works
-    like a decay constant.
+    The chemical vector is a dictionary of chemicals and their removal rate constant. This works like a decay constant.
 
     The isotopic vector is used to make a source material in continuous source definitions.
 

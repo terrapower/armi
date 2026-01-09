@@ -47,19 +47,17 @@ class HexGrid(StructuredGrid):
     r"""
     Has 6 neighbors in plane.
 
-    It is recommended to use :meth:`fromPitch` rather than calling the ``__init__``
-    constructor directly.
+    It is recommended to use :meth:`fromPitch` rather than calling the ``__init__`` onstructor directly.
 
     .. impl:: Construct a hexagonal lattice.
         :id: I_ARMI_GRID_HEX
         :implements: R_ARMI_GRID_HEX
 
-        This class represents a hexagonal ``StructuredGrid``, that is one where the
-        mesh maps to real, physical coordinates. This hexagonal grid is 2D, and divides
-        the plane up into regular hexagons. That is, each hexagon is symmetric and
-        is precisely flush with six neighboring hexagons. This class only allows for
-        two rotational options: flats up (where two sides of the hexagons are parallel
-        with the X-axis), and points up (where two sides are parallel with the Y-axis).
+        This class represents a hexagonal ``StructuredGrid``, that is one where the mesh maps to real, physical
+        coordinates. This hexagonal grid is 2D, and divides the plane up into regular hexagons. That is, each hexagon is
+        symmetric and is precisely flush with six neighboring hexagons. This class only allows for two rotational
+        options: flats up (where two sides of the hexagons are parallel with the X-axis), and points up (where two sides
+        are parallel with the Y-axis).
 
     Notes
     -----
@@ -110,50 +108,44 @@ class HexGrid(StructuredGrid):
         """
         Check whether the hexagonal grid is "corners up" or "flats up".
 
-        See the armi.reactor.grids.HexGrid class documentation for an
-        illustration of the two types of grid indexing.
+        See the armi.reactor.grids.HexGrid class documentation for an illustration of the two types of grid indexing.
         """
         return self._unitSteps[0][1] != 0.0
 
     @staticmethod
     def fromPitch(pitch, numRings=25, armiObject=None, cornersUp=False, symmetry=""):
         """
-        Build a finite step-based 2-D hex grid from a hex pitch in cm.
+        Build a finite step-based 2D hex grid from a hex pitch in cm.
 
         .. impl:: Hexagonal grids can be points-up or flats-up.
             :id: I_ARMI_GRID_HEX_TYPE
             :implements: R_ARMI_GRID_HEX_TYPE
 
-            When this method creates a ``HexGrid`` object, it can create a hexagonal
-            grid with one of two rotations: flats up (where two sides of the hexagons
-            are parallel with the X-axis), and points up (where two sides are parallel
-            with the Y-axis). While it is possible to imagine the hexagons being
-            rotated at other arbitrary angles, those are not supported here.
+            When this method creates a ``HexGrid`` object, it can create a hexagonal grid with one of two rotations:
+            flats up (where two sides of the hexagons are parallel with the X-axis), and points up (where two sides are
+            parallel with the Y-axis). While it is possible to imagine the hexagons being rotated at other arbitrary
+            angles, those are not supported here.
 
         .. impl:: When creating a hexagonal grid, the user can specify the symmetry.
             :id: I_ARMI_GRID_SYMMETRY1
             :implements: R_ARMI_GRID_SYMMETRY
 
-            When this method creates a ``HexGrid`` object, it takes as an input the
-            symmetry of the resultant grid. This symmetry can be a string (e.g. "full")
-            or a ``SymmetryType`` object (e.g. ``FULL_CORE``). If the grid is not full-
-            core, the method ``getSymmetricEquivalents()`` will be usable to map any
-            possible grid cell to the ones that are being modeled in the sub-grid.
+            When this method creates a ``HexGrid`` object, it takes as an input the symmetry of the resultant grid. This
+            symmetry can be a string (e.g. "full") or a ``SymmetryType`` object (e.g. ``FULL_CORE``). If the grid is not
+            full-core, the method ``getSymmetricEquivalents()`` will be usable to map any possible grid cell to the ones
+            that are being modeled in the sub-grid.
 
         Parameters
         ----------
         pitch : float
             Hex pitch (flat-to-flat) in cm
         numRings : int, optional
-            The number of rings in the grid to pre-populate with locatator objects.
-            Even if positions are not pre-populated, locators will be generated
-            there on the fly.
+            The number of rings in the grid to pre-populate with locatator objects. Even if positions are not
+            pre-populated, locators will be generated there on the fly.
         armiObject : ArmiObject, optional
-            The object that this grid is anchored to (i.e. the reactor for a grid of
-            assemblies)
+            The object that this grid is anchored to (i.e. the reactor for a grid of assemblies)
         cornersUp : bool, optional
-            Rotate the hexagons 30 degrees so that the corners point up instead of
-            the flat faces.
+            Rotate the hexagons 30 degrees so that the corners point up instead of the flat faces.
         symmetry : string, optional
             A string representation of the symmetry options for the grid.
 
@@ -229,8 +221,7 @@ class HexGrid(StructuredGrid):
 
         Notes
         -----
-        ``self`` is not used because hex grids always behave the same w.r.t.
-        rings/positions.
+        ``self`` is not used because hex grids always behave the same w.r.t. rings/positions.
         """
         return hexagon.numRingsToHoldNumCells(n)
 
@@ -243,8 +234,8 @@ class HexGrid(StructuredGrid):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
-        Note that these neighbors are ordered counter-clockwise beginning from the
-        30 or 60 degree direction. Exact direction is dependent on cornersUp arg.
+        Note that these neighbors are ordered counter-clockwise beginning from the 30 or 60 degree direction. Exact
+        direction is dependent on cornersUp arg.
         """
         return [
             (i + 1, j, k),
@@ -259,9 +250,8 @@ class HexGrid(StructuredGrid):
         """
         Hex labels start at 1, and are ring/position based rather than i,j.
 
-        This difference is partially because ring/pos is easier to understand in hex
-        geometry, and partially because it is used in some codes ARMI originally was focused
-        on.
+        This difference is partially because ring/pos is easier to understand in hex geometry, and partially because it
+        is used in some codes ARMI originally was focused on.
         """
         ring, pos = self.getRingPos(indices)
         if len(indices) == 2:
@@ -271,8 +261,7 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def _indicesAndEdgeFromRingAndPos(ring, position):
-        """Given the ring and position, return the (I,J) coordinates, and which edge the grid
-        cell is on.
+        """Given the ring and position, return the (I,J) coordinates, and which edge the grid cell is on.
 
         Parameters
         ----------
@@ -392,8 +381,8 @@ class HexGrid(StructuredGrid):
         Returns
         -------
         None or int
-            None if not line of symmetry goes through the object at the requested index. Otherwise,
-            some grid constants like ``BOUNDARY_CENTER`` will be returned.
+            None if not line of symmetry goes through the object at the requested index. Otherwise, some grid constants
+            like ``BOUNDARY_CENTER`` will be returned.
 
         Notes
         -----
@@ -419,17 +408,17 @@ class HexGrid(StructuredGrid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
-        """Retrieve the equivalent indices. If full core return nothing, if 1/3-core grid, return
-        the symmetric equivalents, if any other grid, raise an error.
+        """Retrieve the equivalent indices. If full core return nothing, if 1/3-core grid, return the symmetric
+        equivalents, if any other grid, raise an error.
 
-        .. impl:: Equivalent contents in 1/3-core geometries are retrievable.
+        .. impl:: Equivalent contents in thrid-core geometries are retrievable.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
 
-            This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core, it returns
-            nothing. If this ``HexGrid`` is 1/3-core, this method will return the 1/3-core symmetric
-            equivalent of just (I,J). If this grid is any other kind, this method will just return
-            an error; a hexagonal grid with any other symmetry is probably an error.
+            This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core, it returns nothing. If this
+            ``HexGrid`` is third-core, this method will return the third-core symmetric equivalent of just (I,J). If
+            this grid is any other kind, this method will just return an error; a hexagonal grid with any other symmetry
+            is probably an error.
         """
         if (
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
@@ -453,8 +442,7 @@ class HexGrid(StructuredGrid):
 
     def triangleCoords(self, indices: IJKType) -> np.ndarray:
         """
-        Return 6 coordinate pairs representing the centers of the 6 triangles in a hexagon centered
-        here.
+        Return 6 coordinate pairs representing the centers of the 6 triangles in a hexagon centered here.
 
         Ignores z-coordinate and only operates in 2D for now.
         """
@@ -514,10 +502,10 @@ class HexGrid(StructuredGrid):
             :id: I_ARMI_GRID_SYMMETRY_LOC
             :implements: R_ARMI_GRID_SYMMETRY_LOC
 
-            This is a simple helper method to determine if a given locator (from an ArmiObject) is
-            in the first 1/3 of the ``HexGrid``. This method does not attempt to check if this grid
-            is full or 1/3-core. It just does the basic math of dividing up a hex-assembly reactor
-            core into thirds and testing if the given location is in the first 1/3 or not.
+            This is a simple helper method to determine if a given locator (from an ArmiObject) is in the first 1/3 of
+            the ``HexGrid``. This method does not attempt to check if this grid is full or 1/3-core. It just does the
+            basic math of dividing up a hex-assembly reactor core into thirds and testing if the given location is in
+            the first 1/3 or not.
         """
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
@@ -543,8 +531,8 @@ class HexGrid(StructuredGrid):
 
         IndexLocation are taken from a full core.
 
-        Ties between locations with the same distance (e.g. A3001 and A3003) are broken by ring
-        number then position number.
+        Ties between locations with the same distance (e.g. A3001 and A3003) are broken by ring number then position
+        number.
         """
         # first, roughly calculate how many rings need to be created to cover nLocs worth of assemblies
         nLocs = int(nLocs)

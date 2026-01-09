@@ -456,9 +456,9 @@ class TestHexGrid(unittest.TestCase):
         )
 
     def test_getSymmetricIdenticalsThird(self):
-        """Retrieve equivalent contents based on 3rd symmetry.
+        """Retrieve equivalent contents based on third symmetry.
 
-        .. test:: Equivalent contents in 3rd geometry are retrievable.
+        .. test:: Equivalent contents in third geometry are retrievable.
             :id: T_ARMI_GRID_EQUIVALENTS
             :tests: R_ARMI_GRID_EQUIVALENTS
         """
@@ -573,7 +573,7 @@ class TestHexGrid(unittest.TestCase):
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitchFlatsUp(self):
-        """Adjust the pitch of a hexagonal lattice, for a "flats up" grid.
+        """Adjust the pitch of a hexagonal lattice, for a flats up grid.
 
         .. test:: Construct a hexagonal lattice with three rings.
             :id: T_ARMI_GRID_HEX0
@@ -663,9 +663,9 @@ class TestHexGrid(unittest.TestCase):
             grid.getCoordinates((0, 5, -1))
 
     def test_isInFirstThird(self):
-        """Determine if grid is in first third.
+        """Determine if grid is in the first third.
 
-        .. test:: Determine if grid in first third.
+        .. test:: Determine if grid is in the first third.
             :id: T_ARMI_GRID_SYMMETRY_LOC
             :tests: R_ARMI_GRID_SYMMETRY_LOC
         """
