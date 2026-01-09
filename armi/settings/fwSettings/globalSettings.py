@@ -31,7 +31,6 @@ from armi.utils.mathematics import isMonotonic
 
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP = "assemFlagsToSkipAxialExpansion"
-CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
@@ -78,7 +77,6 @@ CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_N_CYCLES = "nCycles"
 CONF_N_TASKS = "nTasks"
 CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
-CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PHYSICS_FILES = "savePhysicsFiles"
@@ -221,12 +219,6 @@ def defineSettings() -> List[setting.Setting]:
                 "hot dimensions. If false, block heights are at cold/as-built dimensions and will "
                 "be thermally expanded as appropriate."
             ),
-        ),
-        setting.Setting(
-            CONF_AUTOMATIC_VARIABLE_MESH,
-            default=False,
-            label="Automatic Neutronics Variable Mesh",
-            description="Flag to let ARMI add additional mesh points if the neutronics mesh is too irregular",
         ),
         setting.Setting(
             CONF_TRACE,
@@ -613,12 +605,6 @@ def defineSettings() -> List[setting.Setting]:
         ),
         tightCouplingSettings.TightCouplingSettingDef(
             CONF_TIGHT_COUPLING_SETTINGS,
-        ),
-        setting.Setting(
-            CONF_OPERATOR_LOCATION,
-            default="",
-            label="Operator Location",
-            description="The path to the operator code to execute for this run (for custom behavior)",
         ),
         setting.Setting(
             CONF_OUTPUT_FILE_EXTENSION,

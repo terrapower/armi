@@ -153,7 +153,7 @@ blocks:
         sodium1:
             shape: Circle
             material: Sodium
-            Tinput: 25
+            Tinput: 100
             Thot: 600
             id: 0
             mult: 1
@@ -163,7 +163,7 @@ blocks:
             shape: Circle
             material: Sodium
             isotopics: sodium custom isotopics
-            Tinput: 25
+            Tinput: 100
             Thot: 600
             id: 0
             mult: 1
@@ -218,7 +218,7 @@ blocks:
             shape: Hexagon
             material: Custom
             isotopics: steel
-            Tinput: 25.0
+            Tinput: 100
             Thot: 600.0
             ip: 0.0
             mult: 169.0
@@ -242,7 +242,7 @@ blocks:
         fuel: &basic_fuel
             shape: Hexagon
             material: UZr
-            Tinput: 25.0
+            Tinput: 100
             Thot: 600.0
             ip: 0.0
             mult: 1.0
@@ -251,7 +251,7 @@ blocks:
         clad:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 100
             Thot: 600.0
             id: 0.0
             mult: 1.0
@@ -268,7 +268,7 @@ blocks:
             shape: Hexagon
             material: Custom
             isotopics: steel
-            Tinput: 25.0
+            Tinput: 100
             Thot: 600.0
             ip: 0.0
             mult: 169.0
@@ -429,7 +429,7 @@ assemblies:
         # has a density from the blueprint and adjusted from Tinput -> Thot
         s = Sodium()
         self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
-        self.assertAlmostEqual(sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25)))
+        self.assertAlmostEqual(sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=100)))
 
     def test_customDensityLogsAndErrors(self):
         """Test that the right warning messages and errors are emitted when applying custom densities."""
@@ -548,7 +548,7 @@ assemblies:
         self.assertEqual(nucDict["NI"], entry)
 
 
-class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
+class TestCustomIsotopicsErrors(unittest.TestCase):
     def test_densityMustBePositive(self):
         with self.assertRaises(yamlize.YamlizingError):
             _ = isotopicOptions.CustomIsotopic.load(

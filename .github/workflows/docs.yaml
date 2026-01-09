@@ -23,9 +23,9 @@ jobs:
           rm -rf ./* || true
           rm -rf ./.??* || true
           ls -la ./
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.13
       - name: Update package index
@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.number }}
+          PR_NUMBER: ${{ github.ref == 'refs/heads/main' && -1 || github.event.number }}
         run: |
           echo "Installing ARMI..."
           set -x

@@ -60,30 +60,30 @@ The nuclide class structure is outlined :ref:`here <nuclide-bases-class-diagram>
 Examples
 --------
 >>> r = Reactor("ExampleReactor", bp)
->>> r.nuclideBases.byName['U235']
+>>> r.nuclideBases.byName["U235"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
->>> r.nuclideBases.byLabel['U235']
+>>> r.nuclideBases.byLabel["U235"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the MC2-2 ID:
 
->>> r.nuclideBases.byMcc2Id['U-2355']
+>>> r.nuclideBases.byMcc2Id["U-2355"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the MC2-3 ID:
 
->>> r.nuclideBases.byMcc3IdEndfVII0['U235_7']
+>>> r.nuclideBases.byMcc3IdEndfVII0["U235_7"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the MCNP ID:
 
->>> r.nuclideBases.byMcnpId['92235']
+>>> r.nuclideBases.byMcnpId["92235"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Retrieve U-235 by the AAAZZZS ID:
 
->>> r.nuclideBases.byAAAZZZSId['2350920']
+>>> r.nuclideBases.byAAAZZZSId["2350920"]
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 Notes
@@ -1065,7 +1065,7 @@ class NuclideBases:
         A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
     byMcc3IdEndfbVII1: dict[str, INuclide]
         A dictionary of the nuclides in this class, keyed by MC2-3 ID, e.g., "U235_7".
-    byMcnpId: dict[int, INuclide]
+    byMcnpId: dict[str, INuclide]
         A dictionary of the nuclides in this class, keyed by MCNP ID, e.g., 92235.
     byAAAZZZSId: dict[int, INuclide]
         A dictionary of the nuclides in this class, keyed by AAAZZZS, e.g., 2350920.
@@ -1093,7 +1093,7 @@ class NuclideBases:
         self.byMcc3Id: dict[str, INuclide] = {}
         self.byMcc3IdEndfbVII0: dict[str, INuclide] = {}
         self.byMcc3IdEndfbVII1: dict[str, INuclide] = {}
-        self.byMcnpId: dict[int, INuclide] = {}
+        self.byMcnpId: dict[str, INuclide] = {}
         self.byAAAZZZSId: dict[int, INuclide] = {}
         self.nuclidesFile: str = nuclidesFile if nuclidesFile else self.DEFAULT_NUCLIDES_FILE
         self.mccNuclidesFile: str = mccNuclidesFile if mccNuclidesFile else self.DEFAULT_MCC_NUCLIDES_FILE
@@ -1320,13 +1320,14 @@ class NuclideBases:
         --------
         >>> from armi.nucDirectory.nuclideBases import NuclideBases
         >>> nuclideBases = NuclideBases()
-        >>> [nn.name for nn in nuclideBases.where(lambda nb: 'Z' in nb.name)]
+        >>> [nn.name for nn in nuclideBases.where(lambda nb: "Z" in nb.name)]
         ['ZN64', 'ZN66', 'ZN67', 'ZN68', 'ZN70', 'ZR90', 'ZR91', 'ZR92', 'ZR94', 'ZR96', 'ZR93', 'ZR95', 'ZR']
         >>> # in order to get length, convert to list
         >>> isomers90 = list(nuclideBases.where(lambda nb: nb.a == 95))
         >>> len(isomers90)
         3
-        >>> for iso in isomers: print(iso)
+        >>> for iso in isomers:
+        ...     print(iso)
         <NuclideBase MO95: Z:42, A:95, S:0, label:MO2N>
         <NuclideBase NB95: Z:41, A:95, S:0, label:NB2N>
         <NuclideBase ZR95: Z:40, A:95, S:0, label:ZR2N>
@@ -1344,7 +1345,7 @@ class NuclideBases:
         Examples
         --------
         >>> from armi.nucDirectory import nuclideBases
-        >>> nuclideBases.single(lambda nb: nb.name == 'C')
+        >>> nuclideBases.single(lambda nb: nb.name == "C")
         <NaturalNuclideBase C: Z:6, w:12.0107358968, label:C>
         >>> nuclideBases.single(lambda nb: nb.z == 95 and nb.a == 242 and nb.state == 1)
         <NuclideBase AM242M: Z:95, A:242, S:1, label:AM4C>

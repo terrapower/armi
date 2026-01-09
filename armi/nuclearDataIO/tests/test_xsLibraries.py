@@ -235,7 +235,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
 
-class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
+class TestGetISOTXSFilesWorkDir(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
         shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [
@@ -368,7 +368,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
 
 
-class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+class TestPmatrxMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         raise OSError
 
@@ -398,7 +398,7 @@ class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             dummyXsLib.merge(self.libCombined)
 
 
-class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+class TestIsotxsMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         raise OSError
 
@@ -447,7 +447,7 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
-class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         raise OSError
 
@@ -496,7 +496,7 @@ class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
-class Combined_Merge_Tests(unittest.TestCase):
+class TestCombinedMerge(unittest.TestCase):
     def setUp(self):
         # Load a library that is in the ARMI tree. This should be a small library with LFPs,
         # Actinides, structure, and coolant

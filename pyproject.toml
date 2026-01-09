@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.6.2"
+version = "0.6.3"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
 requires-python = ">3.8"
@@ -40,7 +40,7 @@ dependencies = [
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml<0.19.0 ; python_version >= '3.11.0'", # Our foundational YAML library
     "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
@@ -216,6 +216,10 @@ ban-relative-imports = "all"
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 120
+
 
 #######################################################################
 #                            PYTEST CONFIG                            #
@@ -237,8 +241,7 @@ exclude_also = [
     ]
 source = ["armi"]
 parallel = true
-# Change default .coverage file to something that doesn't have a dot
-# because some Windows services can't handle dots.
+# Change default .coverage file to something that doesn't have a dot because some Windows services can't handle dots.
 data_file = "coverage_results.cov"
 
 [tool.coverage.report]
@@ -315,18 +318,26 @@ armi = [
     "nuclearDataIO/tests/simple_hexz.inp",
     "physics/neutronics/tests/ISOXA",
     "physics/neutronics/tests/rzmflxYA",
-    "resources/*",
+    "resources/burn-chain.yaml",
+    "resources/elements.dat",
+    "resources/mcc-nuclides.yaml",
+    "resources/nuclides.dat",
+    "resources/referenceFissionProducts.dat",
+    "testing/reactors/anl-afci-177/anl-afci-177-blueprints.yaml",
+    "testing/reactors/anl-afci-177/anl-afci-177-coreMap.yaml",
+    "testing/reactors/anl-afci-177/anl-afci-177-fuelManagement.py",
+    "testing/reactors/anl-afci-177/anl-afci-177.yaml",
+    "testing/reactors/c5g7/c5g7-blueprints.yaml",
+    "testing/reactors/c5g7/c5g7-settings.yaml",
+    "testing/reactors/godiva/godiva-blueprints.yaml",
+    "testing/reactors/godiva/godiva.armi.unittest.yaml",
+    "testing/reactors/smallHexReactor/smallHexReactor-bp.yaml",
+    "testing/reactors/smallHexReactor/smallHexReactor.yaml",
+    "testing/resources/armiRun-SHUFFLES.txt",
+    "testing/resources/armiRun-SHUFFLES.yaml",
+    "testing/resources/COMPXS.ascii",
     "tests/1DslabXSByCompTest.yaml",
-    "tests/anl-afci-177/anl-afci-177-blueprints.yaml",
-    "tests/anl-afci-177/anl-afci-177-coreMap.yaml",
-    "tests/anl-afci-177/anl-afci-177-fuelManagement.py",
-    "tests/anl-afci-177/anl-afci-177.yaml",
-    "tests/armiRun-SHUFFLES.txt",
     "tests/armiRun.yaml",
-    "tests/c5g7",
-    "tests/c5g7/c5g7-blueprints.yaml",
-    "tests/c5g7/c5g7-settings.yaml",
-    "tests/COMPXS.ascii",
     "tests/detailedAxialExpansion/armiRun.yaml",
     "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
     "tests/detailedAxialExpansion/refSmallReactor.yaml",

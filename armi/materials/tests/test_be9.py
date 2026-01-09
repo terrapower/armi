@@ -19,7 +19,7 @@ from armi.materials.be9 import Be9
 from armi.materials.tests import test_materials
 
 
-class Test_Be9(test_materials._Material_Test, unittest.TestCase):
+class TestBe9(test_materials._Material_Test, unittest.TestCase):
     """Beryllium tests."""
 
     MAT_CLASS = Be9

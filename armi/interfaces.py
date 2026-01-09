@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-Interfaces are objects of code that interact with ARMI. They read information off the state,
-perform calculations (or run external codes), and then store the results back in the state.
+Interfaces are objects of code that interact with ARMI. They read information off the state, perform calculations (or\
+run external codes), and then store the results back in the state.
 
 Learn all about interfaces in :doc:`/developer/guide`
 
@@ -39,8 +39,8 @@ class STACK_ORDER:  # noqa: N801
     """
     Constants that help determine the order of modules in the interface stack.
 
-    Each module defines an ``ORDER`` constant that specifies where in this order it should be placed
-    in the Interface Stack.
+    Each module defines an ``ORDER`` constant that specifies where in this order it should be placed in the Interface
+    Stack.
 
     .. impl:: Define an ordered list of interfaces.
         :id: I_ARMI_OPERATOR_INTERFACES0
@@ -155,8 +155,7 @@ class TightCoupler:
 
     def isConverged(self, val: _SUPPORTED_TYPES) -> bool:
         """
-        Return boolean indicating if the convergence criteria between the current and previous
-        iteration values are met.
+        Return boolean indicating if the convergence criteria between the current and previous iteration values are met.
 
         Parameters
         ----------
@@ -182,15 +181,15 @@ class TightCoupler:
         Raises
         ------
         ValueError
-            If the previous iteration value has not been assigned. The
-            ``storePreviousIterationValue`` method must be called first.
+            If the previous iteration value has not been assigned. The ``storePreviousIterationValue`` method must be
+            called first.
         RuntimeError
             Only support calculating norms for up to 2D arrays.
         """
         if self._previousIterationValue is None:
             raise ValueError(
-                f"Cannot check convergence of {self} with no previous iteration value set. "
-                "Set using `storePreviousIterationValue` first."
+                f"Cannot check convergence of {self} with no previous iteration value set. Set using "
+                "`storePreviousIterationValue` first."
             )
 
         previous = self._previousIterationValue
@@ -219,8 +218,8 @@ class TightCoupler:
             self._numIters += 1
             if self._numIters == self.maxIters:
                 runLog.warning(
-                    f"Maximum number of iterations for {self.parameter} reached without convergence!"
-                    f"Prescribed convergence criteria is {self.tolerance}."
+                    f"Maximum number of iterations for {self.parameter} reached without convergence! Prescribed "
+                    f"convergence criteria is {self.tolerance}."
                 )
                 self._numIters = 0
 
@@ -287,9 +286,9 @@ class Interface:
     concrete class that extends this one.
     """
 
-    function = None
+    purpose = None
     """
-    The function performed by an Interface. This is not required be be defined by implementations of
+    The action performed by an Interface. This is not required be be defined by implementations of
     Interface, but is used to form categories of interfaces.
     """
 
@@ -358,7 +357,7 @@ class Interface:
 
         Examples
         --------
-        >>> return {'neutronsPerFission',self.neutronsPerFission}
+        >>> return {"neutronsPerFission", self.neutronsPerFission}
         """
         return {}
 
@@ -386,20 +385,17 @@ class Interface:
         self.o = o
 
     def detachReactor(self):
-        """Delete the callbacks to reactor or operator. Useful when pickling, MPI sending, etc. to
-        save memory.
-        """
+        """Delete the callbacks to reactor or operator. Useful when pickling, MPI sending, etc. to save memory."""
         self.o = None
         self.r = None
         self.cs = None
 
     def duplicate(self):
         """
-        Duplicate this interface without duplicating some of the large attributes (like the entire
-        reactor).
+        Duplicate this interface without duplicating some of the large attributes (like the entire reactor).
 
-        Makes a copy of interface with detached reactor/operator/settings so that it can be attached
-        to an operator at a later point in time.
+        Makes a copy of interface with detached reactor/operator/settings so that it can be attached to an operator at a
+        later point in time.
 
         Returns
         -------
@@ -502,13 +498,11 @@ class Interface:
     def interactRestart(self, startNode: Tuple[int, int], previousNode: Tuple[int, int]):
         """Perform any actions prior to simulating a restart.
 
-        Interfaces may want to restore some state that would have existed at the start of
-        ``startNode`` prior to calling :meth:`interactBOL` for the desired start point.
-        The database interface will be used prior to any interfaces calling this method,
-        so you can assume the reactor state has been correctly loaded from the database
-        from the ``previousNode``. This helps ensure that interfaces restart at e.g.,
-        ``(cycle, node)=(4, 3)`` would see the same data compared to the nominal simulation
-        without a restart.
+        Interfaces may want to restore some state that would have existed at the start of ``startNode`` prior to calling
+        :meth:`interactBOL` for the desired start point. The database interface will be used prior to any interfaces
+        calling this method, so you can assume the reactor state has been correctly loaded from the database from the
+        ``previousNode``. This helps ensure that interfaces restart at e.g., ``(cycle, node)=(4, 3)`` would see the same
+        data compared to the nominal simulation without a restart.
 
         Parameters
         ----------
@@ -688,13 +682,11 @@ class OutputReader:
     Attributes
     ----------
     success : bool
-        False by default, set to True if the run is considered
-        to have completed without error.
+        False by default, set to True if the run is considered to have completed without error.
 
     Notes
     -----
-    Should ideally not require r, eci, and fname arguments and would rather just have an
-    apply(reactor) method.
+    Should ideally not require r, eci, and fname arguments and would rather just have an apply(reactor) method.
     """
 
     def __init__(self, r=None, externalCodeInterface=None, fName=None, cs=None):
@@ -723,10 +715,9 @@ class OutputReader:
         """
         Apply the output back to a reactor state.
 
-        This provides a generic interface for the output data of anything
-        to be applied to a reactor state. The application could involve
-        reading text or binary output or simply parameters to appropriate
-        values in some other data structure.
+        This provides a generic interface for the output data of anything to be applied to a reactor state. The
+        application could involve reading text or binary output or simply parameters to appropriate values in some other
+        data structure.
         """
         raise NotImplementedError()
 
@@ -739,20 +730,19 @@ def _setTightCouplerByInterfaceFunction(interfaceClass, cs):
     ----------
     interfaceClass : Interface
         Interface class that a ``TightCoupler`` object will be added to.
-
     cs : Settings
-        Case settings that are parsed to determine if tight coupling is enabled
-        globally and if both a target parameter and convergence criteria defined.
+        Case settings that are parsed to determine if tight coupling is enabled globally and if both a target parameter
+        and convergence criteria defined.
     """
-    # No tight coupling if there is no function for the Interface defined.
-    if interfaceClass.function is None:
+    # No tight coupling if there is no purpose for the Interface defined.
+    if interfaceClass.purpose is None:
         return None
 
-    if not cs["tightCoupling"] or (interfaceClass.function not in cs["tightCouplingSettings"]):
+    if not cs["tightCoupling"] or (interfaceClass.purpose not in cs["tightCouplingSettings"]):
         return None
 
-    parameter = cs["tightCouplingSettings"][interfaceClass.function]["parameter"]
-    tolerance = cs["tightCouplingSettings"][interfaceClass.function]["convergence"]
+    parameter = cs["tightCouplingSettings"][interfaceClass.purpose]["parameter"]
+    tolerance = cs["tightCouplingSettings"][interfaceClass.purpose]["convergence"]
     maxIters = cs["tightCouplingMaxNumIters"]
 
     return TightCoupler(parameter, tolerance, maxIters)
@@ -762,12 +752,10 @@ def getActiveInterfaceInfo(cs):
     """
     Return a list containing information for all of the Interface classes that are present.
 
-    This creates a list of tuples, each containing an Interface subclass and appropriate
-    kwargs for adding them to an Operator stack, given case settings. There should be
-    entries for all Interface classes that are returned from implementations of the
-    describeInterfaces() function in modules present in the passed list of packages. The
-    list is sorted by the ORDER specified by the module in which the specific Interfaces
-    are described.
+    This creates a list of tuples, each containing an Interface subclass and appropriate kwargs for adding them to an
+    Operator stack, given case settings. There should be entries for all Interface classes that are returned from
+    implementations of the describeInterfaces() function in modules present in the passed list of packages. The list is
+    sorted by the ORDER specified by the module in which the specific Interfaces are described.
 
     Parameters
     ----------
@@ -794,8 +782,7 @@ class InterfaceInfo(NamedTuple):
 
     Notes
     -----
-    If kwargs is an empty dictionary, defaults from
-    ``armi.operators.operator.Operator.addInterface`` will be applied.
+    If kwargs is an empty dictionary, defaults from ``armi.operators.operator.Operator.addInterface`` will be applied.
 
     See Also
     --------

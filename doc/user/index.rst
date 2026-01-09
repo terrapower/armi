@@ -20,7 +20,7 @@ analyzing ARMI output files, etc.
    component_parameters_report
    assembly_parameters_report
    block_parameters_report
-   spatial_block_parameters
+   spatial_block_data
    physics_coupling
    radial_and_axial_expansion
    accessingEntryPoints

@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-A collection of miscellaneous functions used by ReportInterface to generate
-various reports.
-"""
+"""A collection of miscellaneous functions used by ReportInterface to generate various reports."""
 
 import collections
 import os
@@ -398,7 +395,7 @@ def getInterfaceStackSummary(o):
                 "{:02d}".format(ii),
                 i.__class__.__name__.replace("Interface", ""),
                 i.name,
-                i.function,
+                i.purpose,
                 "Yes" if i.enabled() else "No",
                 "Reversed" if i.reverseAtEOL else "Normal",
                 "Yes" if i.bolForce() else "No",
@@ -410,7 +407,7 @@ def getInterfaceStackSummary(o):
             "Index",
             "Type",
             "Name",
-            "Function",
+            "Purpose",
             "Enabled",
             "EOL order",
             "BOL forced",
@@ -741,27 +738,6 @@ def summarizePowerPeaking(core):
     runLog.important(
         "Power Peaking: Fz= {0:.3f} Fxy= {1:.3f} Fq= {2:.3f}".format(axPeakF, radPeakF, axPeakF * radPeakF)
     )
-
-
-def summarizePower(core):
-    """Provide an edit showing where the power is based on assembly types.
-
-    Parameters
-    ----------
-    core : armi.reactor.reactors.Core
-    """
-    sums = collections.defaultdict(lambda: 0.0)
-    pmult = core.powerMultiplier
-    for a in core:
-        sums[a.getType()] += a.calcTotalParam("power") * pmult
-
-    # calculate total power
-    tot = sum(sums.values()) or float("inf")
-    # NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
-
-    runLog.important("Power summary")
-    for atype, val in sums.items():
-        runLog.important(" Power in {0:35s}: {1:0.3E} Watts, {2:0.5f}%".format(atype, val, val / tot * 100))
 
 
 def makeCoreDesignReport(core, cs):

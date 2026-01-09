@@ -332,9 +332,9 @@ class IsotxsLibrary(_XSLibrary):
     --------
     >>> lib = xsLibraries.IsotxsLibrary()
     >>> # this doesn't have any information yet, we can read ISOTXS information
-    >>> libIsotxs = isotxs.readBinary('ISOAA')
+    >>> libIsotxs = isotxs.readBinary("ISOAA")
     >>> # any number of XSLibraries can be merged
-    >>> lib.merge(libIsotxs) # now the `lib` contains the ISOAA information.
+    >>> lib.merge(libIsotxs)  # now the `lib` contains the ISOAA information.
     """
 
     def __init__(self):
@@ -600,7 +600,7 @@ class CompxsLibrary(_XSLibrary):
 
     Examples
     --------
-    >>> lib = compxs.readBinary('COMPXS')
+    >>> lib = compxs.readBinary("COMPXS")
     >>> lib.regions
     """
 

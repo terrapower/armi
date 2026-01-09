@@ -24,7 +24,7 @@ from armi.reactor.blocks import Block
 from armi.testing import symmetryTesting
 
 
-class TestArmiThermalHydraulicsParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
+class TestTHParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getParameterDefinitions()
         self.blockParamsToTest = pluginParameters[Block]

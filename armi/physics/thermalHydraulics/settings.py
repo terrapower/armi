@@ -17,7 +17,6 @@
 from armi.settings import setting
 
 CONF_DO_TH = "doTH"
-CONF_TH_KERNEL = "thKernel"
 
 
 def defineSettings():
@@ -27,15 +26,7 @@ def defineSettings():
             CONF_DO_TH,
             default=False,
             label="Run Thermal Hydraulics",
-            description=(
-                f"Activate thermal hydraulics calculations using the physics module defined in `{CONF_TH_KERNEL}`"
-            ),
-        ),
-        setting.Setting(
-            CONF_TH_KERNEL,
-            default="",
-            label="Thermal Hydraulics Kernel",
-            description="Name of primary T/H solver in this run",
+            description=("Activate thermal hydraulics calculations."),
         ),
     ]
     return settings

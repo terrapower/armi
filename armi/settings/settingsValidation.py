@@ -356,8 +356,6 @@ class Inspector:
             CONF_ZONES_FILE,
         )
 
-        self.addQueryBadLocationWillLikelyFail("operatorLocation")
-
         self.addQuery(
             lambda: self.cs["outputFileExtension"] == "pdf" and self.cs["genReports"],
             "Output files of '.pdf' format are not supported by the reporting HTML generator. '.pdf' "
@@ -613,24 +611,6 @@ class Inspector:
                 "",
                 self.NO_ACTION,
             )
-
-        self.addQuery(
-            lambda: self.cs["operatorLocation"] and self.cs["runType"] != operators.RunTypes.STANDARD,
-            "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
-                self.cs["runType"]
-            ),
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
-            lambda: self.cs["operatorLocation"] and self.cs["runType"] != operators.RunTypes.STANDARD,
-            "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
-                self.cs["runType"]
-            ),
-            "",
-            self.NO_ACTION,
-        )
 
         self.addQuery(
             lambda: self.cs["skipCycles"] > 0 and not os.path.exists(self.cs.caseTitle + ".restart.dat"),

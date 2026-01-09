@@ -31,7 +31,6 @@ from armi.utils.reportPlotting import (
     plotAxialProfile,
     plotCoreOverviewRadar,
     valueVsTime,
-    xsHistoryVsTime,
 )
 
 
@@ -143,21 +142,5 @@ class TestRadar(unittest.TestCase):
         }
         figName = name + ".moves.png"
         movesVsCycle(name, scalars, "png")
-        self.assertTrue(os.path.exists(figName))
-        self.assertGreater(os.path.getsize(figName), 0)
-
-    def test_xsHistoryVsTime(self):
-        name = "xsHistoryVsTime"
-
-        class HistTester:
-            def __init__(self):
-                self.xsHistory = {
-                    65: [[0, 1], [0, 2], [0, 3]],
-                    66: [[0, 5], [0, 6], [0, 7]],
-                }
-
-        history = HistTester()
-        figName = name + ".bugroups.png"
-        xsHistoryVsTime(name, history, [], "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)

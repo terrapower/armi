@@ -66,9 +66,6 @@ class ReportInterface(interfaces.Interface):
         runLog.info(report.ALL[report.RUN_META])
 
     def interactEveryNode(self, cycle, node):
-        if self.cs["assemPowSummary"]:
-            reportingUtils.summarizePower(self.r.core)
-
         self.r.core.calcBlockMaxes()
         reportingUtils.summarizePowerPeaking(self.r.core)
 
@@ -126,7 +123,7 @@ class ReportInterface(interfaces.Interface):
         self.writeRunSummary()
         self.o.timer.stopAll()  # consider the run done
         runLog.info(self.o.timer.report(inclusionCutoff=0.001, totalTime=True))
-        _timelinePlot = self.o.timer.timeline(self.cs.caseTitle, self.cs["timelineInclusionCutoff"], totalTime=True)
+        _timelinePlot = self.o.timer.timeline(self.cs.caseTitle, 0.03, totalTime=True)
         runLog.info(self.printReports())
 
     def printReports(self):

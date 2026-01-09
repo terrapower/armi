@@ -153,7 +153,7 @@ class TestAxialLinkHelper(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.LOWER_BLOCK = _buildDummySodium(20, 10)
+        cls.LOWER_BLOCK = _buildDummySodium(98, 10)
 
     def test_override(self):
         """Test lower attribute can be set after construction."""
