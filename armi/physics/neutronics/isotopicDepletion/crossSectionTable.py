@@ -15,11 +15,10 @@
 """
 Module containing the CrossSectionTable class.
 
-The CrossSectionTable is useful for performing isotopic depletion analysis by storing one-group
-cross sections of interest to such an analysis. This used to live alongside the
-isotopicDepletionInterface, but that proved to be an unpleasant coupling between the ARMI composite
-model and the physics code contained therein. Separating it out at least means that the composite
-model doesn't need to import the isotopicDepletionInterface to function.
+The CrossSectionTable is useful for performing isotopic depletion analysis by storing one-group cross sections of
+interest to such an analysis. This used to live alongside the isotopicDepletionInterface, but that proved to be an
+unpleasant coupling between the ARMI composite model and the physics code contained therein. Separating it out at least
+means that the composite model doesn't need to import the isotopicDepletionInterface to function.
 """
 
 import collections
@@ -36,9 +35,8 @@ class CrossSectionTable(collections.OrderedDict):
 
     It can also double as a reaction rate table.
 
-    XStable is indexed by nucNames
-    (nG), (nF), (n2n), (nA), (nP) and (n3n) are expected
-    the cross sections are returned in barns
+    XStable is indexed by nucNames (nG), (nF), (n2n), (nA), (nP) and (n3n) are expected the cross sections are returned
+    in barns.
     """
 
     rateTypes = ("nG", "nF", "n2n", "nA", "nP", "n3n")
@@ -59,19 +57,19 @@ class CrossSectionTable(collections.OrderedDict):
 
         Parameters
         ----------
-        nucName - str
+        nucName : str
             nuclide name -- e.g. 'U235'
-        nG - float
+        nG : float
             (n,gamma) cross section in barns
-        nF - float
+        nF : float
             (n,fission) cross section in barns
-        n2n - float
+        n2n : float
             (n,2n) cross section in barns
-        nA - float
+        nA : float
             (n,alpha) cross section in barns
-        nP - float
+        nP : float
             (n,proton) cross section in barns
-        n3n - float
+        n3n : float
             (n,3n) cross section in barns
         """
         xsData = {rateType: xs for rateType, xs in zip(self.rateTypes, [nG, nF, n2n, nA, nP, n3n])}
@@ -85,13 +83,13 @@ class CrossSectionTable(collections.OrderedDict):
 
         Parameters
         ----------
-        nucName - str
+        nucName: str
             nuclide name -- e.g. 'U235'
-        microMultiGroupXS - XSCollection
+        microMultiGroupXS: XSCollection
             micro cross sections, typically a XSCollection from an ISOTXS
-        mgFlux - list like
+        mgFlux: list like
             The flux in each energy group
-        totalFlux - float
+        totalFlux: float
             The total flux. Optional argument for increased speed if already available.
         """
         totalFlux = totalFlux if totalFlux is not None else sum(mgFlux)
@@ -155,6 +153,7 @@ class CrossSectionTable(collections.OrderedDict):
             if any(dataToWrite[rateType] for rateType in self.rateTypes):
                 dataToWrite["mcnpId"] = mcnpNucName
                 output.append(tableFormat.format(**dataToWrite))
+
         return output
 
 
