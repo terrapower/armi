@@ -2373,7 +2373,7 @@ class TestNegativeVolume(unittest.TestCase):
             block.getVolumeFractions()
 
 
-class HexBlock_TestCase(unittest.TestCase):
+class TestHexBlock(unittest.TestCase):
     def setUp(self):
         self.hexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
@@ -2777,6 +2777,19 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertTrue(self.hexBlock.hasPinPitch())
         self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=True), 0.11)
         self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=False), 0.11)
+
+    def test_hasPinPitch(self):
+        # A HexBlock with no components inside should return False
+        b = blocks.HexBlock("EmptyHexBlock")
+        self.assertFalse(b.hasPinPitch())
+
+        # A HexBlock with only a clad or a wire component, but not both, should return False
+        b.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0))
+        self.assertFalse(b.hasPinPitch())
+
+        # A HexBlock with a clad and a wire component should return True
+        b.add(components.Circle("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0))
+        self.assertTrue(b.hasPinPitch())
 
     def test_getBlocks(self):
         self.assertEqual(len(self.hexBlock.getBlocks()), 1)
