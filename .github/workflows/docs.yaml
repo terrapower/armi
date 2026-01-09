@@ -127,8 +127,9 @@ jobs:
           # identified as existing
           rm -rf doc/.apidocs
           rm -rf doc/_build/html/.apidocs
+          rm -rf ./doc/_build/html/_modules
 
-          sleep 1
+          sleep 10
           ls -lah *
           sleep 1
           ls -lah doc/
