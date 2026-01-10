@@ -76,7 +76,7 @@ class RedistributeMass:
         """Compute and return the new post-redistribution volume of toComp."""
         return self.toCompVolume + self.fromCompVolume
 
-    def compatabilityCheck(self) -> bool:
+    def compatabilityCheck(self, showWarning: bool = True) -> bool:
         """Ensure fromComp and toComp are the same material.
 
         Notes
@@ -88,21 +88,34 @@ class RedistributeMass:
         -------
         False if incompatible; true otherwise.
         """
-        if type(self.fromComp.material) is not type(self.toComp.material):
+        if showWarning and type(self.fromComp.material) is not type(self.toComp.material):
+            massLost, massGained = self.getLostMass()
             msg = f"""
             Cannot redistribute mass between components that are different materials!
                 Trying to redistribute mass between the following components in {self.assemblyName}:
                     from --> {self.fromComp.parent} : {self.fromComp} : {type(self.fromComp.material)}
                       to --> {self.toComp.parent} : {self.toComp} : {type(self.toComp.material)}
 
-                Instead, mass will be removed from ({self.fromComp} | {type(self.fromComp.material)}) and
-                ({self.toComp} | {type(self.toComp.material)} will be artificially expanded. The consequence is that
-                mass conservation is no longer guaranteed for the {self.toComp.getType()} component type on this
-                assembly!
+                {massLost} g will be removed from {self.fromComp} and {massGained} g will be added to {self.toComp}
+                resulting in a loss of mass conservation for these components.
             """
-            runLog.warning(dedent(msg), label="Cannot redistribute mass between different materials.", single=True)
+            runLog.warning(dedent(msg), label="Cannot redistribute mass between different materials.")
             return False
         return True
+
+    def getLostMass(self) -> tuple[float, float]:
+        articifialGainMass = 0.0
+        artificalLostMass = 0.0
+        for nuc in self.toComp.getNuclides():
+            articifialGainMass += densityTools.getMassInGrams(
+                nuc, self.toComp.getArea() * abs(self.deltaZTop), self.toComp.getNumberDensity(nuc)
+            )
+        for nuc in self.fromComp.getNuclides():
+            artificalLostMass += densityTools.getMassInGrams(
+                nuc, self.fromComp.getArea() * abs(self.deltaZTop), self.fromComp.getNumberDensity(nuc)
+            )
+
+        return artificalLostMass, articifialGainMass
 
     def setNewToCompNDens(self):
         """Calculate the post-redistribution number densities for toComp and determine how much mass is in play for
