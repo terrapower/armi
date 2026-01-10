@@ -998,7 +998,7 @@ class FuelHandler:
         """
         # read moves file
         if yaml:
-            moves, misloadSwaps = self.readMovesYaml(shuffleFile)
+            moves, swaps = self.readMovesYaml(shuffleFile)
             cycle = self.r.p.cycle
             if cycle == 0:
                 # if cycle is 0, we are at the beginning of the first cycle
@@ -1007,14 +1007,14 @@ class FuelHandler:
                 return []
         else:
             moves = self.readMoves(shuffleFile)
-            misloadSwaps = {}
+            swaps = {}
             # get the correct cycle number
             # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
             cycle = self.r.p.cycle + 1
 
         # setup the load and loop chains to be run per cycle
         moveList = moves[cycle]
-        swaps = misloadSwaps.get(cycle, [])
+        swaps = swaps.get(cycle, [])
         moveData = self.processMoveList(moveList)
 
         # Now have the move locations
@@ -1145,9 +1145,9 @@ class FuelHandler:
             Mapping of cycle numbers to lists of
             :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects that
             describe the shuffle sequence.
-        misloadSwaps : dict
+        swaps : dict
             Mapping of cycle numbers to lists of location-pair tuples describing
-            assemblies to be swapped in order to simulate a misload.
+            assemblies to be swapped.
         """
         # 1. load YAML file
         try:
@@ -1166,7 +1166,7 @@ class FuelHandler:
             raise InputError("Shuffle YAML missing required 'sequence' mapping")
 
         moves = {}
-        misloadSwaps = defaultdict(list)
+        swaps = defaultdict(list)
         # cycles may be provided in any order; verify only that there are no gaps
         cycleNums = {int(c) for c in data["sequence"].keys()}
         if cycleNums:
@@ -1195,7 +1195,7 @@ class FuelHandler:
                 )
 
             for action in actions:
-                allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap", "assemblyName"}
+                allowed = {"cascade", "fuelEnrichment", "extraRotations", "swap", "assemblyName"}
                 unknown = set(action) - allowed
                 if unknown:
                     raise InputError(f"Unknown action keys {unknown} in shuffle YAML")
@@ -1252,16 +1252,16 @@ class FuelHandler:
                     if locs[-1] not in FuelHandler.DISCHARGE_LOCS:
                         moves[cycle].append(AssemblyMove(locs[-1], "Delete"))
 
-                elif "misloadSwap" in action:
-                    swap = action["misloadSwap"]
+                elif "swap" in action:
+                    swap = action["swap"]
                     if not isinstance(swap, list) or len(swap) != 2:
-                        raise InputError("misloadSwap must be a list of two location labels, got {swap}")
+                        raise InputError("swap must be a list of two location labels, got {swap}")
                     if any(not isinstance(item, str) for item in swap):
-                        raise InputError("misloadSwap entries must be strings, got {swap}")
+                        raise InputError("swap entries must be strings, got {swap}")
                     for loc in swap:
                         FuelHandler.validateLoc(loc, cycle)
                     loc1, loc2 = swap
-                    misloadSwaps[cycle].append((loc1, loc2))
+                    swaps[cycle].append((loc1, loc2))
 
                 elif "extraRotations" in action:
                     for loc, angle in action.get("extraRotations", {}).items():
@@ -1271,7 +1271,7 @@ class FuelHandler:
                 else:
                     raise InputError(f"Unable to process {action} in {cycle}")
 
-        return moves, dict(misloadSwaps)
+        return moves, dict(swaps)
 
     @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
