@@ -128,7 +128,7 @@ jobs:
           rm -rf doc/.apidocs
           rm -rf doc/_build/html/.apidocs
           rm -rf ./doc/_build/html/_modules
-          rm -rf armi
+          #rm -rf armi
           rm -rf .git
           rm -rf logs
           rm -rf doc/_build/html/_downloads
@@ -160,6 +160,7 @@ jobs:
 
           echo "Build PDF docs..."
           cd doc/
+          sed -i '/sphinxcontrib.apidoc/d' ./conf.py
           make --debug latex
           
           echo "AFTER MAKE LATEX xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
