@@ -1014,7 +1014,7 @@ class FuelHandler:
 
         # setup the load and loop chains to be run per cycle
         moveList = moves[cycle]
-        swaps = swaps.get(cycle, [])
+        swapList = swaps.get(cycle, [])
         moveData = self.processMoveList(moveList)
 
         # Now have the move locations
@@ -1027,12 +1027,12 @@ class FuelHandler:
             moveData.dischargeDests,
         )
 
-        # Apply any misload swaps after performing cascades
-        for loc1, loc2 in swaps:
+        # Apply any swaps after performing cascades
+        for loc1, loc2 in swapList:
             a1 = self.r.core.getAssemblyWithStringLocation(loc1)
             a2 = self.r.core.getAssemblyWithStringLocation(loc2)
             if a1 is None or a2 is None:
-                runLog.warning(f"Could not perform misload swap between {loc1} and {loc2}")
+                runLog.warning(f"Could not perform swap between {loc1} and {loc2}")
                 continue
             self.swapAssemblies(a1, a2)
             moved.extend([a1, a2])
