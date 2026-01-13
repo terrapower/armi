@@ -979,3 +979,34 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         db._permission = "mock"
         with self.assertRaises(ValueError):
             db.open()
+
+
+class TestStaticDatabaseItems(unittest.TestCase):
+    def test_applyComponentNumberDensitiesMigration_basic(self):
+        class DummyComponent:
+            def __init__(self):
+                # the migration writes into c.p[...] via item assignment
+                self.p = {}
+
+        comps = [DummyComponent(), DummyComponent()]
+        # insertion order matters; we assert the arrays follow this order
+        unpacked = [
+            {"U235": 1.23e-3, "U238": 2.34e-3},
+            {"PU239": 5.6e-4, "PU240": 7.8e-4},
+        ]
+
+        Database._applyComponentNumberDensitiesMigration(comps, unpacked)
+
+        for comp, orig in zip(comps, unpacked):
+            expected_nucs = np.array(list(orig.keys()), dtype="S6")
+            expected_nds = np.array(list(orig.values()), dtype=np.float64)
+
+            # verify nuclide names and dtype
+            self.assertIn("nuclides", comp.p)
+            self.assertTrue(np.array_equal(comp.p["nuclides"], expected_nucs))
+            self.assertEqual(comp.p["nuclides"].dtype, np.dtype("S6"))
+
+            # verify number densities and dtype
+            self.assertIn("numberDensities", comp.p)
+            self.assertTrue(np.allclose(comp.p["numberDensities"], expected_nds))
+            self.assertEqual(comp.p["numberDensities"].dtype, np.float64)
