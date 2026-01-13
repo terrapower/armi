@@ -1823,9 +1823,8 @@ class HexBlock(Block):
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = powers
 
-        # If using the *powerKeySuffix* parameter, we also need to set total power, which is sum of
-        # neutron and gamma powers. We assume that a solo gamma calculation to set total power does
-        # not make sense.
+        # If using the *powerKeySuffix* parameter, we also need to set total power, which is sum of neutron and gamma
+        # powers. We assume that a solo gamma calculation to set total power does not make sense.
         if powerKeySuffix:
             if powerKeySuffix == GAMMA:
                 if self.p[f"linPowByPin{NEUTRON}"] is None:
@@ -1837,23 +1836,26 @@ class HexBlock(Block):
 
     def rotate(self, rad: float):
         """
-        Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise
-        direction.
+        Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise direction.
 
-        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a Python
-        list of length 6 in order to be eligible for rotation; all parameters that do not meet these
-        two criteria are not rotated.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a Python list of length 6 in
+        order to be eligible for rotation; all parameters that do not meet these two criteria are not rotated.
 
         .. impl:: Rotating a hex block updates parameters on the boundary, the orientation
             parameter, and the spatial coordinates on contained objects.
             :id: I_ARMI_ROTATE_HEX_BLOCK
             :implements: R_ARMI_ROTATE_HEX
 
+            This method rotates a block on a hexagonal grid, conserving the 60-degree symmetry of the grid. It first
+            determines how many rotations the block will undergo based on the 60-degree hex grid. Then it uses that
+            "rotation number" to do a few things: reset the orientation parameter, rotate the children, and rotate the
+            boundary parameters. It also sets the "displacement in X" and "displacement in Y" parameters.
+
         Parameters
         ----------
         rad: float, required
-            Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
-            increments (i.e., PI/3, 2 * PI/3, PI, 4 * PI/3, 5 * PI/3, and 2 * PI).
+            Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree increments
+            (i.e., PI/3, 2 * PI/3, PI, 4 * PI/3, 5 * PI/3, and 2 * PI).
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
@@ -1869,12 +1871,7 @@ class HexBlock(Block):
             return
 
         locationRotator = functools.partial(self.spatialGrid.rotateIndex, rotations=rotNum)
-        rotationMatrix = np.array(
-            [
-                [math.cos(radians), -math.sin(radians)],
-                [math.sin(radians), math.cos(radians)],
-            ]
-        )
+        rotationMatrix = np.array([[math.cos(radians), -math.sin(radians)], [math.sin(radians), math.cos(radians)]])
         for c in self:
             if isinstance(c.spatialLocator, grids.MultiIndexLocation):
                 newLocations = list(map(locationRotator, c.spatialLocator))
@@ -1898,8 +1895,7 @@ class HexBlock(Block):
         Parameters
         ----------
         rotNum : int
-            Rotation number between zero and five, inclusive, specifying how many rotations have
-            taken place.
+            Rotation number between zero and five, inclusive, specifying how many rotations have taken place.
         """
         names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
         names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
@@ -1931,8 +1927,7 @@ class HexBlock(Block):
                 )
 
     def _rotateDisplacement(self, rad: float):
-        # This specifically uses the .get() functionality to avoid an error if this parameter does
-        # not exist.
+        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
@@ -2228,7 +2223,7 @@ class HexBlock(Block):
             return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
                 self.getComponent(Flags.WIRE, quiet=True) is not None
             )
-        except Exception:
+        except ValueError:
             # not well defined pitch due to multiple pin and/or wire components
             return False
 

@@ -176,8 +176,8 @@ def deleteCache(cachedFolder):
     if "cache" not in str(cachedFolder).lower():
         raise RuntimeError("Cache location must contain keyword: `cache`.")
 
-    # We can consider caches temporary directories, since they are not important containers for simulation results.
-    cleanPath(cachedFolder, tempDir=True)
+    # Output caches need to pass in `forceClean` in order to greenlight the deletion.
+    cleanPath(cachedFolder, forceClean=True)
 
 
 def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None):
