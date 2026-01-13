@@ -326,15 +326,14 @@ class AxialExpansionChanger:
         Notes
         -----
         - If true, then axial expansion will be physical for all blocks.
-        - If false, the top most block in the assembly is artificially chopped
-          to preserve the assembly height. A runLog.Warning also issued.
+        - If false, the top most block in the assembly is artificially chopped to preserve the assembly height. A
+        runLog.Warning also issued.
         """
         self.topMostBlock = self.linked.a[-1]
         if not self.topMostBlock.hasFlags(Flags.DUMMY):
             runLog.warning(
-                f"No dummy block present at the top of {self.linked.a}! "
-                "Top most block will be artificially chopped "
-                "to preserve assembly height"
+                f"No dummy block present at the top of {self.linked.a}! Top most block will be artificially chopped to "
+                "preserve assembly height"
             )
             if self._detailedAxialExpansion:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
@@ -344,24 +343,23 @@ class AxialExpansionChanger:
     def axiallyExpandAssembly(self, recalculateBurnup: bool = True):
         """Utilizes assembly linkage to do axial expansion.
 
-        Parameters
-        ----------
-        recalculateBurnup
-            Optional parameter to skip the recalculate burnup step.
-
         .. impl:: Preserve the total height of an ARMI assembly, during expansion.
             :id: I_ARMI_ASSEM_HEIGHT_PRES
             :implements: R_ARMI_ASSEM_HEIGHT_PRES
 
-            The total height of an Assembly is preserved by not changing the ``ztop`` position
-            of the top-most Block in an Assembly. The ``zbottom`` of the top-most Block is
-            adjusted to match the Block immediately below it. The ``height`` of the
-            top-most Block is is then updated to reflect any expansion/contraction.
+            The total height of an Assembly is preserved by not changing the ``ztop`` position of the top-most Block in
+            an Assembly. The ``zbottom`` of the top-most Block is adjusted to match the Block immediately below it. The
+            ``height`` of the top-most Block is is then updated to reflect any expansion/contraction.
+
+        Parameters
+        ----------
+        recalculateBurnup
+            Optional parameter to skip the recalculate burnup step.
         """
         mesh = [0.0]
         runLog.debug(
-            "Printing component expansion information (growth percentage and 'target component')"
-            f"for each block in assembly {self.linked.a}."
+            "Printing component expansion information (growth percentage and 'target component') for each block in "
+            f"assembly {self.linked.a}."
         )
         # expand all of the components
         for b in self.linked.a:
