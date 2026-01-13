@@ -19,8 +19,6 @@ import shutil
 import unittest
 from pathlib import Path
 
-import pytest
-
 from armi.utils import directoryChangers, directoryChangersMpi
 
 
@@ -158,6 +156,12 @@ class TestDirectoryChangersEnvEdits(unittest.TestCase):
     """Tests that will use monkeypatch to alter an environment variable."""
 
     def setUp(self):
+        # We cannot import pytest at the top of the file right now. The ARMI unit tests are currently imported at
+        # runtime, and until that is changed, we don't want pytest to be a runtime dependency. For now, hide the import
+        # down here. Once the testing module is complete and ARMI's unit tests aren't all imported, the pytest import
+        # can move up to where it belongs.
+        import pytest
+
         self.monkeypatch = pytest.MonkeyPatch()
 
     def tearDown(self):
