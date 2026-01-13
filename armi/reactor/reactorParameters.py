@@ -204,30 +204,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "medAbsCore",
-            units=units.EV,
-            description="Median energy of neutrons absorbed in the core",
-        )
-
-        pb.defParam(
-            "medFluxCore",
-            units=units.EV,
-            description="Median energy of neutrons in the core",
-        )
-
-        pb.defParam(
-            "medSrcCore",
-            units=units.EV,
-            description="Median energy of source neutrons in the core?",
-        )
-
-        pb.defParam(
-            "pkFlux",
-            units=f"n/{units.CM}^2/{units.SECONDS}",
-            description="Peak flux in the core",
-        )
-
-        pb.defParam(
             "maxdetailedDpaPeak",
             units=units.DPA,
             description="Highest peak dpa of any block in the problem",
@@ -289,30 +265,6 @@ def defineCoreParameters():
             "peakKeff",
             units=units.UNITLESS,
             description="Maximum keff in the simulation",
-        )
-
-        pb.defParam(
-            "fastFluxFrAvg",
-            units=units.UNITLESS,
-            description="Fast flux fraction average",
-        )
-
-        pb.defParam(
-            "leakageFracTotal",
-            units=units.UNITLESS,
-            description="Total leakage fraction",
-        )
-
-        pb.defParam(
-            "leakageFracPlanar",
-            units=units.UNITLESS,
-            description="Leakage fraction in planar",
-        )
-
-        pb.defParam(
-            "leakageFracAxial",
-            units=units.UNITLESS,
-            description="Leakage fraction in axial direction",
         )
 
         pb.defParam(
@@ -390,18 +342,6 @@ def defineCoreParameters():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, categories=["equilibrium"]) as pb:
         pb.defParam(
-            "ConvRatioCore",
-            units=units.UNITLESS,
-            description="Conversion ratio of the core",
-        )
-
-        pb.defParam(
-            "absPerFisCore",
-            units=units.UNITLESS,
-            description="absorptions per fission in core",
-        )
-
-        pb.defParam(
             "axialExpansionPercent",
             units=units.PERCENT,
             description="Percent of axial growth of fuel blocks",
@@ -413,18 +353,6 @@ def defineCoreParameters():
             units=units.UNITLESS,
             description="Pre-defined number of tightly coupled iterations.",
             default=0,
-        )
-
-        pb.defParam(
-            "fisFrac",
-            units=units.UNITLESS,
-            description="Percent of fissions in fertile nuclides",
-        )
-
-        pb.defParam(
-            "fisRateCore",
-            units=units.UNITLESS,
-            description="peak/average fission rate in core",
         )
 
     return pDefs
