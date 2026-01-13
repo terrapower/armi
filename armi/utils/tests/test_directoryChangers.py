@@ -172,3 +172,6 @@ class TestDirectoryChangersEnvEdits(unittest.TestCase):
         self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(altRoot))
         with directoryChangers.TemporaryDirectoryChanger() as td:
             self.assertEqual(Path(td.destination).parent, altRoot)
+        # This test creates a path that isn't auto deleted with TempDirChanger, which deletes the temp dir, not the root
+        if os.path.exists(altRoot):
+            shutil.rmtree(altRoot)
