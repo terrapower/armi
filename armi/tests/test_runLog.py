@@ -472,7 +472,7 @@ class TestRunLogEnvEdits(unittest.TestCase):
     def test_createLogDirNonDefault(self):
         """Test the scenario where a user sets the environment variable that edits the log dir location."""
         with TemporaryDirectoryChanger() as td:
-            self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", Path(td.destination) / "logzGoHere")
+            self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(Path(td.destination) / "logzGoHere"))
             runLog.createLogDir()
             # assert the env variable-edits logs path exists
             p = Path(td.destination) / "logzGoHere" / "logs"
@@ -486,7 +486,7 @@ class TestRunLogEnvEdits(unittest.TestCase):
         default = Path(runLog.getLogDir())
         self.assertEqual(default, Path(os.getcwd()) / "logs")
         root = Path("somewhere") / "else"
-        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", root)
+        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(root))
         altered = Path(runLog.getLogDir())
         self.assertEqual(altered, root / "logs")
 

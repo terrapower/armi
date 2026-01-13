@@ -164,11 +164,11 @@ class TestDirectoryChangersEnvEdits(unittest.TestCase):
         self.monkeypatch.undo()
 
     def test_tempDirChangerNonDefault(self):
-        """Make sure TemporaryDirectoyChanger uses an alternative root when user edits the appropriate environment
+        """Make sure TemporaryDirectoryChanger uses an alternative root when user edits the appropriate environment
         variable.
         """
         # Alter the root path to be in this directory
         altRoot = Path(__file__).parent / "altRoot"
-        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", altRoot)
+        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(altRoot))
         with directoryChangers.TemporaryDirectoryChanger() as td:
             self.assertEqual(Path(td.destination).parent, altRoot)
