@@ -212,7 +212,7 @@ def cleanPath(path, mpiRank=0, forceClean=False):
             # it's just a file. Delete it.
             os.remove(path)
 
-    # Deletions are not immediate, so wait for it to finish.
+    # Deletions may not be immediate on Windows, so wait for it to finish.
     maxLoops = 6
     waitTime = 0.5
     loopCounter = 0

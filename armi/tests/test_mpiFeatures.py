@@ -297,7 +297,7 @@ class MpiPathToolsTests(unittest.TestCase):
     def test_cleanPathMpi(self):
         """Simple tests of cleanPath(), in the MPI scenario."""
         with TemporaryDirectoryChanger():
-            # TEST 0: File is not safe to delete, due to due not being a temp dir or under FAST_PATH
+            # TEST 0: File is not safe to delete, due to not being a temp dir or under FAST_PATH
             filePath0 = "test0_cleanPathNoMpi"
             open(filePath0, "w").write("something")
             self.assertTrue(os.path.exists(filePath0))
