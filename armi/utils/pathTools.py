@@ -192,13 +192,12 @@ def cleanPath(path, mpiRank=0, forceClean=False):
     if not os.path.exists(path):
         return True
 
-    # Any forceClean can be deleted
     if forceClean:
+        # Any forceClean can be deleted
         valid = True
-
-    # If the path slated for deletion is a subdirectory of _FAST_PATH, then cool, delete.
-    # _FAST_PATH itself gets deleted on program exit.
-    if pathlib.Path(path).is_relative_to(pathlib.Path(context.getFastPath())):
+    elif pathlib.Path(path).is_relative_to(pathlib.Path(context.getFastPath())):
+        # If the path slated for deletion is a subdirectory of _FAST_PATH, then cool, delete.
+        # _FAST_PATH itself gets deleted on program exit.
         valid = True
 
     if not valid:
