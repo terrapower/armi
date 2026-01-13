@@ -33,6 +33,7 @@ from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
+from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
@@ -982,14 +983,9 @@ class TestSimplestDatabaseItems(unittest.TestCase):
 
 
 class TestStaticDatabaseItems(unittest.TestCase):
-    def test_applyComponentNumberDensitiesMigration_basic(self):
-        class DummyComponent:
-            def __init__(self):
-                # the migration writes into c.p[...] via item assignment
-                self.p = {}
-
-        comps = [DummyComponent(), DummyComponent()]
-        # insertion order matters; we assert the arrays follow this order
+    def test_applyComponentNumberDensitiesMigration(self):
+        b = loadTestBlock()
+        comps = [b[0], b[1]]
         unpacked = [
             {"U235": 1.23e-3, "U238": 2.34e-3},
             {"PU239": 5.6e-4, "PU240": 7.8e-4},
@@ -1002,11 +998,9 @@ class TestStaticDatabaseItems(unittest.TestCase):
             expected_nds = np.array(list(orig.values()), dtype=np.float64)
 
             # verify nuclide names and dtype
-            self.assertIn("nuclides", comp.p)
             self.assertTrue(np.array_equal(comp.p["nuclides"], expected_nucs))
             self.assertEqual(comp.p["nuclides"].dtype, np.dtype("S6"))
 
             # verify number densities and dtype
-            self.assertIn("numberDensities", comp.p)
             self.assertTrue(np.allclose(comp.p["numberDensities"], expected_nds))
             self.assertEqual(comp.p["numberDensities"].dtype, np.float64)
