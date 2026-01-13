@@ -28,4 +28,4 @@ class CleanTemps(EntryPoint):
     name = "clean-temps"
 
     def invoke(self):
-        context.cleanTempDirs(olderThanDays=0)
+        context.cleanFastPathAfterSimulation()

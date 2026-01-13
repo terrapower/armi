@@ -46,10 +46,10 @@ def main():
                 f"Killing all MPI tasks from __main__, rank {context.MPI_RANK}.",
                 file=sys.__stderr__,
             )
-            # cleanTempDirs has @atexit.register so it should be called at the end, but mpi. Abort
+            # cleanFastPathAfterSimulation has @atexit.register so it should be called at the end, but mpi. Abort
             # in main will not allow for @atexit.register or except/finally code to be called so
             # calling here as well
-            context.cleanTempDirs()
+            context.cleanFastPathAfterSimulation()
             # .Abort will not allow for @atexit.register or except/finally code to be called
             context.MPI_COMM.Abort(errorcode=-1)
 
