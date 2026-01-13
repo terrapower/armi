@@ -111,14 +111,6 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam("timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6)
 
-        pb.defParam(
-            "guideTubeTopElevation",
-            units=units.CM,
-            description=("Elevation of the top of the guide tube relative to the bottom of the duct."),
-            categories=[parameters.Category.assignInBlueprints],
-            saveToDB=True,
-        )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
         pb.defParam(
             "detailedNDens",
