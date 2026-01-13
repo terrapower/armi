@@ -268,6 +268,12 @@ def defineCoreParameters():
         )
 
         pb.defParam(
+            "fastFluxFrAvg",
+            units=units.UNITLESS,
+            description="Fast flux fraction average",
+        )
+
+        pb.defParam(
             "maxpdens",
             units=f"{units.WATTS}/{units.CM}^3",
             description="Maximum avg. volumetric power density of all blocks",
