@@ -400,12 +400,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam("fluxAdj", units=units.UNITLESS, description="Adjoint flux")
-        pb.defParam(
-            "fluxAdjPeak",
-            units=units.UNITLESS,
-            description="Adjoint flux",
-            location=ParamLocation.MAX,
-        )
 
         pb.defParam(
             "pdens",
