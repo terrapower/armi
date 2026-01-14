@@ -2004,7 +2004,7 @@ class TestPinQuantities(unittest.TestCase):
         self.assertEqual(numPins, 169)
 
         # Set pin fluxes at block level
-        fuelBlock.initializePinLocations()
+        fuelBlock.assignPinIndices()
         pinMgFluxes = np.random.rand(numPins, 33)
         pinMgFluxesAdj = np.random.rand(numPins, 33)
         pinMgFluxesGamma = np.random.rand(numPins, 33)
