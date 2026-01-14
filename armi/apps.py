@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-The base ARMI App class.
+The base ARMI App class. blah
 
 This module defines the :py:class:`App` class, which is used to configure the ARMI
 Framework for a specific application. An ``App`` implements a simple interface for
