@@ -59,7 +59,6 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
     if self.isEnabledFor({1}):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
-LOG_DIR = os.path.join(os.getcwd(), "logs")
 OS_SECONDS_TIMEOUT = 2 * 60
 SEP = "|"
 STDERR_LOGGER_NAME = "ARMI_ERROR"
@@ -271,7 +270,7 @@ class _RunLog:
 
         if self._mpiRank != 0:
             # init stderr intercepting logging
-            filePath = os.path.join(LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank))
+            filePath = os.path.join(getLogDir(), _RunLog.STDERR_NAME.format(name, self._mpiRank))
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
             h = logging.FileHandler(filePath, delay=True)
             fmt = "%(message)s"
@@ -284,6 +283,16 @@ class _RunLog:
             # force the error logger onto stderr
             self.initialErr = sys.stderr
             sys.stderr = self.stderrLogger
+
+
+def getLogDir():
+    """This returns a file path for the `logs` directory, first checking if the user set the ARMI_TEMP_ROOT_PATH
+    environment variable.
+    """
+    if os.environ.get("ARMI_TEMP_ROOT_PATH"):
+        return os.path.join(os.environ["ARMI_TEMP_ROOT_PATH"], "logs")
+    else:
+        return os.path.join(os.getcwd(), "logs")
 
 
 def close(mpiRank=None):
@@ -325,7 +334,7 @@ def concatenateLogs(logDir=None):
         then stderr. Finally, the original stdout and stderr files are deleted.
     """
     if logDir is None:
-        logDir = LOG_DIR
+        logDir = getLogDir()
 
     # find all the logging-module-based log files
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
@@ -540,7 +549,7 @@ class RunLogger(logging.Logger):
             handler.setLevel(logging.INFO)
             self.setLevel(logging.INFO)
         else:
-            filePath = os.path.join(LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank))
+            filePath = os.path.join(getLogDir(), _RunLog.STDOUT_NAME.format(args[0], mpiRank))
             handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
@@ -674,7 +683,7 @@ def createLogDir(logDir: str = None) -> None:
     """A helper method to create the log directory."""
     # the usual case is the user does not pass in a log dir path, so we use the global one
     if logDir is None:
-        logDir = LOG_DIR
+        logDir = getLogDir()
 
     # create the directory
     if not os.path.exists(logDir):
@@ -695,8 +704,8 @@ def createLogDir(logDir: str = None) -> None:
         time.sleep(secondsWait)
 
 
-if not os.path.exists(LOG_DIR):
-    createLogDir(LOG_DIR)
+if not os.path.exists(getLogDir()):
+    createLogDir(getLogDir())
 
 
 def logFactory():

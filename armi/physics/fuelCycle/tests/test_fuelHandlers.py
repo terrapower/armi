@@ -90,9 +90,9 @@ class TestReadMovesYamlErrors(unittest.TestCase):
                 with self.assertRaisesRegex(InputError, msg):
                     self._run(yaml_text)
 
-    def test_badMisloadSwap(self):
-        yaml_text = "sequence:\n  1:\n    - misloadSwap: ['009-045']\n"
-        with self.assertRaisesRegex(InputError, "misloadSwap"):
+    def test_badSwap(self):
+        yaml_text = "sequence:\n  1:\n    - swap: ['009-045']\n"
+        with self.assertRaisesRegex(InputError, "swap"):
             self._run(yaml_text)
 
     def test_badFuelEnrichment(self):
@@ -712,7 +712,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         yaml_text = """
         sequence:
             1:
-                - misloadSwap: ["009-045", "008-004"]
+                - swap: ["009-045", "008-004"]
                 - cascade: ["igniter fuel", "009-045", "008-004", "007-001", "006-005"]
                   fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
                 - extraRotations: {"009-045": 60}
