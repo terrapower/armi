@@ -654,6 +654,14 @@ class TestCircle(TestShapedComponent):
         "mult": 1.5,
     }
 
+    def test_copy(self):
+        circle2 = copy.copy(self.component)
+        self.assertIsNot(circle2, self.component)
+
+        self.assertAlmostEqual(circle2.getDimension("id"), self.component.getDimension("id"))
+        self.assertAlmostEqual(circle2.getDimension("od"), self.component.getDimension("od"))
+        self.assertAlmostEqual(circle2.getDimension("mult"), self.component.getDimension("mult"))
+
     def test_circleExpansionWorks(self):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 

@@ -531,6 +531,9 @@ class RunLogger(logging.Logger):
     """
 
     FMT = "%(levelname)s%(message)s"
+    # This is being set as a class attribute so it only runs once, before the class is initialized. For some bespoke
+    # MPI use cases, calling the function when setting the `filePath` causes issues. This sidesteps the problem.
+    LOG_DIR = getLogDir()
 
     def __init__(self, *args, **kwargs):
         # optionally, the user can pass in the MPI_RANK by putting it in the logger name after a separator string
@@ -549,7 +552,7 @@ class RunLogger(logging.Logger):
             handler.setLevel(logging.INFO)
             self.setLevel(logging.INFO)
         else:
-            filePath = os.path.join(getLogDir(), _RunLog.STDOUT_NAME.format(args[0], mpiRank))
+            filePath = os.path.join(RunLogger.LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank))
             handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)

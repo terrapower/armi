@@ -672,11 +672,6 @@ class TestCompositeTree(unittest.TestCase):
         duct: *component_metal_fuel_duct
         """
 
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self, *args, **kwargs)
-        self.block = None
-        self.r = None
-
     def setUp(self):
         self.block = loadTestBlock()
         self.r = self.block.core.r
