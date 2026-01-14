@@ -349,7 +349,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
             dummyXsLib.merge(self.libCombined)
 
     def test_mergeEmptyXSLibWithClones(self):
-        """Merge empty XS libraries with clones of others."""
+        """Merge an empty XS library with a clones of another."""
         emptyXSLib = xsLibraries.IsotxsLibrary()
         emptyXSLib.merge(self.libAA)
         self.libAA = None
