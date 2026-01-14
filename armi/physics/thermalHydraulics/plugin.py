@@ -28,19 +28,8 @@ class ThermalHydraulicsPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def exposeInterfaces(cs):
-        """Expose the T/H interfaces."""
-        return []
-
-    @staticmethod
-    @plugins.HOOKIMPL
     def defineParameters():
         """Define additional parameters for the reactor data model."""
         from armi.physics.thermalHydraulics import parameters
 
         return parameters.getParameterDefinitions()
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def afterConstructionOfAssemblies(assemblies, cs):
-        """After new assemblies are built, set some state information."""
