@@ -228,7 +228,7 @@ class SystemBlueprint(yamlize.Object):
         for a in container:
             loc = a.getLocation()
             if loc in a.NOT_IN_CORE:
-                a.p.ringPosHist = [loc]
+                a.p.ringPosHist = [(loc, loc)]
             else:
                 try:
                     ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())

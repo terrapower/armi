@@ -227,7 +227,7 @@ class FuelHandler:
                     # grab first (ring, pos) at cycle info which can be used to identify this assembly if it goes to SFP
                     if a.p.ringPosHist is not None:
                         for cycleNum, rp in enumerate(a.p.ringPosHist):
-                            if isinstance(rp, tuple):
+                            if isinstance(rp, tuple) and rp[0] is not None and rp[0] not in a.NOT_IN_CORE:
                                 break
                         ringPosCycle = [rp[0], rp[1], cycleNum]
 
@@ -279,7 +279,7 @@ class FuelHandler:
         # (data from previous cycles is missing or shuffling was not performed
         # on a previous cycle)
         while len(a.p.ringPosHist) < cycle:
-            a.p.ringPosHist.append(None)
+            a.p.ringPosHist.append((None, None))
         # param length is longer than expected. perhaps a restart analysis of some sort.
         # trim trailing data to correct length
         while len(a.p.ringPosHist) > cycle:
@@ -296,7 +296,7 @@ class FuelHandler:
         a = self._preconditionLocationHistParam(a, cycle)
         # assem param should now be the correct len. append data at correct index.
         if a.getLocation() in a.NOT_IN_CORE:
-            a.p.ringPosHist.append(a.getLocation())
+            a.p.ringPosHist.append((a.getLocation(), a.getLocation()))
         else:
             ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())
             a.p.ringPosHist.append((ring, pos))
