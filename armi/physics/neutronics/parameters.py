@@ -328,51 +328,9 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "rateExtSrc",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Rate of production of neutrons from an external source.",
-        )
-
-        pb.defParam(
-            "rateFisAbs",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Neutron abs. rate in fissile material",
-        )
-
-        pb.defParam(
-            "rateFisSrc",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Fission source rate. This is related to production rate in fissile by a factor of keff",
-        )
-
-        pb.defParam(
-            "rateLeak",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Rate that neutrons leak out of this block.",
-        )
-
-        pb.defParam(
-            "rateParasAbs",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Rate of parasitic absorption (absorption in non-fertile/fissionable material)",
-        )
-
-        pb.defParam(
             "rateProdNet",
             units=f"1/{units.CM}^3/{units.SECONDS}",
             description="The total neutron production including (n,2n) source and fission source.",
-        )
-
-        pb.defParam(
-            "rateScatIn",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Rate neutrons in-scatter in this block",
-        )
-
-        pb.defParam(
-            "rateScatOut",
-            units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Rate that neutrons out-scatter in this block (removal - absorption)",
         )
 
         pb.defParam(
@@ -425,8 +383,6 @@ def _getNeutronicsBlockParams():
             units=f"{units.MW}/{units.METERS}^2",
             description="Power divided by XY area",
         )
-
-        pb.defParam("fertileBonus", units=units.UNITLESS, description="The fertile bonus")
 
         pb.defParam(
             "fisDens",
