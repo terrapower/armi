@@ -1777,20 +1777,6 @@ class HexBlock(Block):
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
-    def initializePinLocations(self):
-        """Initialize pin locations.
-
-        Deprecated. Use :meth:`assignPinIndices` to additionally update component parameters.
-        """
-        # stacklevel=2 means the warning traceback, file, and line numbers will reflect the caller
-        # of this method, not this method itself.
-        warnings.warn(
-            "HexBlock.initializePinLocations is deprecated. Please use assignPinIndices",
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
-        self.assignPinIndices()
-
     def setPinPowers(self, powers, powerKeySuffix=""):
         """
         Updates the pin linear power densities of this block.
