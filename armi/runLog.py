@@ -531,6 +531,8 @@ class RunLogger(logging.Logger):
     """
 
     FMT = "%(levelname)s%(message)s"
+    # This is being set as a class attribute so it only runs once, before the class is initialized. For some bespoke
+    # MPI use cases, calling the function when setting the `filePath` causes issues. This sidesteps the problem.
     LOG_DIR = getLogDir()
 
     def __init__(self, *args, **kwargs):
