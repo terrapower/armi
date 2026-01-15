@@ -14,6 +14,7 @@
 """Parameter definitions for thermal hydraulic plugins."""
 
 from armi.reactor import parameters
+from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
@@ -21,7 +22,22 @@ from armi.utils import units
 
 def getParameterDefinitions():
     """Return ParameterDefinitionCollections for each appropriate ArmiObject."""
-    return {Block: _getBlockParams()}
+    return {Assembly: _getAssemblyParams(), Block: _getBlockParams()}
+
+
+def _getAssemblyParams():
+    pDefs = parameters.ParameterDefinitionCollection()
+
+    with pDefs.createBuilder(default=0.0, categories=["thermal hydraulics"]) as pb:
+        pb.defParam(
+            "THmassFlowRate",
+            units=f"{units.KG}/{units.SECONDS}",
+            description="The nominal assembly flow rate",
+            categories=["broadcast"],
+            location=ParamLocation.VOLUME_INTEGRATED,
+        )
+
+    return pDefs
 
 
 def _getBlockParams():
