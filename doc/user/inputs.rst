@@ -409,9 +409,11 @@ A cascade with no final destination defaults to deleting the assembly. Assemblie
 ending the cascade with ``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the spent fuel pool
 even if the ``trackAssems`` setting is ``False``; ``Delete`` always removes the assembly from the model.
 
-Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing an
-``assemblyName`` for the assembly to load. No assembly type is required in this case. The cascade then proceeds as
-normal from the destination location. For example
+Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing a
+``ringPosCycle`` to identify the spent fuel pool assembly returning to the core. ``ringPosCycle`` is a list conatining
+ring, pos, and cycle used to specify that the assembly which resided at (ring, pos) during the specified cycle number
+is to be re-introduced into the reactor in the associated shuffle cascade. No assembly type is required in this case.
+The cascade then proceeds as normal from the destination location. For example
 
 ..  code:: yaml
 
@@ -432,10 +434,11 @@ A cascade that loads an assembly from the SFP may look like::
        sequence:
          1:
            - cascade: ["SFP", "005-003", "SFP"]
-             assemblyName: "A0073"
+             ringPosCycle: [3, 5, 4]
 
-This example retrieves assembly ``A0073`` from the spent fuel pool and places it in location ``005-003`` while sending
-the previous occupant of ``005-003``  to the pool.
+This example retrieves the assembly that resided at ring 3, position 5 during cycle 4 from the spent fuel pool and
+places it in location ``005-003`` (ring 5, position 3) while sending the previous occupant of ``005-003`` to the
+spent fuel pool.
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 
@@ -1426,13 +1429,16 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 Fuel Management Input
 =====================
 
-Fuel management in ARMI is specified through custom Python scripts that often reside
+Fuel management in ARMI is specified through custom Python scripts or yaml file definitions that often reside
 in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
-ARMI checks for two fuel management settings:
+ARMI checks for several fuel management settings:
 
 ``shuffleLogic``
    The path to the Python source file or dotted import path to a module that contains the user's custom fuel
    management logic
+
+``shuffleSequenceFile``
+   The path to a yaml file containing the user's custom fuel management logic.
 
 ``fuelHandlerName``
    The name of a FuelHandler class that ARMI will look for in the Fuel Management Input module or file
@@ -1441,7 +1447,8 @@ ARMI checks for two fuel management settings:
 
 .. note:: We consider the limited syntax needed to express fuel management in Python
    code itself to be sufficiently expressive and simple for non-programmers to
-   actually use. Indeed, this has been our experience.
+   actually use. Indeed, this has been our experience. Yaml input format options for fuel management
+   are additionally available for Users.
 
 The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
 search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
