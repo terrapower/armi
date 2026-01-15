@@ -80,7 +80,7 @@ class AssemblyMove:
     assemType: Optional[str] = None
     ringPosCycle: Optional[list[int]] = None
     rotation: Optional[float] = None
-    
+
     def __post_init__(self):
         """Perform some data checks."""
         errorMsg = (
@@ -95,6 +95,7 @@ class AssemblyMove:
             for val in self.ringPosCycle:
                 if not isinstance(val, int):
                     raise TypeError(errorMsg)
+
 
 @dataclass
 class ProcessMoveListResult:
@@ -285,7 +286,7 @@ class FuelHandler:
         if len(a.p.ringPosHist) > cycle:
             a.p.ringPosHist = a.p.ringPosHist[:cycle]
         return a
-    
+
     def _updateAssemLocationHistParam(self, a, cycle):
         """
         Update assembly location history parameter with current assembly location for
@@ -300,7 +301,7 @@ class FuelHandler:
         else:
             ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())
             a.p.ringPosHist.append((ring, pos))
-    
+
     def updateAllLocationHistParams(self, cycle):
         """
         Update location history param for all assemblies with current assembly locations
@@ -1122,7 +1123,7 @@ class FuelHandler:
             moved.extend([a1, a2])
         self.pendingRotations = moveData.rotations
 
-        self.updateAllLocationHistParams(self.cycle+1)
+        self.updateAllLocationHistParams(self.cycle + 1)
 
         return moved
 

@@ -1448,7 +1448,7 @@ class Core(composites.Composite):
         Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
         """
         nCycles = len(a.p.ringPosHist)
-        if nCycles >= cycleNum: # requested cycleNum has data populated
+        if nCycles >= cycleNum:  # requested cycleNum has data populated
             if a.p.ringPosHist[cycleNum] == (ring, pos):
                 return True
         return False
@@ -1468,7 +1468,7 @@ class Core(composites.Composite):
                 if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
                     return a
         return
-    
+
     def getAssemblyPitch(self):
         """
         Find the assembly pitch for the whole core.

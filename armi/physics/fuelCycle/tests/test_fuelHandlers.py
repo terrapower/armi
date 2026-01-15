@@ -191,7 +191,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
         self.nSfp = len(self.r.excore["sfp"])
         # add location history data to first two SFP assemblies used in repeatShuffle test
-        for i, a in enumerate(list(self.r.excore['sfp'])[:2]):
+        for i, a in enumerate(list(self.r.excore["sfp"])[:2]):
             a.p.ringPosHist = [(i + 1, i + 2)]
 
         # generate a reactor with assemblies
@@ -573,10 +573,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # imply that the assembly shuffling definition has changed.
         expPosHist = {}
         # cycle 0 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
-        expPosHist["A0005"] = [(2, 1), ('SFP', 'SFP'), ('SFP', 'SFP'), ('SFP', 'SFP')]
+        expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 0 shuffle, (3, 3) moved to (2, 1) in cascade
         # cycle 2 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
-        expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), ('SFP', 'SFP')]
+        expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), ("SFP", "SFP")]
         # cycle 0 shuffle, (4, 2) moved to (3, 3) in cascade
         expPosHist["A0019"] = [(4, 2), (3, 3), (3, 3), (3, 3)]
         # cycle 0 shuffle, (5, 1) moved to (4, 2) in cascade
@@ -587,7 +587,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 2 shuffle, (6, 7) moved to (5, 2) in cascade
         expPosHist["A0077"] = [(None, None), (6, 7), (6, 7), (5, 2)]
         # cycle 1 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
-        expPosHist["A0009"] = [(2, 2), (2, 2), ('SFP', 'SFP'), ('SFP', 'SFP')]
+        expPosHist["A0009"] = [(2, 2), (2, 2), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (3, 2) moved to (2, 2) in cascade
         expPosHist["A0014"] = [(3, 2), (3, 2), (2, 2), (2, 2)]
         # cycle 1 shuffle, (4, 1) moved to (3, 2) in cascade
@@ -596,13 +596,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
         expPosHist["A0034"] = [(5, 4), (5, 4), (4, 1), (4, 1)]
         # cycle 1 shuffle, (6, 4) moved to (5, 4) in cascade
         # cycle 2 shuffle, (5, 4) moved to SFP
-        expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ('SFP', 'SFP')]
+        expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
         # cycle 1 shuffle, fresh to (6, 4)
         expPosHist["A0078"] = [(None, None), (None, None), (6, 4), (6, 4)]
         # cycle 1 shuffle, SFP to (5, 3)
-        expPosHist["A0073"] = [(1, 2), ('SFP', 'SFP'), (5, 3), (5, 3)]
+        expPosHist["A0073"] = [(1, 2), ("SFP", "SFP"), (5, 3), (5, 3)]
         # cycle 1 shuffle, (5, 3) moved to SFP
-        expPosHist["A0029"] = [(5, 3), (5, 3), ('SFP', 'SFP'), ('SFP', 'SFP')]
+        expPosHist["A0029"] = [(5, 3), (5, 3), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 2 shuffle, (3, 1) moved to (2, 1) in cascade
         expPosHist["A0010"] = [(3, 1), (3, 1), (3, 1), (2, 1)]
         # cycle 2 shuffle, (4, 3) moved to (3, 1) in cascade
@@ -612,7 +612,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 2 shuffle, fresh to (6, 7)
         expPosHist["A0079"] = [(None, None), (None, None), (None, None), (6, 7)]
         # cycle 2 shuffle, SFP to (5, 4)
-        expPosHist["A0074"] = [(2, 3), ('SFP', 'SFP'), ('SFP', 'SFP'), (5, 4)]
+        expPosHist["A0074"] = [(2, 3), ("SFP", "SFP"), ("SFP", "SFP"), (5, 4)]
 
         for cycle in range(3):
             self.r.p.cycle = cycle
@@ -623,7 +623,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             for b in self.r.core.iterBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
                 self.assertGreater(b.p.kgFis, 0.0, "b.p.kgFis not populated!")
-        
+
         # check assemblies in core
         for a in self.r.core:
             self._checkAssemblyPositionHistory(a, expPosHist)
@@ -641,7 +641,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def _checkAssemblyPositionHistory(self, a, answerKey):
-        if a.getName() not in answerKey: # check that location history is the same position
+        if a.getName() not in answerKey:  # check that location history is the same position
             self.assertEqual(len(set(a.p.ringPosHist)), 1)
         else:
             self.assertListEqual(a.p.ringPosHist, answerKey[a.getName()])

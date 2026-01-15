@@ -281,8 +281,7 @@ def getAssemblyParameterDefinitions():
             "ringPosHist",
             units=units.UNITLESS,
             description=(
-                "Ring and position history for this assembly written at BOC. "
-                "Index 1 corresponds to position at BOC1."
+                "Ring and position history for this assembly written at BOC. Index 1 corresponds to position at BOC1."
             ),
             default=None,
             saveToDB=True,

@@ -1081,7 +1081,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 if thisZone:
                     thisZone.addLoc(newAssem.getLocation())
                 self._newAssembliesAdded.append(newAssem)
-                self.updateThirdToFullCoreLocHist(newAssem, count-2)
+                self.updateThirdToFullCoreLocHist(newAssem, count - 2)
 
             if a.getLocation() == "001-001":
                 runLog.extra(f"Modifying parameters in central assembly {a} to convert from 1/3 to full core")
@@ -1150,6 +1150,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 r, p = self.grid.indicesToRingPos(*otherLoc)
             newLocHist.append((r, p))
         newAssembly.p.ringPosHist = newLocHist
+
 
 class EdgeAssemblyChanger(GeometryChanger):
     """
