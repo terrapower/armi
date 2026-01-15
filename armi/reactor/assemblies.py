@@ -77,6 +77,10 @@ class Assembly(composites.Composite):
         self.lastLocationLabel = self.LOAD_QUEUE
         self.p.orientation = np.array((0.0, 0.0, 0.0))
 
+        # Manually set some parameters at BOL
+        for problemParam in ["ringPosHist"]:
+            self.p[problemParam] = []
+
     def __repr__(self):
         msg = "<{typeName} Assembly {name} at {loc}>".format(
             name=self.getName(), loc=self.getLocation(), typeName=self.getType()
