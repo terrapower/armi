@@ -752,6 +752,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("010-046", "011-046"),
                 AssemblyMove("011-046", "012-046"),
                 AssemblyMove("012-046", "Delete"),
+                AssemblyMove("SFP", "005-003", ringPosCycle=[3, 5, 4]),
+                AssemblyMove("005-003", "SFP"),
             ],
             2: [
                 AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
@@ -764,6 +766,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("010-046", "011-046"),
                 AssemblyMove("011-046", "012-046"),
                 AssemblyMove("012-046", "Delete"),
+                AssemblyMove("SFP", "005-003", ringPosCycle=[3, 5, 4]),
+                AssemblyMove("005-003", "SFP"),
             ],
             3: [
                 AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
@@ -771,6 +775,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
+                AssemblyMove("SFP", "002-002", ringPosCycle=[7, 1, 3]),
+                AssemblyMove("002-002", "SFP"),
             ],
         }
         self.assertEqual(moves, expected)
@@ -900,7 +906,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         moves, _ = fh.readMovesYaml(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml"))
         result = fh.processMoveList(moves[1])
-        self.assertEqual(len(result.loadChains), 2)
+        self.assertEqual(len(result.loadChains), 3)
         self.assertTrue(any(result.enriches))
         self.assertTrue(result.rotations)
 
