@@ -352,6 +352,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         initialNumBlocks = len(self.r.core.getBlocks())
         assems = getLTAAssems()
         expectedLoc = [(3, 2)]
+        # set ringPosHist to be propagated to full core
+        assem = self.r.core.getAssemblyWithStringLocation("003-002")
+        assem.p.ringPosHist = [(3, 2), (3, 12), (2, 2), (3, 2)]
+
         for i, a in enumerate(assems):
             self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
         self.assertAlmostEqual(self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5)
@@ -370,8 +374,14 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         assems = getLTAAssems()
         expectedLoc = [(3, 2), (3, 6), (3, 10)]
+        expectedRingPosHists = [
+            [(3, 2), (3, 12), (2, 2), (3, 2)],
+            [(3, 6), (3, 4), (2, 4), (3, 6)],
+            [(3, 10), (3, 8), (2, 6), (3, 10)],
+        ]
         for i, a in enumerate(assems):
             self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
+            self.assertListEqual(a.p.ringPosHist, expectedRingPosHists[i])
 
         # ensure that block power is handled correctly
         self.assertAlmostEqual(self.r.core.getTotalBlockParam("power"), self.o.cs["power"], places=5)

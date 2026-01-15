@@ -990,6 +990,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         GeometryChanger.__init__(self, cs)
         self.listOfAssemblyVolIntegratedParamsToScale = []
         self.listOfBlockVolIntegratedParamsToScale = []
+        self.grid = None
 
     @staticmethod
     def _scaleVolIntegratedParams(obj, paramList, direction):
@@ -1056,7 +1057,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         # store a copy of the 1/3 geometry grid, so that we can use it to find symmetric
         # locations, while the core has a full-core grid so that it does not yell at us
         # for adding stuff outside of the first 1/3
-        grid = copy.deepcopy(self._sourceReactor.core.spatialGrid)
+        self.grid = copy.deepcopy(self._sourceReactor.core.spatialGrid)
 
         # Set the core grid's symmetry early, since the core uses it for error checks
         self._sourceReactor.core.symmetry = geometry.SymmetryType(
@@ -1065,7 +1066,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
         for a in self._sourceReactor.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
-            otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
+            otherLocs = self.grid.getSymmetricEquivalents(a.spatialLocator.indices)
             thisZone = (
                 self._sourceReactor.core.zones.findZoneItIsIn(a) if len(self._sourceReactor.core.zones) > 0 else None
             )
@@ -1080,6 +1081,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 if thisZone:
                     thisZone.addLoc(newAssem.getLocation())
                 self._newAssembliesAdded.append(newAssem)
+                self.updateThirdToFullCoreLocHist(newAssem, count-2)
 
             if a.getLocation() == "001-001":
                 runLog.extra(f"Modifying parameters in central assembly {a} to convert from 1/3 to full core")
@@ -1133,6 +1135,20 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 self._scaleVolIntegratedParams(b, self.listOfBlockVolIntegratedParamsToScale, "down")
         self.reset()
 
+    def updateThirdToFullCoreLocHist(self, newAssembly, otherLocIndex):
+        """
+        Update the assembly location history parameter to ensure created assemblies have
+        the correct movement histories for their corresponding full core location.
+        """
+        newLocHist = []
+        for r, p in newAssembly.p.ringPosHist:
+            if r is not None and r not in assemblies.Assembly.NOT_IN_CORE:
+                i, j = self.grid.getIndicesFromRingAndPos(r, p)
+                otherLocs = self.grid.getSymmetricEquivalents([i, j, 0])
+                otherLoc = otherLocs[otherLocIndex]
+                r, p = self.grid.indicesToRingPos(*otherLoc)
+            newLocHist.append((r, p))
+        newAssembly.p.ringPosHist = newLocHist
 
 class EdgeAssemblyChanger(GeometryChanger):
     """
