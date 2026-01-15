@@ -339,7 +339,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         def getLTAAssems():
             aList = []
             for a in self.r.core:
-                if a.getType == "lta fuel":
+                if a.getType() == "lta fuel":
                     aList.append(a)
             return aList
 
