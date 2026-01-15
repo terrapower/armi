@@ -278,19 +278,19 @@ class FuelHandler:
         # param length is shorter than expected
         # (data from previous cycles is missing or shuffling was not performed
         # on a previous cycle)
-        while len(a.p.ringPosHist) < cycle:
-            a.p.ringPosHist.append((None, None))
+        if len(a.p.ringPosHist) < cycle:
+            a.p.ringPosHist = a.p.ringPosHist + [(None, None)] * (cycle - len(a.p.ringPosHist))
         # param length is longer than expected. perhaps a restart analysis of some sort.
         # trim trailing data to correct length
-        while len(a.p.ringPosHist) > cycle:
-            a.p.ringPosHist.pop(-1)
+        if len(a.p.ringPosHist) > cycle:
+            a.p.ringPosHist = a.p.ringPosHist[:cycle]
         return a
     
     def _updateAssemLocationHistParam(self, a, cycle):
         """
         Update assembly location history parameter with current assembly location for
         specified cycle number.
-        index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
+        Index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
         """
         a = self._preconditionLocationHistParam(a, cycle)
@@ -305,13 +305,12 @@ class FuelHandler:
         """
         Update location history param for all assemblies with current assembly locations
         for specified cycle number
-        index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
+        Index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
         """
         for a in self.r.core:
             self._updateAssemLocationHistParam(a, cycle)
-        sfpAssems = list(self.r.excore["sfp"])
-        for a in sfpAssems:
+        for a in list(self.r.excore["sfp"]):
             self._updateAssemLocationHistParam(a, cycle)
 
     def chooseSwaps(self, shuffleFactors=None):

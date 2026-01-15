@@ -1464,8 +1464,7 @@ class Core(composites.Composite):
                 return a
         # search sfp
         if self.parent.excore.get("sfp") is not None:
-            sfpAssems = list(self.r.excore["sfp"])
-            for a in sfpAssems:
+            for a in list(self.r.excore["sfp"]):
                 if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
                     return a
         return

@@ -628,8 +628,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for a in self.r.core:
             self._checkAssemblyPositionHistory(a, expPosHist)
         # check assemblies in SFP
-        sfpAssems = list(self.r.excore["sfp"])
-        for a in sfpAssems:
+        for a in list(self.r.excore["sfp"]):
             self._checkAssemblyPositionHistory(a, expPosHist)
 
         # check getter methods based on assembly location history
