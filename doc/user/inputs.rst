@@ -389,19 +389,19 @@ Shuffling
 Users may also define a custom shuffle plan in a YAML file referenced by the ``shuffleSequenceFile`` setting. The YAML
 format organizes data by cycle in a ``sequence`` mapping. Keys are the cycle where the shuffling should occur during
 the beginning-of-cycle step. The first available cycle where shuffling will occur is cycle 1. Each cycle contains a
-list of high-level actions. An action is a  mapping containing one of the keys ``cascade``, ``misloadSwap``, or
+list of high-level actions. An action is a  mapping containing one of the keys ``cascade``, ``swap``, or
 ``extraRotations``. ``cascade`` chains describe a sequence of assembly displacements beginning with a fresh fuel
 assembly and ending with the final location's assembly being discharged. Optional ``fuelEnrichment`` lists specify the
 U235 weight fraction enrichment for each axial block in the fresh assembly, from bottom to top, including zeroes for
-non-fuel blocks. ``misloadSwap`` swaps the assemblies at two locations after all cascades are processed.
+non-fuel blocks. ``swap`` swaps the assemblies at two locations after all cascades are processed.
 ``extraRotations`` map final location labels to relative counterclockwise angles in degrees and are applied after all
-cascades, misload swaps, and any algorithmic rotation routines defined with the ``assemblyRotationAlgorithm`` setting.
+cascades, swaps, and any algorithmic rotation routines defined with the ``assemblyRotationAlgorithm`` setting.
 The angle is relative to the assembly's current orientation and whatever assembly ends up at the given location is
 rotated. Valid angles depend on the assembly's geometry.
 
 Extra rotations therefore:
 
-* apply to whatever assembly resides at the specified location once all cascades and misload swaps are complete;
+* apply to whatever assembly resides at the specified location once all cascades and swaps are complete;
 * rotate the assembly relative to its current orientation; and
 * execute after any algorithmic rotation routines.
 
@@ -421,7 +421,7 @@ The cascade then proceeds as normal from the destination location. For example
          1:
            - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]  # wt fraction U235 by block
-           - misloadSwap: ["009-045", "008-004"]
+           - swap: ["009-045", "008-004"]
            - extraRotations: {"009-045": 60}
          2:
            - cascade: ["outer fuel", "010-046", "009-045", "Delete"]

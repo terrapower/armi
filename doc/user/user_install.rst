@@ -59,12 +59,11 @@ Choose one of the following two installation methods depending on your needs.
 
 Step 0: Update PIP
 ------------------
-In order to use the commands below, you're going to want to use a version of ``pip>=22.1``. Two common ways of solving
-that are::
+If you are using an older version of Python, say 3.9 or older, you should ensure that you are using a version of PIP that is at least 22.1::
 
     (armi-venv) $ pip install pip>=22.1
 
-or, in most cases::
+or it will be enough to just do::
 
     (armi-venv) $ pip install -U pip
 

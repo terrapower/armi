@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2026 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,21 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from armi import context
-from armi.cli.entryPoint import EntryPoint
-
-
-class CleanTemps(EntryPoint):
-    """
-    Delete all temp directories created by any ARMI run.
-
-    Useful for occasionally cleaning temporary dirs from crashed runs.
-
-    .. warning:: This will break any ongoing runs.
-    """
-
-    name = "clean-temps"
-
-    def invoke(self):
-        context.cleanFastPathAfterSimulation()

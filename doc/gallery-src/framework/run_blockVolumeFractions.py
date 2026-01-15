@@ -83,7 +83,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
     plt.show()
 
 
-uniformTempsInC = [400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1200.0]
+uniformTempsInC = [300.0, 400.0, 500.0, 600.0, 700.0]
 b = buildSimpleFuelBlock()
 
 writeInitialVolumeFractions(b)

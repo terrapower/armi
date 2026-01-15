@@ -1437,8 +1437,8 @@ class Database:
         for c, ndensDict in zip(comps, unpackedData):
             nuclides = np.array(list(ndensDict.keys()), dtype="S6")
             numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
-            c.p["nuclides"] = nuclides
-            c.p["numberDensities"] = numberDensities
+            c.p.nuclides = nuclides
+            c.p.numberDensities = numberDensities
 
     @staticmethod
     def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=True):
