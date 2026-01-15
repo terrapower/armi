@@ -15,7 +15,6 @@
 """A place for the FuelHandler's Interface."""
 
 from armi import interfaces, runLog
-from armi.reactor import grids
 from armi.physics.fuelCycle import fuelHandlerFactory, fuelHandlers
 from armi.physics.fuelCycle.settings import (
     CONF_PLOT_SHUFFLE_ARROWS,

@@ -82,7 +82,7 @@ class AssemblyMove:
     rotation: Optional[float] = None
     
     def __post_init__(self):
-        """perform some data checks"""
+        """Perform some data checks."""
         errorMsg = (
             "invalid (ring, position, cycle) specified for assembly retrieval from SFP\n"
             f"expected: list of ints, len=3\nreceived: {self.ringPosCycle}"
@@ -288,7 +288,7 @@ class FuelHandler:
     
     def _updateAssemLocationHistParam(self, a, cycle):
         """
-        update assembly location history parameter with current assembly location for
+        Update assembly location history parameter with current assembly location for
         specified cycle number.
         index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
@@ -303,7 +303,7 @@ class FuelHandler:
     
     def updateAllLocationHistParams(self, cycle):
         """
-        update location history param for all assemblies with current assembly locations
+        Update location history param for all assemblies with current assembly locations
         for specified cycle number
         index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
