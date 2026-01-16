@@ -83,6 +83,9 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             mapNumberDensities=True,
         )
         self.assertEqual(newAssem.p.flags, sourceAssem.p.flags)
+        # chnage sourceAssem flags to verify that a unique copy was made
+        sourceAssem.p.flags = Flags.FUEL | Flags.IGNITER
+        self.assertNotEqual(newAssem.p.flags, sourceAssem.p.flags)
 
         prevB = None
         for newB in newAssem:
