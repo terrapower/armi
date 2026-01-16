@@ -212,60 +212,10 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]) as pb:
         pb.defParam(
-            "THdeltaPNoGrav",
-            units=units.PASCALS,
-            description="Total pressure difference minus gravity; it can be thought of as being 'total pressure loss'",
-        )
-
-        pb.defParam(
-            "THdeltaPPump",
-            units=units.PASCALS,
-            description="Pumping pressure rise required to pump the given mass flow rate through the rod bundle",
-            categories=["broadcast"],
-        )
-
-        pb.defParam(
-            "THdeltaPTotal",
-            units=units.PASCALS,
-            description="Total pressure difference across the assembly",
-            categories=["broadcast"],
-        )
-
-        pb.defParam(
             "THcoolantOutletT",
             units=units.DEGC,
             description="The nominal average bulk coolant outlet temperature out of the block.",
             categories=["broadcast"],
-        )
-
-        pb.defParam(
-            "THlocalDTout",
-            units=units.DEGC,
-            description="Maximum delta-Ts for outlet temperatures of all assemblies",
-            categories=["broadcast"],
-        )
-
-        pb.defParam(
-            "THlocalDToutFuel",
-            units=units.DEGC,
-            description="Maximum delta-Ts for outlet temperatures of fuel assemblies",
-            categories=["broadcast"],
-        )
-
-        pb.defParam(
-            "THorificeZone",
-            units=units.UNITLESS,
-            description="orifice zone for assembly; should be location specific",
-            default=0,  # integer default
-        )
-
-    with pDefs.createBuilder(default=0.0, categories=["thermal hydraulics"]) as pb:
-        pb.defParam(
-            "THmassFlowRate",
-            units=f"{units.KG}/{units.SECONDS}",
-            description="The nominal assembly flow rate",
-            categories=["broadcast"],
-            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
     with pDefs.createBuilder() as pb:
@@ -287,12 +237,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
-        pb.defParam(
-            "THcoolantInletT",
-            units=units.DEGC,
-            description="Assembly inlet temperature in C (cold temperature)",
-        )
-
         pb.defParam("assemNum", units=units.UNITLESS, description="Assembly number")
 
         pb.defParam(
