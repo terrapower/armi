@@ -277,7 +277,9 @@ class FuelHandler:
         # (data from previous cycles is missing or shuffling was not performed
         # on a previous cycle)
         if len(a.p.ringPosHist) < cycle:
-            a.p.ringPosHist = a.p.ringPosHist + [(a.NOT_CREATED_YET, a.NOT_CREATED_YET)] * (cycle - len(a.p.ringPosHist))
+            a.p.ringPosHist = a.p.ringPosHist + [(a.NOT_CREATED_YET, a.NOT_CREATED_YET)] * (
+                cycle - len(a.p.ringPosHist)
+            )
         # param length is longer than expected. perhaps a restart analysis of some sort.
         # trim trailing data to correct length
         if len(a.p.ringPosHist) > cycle:

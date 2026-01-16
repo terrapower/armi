@@ -599,11 +599,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 2 shuffle, (5, 4) moved to SFP
         expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
         # cycle 1 shuffle, fresh to (6, 4)
-        expPosHist["A0078"] = [
-            ("NotCreatedYet", "NotCreatedYet"),
-            ("NotCreatedYet", "NotCreatedYet"),
-            (6, 4), (6, 4)
-        ]
+        expPosHist["A0078"] = [("NotCreatedYet", "NotCreatedYet"), ("NotCreatedYet", "NotCreatedYet"), (6, 4), (6, 4)]
         # cycle 1 shuffle, SFP to (5, 3)
         expPosHist["A0073"] = [(1, 2), ("SFP", "SFP"), (5, 3), (5, 3)]
         # cycle 1 shuffle, (5, 3) moved to SFP
@@ -619,7 +615,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             ("NotCreatedYet", "NotCreatedYet"),
             ("NotCreatedYet", "NotCreatedYet"),
             ("NotCreatedYet", "NotCreatedYet"),
-            (6, 7)
+            (6, 7),
         ]
         # cycle 2 shuffle, SFP to (5, 4)
         expPosHist["A0074"] = [(2, 3), ("SFP", "SFP"), ("SFP", "SFP"), (5, 4)]
