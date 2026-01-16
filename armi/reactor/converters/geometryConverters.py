@@ -1142,8 +1142,8 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         """
         newLocHist = []
         for r, p in newAssembly.p.ringPosHist:
-            if r is not None and r not in assemblies.Assembly.NOT_IN_CORE:
-                # ring/pos come in as strings. need to be cast as ints.
+            if r not in assemblies.Assembly.NOT_IN_CORE:
+                # ring/pos may come in as strings and need to be cast as ints.
                 i, j = self.grid.getIndicesFromRingAndPos(int(r), int(p))
                 otherLocs = self.grid.getSymmetricEquivalents([i, j, 0])
                 otherLoc = otherLocs[otherLocIndex]

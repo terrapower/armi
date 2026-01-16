@@ -41,6 +41,7 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
 from armi.reactor import assemblies, blocks, components, grids
+from armi.reactor.assemblies import Assembly
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
@@ -585,7 +586,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         expPosHist["A0044"] = [(6, 7), (5, 1), (5, 1), (5, 1)]
         # cycle 0 shuffle, fresh to (6, 7)
         # cycle 2 shuffle, (6, 7) moved to (5, 2) in cascade
-        expPosHist["A0077"] = [(None, None), (6, 7), (6, 7), (5, 2)]
+        expPosHist["A0077"] = [("NotCreatedYet", "NotCreatedYet"), (6, 7), (6, 7), (5, 2)]
         # cycle 1 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
         expPosHist["A0009"] = [(2, 2), (2, 2), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (3, 2) moved to (2, 2) in cascade
@@ -598,7 +599,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 2 shuffle, (5, 4) moved to SFP
         expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
         # cycle 1 shuffle, fresh to (6, 4)
-        expPosHist["A0078"] = [(None, None), (None, None), (6, 4), (6, 4)]
+        expPosHist["A0078"] = [
+            ("NotCreatedYet", "NotCreatedYet"),
+            ("NotCreatedYet", "NotCreatedYet"),
+            (6, 4), (6, 4)
+        ]
         # cycle 1 shuffle, SFP to (5, 3)
         expPosHist["A0073"] = [(1, 2), ("SFP", "SFP"), (5, 3), (5, 3)]
         # cycle 1 shuffle, (5, 3) moved to SFP
@@ -610,7 +615,12 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 2 shuffle, (5, 2) moved to (4, 3) in cascade
         expPosHist["A0025"] = [(5, 2), (5, 2), (5, 2), (4, 3)]
         # cycle 2 shuffle, fresh to (6, 7)
-        expPosHist["A0079"] = [(None, None), (None, None), (None, None), (6, 7)]
+        expPosHist["A0079"] = [
+            ("NotCreatedYet", "NotCreatedYet"),
+            ("NotCreatedYet", "NotCreatedYet"),
+            ("NotCreatedYet", "NotCreatedYet"),
+            (6, 7)
+        ]
         # cycle 2 shuffle, SFP to (5, 4)
         expPosHist["A0074"] = [(2, 3), ("SFP", "SFP"), ("SFP", "SFP"), (5, 4)]
 

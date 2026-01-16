@@ -52,7 +52,8 @@ class Assembly(composites.Composite):
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
     DELETE = "Delete"
-    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, DELETE]
+    NOT_CREATED_YET = "NotCreatedYet"  # used in assembly location history tracking
+    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, DELETE, NOT_CREATED_YET]
 
     def __init__(self, typ, assemNum=None):
         """

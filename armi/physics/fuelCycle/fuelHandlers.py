@@ -228,7 +228,7 @@ class FuelHandler:
                     # grab first (ring, pos) at cycle info which can be used to identify this assembly if it goes to SFP
                     if a.p.ringPosHist:
                         for cycleNum, rp in enumerate(a.p.ringPosHist):
-                            if isinstance(rp, tuple) and rp[0] is not None and rp[0] not in a.NOT_IN_CORE:
+                            if isinstance(rp, tuple) and rp[0] not in a.NOT_IN_CORE:
                                 break
                         ringPosCycle = [rp[0], rp[1], cycleNum]
 
@@ -273,14 +273,11 @@ class FuelHandler:
         cycle : int
             cycle number at BOC to update assembly location history
         """
-        # init list if needed
-        if a.p.ringPosHist is None:
-            a.p.ringPosHist = []
         # param length is shorter than expected
         # (data from previous cycles is missing or shuffling was not performed
         # on a previous cycle)
         if len(a.p.ringPosHist) < cycle:
-            a.p.ringPosHist = a.p.ringPosHist + [(None, None)] * (cycle - len(a.p.ringPosHist))
+            a.p.ringPosHist = a.p.ringPosHist + [(a.NOT_CREATED_YET, a.NOT_CREATED_YET)] * (cycle - len(a.p.ringPosHist))
         # param length is longer than expected. perhaps a restart analysis of some sort.
         # trim trailing data to correct length
         if len(a.p.ringPosHist) > cycle:
