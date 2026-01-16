@@ -41,7 +41,6 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
 from armi.reactor import assemblies, blocks, components, grids
-from armi.reactor.assemblies import Assembly
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
