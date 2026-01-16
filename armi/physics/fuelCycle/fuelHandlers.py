@@ -226,7 +226,7 @@ class FuelHandler:
                 try:
                     ringPosCycle = None
                     # grab first (ring, pos) at cycle info which can be used to identify this assembly if it goes to SFP
-                    if a.p.ringPosHist is not None:
+                    if a.p.ringPosHist:
                         for cycleNum, rp in enumerate(a.p.ringPosHist):
                             if isinstance(rp, tuple) and rp[0] is not None and rp[0] not in a.NOT_IN_CORE:
                                 break
