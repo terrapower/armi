@@ -372,14 +372,6 @@ def getBlockParameterDefinitions():
         pb.defParam("buLimit", units=units.PERCENT_FIMA, description="Burnup limit")
 
         pb.defParam(
-            "convRatio",
-            units=units.UNITLESS,
-            description="Conversion ratio",
-            categories=["detailedAxialExpansion"],
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "heightBOL",
             units=units.CM,
             description="As-fabricated height of this block (as input). Used in fuel performance. Should be constant.",
