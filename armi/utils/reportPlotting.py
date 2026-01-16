@@ -329,8 +329,6 @@ def _getNeutronicVals(r):
         zip(
             *[
                 ("Rx. Swing", r.core.p.rxSwing),
-                ("Fast Flux Fr.", r.core.p.fastFluxFrAvg),
-                ("Leakage", r.core.p.leakageFracTotal),
                 ("Beta", r.core.p.beta),
                 ("Peak flux", r.core.p.maxFlux),
             ]
