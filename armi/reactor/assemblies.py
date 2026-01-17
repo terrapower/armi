@@ -51,7 +51,9 @@ class Assembly(composites.Composite):
     DATABASE = "database"
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
-    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
+    DELETE = "Delete"
+    NOT_CREATED_YET = "NotCreatedYet"  # used in assembly location history tracking
+    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, DELETE, NOT_CREATED_YET]
 
     def __init__(self, typ, assemNum=None):
         """
@@ -75,6 +77,7 @@ class Assembly(composites.Composite):
         self.p.buLimit = self.getMaxParam("buLimit")
         self.lastLocationLabel = self.LOAD_QUEUE
         self.p.orientation = np.array((0.0, 0.0, 0.0))
+        self.p.ringPosHist = []
 
     def __repr__(self):
         msg = "<{typeName} Assembly {name} at {loc}>".format(
