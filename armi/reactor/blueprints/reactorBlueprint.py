@@ -233,7 +233,8 @@ class SystemBlueprint(yamlize.Object):
                 try:
                     ring, pos, _ = grids.locatorLabelToIndices(a.getLocation())
                     a.p.ringPosHist = [(ring, pos)]
-                except ValueError:  # some ex-core structures do not appear to have valid locator label indices.
+                except ValueError:
+                    # some ex-core structures may not have valid locator label indices
                     a.p.ringPosHist = [(a.NOT_CREATED_YET, a.NOT_CREATED_YET)]
 
     def _modifyGeometry(self, container, gridDesign):

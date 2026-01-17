@@ -1081,7 +1081,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 if thisZone:
                     thisZone.addLoc(newAssem.getLocation())
                 self._newAssembliesAdded.append(newAssem)
-                self.updateThirdToFullCoreLocHist(newAssem, count - 2)
+                self._updateThirdToFullCoreLocHist(newAssem, count - 2)
 
             if a.getLocation() == "001-001":
                 runLog.extra(f"Modifying parameters in central assembly {a} to convert from 1/3 to full core")
@@ -1135,7 +1135,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 self._scaleVolIntegratedParams(b, self.listOfBlockVolIntegratedParamsToScale, "down")
         self.reset()
 
-    def updateThirdToFullCoreLocHist(self, newAssembly, otherLocIndex):
+    def _updateThirdToFullCoreLocHist(self, newAssembly, otherLocIndex):
         """
         Update the assembly location history parameter to ensure created assemblies have
         the correct movement histories for their corresponding full core location.

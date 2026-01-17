@@ -1467,7 +1467,7 @@ class Core(composites.Composite):
             for a in list(self.r.excore["sfp"]):
                 if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
                     return a
-        return
+        return None
 
     def getAssemblyPitch(self):
         """

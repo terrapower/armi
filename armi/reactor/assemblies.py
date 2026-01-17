@@ -77,10 +77,7 @@ class Assembly(composites.Composite):
         self.p.buLimit = self.getMaxParam("buLimit")
         self.lastLocationLabel = self.LOAD_QUEUE
         self.p.orientation = np.array((0.0, 0.0, 0.0))
-
-        # Manually set some parameters at BOL
-        for problemParam in ["ringPosHist"]:
-            self.p[problemParam] = []
+        self.p.ringPosHist = []
 
     def __repr__(self):
         msg = "<{typeName} Assembly {name} at {loc}>".format(
