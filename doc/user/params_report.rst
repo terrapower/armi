@@ -33,16 +33,17 @@ Parameters Report
    numParams = numR + numC + numA + numB + numComp
 
    txt = f"This document lists all {numParams} Parameters in ARMI:\n\n"
-   txt += f"* There are {numR} Reactor Parameters.\n"
-   txt += f"* There are {numC} Core Parameters.\n"
-   txt += f"* There are {numA} Assembly Parameters.\n"
-   txt += f"* There are {numB} Block Parameters.\n"
-   txt += f"* There are {numComp} Component Parameters.\n\n"
+   txt += f"* {numR} Reactor Parameters.\n"
+   txt += f"* {numC} Core Parameters.\n"
+   txt += f"* {numA} Assembly Parameters.\n"
+   txt += f"* {numB} Block Parameters.\n"
+   txt += f"* {numComp} Component Parameters.\n\n"
 
    return txt
 
 Users of the ARMI Framework are not required to use all of these parameters. And the system is easy to extend to add
-new Parameters for your use-cases. These are simply the default Parameters that come with ARMI.
+new Parameters for your use-cases. These are simply the default Parameters that come with ARMI. See
+:py:mod:`armi.reactor.parameters` for use.
 
 
 .. _reactor-parameters-report:
@@ -51,8 +52,7 @@ new Parameters for your use-cases. These are simply the default Parameters that 
 Reactor Parameters
 ******************
 
-This document lists all of the :py:mod:`Reactor Parameters <armi.reactor.reactorParameters>` that are provided by the
-ARMI Framework. See :py:mod:`armi.reactor.parameters` for use.
+This is a list of all of the Reactor Parameters that are provided by the ARMI Framework.
 
 .. exec::
    from armi.reactor import reactors
@@ -68,8 +68,7 @@ ARMI Framework. See :py:mod:`armi.reactor.parameters` for use.
 Core Parameters
 ***************
 
-This is a list of all of the Core Parameters that are provided by the ARMI Framework. See
-:py:mod:`armi.reactor.parameters` for use.
+This is a list of all of the Core Parameters that are provided by the ARMI Framework.
 
 .. exec::
    from armi.reactor import reactors
@@ -85,8 +84,7 @@ This is a list of all of the Core Parameters that are provided by the ARMI Frame
 Assembly Parameters
 *******************
 
-This is a list of all of the Assembly Parameters that are provided by the ARMI Framework. See
-:py:mod:`armi.reactor.parameters` for use.
+This is a list of all of the Assembly Parameters that are provided by the ARMI Framework.
 
 .. exec::
    from armi.reactor import assemblies
@@ -102,8 +100,7 @@ This is a list of all of the Assembly Parameters that are provided by the ARMI F
 Block Parameters
 ****************
 
-This is a list of all of the Block Parameters that are provided by the ARMI Framework. See
-:py:mod:`armi.reactor.parameters` for use.
+This is a list of all of the Block Parameters that are provided by the ARMI Framework.
 
 .. exec::
    from armi.reactor import blocks
@@ -119,8 +116,7 @@ This is a list of all of the Block Parameters that are provided by the ARMI Fram
 Component Parameters
 ********************
 
-This is a list of all of the Component Parameters that are provided by the ARMI Framework. See
-:py:mod:`armi.reactor.parameters` for use.
+This is a list of all of the Component Parameters that are provided by the ARMI Framework.
 
 .. exec::
    from armi.reactor.components import Component
