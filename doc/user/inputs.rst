@@ -1429,7 +1429,7 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 Fuel Management Input
 =====================
 
-Fuel management in ARMI is specified through custom Python scripts or yaml file definitions that often reside
+Fuel management in ARMI is specified through custom Python scripts or YAML files that often reside
 in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
 ARMI checks for several fuel management settings:
 
@@ -1447,8 +1447,7 @@ ARMI checks for several fuel management settings:
 
 .. note:: We consider the limited syntax needed to express fuel management in Python
    code itself to be sufficiently expressive and simple for non-programmers to
-   actually use. Indeed, this has been our experience. Yaml input format options for fuel management
-   are additionally available for Users.
+   actually use. Also, fuel management options are available through YAML input files.
 
 The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
 search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
