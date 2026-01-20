@@ -167,7 +167,7 @@ class MainInterface(interfaces.Interface):
             cycle = int(snapText[0:3])
             node = int(snapText[3:])
             newFolder = "snapShot{0}_{1}".format(cycle, node)
-            utils.pathTools.cleanPath(newFolder)
+            utils.pathTools.cleanPath(newFolder, forceClean=True)
 
         # delete database if it's SQLlite
         # no need to delete because the database won't have copied it back if using fastpath.

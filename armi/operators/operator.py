@@ -1111,7 +1111,7 @@ class Operator:
         newFolder = f"snapShot{cycle}_{node}"
         if os.path.exists(newFolder):
             runLog.important(f"Deleting existing snapshot data in {newFolder}")
-            pathTools.cleanPath(newFolder)  # careful with cleanPath!
+            pathTools.cleanPath(newFolder, forceClean=True)  # careful with cleanPath!
             # give it a minute.
             time.sleep(1)
 
