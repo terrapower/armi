@@ -1445,6 +1445,7 @@ class Core(composites.Composite):
     def _checkIfAssemAtRingPosCycle(self, a, ring, pos, cycleNum):
         """
         Interrogate location history param of specified assembly object
+
         Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
         """
         nCycles = len(a.p.ringPosHist)
@@ -1456,17 +1457,20 @@ class Core(composites.Composite):
     def getAssemblyWithRingPosHist(self, ring, pos, cycleNum):
         """
         Search the Core and SFP for assembly which resided at specified ring and position at specified cycle.
+
         This is an alternative to getting an assembly by number or string location.
         """
         # search core
         for a in self:
             if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
                 return a
+
         # search sfp
         if self.parent.excore.get("sfp") is not None:
             for a in list(self.r.excore["sfp"]):
                 if self._checkIfAssemAtRingPosCycle(a, ring, pos, cycleNum):
                     return a
+
         return None
 
     def getAssemblyPitch(self):
