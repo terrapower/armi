@@ -1444,7 +1444,7 @@ class Core(composites.Composite):
 
     def _checkIfAssemAtRingPosCycle(self, a, ring, pos, cycleNum):
         """
-        Interrogate location history param of specified assembly object
+        Interrogate location history param of specified assembly object.
 
         Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
         """
