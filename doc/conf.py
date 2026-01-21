@@ -415,6 +415,7 @@ latex_elements = {
 
 \usepackage{wasysym}
 """,
+    "secnumdepth": 5,
     "tocdepth": 5,
 }
 
