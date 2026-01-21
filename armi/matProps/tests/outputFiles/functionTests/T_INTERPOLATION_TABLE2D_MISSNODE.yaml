@@ -1,0 +1,9 @@
+file format: TESTS
+composition:
+  Fe: balance
+material type: Metal
+density:
+  function:
+    T: 0
+    type: two dimensional table
+    t: 1

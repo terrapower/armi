@@ -13,3 +13,112 @@
 # limitations under the License.
 
 """Some definition of material types."""
+
+
+class MaterialType:
+    """
+    A container for the methods used to differentiate between the types of materials.
+
+    The MaterialType class is used to determine whether the material contain ASME, fluid, fuel, or metal properties. It
+    may also be used for the phase of the material.
+    """
+
+    """Dictionary mapping material type strings to enum values."""
+    types = {
+        "Fuel": 1,
+        "Metal": 2,
+        "Fluid": 4,
+        "Ceramic": 8,
+        "ASME2015": 16,
+        "ASME2017": 32,
+        "ASME2019": 64,
+    }
+
+    def __init__(self, value: int = 0):
+        """
+        Constructor for MaterialType class.
+
+        Parameters
+        ----------
+        value: int
+            Integer enum value denoting material type.
+        """
+        self._value: int = value
+        """Enum value representing type of material."""
+
+    @staticmethod
+    def from_string(name: str):
+        """
+        Provides MaterialType object from a user provided string.
+
+        Parameters
+        ----------
+        name: str
+            String from which a MaterialType object will be derived.
+
+        Returns
+        -------
+        MaterialType
+        """
+        value: int = MaterialType.types.get(name, 0)
+
+        if value == 0:
+            msg = f"Invalid material type `{name}`, valid names are: {list(MaterialType.types.keys())}"
+            raise KeyError(msg)
+
+        return MaterialType(value)
+
+    def __repr__(self):
+        """Provides string representation of MaterialType instance."""
+        name = "None"
+        for typ, val in self.types.items():
+            if val == self._value:
+                name = typ
+                break
+
+        return f"<MaterialType {name}>"
+
+    def __eq__(self, other) -> bool:
+        """
+        Support for "and" comparison operator.
+
+        Parameters
+        ----------
+        other: MaterialType or int
+            RHS object that is compared to MaterialType instance.
+
+        Returns
+        -------
+        bool
+            True if objects ._value data members are equivalent, False otherwise.
+        """
+        if type(other) is int:
+            return self._value == other
+        elif type(other) is MaterialType:
+            return self._value == other._value
+        else:
+            raise TypeError(f"Cannot compare MaterialType to type {type(other)}")
+
+    def __hash__(self):
+        """Hash method is needed if __eq__ is overridden."""
+        return hash(self._value)
+
+    def __and__(self, mat):
+        """
+        Support for the bitwise & operator.
+
+        Parameters
+        ----------
+        mat: MaterialType
+            MaterialType object whose ._value object will undergo a bitwise AND operation with this instance.
+
+        Returns
+        -------
+        int
+            Int containing result of bitwise AND between MaterialType instance and mat.
+        """
+        val = mat
+        if type(mat) is not int:
+            val = mat._value
+
+        return self._value & val

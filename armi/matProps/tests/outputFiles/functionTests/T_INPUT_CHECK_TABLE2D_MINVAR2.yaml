@@ -1,0 +1,26 @@
+file format: TESTS
+composition:
+  Fe: balance
+material type: Metal
+density:
+  function:
+    T: 0
+    type: two dimensional table
+    t: 1
+  tabulated data:
+  - - 
+    - - 2.0
+      - 200.0
+      - 632.4555
+  - - 1.0
+    - - 10.0
+      - 208.0
+      - 640.4555
+  - - 100.0
+    - - 110.0
+      - 308.0
+      - 740.4555
+  - - 316.2278
+    - - 135
+      - 333
+      - 765.4555

@@ -1,0 +1,12 @@
+file format: TESTS
+material type: Fluid
+composition:
+  d: balance
+
+thermal diffusivity:
+  function:
+    T:
+      min: 204.0
+      max: 604.0
+    type: symbolic
+    equation: 104.0

@@ -1,0 +1,12 @@
+file format: TESTS
+material type: Fluid
+composition:
+  a: balance
+
+density:
+  function:
+    T:
+      min: 201.0
+      max: 601.0
+    type: symbolic
+    equation: 101.0*T + 500

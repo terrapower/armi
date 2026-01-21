@@ -13,3 +13,29 @@
 # limitations under the License.
 
 """A simple implementation for a simple table to replace analytic curves in the YAML data files."""
+
+from matProps.function import Function
+
+
+class TableFunction(Function):
+    """An abstract TableFunction; the base class for other table lookup methods."""
+
+    @staticmethod
+    def is_table():
+        return True
+
+    @staticmethod
+    def points():
+        """Returns the underlying Point quantities."""
+        raise NotImplementedError()
+
+    def _set_bounds(self, node: dict):
+        """
+        Validate and set the min and max bounds for a variable.
+
+        Parameters
+        ----------
+        node: dict
+            dictionary that contains min and max values.
+        """
+        raise NotImplementedError()

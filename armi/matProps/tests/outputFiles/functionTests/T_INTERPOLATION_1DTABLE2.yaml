@@ -1,0 +1,29 @@
+file format: TESTS
+composition:
+  Fe: balance
+material type: Metal
+density:
+  function:
+    T:
+      min: 900
+      max: 250
+    type: table
+  tabulated data:
+  - - 250
+    - 25.68
+  - - 300
+    - 25.97
+  - - 400
+    - 26.28
+  - - 500
+    - 26.26
+  - - 600
+    - 25.89
+  - - 700
+    - 25.19
+  - - 759.7
+    - 24.61
+  - - 800
+    - 25.1
+  - - 900
+    - 26.32

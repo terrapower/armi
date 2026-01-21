@@ -1,0 +1,17 @@
+file format: TESTS
+material type: Metal
+composition:
+  a: balance
+density:
+  function:
+    type: symbolic
+    X:
+      min: -10
+      max: 500.0
+    Y:
+      min: 1.0
+      max: 20.0
+    Z:
+      min: -30.0
+      max: -10.0
+    equation: X / (exp(Y) + Z)
