@@ -415,7 +415,7 @@ latex_elements = {
 
 \usepackage{wasysym}
 """,
-    "tocdepth": 3,
+    "tocdepth": 5,
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
