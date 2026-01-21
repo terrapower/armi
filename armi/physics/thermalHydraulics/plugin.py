@@ -15,12 +15,10 @@
 """
 Generic Thermal/Hydraulics Plugin.
 
-Thermal/hydraulics is concerned with temperatures, flows, pressures,
-and heat transfer.
+Thermal/hydraulics is concerned with temperatures, flows, pressures, and heat transfer.
 """
 
 from armi import interfaces, plugins
-from armi.physics.thermalHydraulics import settings
 
 ORDER = interfaces.STACK_ORDER.THERMAL_HYDRAULICS
 
@@ -30,31 +28,8 @@ class ThermalHydraulicsPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def exposeInterfaces(cs):
-        """Expose the T/H interfaces."""
-        return []
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def defineSettings():
-        """Define settings for T/H."""
-        return settings.defineSettings()
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def defineSettingsValidators(inspector):
-        """Define settings inspections for T/H."""
-        return settings.defineValidators(inspector)
-
-    @staticmethod
-    @plugins.HOOKIMPL
     def defineParameters():
         """Define additional parameters for the reactor data model."""
         from armi.physics.thermalHydraulics import parameters
 
         return parameters.getParameterDefinitions()
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def afterConstructionOfAssemblies(assemblies, cs):
-        """After new assemblies are built, set some state information."""
