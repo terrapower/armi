@@ -278,6 +278,16 @@ def getAssemblyParameterDefinitions():
         )
 
         pb.defParam(
+            "ringPosHist",
+            units=units.UNITLESS,
+            description=(
+                "Ring and position history for this assembly written at BOC. Index 1 corresponds to position at BOC1."
+            ),
+            default=None,
+            saveToDB=True,
+        )
+
+        pb.defParam(
             "nozzleType",
             units=units.UNITLESS,
             description="nozzle type for assembly",
