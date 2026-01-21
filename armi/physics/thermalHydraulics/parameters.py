@@ -37,6 +37,25 @@ def _getAssemblyParams():
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
+        pb.defParam(
+            "THcoolantInletT",
+            units=units.DEGC,
+            description="Assembly inlet temperature in C (cold temperature)",
+        )
+
+    with pDefs.createBuilder(
+        default=0.0,
+        location=ParamLocation.AVERAGE,
+        saveToDB=True,
+        categories=["thermal hydraulics"],
+    ) as pb:
+        pb.defParam(
+            "THdeltaPTotal",
+            units=units.PASCALS,
+            description="Total pressure difference across the assembly",
+            categories=["broadcast"],
+        )
+
     return pDefs
 
 
@@ -56,6 +75,20 @@ def _getBlockParams():
             units=f"{units.KG}/{units.SECONDS}",
             description="Mass flow rate",
             location=ParamLocation.VOLUME_INTEGRATED,
+        )
+
+        pb.defParam(
+            "THcoolantInletT",
+            units=units.DEGC,
+            description="The nominal average bulk coolant inlet temperature into the block.",
+            location=ParamLocation.BOTTOM,
+        )
+
+        pb.defParam(
+            "THdeltaPTotal",
+            units=units.PASCALS,
+            description="Total pressure difference in a block",
+            location=ParamLocation.AVERAGE,
         )
 
     with pDefs.createBuilder(default=None, categories=["thermal hydraulics", "mongoose"], saveToDB=True) as pb:
