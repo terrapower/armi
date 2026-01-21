@@ -15,7 +15,7 @@
 """A place for the FuelHandler's Interface."""
 
 from armi import interfaces, runLog
-from armi.physics.fuelCycle import fuelHandlerFactory
+from armi.physics.fuelCycle import fuelHandlerFactory, fuelHandlers
 from armi.physics.fuelCycle.settings import (
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
@@ -157,15 +157,15 @@ class FuelHandlerInterface(interfaces.Interface):
             if movesThisCycle is not None:
                 for move in movesThisCycle:
                     enrichLine = " ".join(["{0:.8f}".format(enrich) for enrich in move.enrichList])
-                    if move.fromLoc in ["Delete", "SFP"]:
+                    if move.fromLoc in fuelHandlers.FuelHandler.DISCHARGE_LOCS:
                         # this is a re-entering assembly. Give extra info so repeat shuffles can handle it
                         out.write(
-                            "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n".format(
+                            "{0} moved to {1} with assembly type {2} ringPosCycle={4} with enrich list: {3}\n".format(
                                 move.fromLoc,
                                 move.toLoc,
                                 move.assemType,
                                 enrichLine,
-                                move.nameAtDischarge,
+                                move.ringPosCycle,
                             )
                         )
                     else:
