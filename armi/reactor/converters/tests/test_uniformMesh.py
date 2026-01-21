@@ -71,6 +71,8 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     def test_makeAssemWithUniformMesh(self):
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
+        # assign different flags to test flag preservation
+        sourceAssem.p.flags = Flags.FUEL | Flags.IGNITER | Flags.TEST
 
         self.converter._generateUniformMesh(minimumMeshSize=0.01)
         b = sourceAssem.getFirstBlock(Flags.FUEL)
@@ -80,6 +82,10 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             paramMapper=uniformMesh.ParamMapper([], ["power"], b),
             mapNumberDensities=True,
         )
+        self.assertEqual(newAssem.p.flags, sourceAssem.p.flags)
+        # chnage sourceAssem flags to verify that a unique copy was made
+        sourceAssem.p.flags = Flags.FUEL | Flags.IGNITER
+        self.assertNotEqual(newAssem.p.flags, sourceAssem.p.flags)
 
         prevB = None
         for newB in newAssem:
