@@ -55,20 +55,20 @@ class Reference:
         """
         reference = Reference()
 
-        ref_node = node["ref"]
-        if ref_node:
-            reference._ref = str(ref_node)  # noqa: SLF001
+        refNode = node["ref"]
+        if refNode:
+            reference._ref = str(refNode)
 
-        type_node = node["type"]
-        if type_node:
-            reference._type = str(type_node)  # noqa: SLF001
+        typeNode = node["type"]
+        if typeNode:
+            reference._type = str(typeNode)
 
         return reference
 
-    def get_ref(self):
+    def getRef(self):
         """Accessor which returns _ref value."""
         return self._ref
 
-    def get_type(self):
+    def getType(self):
         """Accessor which returns _type value."""
         return self._type

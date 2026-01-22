@@ -14,18 +14,15 @@
 
 """Tests related to piecewise functions."""
 
-from ruamel.yaml import YAML
-
-from armi import matProps
-from armi.matProps.tests import FunctionTestClassBase
+from armi.matProps.material import Material
+from armi.matProps.tests import MatPropsFunTestBase
 
 
-class TestPiecewiseFunction(FunctionTestClassBase):
+class TestPiecewiseFunction(MatPropsFunTestBase):
     """Tests related to piecewise functions."""
 
     @classmethod
     def setUpClass(cls):
-        """Initialization method for function data."""
         super().setUpClass()
 
         cls.basePiecewiseData = {
@@ -62,18 +59,9 @@ class TestPiecewiseFunction(FunctionTestClassBase):
             ],
         }
 
-    def test_piecewise_eqn_eval(self):
-        """
-        Tests the parsing of a PiecewiseFunction and make sure it evaluates at the appropriate sub function.
-
-        Input File: This test creates the file T_PIECEWISE_EQN_EVAL.yaml.
-
-        This test ensures that the override methods PiecewiseFunction._parse_specific() and
-        PiecewiseFunction._calc_specific() are functioning appropriately. A minimal YAML file with a piecewise function
-        consisting of three temperature-dependent constant functions is provided in this test. The function is evaluated
-        at values in all temperature regions of the piecewise function and checked against the expected outputs.
-        """
-        mat = self._create_function(self.basePiecewiseData)
+    def test_piecewiseEqnEval(self):
+        """Tests the parsing of a PiecewiseFunction and make sure it evaluates at the appropriate sub function."""
+        mat = self._createFunction(self.basePiecewiseData)
         func = mat.rho
         self.assertIn("PiecewiseFunction", str(func))
         self.assertAlmostEqual(func.calc({"T": 0}), 10)
@@ -83,17 +71,8 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         self.assertAlmostEqual(func.calc({"T": 50.1}), -99)
         self.assertAlmostEqual(func.calc({"T": 100}), -99)
 
-    def test_piecewise_eqn_gap(self):
-        """
-        Test that PiecewiseFunction evaluates correctly with gaps.
-
-        Input File: This test creates the file T_PIECEWISE_EQN_GAP.yaml.
-
-        This test checks that matProps can properly handle evaluations of a piecewise function outside of its defined
-        domain. This scenario tests outside the boundaries of the piecewise function as well as the special case where
-        gaps occur between piecewise regions. Values outside the bounds of any of the piecewise components should throw
-        an error.
-        """
+    def test_piecewiseEqnGap(self):
+        """Test that PiecewiseFunction evaluates correctly with gaps."""
         data = {
             "type": "piecewise",
             "functions": [
@@ -124,7 +103,7 @@ class TestPiecewiseFunction(FunctionTestClassBase):
             ],
         }
 
-        mat = self._create_function(data)
+        mat = self._createFunction(data)
         func = mat.rho
         with self.assertRaisesRegex(ValueError, "PiecewiseFunction error, could not evaluate"):
             func.calc({"T": -1.0})
@@ -135,25 +114,17 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         with self.assertRaisesRegex(ValueError, "PiecewiseFunction error, could not evaluate"):
             func.calc({"T": 101.0})
 
-        self.assertAlmostEqual(func.calc({"T": 0}), 10)
-        self.assertAlmostEqual(func.calc({"T": 10}), 10)
-        self.assertAlmostEqual(func.calc({"T": 20}), 10)
-        self.assertAlmostEqual(func.calc({"T": 30}), 99)
-        self.assertAlmostEqual(func.calc({"T": 40}), 99)
-        self.assertAlmostEqual(func.calc({"T": 50}), 99)
-        self.assertAlmostEqual(func.calc({"T": 75}), -99)
-        self.assertAlmostEqual(func.calc({"T": 100}), -99)
+        self.assertAlmostEqual(func.calc(T=0), 10)
+        self.assertAlmostEqual(func.calc(T=10), 10)
+        self.assertAlmostEqual(func.calc(T=20), 10)
+        self.assertAlmostEqual(func.calc(T=30), 99)
+        self.assertAlmostEqual(func.calc(T=40), 99)
+        self.assertAlmostEqual(func.calc(T=50), 99)
+        self.assertAlmostEqual(func.calc(T=75), -99)
+        self.assertAlmostEqual(func.calc(T=100), -99)
 
-    def test_piecewise_eqn_poly(self):
-        """
-        Test that makes a PiecewiseFunction composed of multiple PolynomialFunctions.
-
-        Input File: This test creates the file T_PIECEWISE_EQN_POLY.yaml.
-
-        A minimal YAML file with defined temperature dependent polynomial piecewise functions is provided in this test.
-        The function is evaluated at values in all temperature regions of the piecewise function and checked against the
-        expected outputs.
-        """
+    def test_piecewiseEqnPoly(self):
+        """Test that makes a PiecewiseFunction composed of multiple PolynomialFunctions."""
         poly1CoMap = {0: -2.5, 1: 5, 2: 4}
         poly2CoMap = {0: 3.5, 1: 3, 2: -2, 3: 1}
         poly3CoMap = {0: 4.5, 1: -2, 2: 3, 3: -2, 4: 1}
@@ -187,7 +158,7 @@ class TestPiecewiseFunction(FunctionTestClassBase):
             ],
         }
 
-        mat = self._create_function(data)
+        mat = self._createFunction(data)
         func = mat.rho
         self.assertAlmostEqual(func.calc({"T": -100.0}), self.polynomialEvaluation(poly1CoMap, -100.0))
         self.assertAlmostEqual(func.calc({"T": 0.0}), self.polynomialEvaluation(poly1CoMap, 0.0))
@@ -197,16 +168,8 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         self.assertAlmostEqual(func.calc({"T": 400.0}), self.polynomialEvaluation(poly3CoMap, 400.0))
         self.assertAlmostEqual(func.calc({"T": 500.0}), self.polynomialEvaluation(poly3CoMap, 500.0))
 
-    def test_piecewise_eqn_polytable(self):
-        """
-        Test that makes a PiecewiseFunction composed of a mixture of polynomial and table functions.
-
-        Input file: This test creates the file T_PIECEWISE_EQN_POLYTABLE.yaml.
-
-        A minimal YAML file with temperature dependent polynomial and tabular piecewise functions is provided in this
-        test. The function is evaluated in all temperature regions of the piecewise function and checked against the
-        expected outputs.
-        """
+    def test_piecewiseEqnPolyTable(self):
+        """Test that makes a PiecewiseFunction composed of a mixture of polynomial and table functions."""
         poly1CoMap = {0: 3.5, 1: 3, 2: -2, 3: 1}
         poly2CoMap = {0: 4.5, 1: -2, 2: 3, 3: -2, 4: 1}
         data = {
@@ -238,7 +201,7 @@ class TestPiecewiseFunction(FunctionTestClassBase):
             ],
         }
 
-        mat = self._create_function(data)
+        mat = self._createFunction(data)
         func = mat.rho
 
         self.assertAlmostEqual(func.calc({"T": -100.0}), -50.0)
@@ -251,29 +214,15 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         self.assertAlmostEqual(func.calc({"T": 400.0}), self.polynomialEvaluation(poly2CoMap, 400.0))
         self.assertAlmostEqual(func.calc({"T": 500.0}), self.polynomialEvaluation(poly2CoMap, 500.0))
 
-    def test_input_check_piecewise_mintemp(self):
-        """
-        Test to make sure an error is thrown when attempting to evaluate below the minimum valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_PIECEWISE_MINTEMP.yaml.
-
-        A minimal YAML file with a defined piecewise function is provided in this test. Tests that an error is raised
-        when a value below the minimum valid range is used with a piecewise function.
-        """
+    def test_inputCheckPiecewiseMinTemp(self):
+        """Test to make sure an error is thrown when attempting to evaluate below the minimum valid range."""
         self.belowMinimumCheck(self.basePiecewiseData)
 
-    def test_input_check_piecewise_maxtemp(self):
-        """
-        Test to make sure an error is thrown when attempting to evaluate above the maximum valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_PIECEWISE_MAXTEMP.yaml.
-
-        A minimal YAML file with a defined piecewise function is provided in this test. Tests that a ValueError is
-        raised when a value above the maximum valid range is used with a piecewise function.
-        """
+    def test_inputCheckPiecewiseMaxTemp(self):
+        """Test to make sure an error is thrown when attempting to evaluate above the maximum valid range."""
         self.aboveMaximumCheck(self.basePiecewiseData)
 
-    def _create_function2D(self, data=None, outFileName=None):
+    def _createFunction2D(self, data=None):
         """
         Helper function designed to create a basic viable yaml file for a two dimensional function.
 
@@ -281,36 +230,23 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         ----------
         data : dict
             A dictionary containing user specified function child nodes.
-        outFileName : str
-            String containing path of test file to create.
         """
-        if outFileName is None:
-            outFileName = self.testFileName
-        with open(outFileName, "w", encoding="utf-8") as f:
-            funcBody = {"T": {"min": -100, "max": 100}, "t": {"min": -100, "max": 100}}
-            funcBody.update(data or {})
-            materialData = {
-                "file format": "TESTS",
-                "composition": {"Fe": "balance"},
-                "material type": "Metal",
-                "density": {"function": funcBody, "tabulated data": {}},
-            }
-            yaml = YAML()
-            yaml.dump(materialData, f)
+        funcBody = {"T": {"min": -100, "max": 100}, "t": {"min": -100, "max": 100}}
+        funcBody.update(data or {})
+        materialData = {
+            "file format": "TESTS",
+            "composition": {"Fe": "balance"},
+            "material type": "Metal",
+            "density": {"function": funcBody, "tabulated data": {}},
+        }
 
-        return matProps.load_material(outFileName)
+        mat = Material()
+        mat.loadNode(materialData)
 
-    def test_piecewise_eqn_2d(self):
-        """
-        Test that PiecewiseFunction evaluates correctly with multiple dimensions.
+        return mat
 
-        Input file: This test creates the file T_PIECEWISE_EQN_2D.yaml.
-
-        This test checks that matProps can properly handle evaluations of a piecewise function inside and outside of its
-        defined independent variable domain. This scenario tests inside the boundaries of a two dimensional piecewise
-        function and outside the boundaries of the piecewise function as well as the special case where gaps occur
-        between piecewise regions. Values outside the bounds of any of the piecewise components should throw an error.
-        """
+    def test_piecewiseEqn2d(self):
+        """Test that PiecewiseFunction evaluates correctly with multiple dimensions."""
         data = {
             "type": "piecewise",
             "functions": [
@@ -353,7 +289,7 @@ class TestPiecewiseFunction(FunctionTestClassBase):
             ],
         }
 
-        mat = self._create_function2D(data)
+        mat = self._createFunction2D(data)
         func = mat.rho
         # Below var 1
         with self.assertRaisesRegex(ValueError, "PiecewiseFunction error, could not evaluate"):
@@ -378,21 +314,13 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         with self.assertRaisesRegex(ValueError, "PiecewiseFunction error, could not evaluate"):
             func.calc({"T": 10, "t": 45})
 
-        self.assertAlmostEqual(func.calc({"T": 10, "t": 10}), 10)
-        self.assertAlmostEqual(func.calc({"T": 10, "t": 35}), 20)
-        self.assertAlmostEqual(func.calc({"T": 35, "t": 10}), 99)
-        self.assertAlmostEqual(func.calc({"T": 35, "t": 35}), 199)
+        self.assertAlmostEqual(func.calc(T=10, t=10), 10)
+        self.assertAlmostEqual(func.calc(T=10, t=35), 20)
+        self.assertAlmostEqual(func.calc(T=35, t=10), 99)
+        self.assertAlmostEqual(func.calc(T=35, t=35), 199)
 
-    def test_piecewise_eqn_overlap(self):
-        """
-        Test that PiecewiseFunction fails to load with overlapping regions.
-
-        Input file: This test creates the file T_PIECEWISE_EQN_OVERLAP.yaml.
-
-        This test checks that matProps can properly identify and throw an error when piecewise functions have
-        overlapping regions. A piecewise function where two of the four regions are overlapping is provided and an error
-        is checked for on loading.
-        """
+    def test_piecewiseEqnOverlap(self):
+        """Test that PiecewiseFunction fails to load with overlapping regions."""
         data = {
             "type": "piecewise",
             "functions": [
@@ -436,18 +364,10 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         }
 
         with self.assertRaisesRegex(ValueError, "Piecewise child functions overlap"):
-            self._create_function2D(data)
+            self._createFunction2D(data)
 
-    def test_piecewise_eqn_diffvars(self):
-        """
-        Test that PiecewiseFunction fails to load when child functions use different variables.
-
-        Input file:  This test creates the file T_PIECEWISE_EQN_DIFFVARS.yaml.
-
-        This test checks that matProps can properly identify and throw an error when piecewise functions have child
-        functions that have different variables used in the bounds. A piecewise function where two of regions are use
-        divergent variables is provided and an error is checked for on loading.
-        """
+    def test_piecewiseEqnDiffVars(self):
+        """Test that PiecewiseFunction fails to load when child functions use different variables."""
         data = {
             "type": "piecewise",
             "functions": [
@@ -491,4 +411,4 @@ class TestPiecewiseFunction(FunctionTestClassBase):
         }
 
         with self.assertRaisesRegex(KeyError, "Piecewise child function must have same variables"):
-            self._create_function2D(data)
+            self._createFunction2D(data)

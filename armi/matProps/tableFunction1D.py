@@ -14,7 +14,7 @@
 
 """A simple implementation for a one dimensional table to replace analytic curves in the YAML data files."""
 
-from armi.matProps.interpolationFunctions import linear_linear
+from armi.matProps.interpolationFunctions import linearLinear
 from armi.matProps.point import Point
 from armi.matProps.tableFunction import TableFunction
 
@@ -64,7 +64,7 @@ class TableFunction1D(TableFunction):
         """Provides string representation of TableFunction1D object."""
         return "<TableFunction1D>"
 
-    def _set_bounds(self, node: dict, var: str):  # noqa: ARG002, unused argument
+    def _setBounds(self, node: dict, var: str):
         """
         Validate and set the min and max bounds for a variable.
 
@@ -75,9 +75,9 @@ class TableFunction1D(TableFunction):
         var: str
             name of the variable
         """
-        self.independent_vars[var] = (float(min(self._var1s)), float(max(self._var1s)))
+        self.independentVars[var] = (float(min(self._var1s)), float(max(self._var1s)))
 
-    def _parse_specific(self, prop):
+    def _parseSpecific(self, prop):
         """
         Parses a temperature dependent table function.
 
@@ -98,7 +98,7 @@ class TableFunction1D(TableFunction):
 
         return points
 
-    def _calc_specific(self, point: dict) -> float:
+    def _calcSpecific(self, point: dict) -> float:
         """
         Performs a linear interpolation on tabular data.
 
@@ -107,8 +107,8 @@ class TableFunction1D(TableFunction):
         point: dict
             dictionary of independent variable/value pairs
         """
-        var = list(self.independent_vars.keys())[0]
+        var = list(self.independentVars.keys())[0]
         if var in point:
-            return linear_linear(point[var], self._var1s, self._values)
+            return linearLinear(point[var], self._var1s, self._values)
 
-        raise ValueError(f"Specified point does contain the correct independent variables: {self.independent_vars}")
+        raise ValueError(f"Specified point does contain the correct independent variables: {self.independentVars}")

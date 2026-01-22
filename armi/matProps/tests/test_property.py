@@ -15,11 +15,8 @@
 """Program that runs all of the tests contained in PropertyTests class."""
 
 import os
-import time
 import unittest
 from os import path
-
-from ruamel.yaml import YAML
 
 from armi import matProps
 from armi.matProps.property import properties
@@ -30,8 +27,6 @@ class PropertyTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Initializes the class data members for all tests prior to tests being run."""
-        cls.tempFileName = "tempPropertyTests.yaml"
         # Properties allowed for based on SDID.
         cls.allowedPropertiesList = [
             "density",
@@ -84,55 +79,28 @@ class PropertyTests(unittest.TestCase):
             "factor Kv' from ASME.III.5 Fig. HBB-T-1432-3",
         ]
 
-    def tearDown(self):
-        """TearDown is run after each testing method."""
-        if os.path.isfile(self.tempFileName):
-            os.remove(self.tempFileName)
-            while os.path.isfile(self.tempFileName):
-                time.sleep(0.1)
-
-    def test_properties_unique(self):
-        """
-        This test is written to ensure that the Property.name and Property.symbol data members are all unique inside the
-        matProps.properties container.
-        """
+    def test_propertiesUnique(self):
+        """Ensure the Property.name and Property.symbol are all unique inside the matProps.properties container."""
         num = len(properties)
         self.assertEqual(num, len({p.name for p in properties}))
         self.assertEqual(num, len({p.symbol for p in properties}))
 
-    def test_properties_names(self):
-        """
-        This test was written to ensure that every property listed in the User Manual is accounted for in
-        matProps.properties. This test verifies that the properties in matProps.properties is equivalent to the list
-        of properties specified in the User Manual.
-        """
+    def test_propertiesNames(self):
+        """Ensure that we have the correct set of Properties in matProps."""
         propertySet = {p.name for p in properties}
         allowedPropertiesSet = set(self.allowedPropertiesList)
         self.assertEqual(propertySet, allowedPropertiesSet)
 
-    def test_properties_inv_name(self):
-        """
-        This tests a logic branch inside the Material.data_check_material_file() method that occurs whenever a property
-        node string value is not found inside the matProps.props container. A minimal sample material file is provided
-        with a property node name that is not supported by matProps.
-        """
-        with open(self.tempFileName, "w", encoding="utf-8") as f:
-            yaml = YAML()
-            yaml.dump(
-                {
-                    "file format": "TESTS",
-                    "composition": {"Na": 1.0},
-                    "material type": "Metal",
-                    "bad_prop": "whatever",
-                },
-                f,
-            )
-        with self.assertRaisesRegex(KeyError, "Invalid property node"):
-            matProps.load_material(self.tempFileName)
+    def test_propertiesInvName(self):
+        """Ensure loadNode fails correctly when provided when provided an unknown property."""
+        tempFileName = os.path.join(os.path.dirname(__file__), "invalidTestFiles", "badProperty.yaml")
 
-    def test_properties_definitions(self):
+        with self.assertRaisesRegex(KeyError, "Invalid property node"):
+            matProps.loadMaterial(tempFileName)
+
+    def test_propertiesDefinitions(self):
         """
-        This test checks a logic branch in the Function.factory method which initializes matProps.Function objects to be
+        Check a logic branch in the Function.factory method which initializes matProps.Function objects to be
         null. matProps.Function objects only get set to a non-null object if the appropriate property node is provided
         in the YAML file. A test YAML file with only the density property provided. It checks to make sure that the
         Material.rho object corresponding with density is not a null object and performs an evaluation. A check is then
@@ -141,22 +109,17 @@ class PropertyTests(unittest.TestCase):
         """
         # Only the density property exists for the material below. It is a constant function
         yamlFilePath = path.join(path.dirname(path.realpath(__file__)), "testDir1", "a.yaml")
-        mat = matProps.load_material(yamlFilePath)
+        mat = matProps.loadMaterial(yamlFilePath)
         # Name of density function is rho for materials
         self.assertIsNotNone(mat.rho)
         self.assertAlmostEqual(mat.rho.calc({"T": 150.0}), 1.0)
         # k corresponds to thermal conductivity which is not provided in test file.
         self.assertIsNone(mat.k)
 
-    def test_properties_outputs(self):
-        """
-        This test verifies that matProps can parse every property node name listed in the User Manual and place the
-        functional information for that property node in the appropriate matProps.Function object that corresponds with
-        that property. A sample material file is provided with every property node name that is supported in the SDID,
-        each with a unique constant value. Each property is read and compared to its expected value.
-        """
+    def test_spotCheckAllPropsDict(self):
+        """Spot check every property at least once, using a dictionary of input values."""
         pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
-        testMat = matProps.load_material(path.join(pathToTestYaml, "sampleProperty.yaml"))
+        testMat = matProps.loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
         self.assertAlmostEqual(testMat.rho.calc({"T": 300.0}), 1.0)
         self.assertAlmostEqual(testMat.c_p.calc({"T": 300.0}), 2.0)
         self.assertAlmostEqual(testMat.k.calc({"T": 300.0}), 3.0)
@@ -204,3 +167,55 @@ class PropertyTests(unittest.TestCase):
         self.assertAlmostEqual(testMat.Kv_prime.calc({"T": 300.0}), 45.0)
         self.assertAlmostEqual(testMat.S.calc({"T": 300.0}), 46.0)
         self.assertAlmostEqual(testMat.Elong.calc({"T": 300.0}), 47.0)
+
+    def test_spotCheckAllPropsKwargs(self):
+        """Spot check every property at least once, using kwargs."""
+        pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
+        testMat = matProps.loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
+        self.assertAlmostEqual(testMat.rho.calc(T=300.0), 1.0)
+        self.assertAlmostEqual(testMat.c_p.calc(T=300.0), 2.0)
+        self.assertAlmostEqual(testMat.k.calc(T=300.0), 3.0)
+        self.assertAlmostEqual(testMat.alpha_d.calc(T=300.0), 4.0)
+        self.assertAlmostEqual(testMat.mu_d.calc(T=300.0), 5.0)
+        self.assertAlmostEqual(testMat.mu_k.calc(T=300.0), 6.0)
+        self.assertAlmostEqual(testMat.T_melt.calc(T=300.0), 7.0)
+        self.assertAlmostEqual(testMat.T_boil.calc(T=300.0), 8.0)
+        self.assertAlmostEqual(testMat.dH_vap.calc(T=300.0), 9.0)
+        self.assertAlmostEqual(testMat.dH_fus.calc(T=300.0), 10.0)
+        self.assertAlmostEqual(testMat.gamma.calc(T=300.0), 11.0)
+        self.assertAlmostEqual(testMat.P_sat.calc(T=300.0), 12.0)
+        self.assertAlmostEqual(testMat.kappa.calc(T=300.0), 13.0)
+        self.assertAlmostEqual(testMat.alpha_mean.calc(T=300.0), 14.0)
+        self.assertAlmostEqual(testMat.alpha_inst.calc(T=300.0), 15.0)
+        self.assertAlmostEqual(testMat.E.calc(T=300.0), 16.0)
+        self.assertAlmostEqual(testMat.nu.calc(T=300.0), 17.0)
+        self.assertAlmostEqual(testMat.Sy.calc(T=300.0), 18.0)
+        self.assertAlmostEqual(testMat.Su.calc(T=300.0), 19.0)
+        self.assertAlmostEqual(testMat.Sm.calc(T=300.0), 20.0)
+        self.assertAlmostEqual(testMat.So.calc(T=300.0), 21.0)
+        self.assertAlmostEqual(testMat.Sa.calc(T=300.0), 22.0)
+        self.assertAlmostEqual(testMat.St.calc(T=300.0), 23.0)
+        self.assertAlmostEqual(testMat.Smt.calc(T=300.0), 24.0)
+        self.assertAlmostEqual(testMat.Sr.calc(T=300.0), 25.0)
+        self.assertAlmostEqual(testMat.TSRF.calc(T=300.0), 26.0)
+        self.assertAlmostEqual(testMat.YSRF.calc(T=300.0), 27.0)
+        self.assertAlmostEqual(testMat.WSRF.calc(T=300.0), 28.0)
+        self.assertAlmostEqual(testMat.tMaxSr.calc(T=300.0), 29.0)
+        self.assertAlmostEqual(testMat.tMaxSt.calc(T=300.0), 30.0)
+        self.assertAlmostEqual(testMat.eps_t.calc(T=300.0), 31.0)
+        self.assertAlmostEqual(testMat.eps_iso.calc(T=300.0), 32.0)
+        self.assertAlmostEqual(testMat.SaFat.calc(T=300.0), 33.0)
+        self.assertAlmostEqual(testMat.dl_l.calc(T=300.0), 34.0)
+        self.assertAlmostEqual(testMat.nu_g.calc(T=300.0), 35.0)
+        self.assertAlmostEqual(testMat.v_sound.calc(T=300.0), 36.0)
+        self.assertAlmostEqual(testMat.T_sol.calc(T=300.0), 37.0)
+        self.assertAlmostEqual(testMat.T_liq.calc(T=300.0), 38.0)
+        self.assertAlmostEqual(testMat.dV.calc(T=300.0), 39.0)
+        self.assertAlmostEqual(testMat.H.calc(T=300.0), 40.0)
+        self.assertAlmostEqual(testMat.H_calc_T.calc(T=300.0), 41.0)
+        self.assertAlmostEqual(testMat.K_IC.calc(T=300.0), 42.0)
+        self.assertAlmostEqual(testMat.HBW.calc(T=300.0), 43.0)
+        self.assertAlmostEqual(testMat.f.calc(T=300.0), 44.0)
+        self.assertAlmostEqual(testMat.Kv_prime.calc(T=300.0), 45.0)
+        self.assertAlmostEqual(testMat.S.calc(T=300.0), 46.0)
+        self.assertAlmostEqual(testMat.Elong.calc(T=300.0), 47.0)

@@ -1,0 +1,31 @@
+file format: 1.0
+# This file is missing tabulated data for a material property
+material type: ASME2017
+composition:
+  C: [0, 0.3]
+  Mn: [0.29, 1.06]
+  P: [0, 0.03]
+  S: [0, 0.03]
+  Si: [0.1, 100]
+  Ni: [0, 0.4]
+  Cr: [0, 0.4]
+  Mo: [0, 0.15]
+  Cu: [0, 0.4]
+  Fe: balance
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+
+Young's modulus:
+  function:
+    min degrees C: 0
+    max degrees C: 700
+    function type: polynomial
+    coefficients:
+      0: 2.154E11
+      1: -6.821E7
+      2: -3.636E3
+  references:
+    - ref: Breaking Point Quarterly, 1986.
+      refType: open literature
+      

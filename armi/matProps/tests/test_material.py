@@ -12,38 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Program that runs all of the tests in the TestMaterial class."""
+"""Program that runs all of the tests in the TestMapPropsMaterial class."""
 
 import os
-import shutil
 import unittest
 
-from ruamel.yaml import YAML
-
 from armi import matProps
+from armi.matProps.material import Material
 from armi.matProps.materialType import MaterialType
 
 THIS_DIR = os.path.dirname(__file__)
 
 
-class TestMaterial(unittest.TestCase):
+class TestMapPropsMaterial(unittest.TestCase):
     """Class which tests the functionality of the armi.matProps Material class."""
 
-    @classmethod
-    def setUpClass(cls):
-        """Set up class members prior to running tests."""
-        cls.dirname = os.path.join(os.path.dirname(os.path.realpath(__file__)), "outputFiles", "materialTests")
-        if os.path.isdir(cls.dirname):
-            shutil.rmtree(cls.dirname)
-
-        os.makedirs(cls.dirname)
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(os.path.dirname(cls.dirname))
-
     @staticmethod
-    def _create_function(fileName, materialType):
+    def _createFunction(materialType):
         """
         Helper function used to construct a minimum viable YAML file for tests.
 
@@ -70,28 +55,27 @@ class TestMaterial(unittest.TestCase):
             },
         }
 
-        with open(fileName, "w", encoding="utf-8") as f:
-            yaml = YAML()
-            yaml.dump(testNode, f)
+        mat = Material()
+        mat.loadNode(testNode)
 
-        return matProps.load_material(fileName)
+        return mat
 
-    def test_get_valid_file_format_versions(self):
-        versions = matProps.Material.get_valid_file_format_versions()
+    def test_getValidFileFormatVersions(self):
+        versions = matProps.Material.getValidFileFormatVersions()
         self.assertGreater(len(versions), 1)
         for version in versions:
             if type(version) is not float:
                 self.assertEqual(version, "TESTS")
 
-    def test_load_file(self):
+    def test_loadFile(self):
         mat = matProps.Material()
         self.assertEqual(str(mat), "<Material None None>")
         fPath = os.path.join(THIS_DIR, "testMaterialsData", "materialA.yaml")
         self.assertEqual(len(sorted(matProps.materials.keys())), 0)
-        mat.load_file(fPath)
+        mat.loadFile(fPath)
         self.assertEqual(len(sorted(matProps.materials.keys())), 0)
 
-    def test_datafiles_type(self):
+    def test_datafilesType(self):
         materialTypeNames = [
             "Fuel",
             "Metal",
@@ -103,14 +87,11 @@ class TestMaterial(unittest.TestCase):
         ]
 
         for matTypeName in materialTypeNames:
-            fileName = f"T_DATAFILES_TYPE_{matTypeName}.yaml"
-            outFile = os.path.join(self.dirname, fileName)
-            parseType = self._create_function(outFile, matTypeName).material_type
+            parseType = self._createFunction(matTypeName).materialType
             typeIdx = MaterialType.types[matTypeName]
             expectedType = MaterialType(typeIdx)
             self.assertEqual(parseType, expectedType)
 
-    def test_datafiles_inv_type(self):
-        outFile = os.path.join(self.dirname, "T_DATAFILES_INV_TYPE.yaml")
+    def test_datafilesInvType(self):
         with self.assertRaisesRegex(KeyError, "Invalid material type"):
-            self._create_function(outFile, "Solid")
+            self._createFunction("Solid")

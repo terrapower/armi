@@ -33,7 +33,7 @@ sequence, denoted by dashes, such as the following example::
 References
 ----------
     - ref: Bibliographic citation in your favorite format.
-      refType: export controlled
+      refType: open literature
 
 However, in JSON, references are organized as arrays. Each array contains the "ref" (string), and the "refType"
 (string), which are the names of the keywords used in the YAML file. "additionalItems": true means that you can have as

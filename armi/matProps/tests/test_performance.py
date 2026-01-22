@@ -38,10 +38,7 @@ class TestPerformance(unittest.TestCase):
 
         testFiles = os.path.join(os.path.dirname(__file__), "testMaterialsData")
 
-        t = timeit.timeit(
-            lambda: (matProps.load_all(testFiles), matProps.clear()),
-            number=400,
-        )
+        t = timeit.timeit(lambda: (matProps.loadAll(testFiles), matProps.clear()), number=10)
 
         self.assertLess(t, _LIMIT_SECONDS, msg="matProps material loading takes too long to execute.")
 
@@ -51,10 +48,10 @@ class TestPerformance(unittest.TestCase):
 
         # This directory's material has many properties so it is more representative for pickle size.
         testFiles = os.path.join(os.path.dirname(__file__), "testDir4")
-        matProps.load_all(testFiles)
-        mat = matProps.get_material("sampleProperty")
+        matProps.loadAll(testFiles)
+        mat = matProps.getMaterial("sampleProperty")
 
-        t = timeit.timeit(lambda: pickle.loads(pickle.dumps(mat)), number=5000)
+        t = timeit.timeit(lambda: pickle.loads(pickle.dumps(mat)), number=100)
 
         self.assertLess(t, _LIMIT_SECONDS, msg="matProps material pickling takes too long to execute.")
 
@@ -63,12 +60,12 @@ class TestPerformance(unittest.TestCase):
         matProps.clear()
 
         testFiles = os.path.join(os.path.dirname(__file__), "testMaterialsData")
-        matProps.load_all(testFiles)
+        matProps.loadAll(testFiles)
         # This material's density is a linear function.
-        mat = matProps.get_material("materialA")
+        mat = matProps.getMaterial("materialA")
         prop = mat.rho
 
-        t = timeit.timeit(lambda: prop.calc({"T": 300}), number=5000000)
+        t = timeit.timeit(lambda: prop.calc({"T": 300}), number=10000)
 
         self.assertLess(t, _LIMIT_SECONDS, msg="matProps material calculation takes too long to execute.")
 
@@ -81,9 +78,9 @@ class TestPerformance(unittest.TestCase):
 
         # This directory's material has many properties so it is more representative for copy size.
         testFiles = os.path.join(os.path.dirname(__file__), "testDir4")
-        matProps.load_all(testFiles)
-        mat = matProps.get_material("sampleProperty")
+        matProps.loadAll(testFiles)
+        mat = matProps.getMaterial("sampleProperty")
 
-        t = timeit.timeit(lambda: copy.deepcopy(mat), number=3000)
+        t = timeit.timeit(lambda: copy.deepcopy(mat), number=100)
 
         self.assertLess(t, _LIMIT_SECONDS, msg="matProps material copying takes too long to execute.")

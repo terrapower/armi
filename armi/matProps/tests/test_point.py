@@ -20,9 +20,9 @@ from armi.matProps.point import Point
 
 
 class TestPoint(unittest.TestCase):
-    """Unit tests for the mat_props Point class."""
+    """Unit tests for the matProps Point class."""
 
     def test_string(self):
         """Test string representation of Point."""
         p = Point(1, 2, 3)
-        self.assertEqual(str(p), "<Point 1, 23>")
+        self.assertEqual(str(p), "<Point 1, 2 -> 3>")

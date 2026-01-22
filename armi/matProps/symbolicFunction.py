@@ -58,7 +58,7 @@ class SymbolicFunction(Function):
         self.eqn = None
         self.sympyStr = None
 
-    def _parse_specific(self, node):
+    def _parseSpecific(self, node):
         """
         Parses nodes that are specific to Symbolic Function object.
 
@@ -71,19 +71,19 @@ class SymbolicFunction(Function):
 
         try:
             symbolList = []
-            for var in self.independent_vars:
+            for var in self.independentVars:
                 symbolList.append(symbols(var))
             sympyEqn = parse_expr(eqn, evaluate=False)
             self.sympyStr = lambdastr(symbolList, sympyEqn)
             self.eqn = eval(self.sympyStr)
 
-            # Try evaluating the function at the maximum bound. This should result in a number if the
-            # equation is properly formatted. Bad equations will throw an error either in the `lambdastr`
-            # `eval` or this `float( )` line. This is important to catch poor equations now before they
-            # cause problems intermittently later (only when calc is called for that equation).
+            # Try evaluating the function at the maximum bound. This should result in a number if the equation is
+            # properly formatted. Bad equations will throw an error either in the `lambdastr` `eval` or this `float( )`
+            # line. This is important to catch poor equations now before they cause problems intermittently later (only
+            # when calc is called for that equation).
             point = []
-            for var in self.independent_vars:
-                point.append(self.get_max_bound(var))
+            for var in self.independentVars:
+                point.append(self.getMaxBound(var))
 
             float(self.eqn(*point))
         except Exception as e:
@@ -92,7 +92,7 @@ class SymbolicFunction(Function):
                 f" {eqn}, {getattr(self, 'sympyStr', 'Symbolic string not created yet.')}"
             ) from e
 
-    def _calc_specific(self, point: dict) -> float:
+    def _calcSpecific(self, point: dict) -> float:
         """
         Returns an evaluation for a symbolic function.
 
@@ -101,7 +101,7 @@ class SymbolicFunction(Function):
         point: dict
             dictionary of independent variable/value pairs
         """
-        result = self.eqn(*[point[var] for var in self.independent_vars])
+        result = self.eqn(*[point[var] for var in self.independentVars])
         if isinstance(result, complex):
             raise ValueError(f"Function is undefined at {point}. Evaluates to complex number: {result}")
         if math.isnan(result):

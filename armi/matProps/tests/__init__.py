@@ -15,38 +15,19 @@
 """Generic testing tools for the matProps package."""
 
 import math
-import os
-import shutil
 import unittest
 
-from ruamel.yaml import YAML
-
-import armi.matProps
+from armi.matProps.material import Material
 
 
-class FunctionTestClassBase(unittest.TestCase):
-    """Base class that provides some common functionality for function related tests."""
-
-    @classmethod
-    def setUpClass(cls):
-        """Initialization method for TestFunctions. Sets up all class members prior to tests being run."""
-        cls.dirname = os.path.join(os.path.dirname(os.path.realpath(__file__)), "outputFiles", "functionTests")
-        if os.path.exists(cls.dirname):
-            shutil.rmtree(cls.dirname)
-
-        os.makedirs(cls.dirname)
+class MatPropsFunTestBase(unittest.TestCase):
+    """Base class that provides some common functionality for testing matProps Functions."""
 
     def setUp(self):
         self.testName = self.id().split(".")[-1]
         searchStr = "test_"
         if self.testName.startswith(searchStr):
             self.testName = self.testName[len(searchStr) :]
-        self.testFileName = os.path.join(self.dirname, self.testName + ".yaml")
-
-    @property
-    def filePrefix(self):
-        """Return the file prefix for a file name."""
-        return os.path.splitext(os.path.basename(self.testFileName))[0]
 
     @staticmethod
     def polynomialEvaluation(powerMap, value):
@@ -120,7 +101,7 @@ class FunctionTestClassBase(unittest.TestCase):
             f"(T+{coefficients['inner adder']})/{coefficients['inner denominator']})"
         )
 
-    def _create_function_without_table(self, data=None):
+    def _createFunctionWithoutTable(self, data=None):
         """
         Helper function designed to create a basic viable yaml file without tabulated data in the function.
 
@@ -129,21 +110,21 @@ class FunctionTestClassBase(unittest.TestCase):
         data : dict
             A dictionary containing user specified function child nodes.
         """
-        with open(self.testFileName, "w", encoding="utf-8") as f:
-            funcBody = {"T": {"min": -100.0, "max": 500.0}}
-            funcBody.update(data or {})
-            materialData = {
-                "file format": "TESTS",
-                "composition": {"Fe": "balance"},
-                "material type": "Metal",
-                "density": {"function": funcBody},
-            }
-            yaml = YAML()
-            yaml.dump(materialData, f)
+        funcBody = {"T": {"min": -100.0, "max": 500.0}}
+        funcBody.update(data or {})
+        materialData = {
+            "file format": "TESTS",
+            "composition": {"Fe": "balance"},
+            "material type": "Metal",
+            "density": {"function": funcBody},
+        }
 
-        return armi.matProps.load_material(self.testFileName)
+        mat = Material()
+        mat.loadNode(materialData)
 
-    def _create_function(self, data=None, tableData=None, minT=-100.0, maxT=500.0, outFileName=None):
+        return mat
+
+    def _createFunction(self, data=None, tableData=None, minT=-100.0, maxT=500.0):
         """
         Helper function designed to create a basic viable yaml file.
 
@@ -157,44 +138,31 @@ class FunctionTestClassBase(unittest.TestCase):
             Float containing the minimum T variable value for the function.
         maxT : float
             Float containing the maximum T variable value for the function.
-        outFileName : str
-            String containing path of test file to create.
         """
-        if outFileName is None:
-            outFileName = self.testFileName
-        with open(outFileName, "w", encoding="utf-8") as f:
-            funcBody = {"T": {"min": minT, "max": maxT}}
-            funcBody.update(data or {})
-            materialData = {
-                "file format": "TESTS",
-                "composition": {"Fe": "balance"},
-                "material type": "Metal",
-                "density": {
-                    "function": funcBody,
-                    "tabulated data": tableData or {},
-                },
-            }
-            yaml = YAML()
-            yaml.dump(materialData, f)
+        funcBody = {"T": {"min": minT, "max": maxT}}
+        funcBody.update(data or {})
+        materialData = {
+            "file format": "TESTS",
+            "composition": {"Fe": "balance"},
+            "material type": "Metal",
+            "density": {"function": funcBody, "tabulated data": tableData or {}},
+        }
 
-        return armi.matProps.load_material(outFileName)
+        mat = Material()
+        mat.loadNode(materialData)
+
+        return mat
 
     def belowMinimumCheck(self, yamlData, tableData=None):
-        """
-        Helper function that checks if a ValueError is thrown if attempting to evaluate below the min value of a given T
-        variable.
-        """
-        mat = self._create_function(yamlData, tableData)
+        """Check if a ValueError is thrown if attempting to evaluate below the min value of a given T variable."""
+        mat = self._createFunction(yamlData, tableData)
         func = mat.rho
         with self.assertRaises(ValueError):
-            func.calc({"T": func.get_min_bound("T") - 0.01})
+            func.calc({"T": func.getMinBound("T") - 0.01})
 
     def aboveMaximumCheck(self, yamlData, tableData=None):
-        """
-        Helper function that checks if a ValueError is thrown if attempting to evaluate above the max value of the T
-        variable.
-        """
-        mat = self._create_function(yamlData, tableData)
+        """Checksif a ValueError is thrown if attempting to evaluate above the max value of the T variable."""
+        mat = self._createFunction(yamlData, tableData)
         func = mat.rho
         with self.assertRaises(ValueError):
-            func.calc({"T": func.get_max_bound("T") + 0.01})
+            func.calc({"T": func.getMaxBound("T") + 0.01})

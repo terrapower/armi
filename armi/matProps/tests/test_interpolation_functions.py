@@ -19,13 +19,13 @@ import unittest
 import numpy as np
 from scipy import interpolate
 
-from armi.matProps.interpolationFunctions import linear_linear, log_linear
+from armi.matProps.interpolationFunctions import linearLinear, logLinear
 
 
 class TestInterpolationFunctions(unittest.TestCase):
     """Class which creates tests for the armi.matProps InterpolationFunctions files."""
 
-    def test_linear_linear(self):
+    def test_linearLinear(self):
         """
         Test which validates the values returned from the linear-linear interpolation method.
 
@@ -35,41 +35,41 @@ class TestInterpolationFunctions(unittest.TestCase):
         y = [1.0 + xx + xx**2 for xx in range(10)]
         f = interpolate.interp1d(x, y, bounds_error=False)
         for nn in np.linspace(0, 9, 20):
-            self.assertTrue(np.allclose(f(nn), linear_linear(nn, x.tolist(), y)))
+            self.assertTrue(np.allclose(f(nn), linearLinear(nn, x.tolist(), y)))
 
-    def test_linear_linear_interpolation(self):
+    def test_linearLinearInterpolation(self):
         """
         Duplicate test validating that the correct values are returned from a linear-linear interpolation.
 
-        Differs from test_linear_linear by constructing interpolation points using standard lists instead of numpy
+        Differs from test_linearLinear by constructing interpolation points using standard lists instead of numpy
         linspace.
         """
         x = [0.0, 1.0]
         y = [1.0, 2.0]
         for xx, yy in [(0.0, 1.0), (0.5, 1.5), (1.0, 2.0)]:
-            self.assertAlmostEqual(yy, linear_linear(xx, x, y))
+            self.assertAlmostEqual(yy, linearLinear(xx, x, y))
 
-    def test_linear_linear_extrapolation(self):
+    def test_linearLinearExtrapolation(self):
         """Check to make sure a ValueError is thrown if attempting an interpolation outside the function domain."""
         x = [0.0, 1.0]
         y = [1.0, 2.0]
         with self.assertRaisesRegex(ValueError, "out of bounds"):
-            linear_linear(-2.0, x, y)
+            linearLinear(-2.0, x, y)
 
-    def test_log_linear(self):
+    def test_logLinear(self):
         """Test that validates the values returned from the log-linear interpolation function."""
         x = np.arange(1.0, 11.0)
         y = -42.0 + x + x**-2
         n_vals = np.interp(np.log10(np.linspace(1, 10, 20)), np.log10(x), y)
-        m_vals = [log_linear(nn, x, y) for nn in np.linspace(1, 10, 20)]
+        m_vals = [logLinear(nn, x, y) for nn in np.linspace(1, 10, 20)]
         self.assertTrue(
             np.allclose(n_vals, m_vals),
             f"np:  {n_vals}\nmatProps:{np.array(m_vals)}",
         )
 
-    def test_log_linear_extrapolation(self):
+    def test_logLinearExtrapolation(self):
         """A ValueError should be thrown if performing a log-linear interpolation outside the function domain."""
         x = np.arange(1.0, 11.0)
         y = -42.0 + x + x**-2
         with self.assertRaisesRegex(ValueError, "out of bounds"):
-            log_linear(0.5, x, y)
+            logLinear(0.5, x, y)

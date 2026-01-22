@@ -14,6 +14,7 @@
 
 """A particular material property."""
 
+# TODO: I don't like that this design depends on globals.
 properties = set()
 
 
@@ -67,7 +68,7 @@ class Property:
             True if name is in properties, False otherwise.
         """
         """FIXME: This is mixing a global collection of this class inside this class. I hate it."""
-        global properties  # noqa: PLW0602, global without assignment
+        global properties
         return any(name == p.name for p in properties)
 
     @staticmethod
@@ -86,6 +87,7 @@ class Property:
         props = []
         for p in properties:
             props.append(p)
+
         return props
 
 
@@ -104,7 +106,7 @@ def defProp(symbol: str, name: str, tex: str, units: str):
     units: str
         String representing the units of the property.
     """
-    global properties  # noqa: PLW0602, global without assignment
+    global properties
     if Property.contains(name):
         raise KeyError(f"Property already defined: {name}")
 
@@ -180,4 +182,4 @@ def initialize():
     )
 
 
-initialize()  # TODO: I don't love it.
+initialize()

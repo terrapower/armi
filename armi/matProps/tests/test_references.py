@@ -29,21 +29,21 @@ class TestReference(unittest.TestCase):
 
         self.assertEqual(str(ref), "REF123 (TYPE321)")
 
-    def test_get_ref(self):
+    def test_getRef(self):
         ref = Reference()
         ref._ref = "REF234"
 
-        self.assertEqual(ref.get_ref(), "REF234")
+        self.assertEqual(ref.getRef(), "REF234")
 
-    def test_get_type(self):
+    def test_getType(self):
         ref = Reference()
         ref._type = "TYPE789"
 
-        self.assertEqual(ref.get_type(), "TYPE789")
+        self.assertEqual(ref.getType(), "TYPE789")
 
     def test_factory(self):
         node = {"ref": "REF234", "type": "TYPE789"}
         ref = Reference._factory(node)
         self.assertEqual(str(ref), "REF234 (TYPE789)")
-        self.assertEqual(ref.get_ref(), "REF234")
-        self.assertEqual(ref.get_type(), "TYPE789")
+        self.assertEqual(ref.getRef(), "REF234")
+        self.assertEqual(ref.getType(), "TYPE789")

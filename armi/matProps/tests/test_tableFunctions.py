@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests related to table functions (both 1D and 2D tables)."""
+"""Tests 1D and 2D table Functions."""
 
 import numpy as np
 
-from armi.matProps.tests import FunctionTestClassBase
+from armi.matProps.tests import MatPropsFunTestBase
 
 
-class TestTableFunctions(FunctionTestClassBase):
-    """Tests related to table functions (both 1D and 2D tables)."""
+class TestTableFunctions(MatPropsFunTestBase):
+    """Tests 1D and 2D table Functions."""
 
     @classmethod
     def setUpClass(cls):
-        """Initialization method for function data."""
         super().setUpClass()
 
         cls.baseOneDimTableData = {"type": "table", "T": 0}
@@ -43,18 +42,9 @@ class TestTableFunctions(FunctionTestClassBase):
         ]
 
     def test_interpolation1Dtable(self):
-        """
-        Test interpolation for two point one dimensional table.
-
-        Input file: This test creates the file T_INTERPOLATION_1DTABLE.yaml.
-
-        This test ensures that the override methods TableFunction1D._parse_specific() and
-        TableFunction1D._calc_specific() are functioning appropriately. A minimal YAML file with a defined one
-        dimensional table function is provided in this test. The function is evaluated at several values in the valid
-        range and checked against some interpolated values to ensure that the linear interpolation performed for this
-        table is valid. Each value is checked when provided as both a standard Python float as well as a Numpy float.
-        """
-        mat = self._create_function(self.baseOneDimTableData, self.baseOneDimTable)
+        """Test interpolation for a two-point one-dimensional table."""
+        mat = self._createFunction(self.baseOneDimTableData, self.baseOneDimTable)
+        mat.name = self.testName
         self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
         func = mat.rho
         self.assertIn("TableFunction1D", str(func))
@@ -64,7 +54,7 @@ class TestTableFunctions(FunctionTestClassBase):
             self.assertAlmostEqual(func.calc({"T": val}), 5.0 + val)
 
     def test_points(self):
-        mat = self._create_function(self.baseOneDimTableData, self.baseOneDimTable)
+        mat = self._createFunction(self.baseOneDimTableData, self.baseOneDimTable)
         func = mat.rho
         points = func.points()
         self.assertAlmostEqual(points[0].variable1, 0.0)
@@ -73,31 +63,12 @@ class TestTableFunctions(FunctionTestClassBase):
         self.assertAlmostEqual(points[1].value, 105.0)
 
     def test_interpolation1DtableMissnode(self):
-        """
-        Test to make sure a KeyError is thrown if 'tabulated data' node is absent.
-
-        Input file: This test creates the file T_INTERPOLATION_1DTABLE_MISSNODE.yaml.
-
-        This test checks a logic branch inside the TableFunction1D._parse_specific() method which is responsible for
-        parsing the data members specific to the mat_props.TableFunction1D class. A sample YAML file for a one
-        dimensional table function that is missing a “tabulated data” node is provided. Attempting to parse this file
-        should cause a KeyError to be thrown for one dimensional table functions.
-        """
+        """Test to make sure a KeyError is thrown if 'tabulated data' node is absent."""
         with self.assertRaisesRegex(KeyError, "tabulated data"):
-            self._create_function_without_table(self.baseOneDimTableData)
+            self._createFunctionWithoutTable(self.baseOneDimTableData)
 
-    # TODO: T_INTERPOLATION_1DTABLE2 and T_INTERPOLATION_1DTABLE
     def test_interpolation1Dtable2(self):
-        """
-        Test interpolation for many point one dimensional table.
-
-        Input file: This test creates the file T_INTERPOLATION_1DTABLE2.yaml.
-
-        A minimal YAML file with a defined one dimensional table function is provided in this test. The function is
-        evaluated at several values in the valid range and checked against some interpolated values to ensure that the
-        linear interpolation performed for this table is valid. This test verifies table interpolation on a different
-        combination of table values and data types compared to ``T_INTERPOLATION_1DTABLE``.
-        """
+        """Test interpolation for a many-point one-dimensional table."""
         data = {"type": "table", "T": {"min": 900, "max": 250}}
         tableData = [
             [250, 25.68],
@@ -111,27 +82,18 @@ class TestTableFunctions(FunctionTestClassBase):
             [900, 26.32],
         ]
 
-        mat = self._create_function(data, tableData)
+        mat = self._createFunction(data, tableData)
+        mat.name = self.testName
         self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
-        func = mat.rho
-        self.assertAlmostEqual(func.calc({"T": 250}), 25.68)
-        self.assertAlmostEqual(func.calc({"T": 275}), 25.825)
-        self.assertAlmostEqual(func.calc({"T": 500}), 26.26)
-        self.assertAlmostEqual(func.calc({"T": 512.5}), 26.21375)
-        self.assertAlmostEqual(func.calc({"T": 729.7}), 24.9014572864322)
-        self.assertAlmostEqual(func.calc({"T": 759.7}), 24.61)
+        self.assertAlmostEqual(mat.rho.calc(T=250), 25.68)
+        self.assertAlmostEqual(mat.rho.calc(T=275), 25.825)
+        self.assertAlmostEqual(mat.rho.calc(T=500), 26.26)
+        self.assertAlmostEqual(mat.rho.calc(T=512.5), 26.21375)
+        self.assertAlmostEqual(mat.rho.calc(T=729.7), 24.9014572864322)
+        self.assertAlmostEqual(mat.rho.calc(T=759.7), 24.61)
 
     def test_interpolation1DtableInt(self):
-        """
-        Test interpolation for one dimensional tables with all integer values.
-
-        Input file: This test creates the file T_INTERPOLATION_1DTABLE_INT.yaml.
-
-        This test makes sure that parsing integer inputs for tabular data does not cast output values as an integer. A
-        sample YAML file with a one dimensional table function that has all integer values in its table entries is
-        provided. The parsed table function is evaluated for both integer and floating-point inputs and compared to
-        expected results.
-        """
+        """Test interpolation for one-dimensional tables with all integer values."""
         tableData = [
             [250, 5],
             [300, 6],
@@ -143,23 +105,16 @@ class TestTableFunctions(FunctionTestClassBase):
             [900, 12],
         ]
 
-        mat = self._create_function(self.baseOneDimTableData, tableData, minT=250, maxT=900)
+        mat = self._createFunction(self.baseOneDimTableData, tableData, minT=250, maxT=900)
+        mat.name = self.testName
         self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
-        func = mat.rho
-        self.assertAlmostEqual(func.calc({"T": 275}), 5.5)
-        self.assertAlmostEqual(func.calc({"T": 312.5}), 6.125)
+        self.assertAlmostEqual(mat.rho.calc(T=275), 5.5)
+        self.assertAlmostEqual(mat.rho.calc(T=312.5), 6.125)
 
     def test_interpolationTable2D(self):
-        """
-        Test that evaluates TableFunction2D for different combinations of integer and floating values.
-
-        Input file: This test creates the file T_INTERPOLATION_TABLE2D.yaml.
-
-        A minimal YAML file with a defined two dimensional table function is provided in this test. The function is
-        evaluated at several values in the valid variable ranges and checked against interpolated values to ensure that
-        the calculations were performed correctly.
-        """
-        mat = self._create_function(self.baseTwoDimTableData, self.baseTwoDimTable)
+        """Test that evaluates TableFunction2D for different combinations of integer and floating values."""
+        mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
+        mat.name = self.testName
         self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
         func = mat.rho
         self.assertIn("TableFunction2D", str(func))
@@ -181,31 +136,13 @@ class TestTableFunctions(FunctionTestClassBase):
         self.assertAlmostEqual(func.calc({"T": 355.6559, "t": 177.828}), 476.155906)
 
     def test_interpolationTable2DMissNode(self):
-        """
-        Test to make sure TableFunction2D throws a KeyError if 'tabulated data' node is absent.
-
-        Input file: This test creates the file T_INTERPOLATION_TABLE2D_MISSNODE.yaml.
-
-        This test verifies that the TableFunction2D._parse_specific() method which is responsible for parsing the data
-        members specific to the mat_props.TableFunction2D class can appropriately handle the case where a “tabulated
-        data” node is not present. This test provides a sample YAML file for a two dimensional table function that is
-        missing a “tabulated data” node. Not having this node should cause a KeyError to be thrown for two dimensional
-        table functions.
-        """
+        """Test to make sure TableFunction2D throws a KeyError if 'tabulated data' node is absent."""
         with self.assertRaisesRegex(KeyError, "tabulated data"):
-            self._create_function_without_table(self.baseTwoDimTableData)
+            self._createFunctionWithoutTable(self.baseTwoDimTableData)
 
     def test_inputCheckTable2Doutbounds(self):
-        """
-        Ensure a ValueError is thrown when evaluating out of the valid bounds.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE2D_OUTBOUNDS.yaml.
-
-        A minimal YAML file with a defined two dimensional table function is provided in this test. Tests that a
-        ValueError is raised when evaluating the table at values above and below the valid bounds for each independent
-        variable.
-        """
-        mat = self._create_function(self.baseTwoDimTableData, self.baseTwoDimTable)
+        """Ensure a ValueError is thrown when evaluating out of the valid bounds."""
+        mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         func = mat.rho
         with self.assertRaises(ValueError):
             func.calc({"T": 1.99, "t": 1.0})
@@ -220,83 +157,37 @@ class TestTableFunctions(FunctionTestClassBase):
             func.calc({"T": 2.0, "t": 316.2378})
 
     def test_inputCheckTableMinVar(self):
-        """
-        Test to make sure an error is raised when attempting to evaluate below the valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE_MINVAR.yaml.
-
-        A minimal YAML file with a defined 1D table function is provided in this test. Tests that an ValueError is
-        raised when a value below the minimum valid range is used with a 1D table function.
-        """
+        """Test to make sure an error is raised when attempting to evaluate below the valid range."""
         self.belowMinimumCheck(self.baseOneDimTableData, self.baseOneDimTable)
 
     def test_inputCheckTableMaxVar(self):
-        """
-        Test to make sure an error is raised when attempting to evaluate above the valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE_MAXVAR.yaml.
-
-        A minimal YAML file with a defined 1D table function is provided in this test. Tests that an ValueError is
-        raised when a value above the maximum valid range is used with a 1D table function.
-        """
+        """Test to make sure an error is raised when attempting to evaluate above the valid range."""
         self.aboveMaximumCheck(self.baseOneDimTableData, self.baseOneDimTable)
 
     def test_inputCheckTable2DMinVar1(self):
-        """
-        Test to make sure an error is raised when attempting to evaluate below the valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE2D_MINVAR1.yaml.
-
-        A minimal YAML file with a defined 2D table function is provided in this test. Tests that an ValueError is
-        raised when a value for the first independent variable is below the minimum valid range is used with a 2D table
-        function.
-        """
-        mat = self._create_function(self.baseTwoDimTableData, self.baseTwoDimTable)
+        """Test to make sure an error is raised when attempting to evaluate below the valid range."""
+        mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         func = mat.rho
         with self.assertRaises(ValueError):
             func.calc({"T": 1, "t": 50})
 
     def test_inputCheckTable2DMaxVar1(self):
-        """
-        Test to make sure an error is raised when attempting to evaluate above the valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE2D_MAXVAR1.yaml.
-
-        A minimal YAML file with a defined 2D table function is provided in this test. Tests that an ValueError is
-        raised when a value for the first independent variable is above the maximum valid range is used with a 2D table
-        function.
-        """
-        mat = self._create_function(self.baseTwoDimTableData, self.baseTwoDimTable)
+        """Test to make sure an error is raised when attempting to evaluate above the valid range."""
+        mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         func = mat.rho
         with self.assertRaises(ValueError):
             func.calc({"T": 650, "t": 50})
 
     def test_inputCheckTable2DMinVar2(self):
-        """
-        Test to make sure an error is raised when attempting to evaluate below the valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE2D_MINVAR2.yaml.
-
-        A minimal YAML file with a defined 2D table function is provided in this test. Tests that an ValueError is
-        raised when a value for the second independent variable is below the minimum valid range is used with a 2D table
-        function.
-        """
-        mat = self._create_function(self.baseTwoDimTableData, self.baseTwoDimTable)
+        """Ensure an ValueError is raised when evaluating below the valid range."""
+        mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         func = mat.rho
         with self.assertRaises(ValueError):
             func.calc({"T": 1, "t": 0})
 
     def test_inputCheckTable2DMaxVar2(self):
-        """
-        Test to make sure an error is raised when attempting to evaluate above the valid range.
-
-        Input file: This test creates the file T_INPUT_CHECK_TABLE2D_MAXVAR2.yaml.
-
-        A minimal YAML file with a defined 2D table function is provided in this test. Tests that an ValueError is
-        raised when a value for the second independent variable is above the maximum valid range is used with a 2D table
-        function.
-        """
-        mat = self._create_function(self.baseTwoDimTableData, self.baseTwoDimTable)
+        """Ensure an ValueError is raised when evaluating above the valid range."""
+        mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         func = mat.rho
         with self.assertRaises(ValueError):
             func.calc({"T": 1, "t": 1000})

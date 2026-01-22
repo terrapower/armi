@@ -28,7 +28,7 @@ class PiecewiseFunction(Function):
     A piecewise function is composed of many other subfunctions, any of which can be any subclass of the Function type,
     including PiecewiseFunction.
 
-    The PiecewiseFunction uses the `Function.in_range` method to determine which sub-function should be used for
+    The PiecewiseFunction uses the `Function.inRange` method to determine which sub-function should be used for
     computing the quantity. An example with the YAML format is::
 
         function:
@@ -79,8 +79,8 @@ class PiecewiseFunction(Function):
     def __repr__(self):
         """Provides string representation of PiecewiseFunction object."""
         msg = "<PiecewiseFunction "
-        for sub_func in self.functions:
-            msg += str(sub_func)
+        for subFunc in self.functions:
+            msg += str(subFunc)
 
         msg += ">"
         return msg
@@ -90,7 +90,7 @@ class PiecewiseFunction(Function):
             del fun
         self.functions.clear()
 
-    def _parse_specific(self, node):
+    def _parseSpecific(self, node):
         """
         Parses nodes that are specific to PiecewiseFunction objects.
 
@@ -102,9 +102,9 @@ class PiecewiseFunction(Function):
 
         def checkOverlap(func1, func2):
             """Checks if the valid range for two functions overlaps on all dimensions."""
-            for var in self.independent_vars:
-                min1, max1 = func1.independent_vars[var]
-                min2, max2 = func2.independent_vars[var]
+            for var in self.independentVars:
+                min1, max1 = func1.independentVars[var]
+                min2, max2 = func2.independentVars[var]
 
                 if math.isclose(max1, min2) or math.isclose(min1, max2):
                     # This handles floating point comparison. Adjoining regions is allowed.
@@ -112,16 +112,18 @@ class PiecewiseFunction(Function):
                 if max1 < min2 or min1 > max2:
                     # overlap on this dimension, so no overlap overall
                     return False
-            return True  # Overlap on all dimensions.
 
-        for sub_function_def in node["function"]["functions"]:
-            func = self._factory(self.material, sub_function_def, self.property)
+            # Overlap on all dimensions
+            return True
+
+        for subFunctionDef in node["function"]["functions"]:
+            func = self._factory(self.material, subFunctionDef, self.property)
             self.functions.append(func)
 
         # Ensure bounds have same variables in parent and child functions.
-        for sub_func in self.functions:
-            for var in self.independent_vars:
-                if var not in sub_func.independent_vars:
+        for subFunc in self.functions:
+            for var in self.independentVars:
+                if var not in subFunc.independentVars:
                     raise KeyError(
                         "Piecewise child function must have same variables for valid range as main function."
                     )
@@ -132,7 +134,7 @@ class PiecewiseFunction(Function):
                 if checkOverlap(func1, func2):
                     raise ValueError(f"Piecewise child functions overlap: {func1}, {func2}")
 
-    def _calc_specific(self, point: dict) -> float:
+    def _calcSpecific(self, point: dict) -> float:
         """
         Private method that contains the analytic expression used to return a property value.
 
@@ -146,8 +148,8 @@ class PiecewiseFunction(Function):
         float
             property evaluation at specified independent variable point
         """
-        for sub_func in self.functions:
-            if sub_func.in_range(point):
-                return sub_func.calc(point)
+        for subFunc in self.functions:
+            if subFunc.inRange(point):
+                return subFunc.calc(point)
 
         raise ValueError("PiecewiseFunction error, could not evaluate")

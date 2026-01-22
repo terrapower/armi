@@ -17,30 +17,18 @@
 
 import copy
 import math
-import os
 import pickle
-import shutil
 import unittest
 
 import numpy as np
-from ruamel.yaml import YAML
 
-from armi import matProps
+from armi.matProps.material import Material
 
 
 class TestSymbolicFunction(unittest.TestCase):
     """Unit tests for the symbolic function class."""
 
-    @classmethod
-    def setUpClass(cls):
-        cls.dirname = os.path.join(os.path.dirname(os.path.realpath(__file__)), "outputFiles", "SymbolicTests")
-        if os.path.exists(cls.dirname):
-            shutil.rmtree(cls.dirname)
-
-        os.makedirs(cls.dirname)
-
     def setUp(self):
-        """Set up test environment."""
         self.yaml = {
             "file format": "TESTS",
             "material type": "Metal",
@@ -58,11 +46,10 @@ class TestSymbolicFunction(unittest.TestCase):
 
     def loadMaterial(self, num=1):
         """Loads the material file based on `self.yaml` and returns the material object."""
-        outFileName = os.path.join(self.dirname, f"{self.id()}{num}.yaml")
-        with open(outFileName, "w", encoding="utf-8") as f:
-            yaml = YAML()
-            yaml.dump(self.yaml, f)
-        return matProps.load_material(outFileName, save_material=False)
+        mat = Material()
+        mat.loadNode(self.yaml)
+
+        return mat
 
     def functionTest(self, func, num=1):
         """
@@ -71,9 +58,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         mat = self.loadMaterial(num=num)
         prop = mat.rho
-        for x in np.linspace(prop.get_min_bound("X"), prop.get_max_bound("X"), 20):
-            for y in np.linspace(prop.get_min_bound("Y"), prop.get_max_bound("Y"), 20):
-                for z in np.linspace(prop.get_min_bound("Z"), prop.get_max_bound("Z"), 20):
+        for x in np.linspace(prop.getMinBound("X"), prop.getMaxBound("X"), 20):
+            for y in np.linspace(prop.getMinBound("Y"), prop.getMaxBound("Y"), 20):
+                for z in np.linspace(prop.getMinBound("Z"), prop.getMaxBound("Z"), 20):
                     received = prop.calc({"X": x, "Y": y, "Z": z})
                     expected = func(x, y, z)
                     self.assertAlmostEqual(
@@ -95,12 +82,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test multiplication operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_MULTn.yaml
-
-        This test creates a series of material input files to test that the multiplication operation works as expected.
-        The four combinations of spacing and the operator are tested for multiplying a variable and a constant as well
-        as multiplying two variables. For each input file, the property is evaluated at 20 evenly spaced points per
-        independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested for multiplying a variable and a constant as well as
+        multiplying two variables. For each input, the property is evaluated at 20 evenly spaced points per independent
+        variable within the valid range.
         """
         func = lambda x, y, z: x * 20
         self.setEqnField("X * 20")
@@ -132,12 +116,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test exponent operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_EXPONENTn.yaml
-
-        This test creates a series of material input files to test that the exponent operation works as expected. The
-        four combinations of spacing and the operator are tested for raising a variable by a constant as well as raising
-        a constant by a constant. For each input file, the property is evaluated at 20 evenly spaced points per
-        independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested for raising a variable by a constant as well as raising
+        a constant by a constant. For each input, the property is evaluated at 20 evenly spaced points per independent
+        variable within the valid range.
         """
         func = lambda x, y, z: x**3
         self.setEqnField("X ** 3")
@@ -169,12 +150,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test division operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_DIVn.yaml
-
-        This test creates a series of material input files to test that the division operation works as expected. The
-        four combinations of spacing and the operator are tested for dividing a variable and a constant as well as
-        dividing two variables. For each input file, the property is evaluated at 20 evenly spaced points per
-        independent variable within the valid range of the property.
+        The four combinations of spacing and the operator are tested for dividing a variable and a constant as well as
+        dividing two variables. For each input, the property is evaluated at 20 evenly spaced points per independent
+        variable within the valid range.
         """
         func = lambda x, y, z: x / 3
         self.setEqnField("X / 3")
@@ -206,12 +184,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test addition operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_ADDn.yaml
-
-        This test creates a series of material input files to test that the addition operation (+) works as expected.
-        The four combinations of spacing and the operator are tested for adding a variable and a constant as well as
-        adding two variables. For each input file, the property is evaluated at 20 evenly spaced points per independent
-        variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested for adding a variable and a constant as well as adding
+        two variables. For each input, the property is evaluated at 20 evenly spaced points per independent variable
+        within the valid range.
         """
         func = lambda x, y, z: x + 3
         self.setEqnField("X + 3")
@@ -243,12 +218,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test subtraction operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_SUBn.yaml
-
-        This test creates a series of material input files to test that the subtraction operation (-) works as expected.
-        The four combinations of spacing and the operator are tested for subtracting a variable and a constant as well
-        as subtracting two variables. For each input file, the property is evaluated at 20 evenly spaced points per
-        independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested for subtracting a variable and a constant as well
+        as subtracting two variables. For each input, the property is evaluated at 20 evenly spaced points per
+        independent variable within the valid range.
         """
         func = lambda x, y, z: x - 3
         self.setEqnField("X - 3")
@@ -280,12 +252,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test the grouping operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_PARENSn.yaml
-
-        This test creates a series of material input files to test that the grouping operation, parentheses, works as
-        expected. Various combinations of grouping is tested with spacing on a simple addition operation. For each input
-        file, the property is evaluated at 20 evenly spaced points per independent variable within the valid range of
-        the property.
+        Various combinations of grouping is tested with spacing on a simple addition operation. For each input, the
+        property is evaluated at 20 evenly spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: x + 3
         self.setEqnField("(X + 3)")
@@ -319,11 +287,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test sine operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_SINEn.yaml
-
-        This test creates a series of material input files to test that the sine operation (sin) works as expected. The
-        four combinations of spacing and the operator are tested. For each input file, the property is evaluated at 20
-        evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20
+        evenly spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.sin(x)
         self.setEqnField("sin(X)")
@@ -342,11 +307,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test cosine operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_COSINEn.yaml
-
-        This test creates a series of material input files to test that the cosine operation (cos) works as expected.
-        The four combinations of spacing and the operator are tested. For each input file, the property is evaluated at
-        20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.cos(x)
         self.setEqnField("cos(X)")
@@ -365,11 +327,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test tangent operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_TANn.yaml
-
-        This test creates a series of material input files to test that the tangent operation (tan) works as expected.
-        The four combinations of spacing and the operator are tested. For each input file, the property is evaluated at
-        20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.tan(x)
         self.setEqnField("tan(X)")
@@ -388,11 +347,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test hyperbolic sine operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_SINHn.yaml
-
-        This test creates a series of material input files to test that the hyperbolic sine operation (sinh) works as
-        expected. The four combinations of spacing and the operator are tested. For each input file, the property is
-        evaluated at 20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.sinh(x)
         self.setEqnField("sinh(X)")
@@ -411,11 +367,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test hyperbolic cosine operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_COSHn.yaml
-
-        This test creates a series of material input files to test that the hyperbolic cosine operation (cosh) works as
-        expected. The four combinations of spacing and the operator are tested. For each input file, the property is
-        evaluated at 20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.cosh(x)
         self.setEqnField("cosh(X)")
@@ -434,11 +387,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test hyperbolic tangent operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_TANHn.yaml
-
-        This test creates a series of material input files to test that the hyperbolic tangent operation (tanh) works as
-        expected. The four combinations of spacing and the operator are tested. For each input file, the property is
-        evaluated at 20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.tanh(x)
         self.setEqnField("tanh(X)")
@@ -457,12 +407,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test natural logarithm operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_NATLOGn.yaml
-
-        This test creates a series of material input files to test that the natural logarithm operation works as
-        expected. Both log and ln variations of the function name are tested. The four combinations of spacing and the
-        operator are tested for each function name. For each input file, the property is evaluated at 20 evenly spaced
-        points per independent variable within the valid range of the property.
+        Both log and ln variations of the function name are tested. Four combinations of spacing and the operator are
+        tested for each function name. For each input, the property is evaluated at 20 evenly spaced points per
+        independent variable within the valid range.
         """
         func = lambda x, y, z: math.log(y)
         self.setEqnField("ln(Y)")
@@ -493,11 +440,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test base ten logarithm operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_LOG10n.yaml
-
-        This test creates a series of material input files to test that the base ten logarithm operation (log10) works
-        as expected. The four combinations of spacing and the operator are tested. For each input file, the property is
-        evaluated at 20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.log10(y)
         self.setEqnField("log10(Y)")
@@ -516,11 +460,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test exponential operator for symbolic equations.
 
-        Input file: T_SYMBOLIC_EXPn.yaml
-
-        This test creates a series of material input files to test that the exponential operation (exp) works as
-        expected. The four combinations of spacing and the operator are tested. For each input file, the property is
-        evaluated at 20 evenly spaced points per independent variable within the valid range of the property.
+        Four combinations of spacing and the operator are tested. For each input, the property is evaluated at 20 evenly
+        spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: math.exp(y)
         self.setEqnField("exp(Y)")
@@ -539,11 +480,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test composition of functions for symbolic equations.
 
-        Input file: T_SYMBOLIC_COMPOSITIONn.yaml
-
-        This test creates a series of material input files to test that composition of functions works as expected. The
-        four different functions are tested that are composites of other functions. For each input file, the property is
-        evaluated at 20 evenly spaced points per independent variable within the valid range of the property.
+        Four different functions are tested that are composites of other functions. For each input, the property is
+        evaluated at 20 evenly spaced points per independent variable within the valid range.
         """
         # Multiple functions on one side of multiplication/divide
         func = lambda x, y, z: x / (math.exp(y) + z)
@@ -569,12 +507,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test order of operations for symbolic equations.
 
-        Input file: T_SYMBOLIC_ORDOPn.yaml
-
-        This test creates a series of material input files to test that order of operations is respected when grouping
-        operators are not used. Five different equations are evaluated that test different components of order
-        precedence. For each input file, the property is evaluated at 20 evenly spaced points per independent variable
-        within the valid range of the property.
+        Five different equations are evaluated that test different components of order precedence. For each input, the
+        property is evaluated at 20 evenly spaced points per independent variable within the valid range.
         """
         # multiplication and division before addition and subtraction
         func = lambda x, y, z: (x * y) + z
@@ -604,12 +538,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test excess whitespace is ignored for symbolic equations.
 
-        Input file: T_SYMBOLIC_WHIESPACEn.yaml
-
-        This test creates a series of material input files to test that excess whitespace is ignored. Two different
-        equations are evaluated with varying amounts of whitespace introduced to ensure they produce the same results.
-        For each input file, the property is evaluated at 20 evenly spaced points per independent variable within the
-        valid range of the property.
+        Two different equations are evaluated with varying amounts of whitespace introduced to ensure they produce the
+        same results. For each input, the property is evaluated at 20 evenly spaced points per independent variable
+        within the valid range of the property.
         """
         func = lambda x, y, z: x + y + z
         self.setEqnField("           X + Y + Z")
@@ -641,13 +572,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test handling of integers and floats for symbolic equations.
 
-        Input file: T_SYMBOLIC_INTFLOATn.yaml
-
-        This test creates a series of material input files to test that integers and floats are handled properly.
         Multiple equations are tested that verify that when integers are used in equations they do not result in integer
-        multiplication and division in Python and are instead treated as floating point numbers. For each input file,
-        the property is evaluated at 20 evenly spaced points per independent variable within the valid range of the
-        property.
+        multiplication and division in Python and are instead treated as floating point numbers. For each input, the
+        property is evaluated at 20 evenly spaced points per independent variable within the valid range.
         """
         func = lambda x, y, z: x / 2.0 + 3.0
         self.setEqnField("X / 2 + 3")
@@ -667,13 +594,10 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test unbalanced parentheses results in errors for symbolic equations.
 
-        Input file: T_SYMBOLIC_BADPARENSn.yaml
-
-        This test creates a series of material input files to test that unbalanced parentheses results in an error.
         Multiple equations are tested that verify that various combinations of unbalanced parentheses are detected and
-        result in an error when parsing the input file. Additionally, an expression with extraneous but balanced
-        parentheses is tested for correctness. For that input file, the property is evaluated at 20 evenly spaced points
-        per independent variable within the valid range of the property.
+        result in an error when parsing the input. Additionally, an expression with extraneous but balanced parentheses
+        is tested for correctness. For that input, the property is evaluated at 20 evenly spaced points per independent
+        variable within the valid range.
         """
         with self.assertRaises(ValueError):
             self.setEqnField("(X + Y")
@@ -708,11 +632,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test that undefined functions results in errors for symbolic equations.
 
-        Input File: T_SYMBOLIC_UNDEFINED1.yaml
-
-        This test creates an input file for a logarithmic function. The function is evaluated at two points in the valid
-        range to show that the material file parsed correctly. The function is then evaluated at a value that results in
-        a negative expression inside the logarithm which is undefined.
+        A logarthmic function is evaluated at two points in the valid range to show that the material input is parsed
+        correctly. The function is then evaluated at a value that results in a negative expression inside the logarithm
+        which is undefined.
         """
         self.setEqnField("ln(X)")
         mat = self.loadMaterial(num=1)
@@ -728,11 +650,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test bad capitalization results in errors for symbolic equations.
 
-        Input file: T_SYMBOLIC_CAPSn.yaml, where
-
-        This test creates a series of material input files to test that unexpected capitalization of functions and
-        variables in an error. Multiple equations are tested that verify that various combinations of capitalization are
-        detected and result in an error when parsing the input file.
+        Multiple equations are tested that verify that various combinations of capitalization are detected and result in
+        an error when parsing the inputs.
         """
         with self.assertRaises(ValueError):
             self.setEqnField("x + Y")
@@ -754,11 +673,8 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test implicit multiplication results in errors for symbolic equations.
 
-        Input file: T_SYMBOLIC_IMPMULTn.yaml
-
-        This test creates a series of material input files to test implicit multiplication of functions and variables
-        results in an error. Multiple equations are tested that verify that various combinations of implicit
-        multiplication are detected and result in an error when parsing the input file.
+        Multiple equations are tested that verify that various combinations of implicit multiplication are detected and
+        result in an error when parsing the inputs.
         """
         with self.assertRaises(ValueError):
             self.setEqnField("2 X")
@@ -792,12 +708,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test repeat variables for symbolic equations.
 
-        Input file: T_SYMBOLIC_VARVARn.yaml, where
-
-        This test creates a series of material input files to test that a variable can be used multiple times in an
-        expression. Multiple equations are tested that verify that various combinations of repeat variable usage
-        evaluate correctly. For each input file, the property is evaluated at 20 evenly spaced points per independent
-        variable within the valid range of the property.
+        Multiple equations are tested that verify that various combinations of repeat variable usage evaluate correctly.
+        For each input, the property is evaluated at 20 evenly spaced points per independent variable within the valid
+        range.
         """
         func = lambda x, y, z: x * x + y / x + z * x
         self.setEqnField("X * X + Y / X + Z * X")
@@ -811,12 +724,9 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test scientific notation for symbolic equations.
 
-        Input file: T_SYMBOLIC_SCIENTIFICn.yaml
-
-        This test creates a series of material input files to test that scientific notation is parsed correctly.
         Multiple equations are tested that verify that various combinations of both upper and lower case scientific
-        notation evaluate correctly. For each input file, the property is evaluated at 20 evenly spaced points per
-        independent variable within the valid range of the property.
+        notation evaluate correctly. For each input, the property is evaluated at 20 evenly spaced points per
+        independent variable within the valid range.
         """
         # Test upper case E
         func = lambda x, y, z: 3e5 / x
@@ -837,14 +747,7 @@ class TestSymbolicFunction(unittest.TestCase):
         self.functionTest(func, 4)
 
     def test_symbolicExamples(self):
-        """
-        Test a handful of representative equations from materials_database for symbolic equations.
-
-        Input file: T_SYMBOLIC_EXAMPLESn.yaml
-
-        This test creates a series of material input files to test representative equation functional forms of popular
-        or interesting materials propertires are evaluated correctly.
-        """  # noqa: E501, line too long
+        """Test a handful of representative equations from materials_database for symbolic equations."""
         # Hypothetical HT9 Yield Strength
         func = lambda x, y, z: 10**6 * (
             (-640 / (1 + math.exp(-0.018 * (x - 520))) + 580) + (-120 / (1 + math.exp(-0.0432 * (x - 120))) + 95)
@@ -852,27 +755,20 @@ class TestSymbolicFunction(unittest.TestCase):
         self.setEqnField("10**6*((-640/(1+exp(-0.018*(X-520)))+ 580)+ (-120/(1+exp(-0.0432*(X-120)))+ 95))")
         self.functionTest(func, 1)
 
-        # Sodium Density, from open literature (not export controlled)
+        # Sodium Density, from open literature
         func = (
             lambda x, y, z: 219.0 + 275.32 * (1 - (x + 273.15) / 2503.7) + 511.58 * (1 - (x + 273.15) / 2503.7) ** 0.5
         )
         self.setEqnField("219.0 + 275.32 * (1 - (X + 273.15) / 2503.7) + 511.58 * (1 - (X + 273.15) / 2503.7) ** 0.5")
         self.functionTest(func, 2)
 
-        # B4C Modulus, multi-variable (constants changed so it is not export controlled)
-        func = lambda x, y, z: (5.2e11 - 7.0e6 * x - 4.1e3 * x**2) * (y / (4.5 - 3.1 * y))
-        self.setEqnField("(5.2E11 - 7.0E6 * X - 4.1E3 * X**2) * (Y / (4.5 - 3.1 * Y))")
+        # B4C Modulus, multi-variable
+        func = lambda x, y, z: (5.2e11 - 7.1e6 * x - 4.1e3 * x**2) * (y / (4.512 - 3.1 * y))
+        self.setEqnField("(5.2E11 - 7.1E6 * X - 4.1E3 * X**2) * (Y / (4.512 - 3.1 * Y))")
         self.functionTest(func, 3)
 
     def test_symbolicBadparse(self):
-        """
-        Test incorrect expressions results in errors for symbolic equations.
-
-        Input file: T_SYMBOLIC_BADPARSEn.yaml
-
-        This test creates a series of material input files to test bad symbolic expressions results in an error when
-        parsing the input file.
-        """
+        """Test incorrect expressions results in errors for symbolic equations."""
         # Not a math equation
         self.setEqnField("Not an equation")
         with self.assertRaises(ValueError):
@@ -900,7 +796,7 @@ class TestSymbolicFunction(unittest.TestCase):
         stream = pickle.dumps(mat)
         mat2 = pickle.loads(stream)
 
-        self.assertEqual(mat.rho.get_min_bound("X"), mat2.rho.get_min_bound("X"))
+        self.assertEqual(mat.rho.getMinBound("X"), mat2.rho.getMinBound("X"))
         self.assertEqual(
             mat.rho.calc({"X": 0.0, "Y": 10, "Z": -10}),
             mat2.rho.calc({"X": 0.0, "Y": 10, "Z": -10}),
@@ -917,8 +813,8 @@ class TestSymbolicFunction(unittest.TestCase):
 
         func = lambda x: x * 2
 
-        self.assertAlmostEqual(mat.rho.calc({"X": np.float64(10), "Y": 5.0, "Z": -10.0}), func(10))
-        self.assertAlmostEqual(mat.rho.calc({"X": np.int64(10), "Y": 5.0, "Z": -10.0}), func(10))
+        self.assertAlmostEqual(mat.rho.calc(X=np.float64(10), Y=5.0, Z=-10.0), func(10))
+        self.assertAlmostEqual(mat.rho.calc(X=np.int64(10), Y=5.0, Z=-10.0), func(10))
 
     def test_largeExponentials(self):
         """Test that exponentials don't overflow."""
@@ -930,22 +826,15 @@ class TestSymbolicFunction(unittest.TestCase):
 
         func = lambda x, y: math.exp(-1400 + 2.6 * (x * 0.1 + 30 * y))
 
-        self.assertAlmostEqual(mat.rho.calc({"X": 300, "Y": 5.0, "Z": -10.0}), func(300, 5))
+        self.assertAlmostEqual(mat.rho.calc(X=300, Y=5.0, Z=-10.0), func(300, 5))
 
     def test_symbolicOutofbounds(self):
-        """
-        Test evaluation outside of bounds results in errors for symbolic equations.
-
-        Input file: T_SYMBOLIC_T_SYMBOLIC_OUTOFBOUNDS1.yaml
-
-        This test loads a material file that contains a constant symbolic equation. The function is then evaluated above
-        and below the valid range for each variable to ensure an error is raised.
-        """
+        """Test evaluation outside of bounds results in ValueError for symbolic equations."""
         mat = self.loadMaterial()
         prop = mat.rho
 
-        mins = [prop.get_min_bound(var) for var in ["X", "Y", "Z"]]
-        maxs = [prop.get_max_bound(var) for var in ["X", "Y", "Z"]]
+        mins = [prop.getMinBound(var) for var in ["X", "Y", "Z"]]
+        maxs = [prop.getMaxBound(var) for var in ["X", "Y", "Z"]]
 
         for i in range(3):
             minsEdited = copy.copy(mins)

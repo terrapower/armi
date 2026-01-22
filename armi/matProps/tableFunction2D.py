@@ -17,16 +17,15 @@
 import copy
 import math
 
-from armi.matProps.interpolationFunctions import find_index, log_linear
+from armi.matProps.interpolationFunctions import findIndex, logLinear
 from armi.matProps.point import Point
 from armi.matProps.tableFunction import TableFunction
 
 
 class TableFunction2D(TableFunction):
     """
-    A 2 dimensional table function. The 2D table function is generally used for ASME properties. The input format,
-    below, is permitted to have null values in it, which if used during the calculation/interpolation will throw a
-    ValueError.
+    A 2 dimensional table function. The input format, below, is permitted to have null values in it, which if used
+    during the calculation/interpolation will throw a ValueError.
 
     The YAML format demonstrating the two dimensional tabulated data is::
 
@@ -38,9 +37,9 @@ class TableFunction2D(TableFunction):
           - [null,   [ 375., 400., 425., 450., 475., 500., 525., 550., 575., 600., 625., 650.]]
           - [1.,     [   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.]]
           - [10.,    [   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.]]
-          - [300.,   [   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,  .98,  .93,  .88,  .84]]
-          - [30000., [   1.,   1.,   1.,   1.,  .94,  .88,  .84,  .80,  .75, null, null, null]]
-          - [300000.,[   1.,   1.,   1.,  .89,  .84,  .79,  .74,  .70,  .65, null, null, null]]
+          - [300.,   [   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,  .97,  .91,  .87,  .84]]
+          - [30000., [   1.,   1.,   1.,   1.,  .93,  .88,  .83,  .80,  .75, null, null, null]]
+          - [300000.,[   1.,   1.,   1.,  .89,  .83,  .79,  .74,  .70,  .66, null, null, null]]
     """
 
     def __init__(self, mat, prop):
@@ -56,10 +55,10 @@ class TableFunction2D(TableFunction):
         """
         super().__init__(mat, prop)
 
-        self._row_values = []
+        self._rowValues = []
         """List containing all of the time or cycle values for TableFunction2D object."""
 
-        self._column_values = []
+        self._columnValues = []
         """List containing all of the temperature values for TableFunction2D object."""
 
         self._data = []
@@ -69,7 +68,7 @@ class TableFunction2D(TableFunction):
         """Provides string representation of TableFunction2D object."""
         return "<TableFunction2D>"
 
-    def _set_bounds(self, node: dict, var: str):
+    def _setBounds(self, node: dict, var: str):
         """
         Validate and set the min and max bounds for a variable.
 
@@ -82,21 +81,21 @@ class TableFunction2D(TableFunction):
         """
         if node == 0:
             cache = None
-            if self.independent_vars:
+            if self.independentVars:
                 # Need to re-arrange order.
-                cache = copy.deepcopy(self.independent_vars)
+                cache = copy.deepcopy(self.independentVars)
 
-            self.independent_vars[var] = (
-                float(min(self._column_values)),
-                float(max(self._column_values)),
+            self.independentVars[var] = (
+                float(min(self._columnValues)),
+                float(max(self._columnValues)),
             )
 
             if cache:
-                self.independent_vars[list(cache.keys())[0]] = list(cache.values())[0]
+                self.independentVars[list(cache.keys())[0]] = list(cache.values())[0]
         elif node == 1:
-            self.independent_vars[var] = (float(min(self._row_values)), float(max(self._row_values)))
+            self.independentVars[var] = (float(min(self._rowValues)), float(max(self._rowValues)))
 
-    def _parse_specific(self, prop):
+    def _parseSpecific(self, prop):
         """
         Parses a 2D table function.
 
@@ -105,28 +104,28 @@ class TableFunction2D(TableFunction):
         prop: dict
             Node containing tabulated data that needs to be parsed.
         """
-        tabulated_data = prop["tabulated data"]
+        tabulatedData = prop["tabulated data"]
 
-        skipped_first = False
-        for row_node in tabulated_data:
-            if not skipped_first:
-                for c_val_node in row_node[1]:
-                    self._column_values.append(float(c_val_node))
+        skippedFirst = False
+        for rowNode in tabulatedData:
+            if not skippedFirst:
+                for cValNode in rowNode[1]:
+                    self._columnValues.append(float(cValNode))
                     self._data.append([])
 
-                skipped_first = True
+                skippedFirst = True
                 continue
 
-            current_row_val = float(row_node[0])
+            currentRowVal = float(rowNode[0])
 
-            self._row_values.append(current_row_val)
-            var1_dependent_data = row_node[1]
-            for c_index in range(len(self._column_values)):
-                value = var1_dependent_data[c_index]
+            self._rowValues.append(currentRowVal)
+            var1DependentData = rowNode[1]
+            for cIndex in range(len(self._columnValues)):
+                value = var1DependentData[cIndex]
                 if value == "null" or value is None:
-                    self._data[c_index].append(None)
+                    self._data[cIndex].append(None)
                 else:
-                    self._data[c_index].append(float(value))
+                    self._data[cIndex].append(float(value))
 
     def points(self):
         """
@@ -134,23 +133,23 @@ class TableFunction2D(TableFunction):
         non-NaN `Point` time values.
         """
         points = []
-        for c_index in range(len(self._column_values)):
-            for r_index in range(len(self._row_values)):
-                value = self._data[c_index][r_index]
+        for cIndex in range(len(self._columnValues)):
+            for rIndex in range(len(self._rowValues)):
+                value = self._data[cIndex][rIndex]
                 if value == "null" or value is None or math.isnan(float(value)):
                     continue
 
                 points.append(
                     Point(
-                        self._column_values[c_index],
-                        self._row_values[r_index],
+                        self._columnValues[cIndex],
+                        self._rowValues[rIndex],
                         value,
                     )
                 )
 
         return points
 
-    def _calc_specific(self, point: dict) -> float:
+    def _calcSpecific(self, point: dict) -> float:
         """
         Performs 2D interpolation on tabular data.
 
@@ -159,25 +158,25 @@ class TableFunction2D(TableFunction):
         point: dict
             dictionary of independent variable/value pairs
         """
-        column_var = list(self.independent_vars.keys())[0]
-        row_var = list(self.independent_vars.keys())[1]
-        if column_var in point and row_var in point:
-            column_val = point[column_var]
-            row_val = point[row_var]
+        columnVar = list(self.independentVars.keys())[0]
+        rowVar = list(self.independentVars.keys())[1]
+        if columnVar in point and rowVar in point:
+            columnVal = point[columnVar]
+            rowVal = point[rowVar]
         else:
-            raise ValueError(f"Specified point does contain the correct independent variables: {self.independent_vars}")
+            raise ValueError(f"Specified point does contain the correct independent variables: {self.independentVars}")
 
-        c_index = find_index(column_val, self._column_values)
-        r_val0 = log_linear(row_val, self._row_values, self._data[c_index])
-        r_val1 = log_linear(row_val, self._row_values, self._data[c_index + 1])
-        c_val0 = self._column_values[c_index]
-        c_val1 = self._column_values[c_index + 1]
-        return (column_val - c_val0) / (c_val1 - c_val0) * (r_val1 - r_val0) + r_val0
+        cIndex = findIndex(columnVal, self._columnValues)
+        rVal0 = logLinear(rowVal, self._rowValues, self._data[cIndex])
+        rVal1 = logLinear(rowVal, self._rowValues, self._data[cIndex + 1])
+        cVal0 = self._columnValues[cIndex]
+        cVal1 = self._columnValues[cIndex + 1]
+        return (columnVal - cVal0) / (cVal1 - cVal0) * (rVal1 - rVal0) + rVal0
 
-    def lookup(self, column_val: float, row_val: float):
+    def lookup(self, columnVal: float, rowVal: float):
         """Given the two independent values, return the dependent value by interpolating the table data."""
-        c_index = find_index(column_val, self._column_values)
-        r_index0 = find_index(row_val, self._data[c_index])
-        r_index1 = find_index(row_val, self._data[c_index + 1])
-        interp_vals = [self._data[c_index][r_index0], self._data[c_index + 1][r_index1]]
-        return log_linear(row_val, interp_vals, self._row_values)
+        cIndex = findIndex(columnVal, self._columnValues)
+        rIndex0 = findIndex(rowVal, self._data[cIndex])
+        rIndex1 = findIndex(rowVal, self._data[cIndex + 1])
+        interpVals = [self._data[cIndex][rIndex0], self._data[cIndex + 1][rIndex1]]
+        return logLinear(rowVal, interpVals, self._rowValues)

@@ -18,7 +18,7 @@
 class Constituent:
     """Makeup of the Material.composition."""
 
-    def __init__(self, name: str, min_value: float, max_value: float, is_balance: bool):
+    def __init__(self, name: str, minValue: float, maxValue: float, isBalance: bool):
         """
         Constructor for Constituent object.
 
@@ -26,42 +26,42 @@ class Constituent:
         ----------
         name: str
             Name of constituent element
-        min_value: float
+        minValue: float
             Minimum value of constituent
-        max_value: float
+        maxValue: float
             Maximum value of constituent
-        is_balance: bool
+        isBalance: bool
             Boolean used to denote if constituent is balance element (True) or not (False).
         """
         self.name = name
         """Name of the constituent"""
-        self.min_value = min_value
+        self.minValue = minValue
         """Min value of the constituent"""
-        self.max_value = max_value
+        self.maxValue = maxValue
         """Max value of the constituent"""
-        self.is_balance = is_balance
+        self.isBalance = isBalance
         """Flag for indicating if the consitituent is intended to the balance of the composition"""
 
-        if self.min_value < 0.0:
+        if self.minValue < 0.0:
             msg = f"Constituent {self.name} has a negative minimum composition value."
             raise ValueError(msg)
-        elif self.max_value < self.min_value:
+        elif self.maxValue < self.minValue:
             msg = f"Constituent {self.name} has an invalid maximum composition value. (max < min)"
             raise ValueError(msg)
-        elif self.max_value > 100.0:
+        elif self.maxValue > 100.0:
             msg = f"Constituent {self.name} has an invalid maximum composition value. (max > 100.0)"
             raise ValueError(msg)
 
     def __repr__(self):
         """Provides string representation of Constituent object."""
-        msg = f"<Constituent {self.name} min: {self.min_value} max: {self.max_value}"
-        if self.is_balance:
+        msg = f"<Constituent {self.name} min: {self.minValue} max: {self.maxValue}"
+        if self.isBalance:
             msg += " computed based on balance"
         msg += ">"
         return msg
 
     @staticmethod
-    def _parse_composition(node):
+    def parseComposition(node):
         """
         Method which parses "composition" node from yaml file and returns container of Contituent objects.
 
@@ -79,11 +79,11 @@ class Constituent:
         """
         composition = []
         elementSet = set()
-        balance_name = ""
-        balance_min = 100.0
-        balance_max = 100.0
-        sum_min = 0.0
-        sum_max = 0.0
+        balanceName = ""
+        balanceMin = 100.0
+        balanceMax = 100.0
+        sumMin = 0.0
+        sumMax = 0.0
         numBalance = 0
         for nodeName, nodeContent in node.items():
             element = nodeName
@@ -97,7 +97,7 @@ class Constituent:
                 elementSet.add(element)
 
             if type(nodeContent) is str and nodeContent == "balance":
-                balance_name = element
+                balanceName = element
                 numBalance += 1
             elif type(nodeContent) is str or len(nodeContent) != 2:
                 msg = (
@@ -105,11 +105,11 @@ class Constituent:
                 )
                 raise TypeError(msg)
             else:
-                constituent_min = nodeContent[0]
-                constituent_max = nodeContent[1]
-                sum_min += constituent_min
-                sum_max += constituent_max
-                part = Constituent(element, constituent_min, constituent_max, False)
+                constituentMin = nodeContent[0]
+                constituentMax = nodeContent[1]
+                sumMin += constituentMin
+                sumMax += constituentMax
+                part = Constituent(element, constituentMin, constituentMax, False)
                 composition.append(part)
 
         if numBalance != 1:
@@ -119,17 +119,17 @@ class Constituent:
             )
             raise ValueError(msg)
 
-        if balance_name:
-            if sum_min > 100.0:
+        if balanceName:
+            if sumMin > 100.0:
                 raise ValueError("Composition has a minimum composition summation greater than 100.0")
 
-            if sum_max >= 100.0:
-                balance_min = 0.0
+            if sumMax >= 100.0:
+                balanceMin = 0.0
             else:
-                balance_min -= sum_max
+                balanceMin -= sumMax
 
-            balance_max -= sum_min
-            balance = Constituent(balance_name, balance_min, balance_max, True)
+            balanceMax -= sumMin
+            balance = Constituent(balanceName, balanceMin, balanceMax, True)
             composition.append(balance)
 
         return composition

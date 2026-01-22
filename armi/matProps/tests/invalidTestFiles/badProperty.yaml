@@ -1,0 +1,6 @@
+file format: TESTS
+material type: Metal
+composition:
+  Na: 1.0
+
+bad_prop: whatever

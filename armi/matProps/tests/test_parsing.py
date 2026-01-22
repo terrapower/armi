@@ -14,21 +14,12 @@
 
 """Test YAML parsers for all files in the matProps data directory to ensure that there are no parsing errors."""
 
-import hashlib
 import os
 import tempfile
 import unittest
 from os import path
 
 from armi import matProps
-
-
-def getFileHash(path):
-    """Compute sha1 checksum for file."""
-    sha1 = hashlib.sha1()
-    with open(path, "rb") as f:
-        sha1.update(f.read())
-    return sha1.hexdigest()
 
 
 class TestParsing(unittest.TestCase):
@@ -41,7 +32,6 @@ class TestParsing(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Sets up the class members. Is performed prior to the tests being run."""
         cls.dummyDataPath = path.join(path.dirname(path.realpath(__file__)), "testMaterialsData")
         cls.dummyMatFiles = {}
         for root, _, files in os.walk(cls.dummyDataPath):
@@ -49,88 +39,80 @@ class TestParsing(unittest.TestCase):
                 if fileName.lower().endswith((".yaml", ".yml")):
                     cls.dummyMatFiles[fileName] = os.path.join(root, fileName)
 
-    def setUp(self):
-        """Method called to clear matProps before each test is run."""
         matProps.clear()
 
     def tearDown(self):
-        """Method called to clear matProps after each test is run."""
         matProps.clear()
 
-    def test_datafiles_matowner(self):
+    def test_datafilesMatOwner(self):
         for matFile, matPath in self.dummyMatFiles.items():
             matNam = path.splitext(matFile)[0]
-            # the default behavior is load_material(matPath, false)
-            m = matProps.load_material(matPath)
+            # the default behavior is loadMaterial(matPath, false)
+            m = matProps.loadMaterial(matPath)
             self.assertIsNotNone(m)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
-                matProps.get_material(matNam)
-            m = matProps.load_material(self.dummyMatFiles[matFile], False)
+                matProps.getMaterial(matNam)
+            m = matProps.loadMaterial(self.dummyMatFiles[matFile], False)
             self.assertIsNotNone(m)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
-                matProps.get_material(matNam)
-            m = matProps.load_material(self.dummyMatFiles[matFile], True)
+                matProps.getMaterial(matNam)
+            m = matProps.loadMaterial(self.dummyMatFiles[matFile], True)
             self.assertIsNotNone(m)
-            m = matProps.get_material(matNam)
+            m = matProps.getMaterial(matNam)
             self.assertIsNotNone(m)
 
-    def test_multi_data_loading_loading_all(self):
-        matProps.load_all(self.dummyDataPath)
-        self.assertEqual(len(self.dummyMatFiles), len(matProps.loaded_materials()))
+    def test_multiDataLoadingLoadingAll(self):
+        matProps.loadAll(self.dummyDataPath)
+        self.assertEqual(len(self.dummyMatFiles), len(matProps.loadedMaterials()))
 
         matProps.clear()
-        self.assertEqual(0, len(matProps.loaded_materials()))
+        self.assertEqual(0, len(matProps.loadedMaterials()))
 
-    def test_load_safe(self):
+    def test_loadSafe(self):
         matProps.clear()
-        self.assertEqual(0, len(matProps.loaded_materials()))
+        self.assertEqual(0, len(matProps.loadedMaterials()))
 
-        # verify that it is safe to call load_safe() multiple times in a row
+        # verify that it is safe to call loadSafe() multiple times in a row
         for _ in range(3):
-            matProps.load_safe(self.dummyDataPath)
-            self.assertEqual(len(self.dummyMatFiles), len(matProps.loaded_materials()))
+            matProps.loadSafe(self.dummyDataPath)
+            self.assertEqual(len(self.dummyMatFiles), len(matProps.loadedMaterials()))
 
         # verify the correct behavior if a bad directory is provided
         badDir = "does_not_exist_2924"
         with self.assertRaisesRegex(FileNotFoundError, f"Directory {badDir} not found"):
-            matProps.load_safe(badDir)
+            matProps.loadSafe(badDir)
 
-    def test_data_loading_prio_same_dir(self):
-        matProps.load_all(self.dummyDataPath)
+    def test_dataLoadingPrioSameDir(self):
+        matProps.loadAll(self.dummyDataPath)
         with self.assertRaises(KeyError):
-            matProps.load_all(self.dummyDataPath)
+            matProps.loadAll(self.dummyDataPath)
 
-    def test_datafiles_badpath(self):
+    def test_datafilesBadPath(self):
         badDir = "nopity-nopers-missing"
         with self.assertRaisesRegex(FileNotFoundError, f"Directory {badDir} not found"):
-            matProps.load_all(badDir)
+            matProps.loadAll(badDir)
 
         with self.assertRaisesRegex(NotADirectoryError, "Input path"):
-            matProps.load_all(path.abspath(__file__))
+            matProps.loadAll(path.abspath(__file__))
 
         with tempfile.TemporaryDirectory() as tmpDirName:
-            matProps.load_all(tmpDirName)
+            matProps.loadAll(tmpDirName)
 
-    def test_multi_data_loading_multidir(self):
+    def test_multiDataLoadingMultidir(self):
         """Tests loading multiple data directories.
 
-        This test loads all files present in the following subdirectories of the matProps repository: tests/testDir1
+        Load all files present in the following subdirectories of the matProps repository: tests/testDir1
         and tests/testDir2.
-
-        This test ensures that matProps can properly handle loading multiple directories. It tests the directory load
-        workflow for an idealized case where all file names are unique. This test loads two directories sequentially
-        into matProps and checks to ensure that both directories and their contents are appropriately accounted for in
-        matProps.
         """
         dir1 = path.join(self.dirname, "testDir1")
         dir2 = path.join(self.dirname, "testDir2")
 
         # Load the two directories
-        matProps.load_all(dir1)
-        matProps.load_all(dir2)
+        matProps.loadAll(dir1)
+        matProps.loadAll(dir2)
 
         # Check that the two directories are in loaded materials
-        loadList = matProps.get_loaded_root_dirs()
+        loadList = matProps.getLoadedRootDirs()
         self.assertTrue(dir1 in loadList)
         self.assertTrue(dir2 in loadList)
         self.assertTrue(len(loadList) == 2)
@@ -143,55 +125,41 @@ class TestParsing(unittest.TestCase):
             fileSet.add(path.splitext(fileName)[0])
 
         materialSet = set()
-        for material in matProps.loaded_materials():
+        for material in matProps.loadedMaterials():
             materialSet.add(material.name)
 
         self.assertTrue(fileSet == materialSet)
 
-    def test_data_loading_prio_diff_dir(self):
+    def test_dataLoadingPrioDiffDir(self):
         """
         Tests that an error is raised for loading a material twice different directories.
 
-        This test attempts to load all files present in the following subdirectories of the matProps repository:
-        tests/testDir1 and tests/testDir3.
-
-        This test loads material files from two separate directories. The two directories have a material file with a
-        common material name (“a”), but with differing density property values inside the material itself. Both
-        materials use a constant function with different values. This test will load the first directory and will
-        attempt to load the second directory, verifying that a ValueError is thrown. After the second directory load is
-        attempted, the property value will be queried to make sure it was not overwritten by the second load attempt.
+        Attempts to load all files present in the following subdirectories of the matProps repository: tests/testDir1
+        and tests/testDir3. Though that includes some duplicates that should raise an error.
         """
         dir1 = path.join(self.dirname, "testDir1")
         dir3 = path.join(self.dirname, "testDir3")
 
-        matProps.load_all(dir1)
+        matProps.loadAll(dir1)
         with self.assertRaisesRegex(KeyError, "already exists"):
-            matProps.load_all(dir3)
+            matProps.loadAll(dir3)
 
-        matA = matProps.get_material("a")
+        matA = matProps.getMaterial("a")
         density = matA.rho
         # Will evaluate to 1.0 if we have the data loaded from testDir1/a.yaml.
         # If we load from testDir3/a.yaml it will have a different value
         self.assertAlmostEqual(density.calc({"T": 150.0}), 1.0)
+        self.assertAlmostEqual(density.calc(T=150.0), 1.0)
 
-    def test_datafiles_getmat(self):
+    def test_datafilesGetMat(self):
         """
-        Test a material retrieved by get_material(name) is the same as another material with the same name.
+        Test a material retrieved by getMaterial(name) is the same as another material with the same name.
 
-        The data files in the tests/testMaterialsData subdirectory of the matProps repository are referenced for this
-        test.
-
-        This test is provided to check the logic branches of matProps.get_material(std.string). The test first loads the
-        Materials library into matProps via call to matProps.load_all(std.string). Next, the materials in
-        matProps.loaded_materials() are looped over and stored in a variable. matProps.get_material(std.string) gets
-        called with each material name in the loop. An assertion is made to make sure the return value and variable are
-        the same object. This demonstrates that matProps.get_material(std.string) is grabbing a material in
-        matProps.loaded_materials(). Finally, a call to matProps.get_material(std.string) with a non-existent material
-        name is made to ensure that matProps will throw a KeyError.
+        Also tests trying to access an unknown material.
         """
-        matProps.load_all(self.dummyDataPath)
-        for mat in matProps.loaded_materials():
-            self.assertEqual(mat, matProps.get_material(mat.name))
+        matProps.loadAll(self.dummyDataPath)
+        for mat in matProps.loadedMaterials():
+            self.assertEqual(mat, matProps.getMaterial(mat.name))
 
         with self.assertRaisesRegex(KeyError, "No material named `Fahrvergnugen` was loaded"):
-            matProps.get_material("Fahrvergnugen")
+            matProps.getMaterial("Fahrvergnugen")

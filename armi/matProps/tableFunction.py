@@ -14,14 +14,14 @@
 
 """A simple implementation for a simple table to replace analytic curves in the YAML data files."""
 
-from matProps.function import Function
+from armi.matProps.function import Function
 
 
 class TableFunction(Function):
     """An abstract TableFunction; the base class for other table lookup methods."""
 
     @staticmethod
-    def is_table():
+    def isTable():
         return True
 
     @staticmethod
@@ -29,7 +29,7 @@ class TableFunction(Function):
         """Returns the underlying Point quantities."""
         raise NotImplementedError()
 
-    def _set_bounds(self, node: dict):
+    def _setBounds(self, node: dict):
         """
         Validate and set the min and max bounds for a variable.
 

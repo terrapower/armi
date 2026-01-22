@@ -14,6 +14,8 @@
 
 """Some definition of material types."""
 
+import warnings
+
 
 class MaterialType:
     """
@@ -47,7 +49,7 @@ class MaterialType:
         """Enum value representing type of material."""
 
     @staticmethod
-    def from_string(name: str):
+    def fromString(name: str) -> "MaterialType":
         """
         Provides MaterialType object from a user provided string.
 
@@ -67,6 +69,12 @@ class MaterialType:
             raise KeyError(msg)
 
         return MaterialType(value)
+
+    @staticmethod
+    def from_string(name: str) -> "MaterialType":
+        """Pass-through to temporarily support an old API."""
+        warnings.warn("Please use matProps.fromString, not matProps.from_string.", DeprecationWarning)
+        return MaterialType.fromString(name)
 
     def __repr__(self):
         """Provides string representation of MaterialType instance."""

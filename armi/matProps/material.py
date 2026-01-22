@@ -17,12 +17,13 @@
 import hashlib
 from pathlib import Path
 
-import matProps.property
-from matProps.constituent import Constituent
-from matProps.function import Function
-from matProps.materialType import MaterialType
-from matProps.property import Property
 from ruamel.yaml import YAML
+
+import armi.matProps.property
+from armi.matProps.constituent import Constituent
+from armi.matProps.function import Function
+from armi.matProps.materialType import MaterialType
+from armi.matProps.property import Property
 
 
 class Material:
@@ -33,14 +34,14 @@ class Material:
     It may be necessary to have multiple Material definitions for a single material containing different phases.
     """
 
-    valid_file_format_versions = [3.0, "TESTS"]
+    validFileFormatVersions = [3.0, "TESTS"]
 
     def __init__(self):
         """Constructor for Material class."""
         self._saved = False
         """Boolean denoting whether or not Material object is saved in materials dict."""
 
-        self.material_type = None
+        self.materialType = None
         """Enum represting type for the Material object"""
 
         self.composition = []
@@ -54,12 +55,16 @@ class Material:
 
     def __repr__(self):
         """Provides string representation for Material class."""
-        return f"<Material {self.name} {str(self.material_type)}>"
+        return f"<Material {self.name} {str(self.materialType)}>"
+
+    def hash(self) -> str:
+        """Returns the SHA1 hash value of a Material instance."""
+        return self._sha1
 
     def saved(self) -> bool:
         """
         Returns a bool value indicating whether the Material has been stored internally in the matProps.materials map
-        via matProps.add_material().
+        via matProps.addMaterial().
         """
         return self._saved
 
@@ -68,7 +73,7 @@ class Material:
         self._saved = True
 
     @staticmethod
-    def data_check_material_file(file_path, root_node):
+    def dataCheckMaterialFile(filePath, rootNode):
         """
         This is a partial data check of the material data file.
 
@@ -76,31 +81,31 @@ class Material:
 
         Parameters
         ----------
-        file_path: str
+        filePath: str
             Path containing name of YAML file whose file format and property nodes are checked.
-        root_node: dict
-            Root YAML node of file parsed from file_path.
+        rootNode: dict
+            Root YAML node of file parsed from filePath.
         """
-        file_format = Material.get_node(root_node, "file format")
-        if file_format not in Material.valid_file_format_versions:
-            msg = f"Invalid file format version `{file_format}` used in: {file_path}"
+        file_format = Material.getNode(rootNode, "file format")
+        if file_format not in Material.validFileFormatVersions:
+            msg = f"Invalid file format version `{file_format}` used in: {filePath}"
             raise ValueError(msg)
 
-        for prop_name in root_node:
-            if prop_name in {"composition", "material type", "file format"}:
+        for propName in rootNode:
+            if propName in {"composition", "material type", "file format"}:
                 continue
 
-            if not Property.contains(prop_name):
-                msg = f"Invalid property node `{prop_name}` found in: {file_path}"
+            if not Property.contains(propName):
+                msg = f"Invalid property node `{propName}` found in: {filePath}"
                 raise KeyError(msg)
 
     @staticmethod
-    def get_valid_file_format_versions():
+    def getValidFileFormatVersions():
         """Get a vector of strings with all of the valid file format versions."""
-        return Material.valid_file_format_versions
+        return Material.validFileFormatVersions
 
     @staticmethod
-    def get_node(node, subnode_name):
+    def getNode(node: dict, subnodeName: str):
         """
         Searches a node for a child element and returns it.
 
@@ -108,64 +113,60 @@ class Material:
         ----------
         node: dict
             Parent level node from which a child element is searched.
-        subnode_name: str
+        subnodeName: str
             Name of the child element that is queried from node.
         """
-        if subnode_name not in node:
-            msg = f"Missing YAML node `{subnode_name}`"
+        if subnodeName not in node:
+            msg = f"Missing YAML node `{subnodeName}`"
             raise KeyError(msg)
 
-        return node[subnode_name]
+        return node[subnodeName]
 
-    def load_file(self, file_path: str):
+    def loadNode(self, node: dict):
+        """
+        Loads YAML and parses information to fill in Material data members including all relevant Function objects.
+
+        Parameters
+        ----------
+        node: dict
+            Material defition, like a YAML taht become a dict.
+        """
+        self.materialType = MaterialType.fromString(self.getNode(node, "material type"))
+        self.composition = Constituent.parseComposition(self.getNode(node, "composition"))
+
+        for p in armi.matProps.property.properties:
+            if p.name and p.name in node:
+                setattr(self, p.symbol, Function._factory(self, node[p.name], p))
+            else:
+                # Any property not in the input file will be set to None.
+                setattr(self, p.symbol, None)
+
+    def loadFile(self, filePath: str):
         """
         Loads yaml file and parses information to fill in Material data members including all relevant Function objects.
 
         Parameters
         ----------
-        file_path: str
+        filePath: str
             Path containing name of YAML file to parse.
         """
-        # load the YAML file
+        # load the file path
         y = YAML(pure=True)
-        node = y.load(Path(file_path))
+        node = y.load(Path(filePath))
 
         # grab the material name from the file name
-        n = Path(file_path).name
+        n = Path(filePath).name
         if n.endswith(".yaml"):
             n = n[:-5]
         elif n.endswith(".yml"):
             n = n[:-4]
         self.name = n
 
-        # Generate SHA1 value and set data member.
+        # Generate SHA1 value and set data member
         sha1 = hashlib.sha1()
-        with open(file_path, "rb") as materialFile:
+        with open(filePath, "rb") as materialFile:
             sha1.update(materialFile.read())
         self._sha1 = sha1.hexdigest()
 
-        self.data_check_material_file(file_path, node)
-        self.material_type = MaterialType.from_string(self.get_node(node, "material type"))
-
-        self.composition = Constituent._parse_composition(  # noqa: SLF001
-            self.get_node(node, "composition")
-        )
-
-        for p in matProps.property.properties:
-            if p.name and p.name in node:
-                setattr(
-                    self,
-                    p.symbol,
-                    Function._factory(self, node[p.name], p),  # noqa: SLF001
-                )
-            else:
-                # Any property not in the input file will be set to None.
-                setattr(self, p.symbol, None)
-
-    def print_sha1(self):
-        """Prints the sha1 value and saved status of a Material instance."""
-        if self.saved():
-            status = "is"
-        else:
-            status = "is not"
-        print(f"SHA1 value for material {self.name} is {self._sha1}. Material {status} saved into matProps.\n")
+        self.dataCheckMaterialFile(filePath, node)
+        self.loadNode(node)

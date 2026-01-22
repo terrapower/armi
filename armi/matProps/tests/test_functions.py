@@ -14,115 +14,67 @@
 
 """Unit tests for the Function class."""
 
-from armi.matProps.tests import FunctionTestClassBase
+from armi.matProps.tests import MatPropsFunTestBase
 
 
-class TestFunctions(FunctionTestClassBase):
-    """Class which encapsulates the unit tests data and methods to test the mat_props Function class."""
+class TestFunctions(MatPropsFunTestBase):
+    """Class which encapsulates the unit tests data and methods to test the matProps Function class."""
 
     @classmethod
     def setUpClass(cls):
-        """Initialization method for TestFunctions. Sets up all class members prior to tests being run."""
         super().setUpClass()
 
         cls.baseConstantData = {"type": "symbolic", "equation": "9123.5"}
 
-    def test_get_references(self):
-        mat = self._create_function(self.baseConstantData)
+    def test_getReferences(self):
+        mat = self._createFunction(self.baseConstantData)
         mat.rho._references = ["1", "2"]
-        self.assertEqual(mat.rho._references[0], "1")
-        self.assertEqual(mat.rho._references[1], "2")
+        self.assertEqual(mat.rho.references[0], "1")
+        self.assertEqual(mat.rho.references[1], "2")
 
-    def test_datafiles_varvals(self):
+    def test_datafilesVarVals(self):
         """
-        Test to make sure that parsing variable values return the expected values.
-
-        Input file: T_DATAFILES_VARVALS.yaml.
-
-        This test was generated to ensure that the variable bound data members in the mat_props::Function class were
-        parsed properly as a part of the load file workflow. This test constructs a minimal working YAML file and
-        ensures that the values parsed from the "max" and "min" nodes for the T variable in the YAML file are set
-        properly within their respective data members.
+        Test to make sure that parsing variable values return the expected values when parsing "max" and "min" nodes for
+        the T variable.
         """
-        mat = self._create_function(self.baseConstantData)
+        mat = self._createFunction(self.baseConstantData)
+        mat.name = self.testName
         self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
         density = mat.rho
-        self.assertEqual(density.get_min_bound("T"), -100.0)
-        self.assertEqual(density.get_max_bound("T"), 500.0)
+        self.assertEqual(density.getMinBound("T"), -100.0)
+        self.assertEqual(density.getMaxBound("T"), 500.0)
 
-    def test_datafiles_maxvar(self):
-        """
-        Test that makes sure a ValueError is thrown if the max of a variable is less than the min.
-
-        Input file: T_DATAFILES_MAXVAR.yaml.
-
-        This test was generated to make sure that the logic branch of the code which stores the maximum for a variable
-        raises a ValueError for an invalid maximum variable value. A sample YAML file is provided which has a max value
-        for the "T" variable that is less than the min node value. A call to parse this sample YAML file is checked to
-        make sure that it throws a ValueError.
-        """
+    def test_datafilesMaxVar(self):
+        """Test that makes sure a ValueError is thrown if the max of a variable is less than the min."""
         with self.assertRaises(ValueError):
-            self._create_function(self.baseConstantData, maxT=-101.0)
+            self._createFunction(self.baseConstantData, maxT=-101.0)
 
-    def test_datafiles_invtype(self):
-        """
-        Test that makes sure a KeyError is thrown if an unsupported function type is provided.
-
-        Input file: T_DATAFILES_INVTYPE.yaml.
-
-        This tests a logic branch in the portion of the code responsible for constructing mat_props.Function objects to
-        make sure mat_props can properly handle an invalid function “type”. This test creates a sample YAML file with an
-        invalid function “type” node value. Parsing this sample file should result in a KeyError being thrown.
-        """
+    def test_datafilesInvType(self):
+        """Test that makes sure a KeyError is thrown if an unsupported function type is provided."""
         data = {"type": "fake function"}
         with self.assertRaisesRegex(KeyError, "Unknown function type"):
-            self._create_function(data)
+            self._createFunction(data)
 
-    def test_ref_temp_eval(self):
-        """
-        Test that a function with a reference temperature correctly parses and returns the expected value.
-
-        Input file: T_REF_TEMP_EVAL.yaml.
-
-        This test constructs a basic constant function with an added “reference temperature” node. The function parsed
-        from the constant function will then have its reference temperature.
-        """
+    def test_refTempEval(self):
+        """Test that a function with a reference temperature correctly parses and returns the expected value."""
         testData = self.baseConstantData.copy()
         testData.update({"reference temperature": 200.0})
-        mat = self._create_function(testData)
+        mat = self._createFunction(testData)
         func = mat.rho
-        self.assertAlmostEqual(func.get_reference_temperature(), 200.0)
+        self.assertAlmostEqual(func.getReferenceTemperature(), 200.0)
 
-    def test_ref_temp_missing(self):
-        """
-        Test that a ValueError is thrown when accessing a reference temperature value that is not provided.
-
-        Input file: T_REF_TEMP_MISSING.yaml.
-
-        This test checks a logic branch of Function.get_reference_temperature() to ensure that it properly handles the
-        case where a reference temperature is not provided. This test creates a basic constant function without a
-        defined reference temperature. The test then tries to query the parsed function for a reference temperature
-        value to ensure a ValueError is raised.
-        """
-        mat = self._create_function(self.baseConstantData)
+    def test_refTempMissing(self):
+        """Test that a ValueError is thrown when accessing a reference temperature value that is not provided."""
+        mat = self._createFunction(self.baseConstantData)
         func = mat.rho
         with self.assertRaisesRegex(ValueError, "Reference temperature is undefined"):
-            func.get_reference_temperature()
+            func.getReferenceTemperature()
 
-    def test_ref_temp_invalid(self):
-        """
-        Test to make sure that a ValueError is thrown if the provided reference temperature value is invalid.
-
-        Input file: T_REF_TEMP_INVALID.yaml.
-
-        This tests a logic branch of Function.get_reference_temperature() to ensure that mat_props can properly handle
-        invalid reference temperatures. This test creates a minimal YAML file with an invalid reference temperature
-        value (temperature below -273.15) and then checks that an ValueError is thrown when attempting to access the
-        reference temperature.
-        """
+    def test_refTempInvalid(self):
+        """Test to make sure that a ValueError is thrown if the provided reference temperature value is invalid."""
         testData = self.baseConstantData.copy()
         testData.update({"reference temperature": -273.25})
-        mat = self._create_function(testData)
+        mat = self._createFunction(testData)
         func = mat.rho
         with self.assertRaisesRegex(ValueError, "Reference temperature is undefined"):
-            func.get_reference_temperature()
+            func.getReferenceTemperature()
