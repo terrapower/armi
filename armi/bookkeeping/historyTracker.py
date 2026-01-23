@@ -268,8 +268,8 @@ class HistoryTrackerInterface(interfaces.Interface):
         for a in detailAssems:
             fName = self._getAssemHistoryFileName(a)
             with open(fName, "w") as out:
-                # ts is a tuple, remove the spaces from the string representation so it is easy to load into a spreadsheet
-                # or whatever
+                # ts is a tuple, remove the spaces from the string representation so it is easy to load into a 
+                # spreadsheet or whatever
                 headers = [str(ts).replace(" ", "") for ts in times.keys()]
                 out.write(
                     tabulate.tabulate(
@@ -288,8 +288,8 @@ class HistoryTrackerInterface(interfaces.Interface):
                     out.write(tabulate.tabulate(data, tableFmt="plain", floatFmt="11.5E"))
                     out.write("\n")
 
-                # loc is a tuple, remove the spaces from the string representation so it is easy to load into a spreadsheet
-                # or whatever
+                # loc is a tuple, remove the spaces from the string representation so it is easy to load into a
+                # spreadsheet or whatever
                 location = [str(loc).replace(" ", "") for loc in locHistories[a].values()]
                 out.write("\n\nkey: location\n")
                 out.write(tabulate.tabulate((location,), tableFmt="plain"))
