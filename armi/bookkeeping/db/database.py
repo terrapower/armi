@@ -1353,7 +1353,7 @@ class Database:
                         hist[cycleNode] = c.p[paramName]
                     except Exception:
                         if paramName == "location":
-                            hist[cycleNode] = c.spatialLocator.indices
+                            hist[cycleNode] = tuple(c.spatialLocator.indices)
 
         return histData
 

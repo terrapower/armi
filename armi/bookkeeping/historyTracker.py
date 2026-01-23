@@ -202,7 +202,8 @@ class HistoryTrackerInterface(interfaces.Interface):
         allBlockHistories = self.getAssemHistories(detailAssems)
         dbi = self.getInterface("database")
         locHistory = dbi.getHistories(detailAssems, ["location"])
-        self.writeAssemHistories(detailAssems, allBlockHistories, locHistory)
+        assemLocations = {a: locHistory[a]["location"] for a in detailAssems}
+        self.writeAssemHistories(detailAssems, allBlockHistories, assemLocations)
 
     def _getAssemHistoryFileName(self, assem):
         return self._getHistoryFileName(assem.getName(), "a")
@@ -260,7 +261,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         blockHistories = dbi.getHistories(allBlocks, params)
         return blockHistories
 
-    def writeAssemHistories(self, detailAssems, allBlockHistories, locHistories):
+    def writeAssemHistories(self, detailAssems, allBlockHistories, assemLocations):
         """Write detailed assembly histories to text files."""
         dbi = self.getInterface("database")
         times = dbi.getHistory(self.r, ["time"])["time"]
@@ -268,7 +269,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         for a in detailAssems:
             fName = self._getAssemHistoryFileName(a)
             with open(fName, "w") as out:
-                # ts is a tuple, remove the spaces from the string representation so it is easy to load into a 
+                # ts is a tuple, remove the spaces from the string representation so it is easy to load into a
                 # spreadsheet or whatever
                 headers = [str(ts).replace(" ", "") for ts in times.keys()]
                 out.write(
@@ -290,7 +291,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
                 # loc is a tuple, remove the spaces from the string representation so it is easy to load into a
                 # spreadsheet or whatever
-                location = [str(loc).replace(" ", "") for loc in locHistories[a].values()]
+                location = [str(loc).replace(" ", "") for loc in assemLocations[a].values()]
                 out.write("\n\nkey: location\n")
                 out.write(tabulate.tabulate((location,), tableFmt="plain"))
                 out.write("\n\n\n")
