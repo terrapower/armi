@@ -311,6 +311,67 @@ class MultipleComponentMerger(BlockConverter):
             BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
         return self._sourceBlock
 
+class MixedAssemblyMerger(MultipleComponentMerger):
+
+    def __init__(self, sourceBlock, soluteNames, solventName, pin, specifiedMinID=0.0):
+        """Standard constructor method.
+
+        Parameters
+        ----------
+        sourceBlock : :py:class:`armi.reactor.blocks.Block`
+            An ARMI Block object to convert.
+        soluteNames : list
+            List of str names of the solute components in _sourceBlock
+        solventName : str
+            The name of the solvent component in _sourceBlock
+        pin : List[Component]
+            List of the components that make up the pin being converted.
+        minID : float
+            The minimum hot temperature diameter allowed for the solvent.
+            This is useful for forcing components to not overlap.
+        quite : boolean, optional
+            If True, less information is output in the runLog.
+        """
+        BlockConverter.__init__(self, sourceBlock)
+        self.soluteNames = soluteNames
+        self.solventName = solventName
+        self.specifiedMinID = specifiedMinID
+        self.pin = pin
+
+    def convert(self):
+        """
+        Return a block with the solute merged into the solvent.
+
+        Run _verifyPinExpansion so that verification is limited to a single pin.
+        """
+        for soluteName in self.soluteNames:
+            self.dissolveComponentIntoComponent(soluteName, self.solventName, minID=self.specifiedMinID)
+        solvent = self._sourceBlock.getComponentByName(self.solventName)
+        if solvent.__class__ is not components.DerivedShape:
+            self._verifyPinExpansion(self.soluteNames, solvent)
+        return self._sourceBlock
+
+    def _verifyPinExpansion(self, solute, solvent):
+        """Verify the conversion of a single pin construct."""
+        validComponents = (c for c in self.pin if not isinstance(c, components.DerivedShape))
+        for c in sorted(validComponents):
+            if c not in self._sourceBlock:
+                # c was merged
+                continue
+            if not isinstance(c, components.Circle) or c is solvent or c.containsVoidMaterial():
+                continue
+            if c.isEncapsulatedBy(solvent):
+                raise ValueError(
+                    "There is a non void component {} in the location where component {} was expanded "
+                    "to absorb component solute {}. solvent dims {}, {} comp dims {} {}.".format(
+                        c, solvent, solute, solvent.p.id, solvent.p.od, c.p.id, c.p.od
+                    )
+                )
+            if c.getArea() < 0.0:
+                runLog.warning(
+                    "Component {} still has negative area after {} was dissolved into {}".format(c, solute, solvent),
+                    single=True,
+                )
 
 class BlockAvgToCylConverter(BlockConverter):
     """
