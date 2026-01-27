@@ -257,11 +257,10 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def getAssemHistories(self, assemList: List["Assembly"]):
         """Get the histories for all blocks in detailed assemblies."""
-        dbi = self.getInterface("database")
-        params = self.getTrackedParams()
-        allBlocks = [b for a in assemList for b in self.nonStationaryBlocks(a)]
-        blockHistories = dbi.getHistories(allBlocks, params)
-        return blockHistories
+        return self.getInterface("database").getHistories(
+            [b for a in assemList for b in self.nonStationaryBlocks(a)],
+            self.getTrackedParams(),
+        )
 
     def writeAssemHistories(self, detailAssems, allBlockHistories, assemLocations):
         """Write detailed assembly histories to text files."""
