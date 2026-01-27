@@ -341,7 +341,7 @@ class MixedAssemblyMerger(MultipleComponentMerger):
         quite : boolean, optional
             If True, less information is output in the runLog.
         """
-        super().__init__(self, sourceBlock, soluteNames, solventName, specifiedMinID=specifiedMinID)
+        super().__init__(sourceBlock, soluteNames, solventName, specifiedMinID=specifiedMinID)
         self.pin = pin
 
     def convert(self):
