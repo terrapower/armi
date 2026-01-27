@@ -199,6 +199,8 @@ class HistoryTrackerInterface(interfaces.Interface):
     def _writeDetailAssemblyHistories(self):
         """Write data file with assembly histories."""
         detailAssems = self.getDetailAssemblies()
+        if len(detailAssems) == 0:
+            return
         allBlockHistories = self.getAssemHistories(detailAssems)
         dbi = self.getInterface("database")
         locHistory = dbi.getHistories(detailAssems, ["location"])
