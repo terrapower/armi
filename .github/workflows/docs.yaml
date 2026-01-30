@@ -33,7 +33,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.ref == 'refs/heads/main' && -1 || github.event.number }}
-          GIT_COMMIT: ${{ git rev-parse --short HEAD }}
+          GIT_COMMIT: ${{ github.sha }}
         run: |
           echo "Installing ARMI..."
           set -x
