@@ -354,11 +354,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         emptyXSLib.merge(self.libAA)
         self.libAA = None
         self.getWriteFunc()(emptyXSLib, self.testFileName)
-        print("\n\n\n")
-        print(open(self.testFileName, "r").read())
-        print("\n\n\n")
-        print(open(self.getLibAAPath(), "r").read())
-        print("\n\n\n")
+        print(filecmp.cmp(self.getLibAAPath(), self.testFileName))
         self.assertTrue(filecmp.cmp(self.getLibAAPath(), self.testFileName))
 
     def test_mergeTwoXSLibFiles(self):
