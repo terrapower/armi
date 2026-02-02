@@ -31,6 +31,7 @@ GITHUB_USERS = {
     "bsculac": "Brian Sculac",
     "clstocking": "Casey Stocking",
     "crswong888": "Chris Wong",
+    "dpham-materials": "David Pham",
     "drewj-tp": "Drew Johnson",
     "HunterPSmith": "Hunter Smith",
     "jakehader": "Jake Hader",
