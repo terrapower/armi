@@ -4,6 +4,8 @@ ARMI
 
 .. image:: .static/armi-logo.png
 
+.. include:: ../README.rst
+
 .. toctree::
    :hidden:
    :maxdepth: 2
@@ -18,9 +20,8 @@ ARMI
    glossary
    API Docs <.apidocs/modules>
 
-.. include:: ../README.rst
-
 *  :doc:`glossary`
 *  :ref:`genindex`
 *  :ref:`modindex`
 *  :ref:`search`
+
