@@ -4,12 +4,11 @@ ARMI
 
 .. image:: .static/armi-logo.png
 
-.. include:: ../README.rst
-
 .. toctree::
    :hidden:
    :maxdepth: 2
 
+   readme
    installation
    user/index
    developer/index
@@ -24,4 +23,3 @@ ARMI
 *  :ref:`genindex`
 *  :ref:`modindex`
 *  :ref:`search`
-
