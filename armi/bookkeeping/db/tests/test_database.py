@@ -892,7 +892,7 @@ grids:
         self.db.close()
 
         # open the DB and verify, the first timenode
-        with Database(self.db.fileName, "r") as db:
+        with Database(self.db.fileName) as db:
             r0 = db.load(0, 0, allowMissing=True)
             self.assertEqual(r0.p.cycle, 0)
             self.assertEqual(r0.p.timeNode, 0)
