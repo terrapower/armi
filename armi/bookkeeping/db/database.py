@@ -122,7 +122,7 @@ class Database:
     # Allows matching for, e.g., c01n02EOL
     timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
 
-    def __init__(self, fileName: os.PathLike, permission: str):
+    def __init__(self, fileName: os.PathLike, permission: str = "r"):
         """
         Create a new Database object.
 
