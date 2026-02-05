@@ -526,9 +526,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
         # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
         # to side step the issue entirely.
-        loader = RoundTripLoader if roundTrip else CLoader
         if roundTrip:
-            loader.max_depth = None
+            RoundTripLoader.max_depth = None
+        loader = RoundTripLoader if roundTrip else CLoader
         return super().load(stream, Loader=loader)
 
     def addDefaultSFP(self):
