@@ -528,7 +528,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         # to side step the issue entirely.
         loader = RoundTripLoader if roundTrip else CLoader
         if roundTrip:
-            RoundTripLoader.max_depth = None
+            loader.max_depth = None
         return super().load(stream, Loader=loader)
 
     def addDefaultSFP(self):
