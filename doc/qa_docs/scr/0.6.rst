@@ -3,6 +3,52 @@ Release Notes for ARMI 0.6
 
 Here you will find the release notes for previous ARMI releases.
 
+ARMI v0.6.3
+-----------
+Release Date: 2026-02-02
+
+This was a minor release. There were changes made to the temporary directory and unit test tooling to support read-only containers. There were also some improvements to the shuffle logic API. And the documentation had many small cleanup changes. For quality, when accessing a material property outside the temperature range it was defined for, ARMI now raises an exception by default.
+
+
+Code Changes, Features
+^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2385 <https://github.com/terrapower/armi/pull/2385>`_) Set materials.FAIL_ON_RANGE to True by default
+#. (`PR#2399 <https://github.com/terrapower/armi/pull/2399>`_) New exception for mpi4py import
+#. (`PR#2402 <https://github.com/terrapower/armi/pull/2402>`_) Improving cleanPath and related tooling
+#. (`PR#2411 <https://github.com/terrapower/armi/pull/2411>`_) Refactoring Shuffling Logic
+#. (`PR#2423 <https://github.com/terrapower/armi/pull/2423>`_) Fix issue with recent runLog changes
+#. (`PR#2428 <https://github.com/terrapower/armi/pull/2428>`_) Copying assembly flags when creating a new assembly from type
+#. (`PR#2432 <https://github.com/terrapower/armi/pull/2432>`_) Adding forceClean to snapshot deletions
+
+
+Code Changes, Maintenance, or Trivial
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2393 <https://github.com/terrapower/armi/pull/2393>`_) Shortening some test class names that are too long
+#. (`PR#2407 <https://github.com/terrapower/armi/pull/2407>`_) Removing unused Inconel material properties
+#. (`PR#2420 <https://github.com/terrapower/armi/pull/2420>`_) Adding unit testing to HexBlock.getPinPitch
+#. (`PR#2421 <https://github.com/terrapower/armi/pull/2421>`_) Renaming misloadSwap to swap
+#. (`PR#2424 <https://github.com/terrapower/armi/pull/2424>`_) Removing deprecation warning from test
+#. (`PR#2425 <https://github.com/terrapower/armi/pull/2425>`_) Adding code coverage
+#. (`PR#2426 <https://github.com/terrapower/armi/pull/2426>`_) Moving DIF3D parameters out of ARMI
+
+
+Documentation-Only Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2386 <https://github.com/terrapower/armi/pull/2386>`_) Adding a count of how many settings are in ARMI
+#. (`PR#2390 <https://github.com/terrapower/armi/pull/2390>`_) Ensuring that SCRs will build correctly during main branch pushes
+#. (`PR#2395 <https://github.com/terrapower/armi/pull/2395>`_) Cleaning up the docs
+#. (`PR#2398 <https://github.com/terrapower/armi/pull/2398>`_) Starting version 0.6.3 release cycle
+#. (`PR#2403 <https://github.com/terrapower/armi/pull/2403>`_) Improving nuclidebases documentation - byMcnpId
+#. (`PR#2409 <https://github.com/terrapower/armi/pull/2409>`_) Clarifying PIP version in user install docs
+#. (`PR#2418 <https://github.com/terrapower/armi/pull/2418>`_) Adding descriptions to two impl tags
+#. (`PR#2419 <https://github.com/terrapower/armi/pull/2419>`_) Ensuring all impl and test tags show in the docs
+#. (`PR#2433 <https://github.com/terrapower/armi/pull/2433>`_) Adding a high-level Parameter Report to the docs
+#. (`PR#2439 <https://github.com/terrapower/armi/pull/2439>`_) Adding an AUTHORS file to ARMI
+
+
 ARMI v0.6.2
 -----------
 Release Date: 2025-12-17
