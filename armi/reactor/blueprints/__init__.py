@@ -75,7 +75,7 @@ import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
-from ruamel.yaml import YAML, RoundTripLoader
+from ruamel.yaml import CLoader, RoundTripLoader
 
 from armi import (
     context,
@@ -522,11 +522,14 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
         write) access to YAMLs; for that we have the `RoundTripLoader`.
         """
-        RoundTripLoader.max_depth = None
-        loader = RoundTripLoader  # if roundTrip else CLoader
+        # With the release of ruamel.yaml 0.19.1, we began getting the following error:
+        # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
+        # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
+        # to side step the issue entirely.
+        loader = RoundTripLoader if roundTrip else CLoader
+        if roundTrip:
+            RoundTripLoader.max_depth = None
         return super().load(stream, Loader=loader)
-        # yaml = YAML(typ="rt") if roundTrip else YAML(typ="safe")
-        # return yaml.load(stream)
 
     def addDefaultSFP(self):
         """Create a default SFP if it's not in the blueprints."""
