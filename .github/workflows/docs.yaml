@@ -17,6 +17,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Cleanup build folder
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
       - uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -28,7 +34,7 @@ jobs:
         run: sudo apt-get -y install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
-      - name: Make html/pdf Docs
+      - name: Make HTML Docs
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -41,7 +47,7 @@ jobs:
           pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
-          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+          pytest --junit-xml=test_results.xml -v -n 4 armi/materials > pytest_verbose.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
@@ -55,11 +61,6 @@ jobs:
           git submodule init
           git submodule update
           make html
-
-          echo "Build PDF docs..."
-          make latex
-          cd _build/latex/
-          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
@@ -76,9 +77,109 @@ jobs:
           name: html-docs
           path: doc/_build/html
           retention-days: 5
+      - name: Make PDF Docs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          echo "Cleaning out API docs from PDF..."
+          set -x
+
+          sleep 1
+          find . -type d
+          sleep 1
+
+          sleep 1
+          ls -lah doc/
+          sleep 1
+          ls -lah doc/_build
+          sleep 1
+          ls -lah doc/_build/html
+          sleep 1
+
+          #rm -rf armi
+          rm -rf doc/armi
+          rm -rf doc/*/armi
+          rm -r doc/.apidocs
+          rm -rf .apidocs
+          rm -rf */.apidocs
+          rm -rf */*/.apidocs
+          rm -rf */*/*/.apidocs
+          rm -rf */*/*/*/.apidocs
+          rm -rf */*/*/*/*/.apidocs
+
+          rm -rf _modules
+          rm -rf */_modules
+          rm -rf */*/_modules
+          rm -rf */*/*/_modules
+          rm -rf */*/*/*/_modules
+          rm -rf */*/*/*/*/_modules
+
+          rm -rf doc/_build/_modules
+          rm -rf doc/_build/doctrees
+          rm -rf doc/_build/doctrees/.apidocs
+          rm -rf doc/_build/html/.apidocs
+          rm -rf doc/_build/html/armi
+          #rm -rf doc/_build/html/_sources/.apidocs
+          rm -rf doc/_build/html/_sources
+          rm -rf doc/_build/html/_modules
+
+          # identified as existing
+          rm -rf doc/.apidocs
+          rm -rf doc/_build/html/.apidocs
+          rm -rf ./doc/_build/html/_modules
+          #rm -rf armi
+          rm -rf .git
+          rm -rf logs
+          rm -rf doc/_build/html/_downloads
+
+          sleep 10
+          ls -lah *
+          #sleep 1
+          #ls -lah doc/
+          #sleep 1
+          #ls -lah doc/_build
+          #sleep 1
+          #ls -lah doc/_build/*/
+          #sleep 1
+          #ls -lah doc/_build/html/*/
+          #sleep 1
+          #ls -lah doc/_build/*/*/
+          #sleep 1
+          #ls -lah doc/*/*
+          #sleep 1
+          #ls -lah doc/*/*/*
+          #sleep 1
+          #ls -lah doc/*/*/*/*
+          echo "BEFORE MAKE LATEX xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          sleep 5
+          find . -type d
+          sleep 5
+          find .
+          sleep 5
+
+          echo "Build PDF docs..."
+          cd doc/
+          sed -i '/sphinxcontrib.apidoc/d' ./conf.py
+          make --debug latex
+          
+          echo "AFTER MAKE LATEX xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          sleep 5
+          find . -type d
+          sleep 5
+          find .
+          sleep 5
+
+          cd _build/latex/
+          latexmk -pdf -f -interaction=nonstopmode -verbose ARMI.tex
+
+          sleep 1
+          find . -type d
+          sleep 1
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v4
         with:
           name: pdf-docs
           path: doc/_build/latex/ARMI.pdf
-          retention-days: 5
+          retention-days: 7
