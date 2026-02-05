@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2026 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,25 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Settings related to Thermal Hydraulics."""
-
-from armi.settings import setting
-
-CONF_DO_TH = "doTH"
-
-
-def defineSettings():
-    """Define generic thermal/hydraulic settings."""
-    settings = [
-        setting.Setting(
-            CONF_DO_TH,
-            default=False,
-            label="Run Thermal Hydraulics",
-            description=("Activate thermal hydraulics calculations."),
-        ),
-    ]
-    return settings
-
-
-def defineValidators(inspector):
-    return []
+"""This package houses helper tools that allow ARMI to communicate with external isotopic depletion programs."""

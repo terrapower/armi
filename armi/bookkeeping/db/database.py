@@ -122,7 +122,7 @@ class Database:
     # Allows matching for, e.g., c01n02EOL
     timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
 
-    def __init__(self, fileName: os.PathLike, permission: str):
+    def __init__(self, fileName: os.PathLike, permission: str = "r"):
         """
         Create a new Database object.
 
@@ -1353,7 +1353,7 @@ class Database:
                         hist[cycleNode] = c.p[paramName]
                     except Exception:
                         if paramName == "location":
-                            hist[cycleNode] = c.spatialLocator.indices
+                            hist[cycleNode] = tuple(c.spatialLocator.indices)
 
         return histData
 
@@ -1437,8 +1437,8 @@ class Database:
         for c, ndensDict in zip(comps, unpackedData):
             nuclides = np.array(list(ndensDict.keys()), dtype="S6")
             numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
-            c.p["nuclides"] = nuclides
-            c.p["numberDensities"] = numberDensities
+            c.p.nuclides = nuclides
+            c.p.numberDensities = numberDensities
 
     @staticmethod
     def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=True):

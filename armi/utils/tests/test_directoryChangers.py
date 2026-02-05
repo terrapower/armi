@@ -150,3 +150,32 @@ class TestDirectoryChangers(unittest.TestCase):
         self.assertTrue(os.path.exists(f("file1.txt")))
         self.assertFalse(os.path.exists(f("file2.txt")))
         os.remove(f("file1.txt"))
+
+
+class TestDirectoryChangersEnvEdits(unittest.TestCase):
+    """Tests that will use monkeypatch to alter an environment variable."""
+
+    def setUp(self):
+        # We cannot import pytest at the top of the file right now. The ARMI unit tests are currently imported at
+        # runtime, and until that is changed, we don't want pytest to be a runtime dependency. For now, hide the import
+        # down here. Once the testing module is complete and ARMI's unit tests aren't all imported, the pytest import
+        # can move up to where it belongs.
+        import pytest
+
+        self.monkeypatch = pytest.MonkeyPatch()
+
+    def tearDown(self):
+        self.monkeypatch.undo()
+
+    def test_tempDirChangerNonDefault(self):
+        """Make sure TemporaryDirectoryChanger uses an alternative root when user edits the appropriate environment
+        variable.
+        """
+        # Alter the root path to be in this directory
+        altRoot = Path(__file__).parent / "altRoot"
+        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(altRoot))
+        with directoryChangers.TemporaryDirectoryChanger() as td:
+            self.assertEqual(Path(td.destination).parent, altRoot)
+        # This test creates a path that isn't auto deleted with TempDirChanger, which deletes the temp dir, not the root
+        if os.path.exists(altRoot):
+            shutil.rmtree(altRoot)

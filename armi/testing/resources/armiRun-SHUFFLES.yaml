@@ -6,8 +6,12 @@ sequence:
     - extraRotations: {"009-045": 60}
     - cascade: ["outer fuel", "010-046", "011-046", "012-046", "Delete"]
       fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
+    - cascade: ["SFP", "005-003", "SFP"]
+      ringPosCycle: [3, 5, 4]
   2: *cycle_1
   3:
     - *shuffle_1_9_45
-    - misloadSwap: ["009-045", "008-004"]
-    - misloadSwap: ["007-001", "006-005"]
+    - swap: ["009-045", "008-004"]
+    - swap: ["007-001", "006-005"]
+    - cascade: ["SFP", "002-002", "SFP"]
+      ringPosCycle: [7, 1, 3]

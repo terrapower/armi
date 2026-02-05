@@ -217,6 +217,19 @@ class TestHistoryTracker(ArmiTestHelper):
         history.addAllDetailedAssems()
         self.assertEqual(len(history.detailAssemblyNames), 54)
 
+    def test_getAssemHistories(self):
+        """Get the histories for all blocks in detailed assemblies."""
+        history = self.o.getInterface("history")
+        history.interactBOL()
+        assemList = history.getDetailAssemblies()
+        params = history.getTrackedParams()
+        assemHistories = history.getAssemHistories(assemList)
+        for a in assemList:
+            for b in history.nonStationaryBlocks(a):
+                self.assertIn(b, assemHistories)
+                for param in params:
+                    self.assertIn(param, assemHistories[b])
+
     def test_getBlockInAssembly(self):
         history = self.o.getInterface("history")
         aFuel = self.o.r.core.getFirstAssembly(Flags.FUEL)

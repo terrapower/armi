@@ -389,19 +389,19 @@ Shuffling
 Users may also define a custom shuffle plan in a YAML file referenced by the ``shuffleSequenceFile`` setting. The YAML
 format organizes data by cycle in a ``sequence`` mapping. Keys are the cycle where the shuffling should occur during
 the beginning-of-cycle step. The first available cycle where shuffling will occur is cycle 1. Each cycle contains a
-list of high-level actions. An action is a  mapping containing one of the keys ``cascade``, ``misloadSwap``, or
+list of high-level actions. An action is a  mapping containing one of the keys ``cascade``, ``swap``, or
 ``extraRotations``. ``cascade`` chains describe a sequence of assembly displacements beginning with a fresh fuel
 assembly and ending with the final location's assembly being discharged. Optional ``fuelEnrichment`` lists specify the
 U235 weight fraction enrichment for each axial block in the fresh assembly, from bottom to top, including zeroes for
-non-fuel blocks. ``misloadSwap`` swaps the assemblies at two locations after all cascades are processed.
+non-fuel blocks. ``swap`` swaps the assemblies at two locations after all cascades are processed.
 ``extraRotations`` map final location labels to relative counterclockwise angles in degrees and are applied after all
-cascades, misload swaps, and any algorithmic rotation routines defined with the ``assemblyRotationAlgorithm`` setting.
+cascades, swaps, and any algorithmic rotation routines defined with the ``assemblyRotationAlgorithm`` setting.
 The angle is relative to the assembly's current orientation and whatever assembly ends up at the given location is
 rotated. Valid angles depend on the assembly's geometry.
 
 Extra rotations therefore:
 
-* apply to whatever assembly resides at the specified location once all cascades and misload swaps are complete;
+* apply to whatever assembly resides at the specified location once all cascades and swaps are complete;
 * rotate the assembly relative to its current orientation; and
 * execute after any algorithmic rotation routines.
 
@@ -409,9 +409,11 @@ A cascade with no final destination defaults to deleting the assembly. Assemblie
 ending the cascade with ``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the spent fuel pool
 even if the ``trackAssems`` setting is ``False``; ``Delete`` always removes the assembly from the model.
 
-Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing an
-``assemblyName`` for the assembly to load. No assembly type is required in this case. The cascade then proceeds as
-normal from the destination location. For example
+Assemblies may also be re-inserted from the spent fuel pool by starting a cascade with ``SFP`` and providing a
+``ringPosCycle`` to identify the spent fuel pool assembly returning to the core. ``ringPosCycle`` is a list conatining
+ring, pos, and cycle used to specify that the assembly which resided at (ring, pos) during the specified cycle number
+is to be re-introduced into the reactor in the associated shuffle cascade. No assembly type is required in this case.
+The cascade then proceeds as normal from the destination location. For example
 
 ..  code:: yaml
 
@@ -419,7 +421,7 @@ normal from the destination location. For example
          1:
            - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]  # wt fraction U235 by block
-           - misloadSwap: ["009-045", "008-004"]
+           - swap: ["009-045", "008-004"]
            - extraRotations: {"009-045": 60}
          2:
            - cascade: ["outer fuel", "010-046", "009-045", "Delete"]
@@ -432,10 +434,11 @@ A cascade that loads an assembly from the SFP may look like::
        sequence:
          1:
            - cascade: ["SFP", "005-003", "SFP"]
-             assemblyName: "A0073"
+             ringPosCycle: [3, 5, 4]
 
-This example retrieves assembly ``A0073`` from the spent fuel pool and places it in location ``005-003`` while sending
-the previous occupant of ``005-003``  to the pool.
+This example retrieves the assembly that resided at ring 3, position 5 during cycle 4 from the spent fuel pool and
+places it in location ``005-003`` (ring 5, position 3) while sending the previous occupant of ``005-003`` to the
+spent fuel pool.
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 
@@ -1426,13 +1429,16 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 Fuel Management Input
 =====================
 
-Fuel management in ARMI is specified through custom Python scripts that often reside
+Fuel management in ARMI is specified through custom Python scripts or YAML files that often reside
 in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
-ARMI checks for two fuel management settings:
+ARMI checks for several fuel management settings:
 
 ``shuffleLogic``
    The path to the Python source file or dotted import path to a module that contains the user's custom fuel
    management logic
+
+``shuffleSequenceFile``
+   The path to a yaml file containing the user's custom fuel management logic.
 
 ``fuelHandlerName``
    The name of a FuelHandler class that ARMI will look for in the Fuel Management Input module or file
@@ -1441,7 +1447,7 @@ ARMI checks for two fuel management settings:
 
 .. note:: We consider the limited syntax needed to express fuel management in Python
    code itself to be sufficiently expressive and simple for non-programmers to
-   actually use. Indeed, this has been our experience.
+   actually use. Also, fuel management options are available through YAML input files.
 
 The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
 search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
@@ -1621,62 +1627,3 @@ Such a method may look like this::
 Once a proper ``getFactorList`` method exists and a fuel handler object exists that can interpret the factors, activate a branch search during a regular run by selecting the **Branch Search** option on the GUI.
 
 The **best** result from the branch search is determined by comparing the *keff* values with the ``targetK`` setting, which is available for setting in the GUI. The branch with *keff* closest to the setting, while still being above 1.0 is chosen.
-
-.. _settings-report:
-
-Settings Report
-===============
-
-.. exec::
-    from armi import settings
-    cs = settings.Settings()
-    numSettings = len(cs.values())
-
-    return f"This document lists all {numSettings} `settings <#the-settings-input-file>`_ in ARMI.\n"
-
-They are all accessible to developers through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named ``cs``. Interfaces have access to a simulation's settings through ``self.cs``.
-
-
-.. exec::
-    import textwrap
-    from dochelpers import escapeSpecialCharacters
-    from armi import settings
-
-    def looks_like_path(s):
-        """Super quick, not robust, check if a string looks like a file path."""
-        if s.startswith("\\\\") or s.startswith("//") or s[1:].startswith(":\\"):
-            return True
-        return False
-
-    subclassTables = {}
-    cs = settings.Settings()
-
-    # User textwrap to split up long words that mess up the table.
-    ws = "    "
-    ws2 = ws + "    "
-    ws3 = ws2 + "  "
-    wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
-    wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
-    content = '\n.. container:: break_before ssp-landscape\n\n'
-    content += ws + '.. list-table:: ARMI Settings\n'
-    content += ws2 + ':widths: 30 40 15 15\n'
-    content += ws2 + ':class: ssp-tiny\n'
-    content += ws2 + ':header-rows: 1\n\n'
-    content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'
-
-    for setting in sorted(cs.values(), key=lambda s: s.name):
-        content += ws2 + '* - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
-        description = escapeSpecialCharacters(str(setting.description) or "")
-        content += ws3 + "- {}\n".format(" ".join(wrapper.wrap(description)))
-        default = str(getattr(setting, 'default', None)).split("/")[-1]
-        options = str(getattr(setting,'options','') or '')
-        if looks_like_path(default):
-            # We don't want to display default file paths in this table.
-            default = ""
-            options = ""
-        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
-        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(options)]))
-
-    content += '\n'
-
-    return content

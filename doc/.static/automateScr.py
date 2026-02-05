@@ -19,32 +19,10 @@ This script is meant to be called by the docs build process, to help automate th
 """
 
 import argparse
+import os
 import subprocess
 
 import requests
-
-# A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.
-GITHUB_USERS = {
-    "aaronjamesreynolds": "Aaron Reynolds",
-    "albeanth": "Tony Alberti",
-    "alexhjames": "Alex James",
-    "bsculac": "Brian Sculac",
-    "clstocking": "Casey Stocking",
-    "crswong888": "Chris Wong",
-    "drewj-tp": "Drew Johnson",
-    "HunterPSmith": "Hunter Smith",
-    "jakehader": "Jake Hader",
-    "jasonbmeng": "Jason Meng",
-    "john-science": "John Stilley",
-    "keckler": "Chris Keckler",
-    "mgjarrett": "Michael Jarrett",
-    "nipowell": "Nicole Powell",
-    "ntouran": "Nick Touran",
-    "onufer": "Mark Onufer",
-    "opotowsky": "Arrielle Opotowsky",
-    "sombrereau": "Tommy Cisneros",
-    "zachmprince": "Zachary Prince",
-}
 
 PR_TYPES = {
     "docs": "Documentation-Only Changes",
@@ -60,16 +38,17 @@ def main():
     parser = argparse.ArgumentParser(description="An ARMI custom doc tool to build the SCR for this release.")
 
     # Required positional argument
-    parser.add_argument("prNum", type=int, help="The current PR number (use -1 if there is no PR).")
     parser.add_argument("pastCommit", help="The commit hash of the last release.")
+    parser.add_argument(
+        "prNum", nargs="?", type=int, default=-1, help="The current PR number (use -1 if there is no PR)."
+    )
 
     # Parse the command line
     args = parser.parse_args()
-    prNum = int(args.prNum)
     pastCommit = args.pastCommit
+    prNum = int(args.prNum)
 
-    rstContent = buildScrListing(prNum, pastCommit)
-    print(rstContent)
+    buildScrListing(pastCommit, prNum)
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -97,13 +76,15 @@ def _findOneLineData(lines: list, prNum: str, key: str):
     return "TBD"
 
 
-def _buildScrLine(prNum: str):
+def _buildScrLine(prNum: str, ghUsers: dict):
     """Helper method to build a single RST list item in an SCR.
 
     Parameters
     ----------
     prNum : str
         The GitHub PR number in question.
+    ghUsers : dict
+        A mapping from GitHub user names to real names, where possible.
 
     Returns
     -------
@@ -118,12 +99,12 @@ def _buildScrLine(prNum: str):
 
     # grab author
     author = _findOneLineData(lines, prNum, "author:")
-    author = GITHUB_USERS.get(author, author)
+    author = ghUsers.get(author, author)
 
     # grab reviewer(s)
     reviewers = _findOneLineData(lines, prNum, "reviewers:")
     reviewers = [rr.split("(")[0].strip() for rr in reviewers.split(",")]
-    reviewers = [GITHUB_USERS.get(rr, rr) for rr in reviewers]
+    reviewers = [ghUsers.get(rr, rr) for rr in reviewers]
     reviewerHeader = "Reviewer(s)" if len(reviewers) > 1 else "Reviewer"
     reviewers = ", ".join(reviewers)
 
@@ -188,16 +169,52 @@ def isMainPR(prNum: int):
         return True
 
 
-def buildScrListing(thisPrNum: int, pastCommit: str):
+def parseAuthorsFile():
+    """
+    Parse the ARMI "AUTHORS" file to get a mapping from GitHub usernames to human names.
+
+    This is a custom "data format" where each line looks like::
+
+        Bob Ross (the-painter-bob-ross-987)
+        Emmy Noether (crazy-smart-emmy-noether-987, super-smart-dr-nother-123)
+
+    Returns
+    -------
+    dict
+        Mapping from GitHub usernames to real / human author names.
+    """
+    ghUsers = {}
+
+    # loop through the lines in the ARMI AUTHORS file
+    filePath = os.path.join(os.path.dirname(__file__), "..", "..", "AUTHORS")
+    with open(filePath, "r") as f:
+        for ln in f.readlines():
+            line = ln.strip()
+            if line.startswith("#") or not len(line):
+                # ignore comments and blank lines
+                continue
+            elif "(" not in line:
+                # ignore authors that don't list a GitHub username
+                continue
+
+            # finally, map one or multiple GH usernames to the author name
+            author, usernames = line.split("(")
+            for user in usernames.rstrip(")").split(","):
+                ghUsers[user.strip()] = author.strip()
+
+    return ghUsers
+
+
+def buildScrListing(pastCommit: str, thisPrNum: int = -1):
     """Helper method to build an RST-formatted lists of all SCRs, by category.
 
     Parameters
     ----------
-    thisPrNum : int
-        The number of this PR. If this is not a PR, this is a -1.
     pastCommit : str
-        The shortened commit hash for a past reference commit. (This is the last commit of the last
-        release. It will not be included.)
+        The shortened commit hash for a past reference commit. (This is the last commit of the last release. It will not
+        be included.)
+    thisPrNum : int
+        The number of this PR. If this is not a PR, the default is -1.
 
     Returns
     -------
@@ -235,16 +252,19 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
                 # This is not a PR. Someone unwisely put some trash in the commit message.
                 pass
 
-    # 3. Build a list for each SCR
+    # 3. Build a list of GitHub Users
+    ghUsers = parseAuthorsFile()
+
+    # 4. Build a list for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
         if not isMainPR(prNum):
             continue
 
-        row, scrType = _buildScrLine(str(prNum))
+        row, scrType = _buildScrLine(str(prNum), ghUsers)
         data[scrType].append(row)
 
-    # 4. Build final RST for all four lists, to return to the docs
+    # 5. Build final RST for all four lists, to return to the docs
     content = ""
     for typ in ["features", "fixes", "trivial", "docs"]:
         if len(data[typ]):
@@ -254,7 +274,10 @@ def buildScrListing(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
-    return content + "\n\n"
+    content += "\n\n"
+
+    print(content)
+    return content
 
 
 if __name__ == "__main__":

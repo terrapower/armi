@@ -33,6 +33,7 @@ from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
+from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
@@ -891,7 +892,7 @@ grids:
         self.db.close()
 
         # open the DB and verify, the first timenode
-        with Database(self.db.fileName, "r") as db:
+        with Database(self.db.fileName) as db:
             r0 = db.load(0, 0, allowMissing=True)
             self.assertEqual(r0.p.cycle, 0)
             self.assertEqual(r0.p.timeNode, 0)
@@ -979,3 +980,27 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         db._permission = "mock"
         with self.assertRaises(ValueError):
             db.open()
+
+
+class TestStaticDatabaseItems(unittest.TestCase):
+    def test_applyComponentNumberDensitiesMigration(self):
+        b = loadTestBlock()
+        comps = [b[0], b[1]]
+        unpacked = [
+            {"U235": 1.23e-3, "U238": 2.34e-3},
+            {"PU239": 5.6e-4, "PU240": 7.8e-4},
+        ]
+
+        Database._applyComponentNumberDensitiesMigration(comps, unpacked)
+
+        for comp, orig in zip(comps, unpacked):
+            expected_nucs = np.array(list(orig.keys()), dtype="S6")
+            expected_nds = np.array(list(orig.values()), dtype=np.float64)
+
+            # verify nuclide names and dtype
+            self.assertTrue(np.array_equal(comp.p["nuclides"], expected_nucs))
+            self.assertEqual(comp.p["nuclides"].dtype, np.dtype("S6"))
+
+            # verify number densities and dtype
+            self.assertTrue(np.allclose(comp.p["numberDensities"], expected_nds))
+            self.assertEqual(comp.p["numberDensities"].dtype, np.float64)

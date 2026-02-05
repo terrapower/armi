@@ -268,7 +268,6 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
         _getNeutronicVals,
         _getMechanicalVals,
         _getFuelVals,
-        _getTHVals,
         _getPhysicalVals,
     ]
     firstReactorVals = {}  # for normalization
@@ -329,8 +328,6 @@ def _getNeutronicVals(r):
         zip(
             *[
                 ("Rx. Swing", r.core.p.rxSwing),
-                ("Fast Flux Fr.", r.core.p.fastFluxFrAvg),
-                ("Leakage", r.core.p.leakageFracTotal),
                 ("Beta", r.core.p.beta),
                 ("Peak flux", r.core.p.maxFlux),
             ]
@@ -404,18 +401,6 @@ def _getFuelVals(r):
     ]
     labels, vals = list(zip(*data))
     return "Fuel Perf.", labels, vals
-
-
-def _getTHVals(r):
-    labels, vals = zip(
-        *[
-            ("Max PD", r.core.p.maxPD),
-            ("Mass flow", r.core.getMaxParam("THmassFlowRate")),
-            ("Th. striping", r.core.getMaxParam("THlocalDToutFuel")),
-            ("Fuel temp", r.core.getMaxBlockParam("THhotChannelFuelCenterlineT")),
-        ]
-    )
-    return "T/H", labels, vals
 
 
 def _radarFactory(numVars, frame="circle"):

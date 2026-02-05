@@ -1346,30 +1346,6 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test_polyfitThermalConductivity(self):
-        ref = self.mat.polyfitThermalConductivity(power=2)
-        cur = [3.49384e-06, 0.01340, 14.57241]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=curVal * 0.001)
-
-    def test_polyfitHeatCapacity(self):
-        ref = self.mat.polyfitHeatCapacity(power=2)
-        cur = [7.40206e-06, 0.20573, 441.29945]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=curVal * 0.001)
-
-    def test_polyfitLinearExpansionPercent(self):
-        ref = self.mat.polyfitLinearExpansionPercent(power=2)
-        cur = [3.72221e-07, 0.00130308, -0.0286255941973353]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
-
     def test_heatCapacity(self):
         ref = self.mat.heatCapacity(Tc=100)
         cur = 461.947021
@@ -1488,30 +1464,6 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test_polyfitThermalConductivity(self):
-        ref = self.mat.polyfitThermalConductivity(power=2)
-        cur = [2.7474128e-06, 0.01290669, 9.6253227]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
-
-    def test_polyfitHeatCapacity(self):
-        ref = self.mat.polyfitHeatCapacity(power=2)
-        cur = [-5.377736582e-06, 0.250006, 404.26111]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
-
-    def test_polyfitLinearExpansionPercent(self):
-        ref = self.mat.polyfitLinearExpansionPercent(power=2)
-        cur = [5.08303200671101e-07, 0.001125487, -0.0180449]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
-
     def test_heatCapacity(self):
         ref = self.mat.heatCapacity(Tc=300)
         cur = 478.776007
@@ -1627,30 +1579,6 @@ class InconelX750_TestCase(_Material_Test, unittest.TestCase):
                 cur, ref
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
-
-    def test_polyfitThermalConductivity(self):
-        ref = self.mat.polyfitThermalConductivity(power=2)
-        cur = [1.48352396e-06, 0.012668, 11.631576]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
-
-    def test_polyfitHeatCapacity(self):
-        ref = self.mat.polyfitHeatCapacity(power=2)
-        cur = [0.000269809, 0.05272799, 446.51227]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
-
-    def test_polyfitLinearExpansionPercent(self):
-        ref = self.mat.polyfitLinearExpansionPercent(power=2)
-        cur = [6.8377787e-07, 0.0010559998, -0.013161]
-
-        self.assertEqual(len(ref), len(cur))
-        for i, curVal in enumerate(cur):
-            self.assertAlmostEqual(ref[i], curVal, delta=abs(curVal * 0.001))
 
     def test_heatCapacity(self):
         ref = self.mat.heatCapacity(Tc=100)
