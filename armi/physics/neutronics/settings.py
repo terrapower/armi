@@ -34,7 +34,6 @@ CONF_EIGEN_PROB = "eigenProb"
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
 CONF_EPS_FSPOINT = "epsFSPoint"
-CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_GEN_XS = "genXS"  # gamma stuff and neutronics plugin/lattice physics
 CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
@@ -168,13 +167,6 @@ def defineSettings():
             default=True,
             label="Eigenvalue Problem",
             description="Is this a eigenvalue problem or a fixed source problem?",
-        ),
-        setting.Setting(
-            CONF_EXISTING_FIXED_SOURCE,
-            default="",
-            label="Existing fixed source input",
-            description="Specify an exiting fixed source input file.",
-            options=["", "FIXSRC", "VARSRC"],
         ),
         setting.Setting(
             CONF_NUMBER_MESH_PER_EDGE,
