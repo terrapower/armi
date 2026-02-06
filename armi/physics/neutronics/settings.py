@@ -42,7 +42,6 @@ CONF_LOADING_FILE = "loadingFile"
 CONF_MCNP_LIB_BASE = "mcnpLibraryVersion"
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
-CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
@@ -167,13 +166,6 @@ def defineSettings():
             default=True,
             label="Eigenvalue Problem",
             description="Is this a eigenvalue problem or a fixed source problem?",
-        ),
-        setting.Setting(
-            CONF_NUMBER_MESH_PER_EDGE,
-            default=1,
-            label="Number of Mesh per Edge",
-            description="Number of mesh per block edge for finite-difference planar mesh refinement.",
-            oldNames=[("hexSideSubdivisions", None)],
         ),
         setting.Setting(
             CONF_EPS_EIG,
