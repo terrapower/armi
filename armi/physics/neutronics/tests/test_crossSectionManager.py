@@ -947,8 +947,7 @@ class TestXSGM(unittest.TestCase):
 
     def test_createRepBlocksUsingExistingBlocks(self):
         """
-        Demonstrates that a new representative block can be generated from an existing
-        representative block.
+        Demonstrates that a new representative block can be generated from an existing representative block.
 
         Notes
         -----
@@ -959,8 +958,7 @@ class TestXSGM(unittest.TestCase):
 
     def test_createRepBlocksDisableValidBlockTypes(self):
         """
-        Demonstrates that a new representative block can be generated from an existing
-        representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.
+        Demonstrates that a new representative block can be generated from an existing representative block.
 
         Notes
         -----

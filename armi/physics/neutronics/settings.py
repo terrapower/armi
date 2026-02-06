@@ -64,7 +64,6 @@ CONF_OPT_DPA = [
 
 # moved from xsSettings
 CONF_CLEAR_XS = "clearXS"
-CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = "disableBlockTypeExclusionInXsGeneration"
 CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
@@ -297,14 +296,6 @@ def defineSettings():
                 "FluxWeightedAverage",
                 "ComponentAverage1DSlab",
             ],
-        ),
-        setting.Setting(
-            CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
-            default=False,
-            label="Which Block types to merge together in XS Generation",
-            description="Control which blocks get merged together by the XSGM. If set to ``None`` or ``True`` then all "
-            "block types in the XS ID will be considered. If set to ``False`` then a default of ['fuel'] will be used. "
-            "Can also be set to an exact list of strings for types to consider.",
         ),
         setting.Setting(
             CONF_XS_KERNEL,
