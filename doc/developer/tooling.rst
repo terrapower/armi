@@ -160,7 +160,7 @@ Every release should follow this process:
 3. Tag the commit after it goes into the repo:
 
     - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``
-    - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
+    - Or from another commit: ``git tag -a 1.0.0 <commit-hash> -m "Release v1.0.0"``
     - Pushing to the repo: ``git push origin 1.0.0``
     - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
 

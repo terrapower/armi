@@ -29,7 +29,7 @@ The following settings are involved with enabling tight coupling in ARMI:
            parameter: power
            convergence: 1.0e-4
          thermalHydraulics:
-           parameter: THaverageCladTemperature
+           parameter: THmassFlowRate
            convergence: 1.0e-2
 
 

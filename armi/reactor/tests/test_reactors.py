@@ -213,10 +213,10 @@ class HexReactorTests(ReactorTests):
 
         # Test at block level
         block = core.getFirstBlock()
-        self.assertGreater(block.p.THTfuelCL, -1)
+        self.assertIsNone(block.p.mgFlux)
 
-        block.p.THTfuelCL = 57
-        self.assertEqual(block.p.THTfuelCL, 57)
+        block.p.mgFlux = 57
+        self.assertEqual(block.p.mgFlux, 57)
 
         # Test at component level
         component = block[0]
