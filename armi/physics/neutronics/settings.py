@@ -28,7 +28,6 @@ from armi.settings.fwSettings.globalSettings import (
 )
 from armi.utils import directoryChangers
 
-CONF_BC_COEFFICIENT = "bcCoefficient"
 CONF_BOUNDARIES = "boundaries"
 CONF_DPA_PER_FLUENCE = "dpaPerFluence"
 CONF_EIGEN_PROB = "eigenProb"
@@ -122,12 +121,6 @@ def defineSettings():
             default=4.01568627451e-22,
             label="DPA Per Fluence",
             description="A quick and dirty conversion that is used to get dpaPeak",
-        ),
-        setting.Setting(
-            CONF_BC_COEFFICIENT,
-            default=0.0,
-            label="Parameter A for generalized BC",
-            description="Value for the parameter A of the generalized boundary condition.",
         ),
         setting.Setting(
             CONF_BOUNDARIES,
