@@ -68,7 +68,6 @@ CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
-CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
 CONF_XS_KERNEL = "xsKernel"
 CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 
@@ -310,12 +309,6 @@ def defineSettings():
             default=3,
             label="Scattering Order",
             description="Scattering order for the lattice physics calculation",
-        ),
-        setting.Setting(
-            CONF_XS_EIGENVALUE_CONVERGENCE,
-            default=1e-05,
-            label="Eigenvalue Convergence Criteria",
-            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
     ]
 
