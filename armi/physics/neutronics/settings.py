@@ -188,9 +188,8 @@ def defineSettings():
             default=0.0,
             label="Load pad elevation (cm)",
             description=(
-                "The elevation of the bottom of the above-core load pad (ACLP) in cm "
-                "from the bottom of the upper grid plate. Used for calculating the "
-                "load pad dose"
+                "The elevation of the bottom of the above-core load pad (ACLP) in cm from the bottom of the upper grid "
+                "plate. Used for calculating the load pad dose"
             ),
         ),
         setting.Setting(
@@ -221,8 +220,8 @@ def defineSettings():
             CONF_INNERS_,
             default=0,
             label="Inner Iterations",
-            description="XY and Axial partial current sweep inner iterations. 0 lets "
-            "the neutronics code pick a default.",
+            description="XY and Axial partial current sweep inner iterations. 0 lets the neutronics code pick a "
+            "default.",
         ),
         setting.Setting(
             CONF_GRID_PLATE_DPA_XS_SET,
@@ -255,9 +254,8 @@ def defineSettings():
             CONF_MINIMUM_NUCLIDE_DENSITY,
             default=1e-15,
             label="Minimum nuclide density",
-            description="Density to use for nuclides and fission products at infinite dilution. "
-            "This is also used as the minimum density considered for computing macroscopic cross "
-            "sections.",
+            description="Density to use for nuclides and fission products at infinite dilution. This is also used as "
+            "the minimum density considered for computing macroscopic cross sections.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
@@ -298,8 +296,8 @@ def defineSettings():
             CONF_LATTICE_PHYSICS_FREQUENCY,
             default="BOC",
             label="Frequency of lattice physics updates",
-            description="Define the frequency at which cross sections are updated with "
-            "new lattice physics interactions.",
+            description="Define the frequency at which cross sections are updated with new lattice physics "
+            "interactions.",
             options=[opt.name for opt in list(LatticePhysicsFrequency)],
             enforcedOptions=True,
         ),

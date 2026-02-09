@@ -24,7 +24,7 @@ from ruamel.yaml import YAML
 
 from armi import configure, getApp, getPluginManagerOrFail, plugins, settings
 from armi.physics.fuelCycle import FuelHandlerPlugin
-from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER, CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings, setting
@@ -255,8 +255,8 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_csWorks(self):
         """Ensure plugin settings become available and have defaults."""
-        a = settings.Settings()
-        self.assertEqual(a[CONF_CIRCULAR_RING_ORDER], "angle")
+        cs = settings.Settings()
+        self.assertEqual(cs["nTasks"], 1)
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()
@@ -286,8 +286,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         self.assertEqual(cs["extendableOption"], "DEFAULT")
         self.assertEqual(cs["avocado"], 0)
-        # We shouldn't have any settings from the other plugin, so this should be an
-        # error.
+        # We shouldn't have any settings from the other plugin, so this should be an error.
         with self.assertRaises(vol.error.MultipleInvalid):
             newSettings = {"extendableOption": "PLUGIN"}
             cs = cs.modified(newSettings=newSettings)
