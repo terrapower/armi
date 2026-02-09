@@ -69,7 +69,6 @@ CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_XS_KERNEL = "xsKernel"
-CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 
 
 def defineSettings():
@@ -303,12 +302,6 @@ def defineSettings():
             "new lattice physics interactions.",
             options=[opt.name for opt in list(LatticePhysicsFrequency)],
             enforcedOptions=True,
-        ),
-        setting.Setting(
-            CONF_XS_SCATTERING_ORDER,
-            default=3,
-            label="Scattering Order",
-            description="Scattering order for the lattice physics calculation",
         ),
     ]
 

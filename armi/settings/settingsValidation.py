@@ -27,7 +27,6 @@ import os
 import re
 
 from armi import context, getPluginManagerOrFail, runLog
-from armi.physics import neutronics
 from armi.settings.settingsIO import (
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
@@ -344,10 +343,6 @@ class Inspector:
             CONF_SHUFFLE_LOGIC,
             CONF_SHUFFLE_SEQUENCE_FILE,
         )
-        from armi.physics.neutronics.settings import (
-            CONF_XS_KERNEL,
-            CONF_XS_SCATTERING_ORDER,
-        )
         from armi.settings.fwSettings.globalSettings import (
             CONF_EXPLICIT_REPEAT_SHUFFLES,
             CONF_ZONE_DEFINITIONS,
@@ -470,21 +465,6 @@ class Inspector:
             "The power and powerDensity are both set, please note the power will be used as the truth.",
             "",
             self.NO_ACTION,
-        )
-
-        # The gamma cross sections generated for MC2-3 by ANL were done with NJOY with
-        # P3 scattering. MC2-3 would have to be modified and the gamma cross sections
-        # re-generated with NJOY for MC2-3 to allow any other scattering order with
-        # gamma cross sections enabled.
-        self.addQuery(
-            lambda: (
-                "MC2v3" in self.cs[CONF_XS_KERNEL]
-                and neutronics.gammaXsAreRequested(self.cs)
-                and self.cs[CONF_XS_SCATTERING_ORDER] != 3
-            ),
-            "MC2-3 will crash if a scattering order is not set to 3 when generating gamma XS.",
-            f"Would you like to set the `{CONF_XS_SCATTERING_ORDER}` to 3?",
-            lambda: self._assignCS(CONF_XS_SCATTERING_ORDER, 3),
         )
 
         self.addQuery(
