@@ -29,7 +29,6 @@ from glob import glob
 from armi.matProps import material as material_file
 from armi.matProps.material import Material
 
-# TODO: I don't like that this design depends on globals.
 loadedRootDirs = []
 materials = {}
 

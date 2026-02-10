@@ -14,7 +14,6 @@
 
 """A particular material property."""
 
-# TODO: I don't like that this design depends on globals.
 properties = set()
 
 
@@ -67,7 +66,7 @@ class Property:
         bool
             True if name is in properties, False otherwise.
         """
-        """FIXME: This is mixing a global collection of this class inside this class. I hate it."""
+        # TODO: This is mixing a global collection of this class inside this class. I hate it.
         global properties
         return any(name == p.name for p in properties)
 
