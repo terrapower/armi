@@ -36,6 +36,6 @@ jobs:
         run: |
           set -x
           cd armi/matProps
-          pip install -e .
+          pip install -e .[test]
           cd ../../
           pytest -n 4 armi

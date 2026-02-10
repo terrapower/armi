@@ -59,6 +59,12 @@ Changelog = "https://github.com/terrapower/armi/releases"  # TODO
 Repository = "https://github.com/terrapower/armi"
 "Bug Tracker" = "https://github.com/terrapower/armi/issues"
 
+[project.optional-dependencies]
+test = [
+    "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
+    "pytest>=7.0.0", # Our primary test tooling
+]
+
 # TODO
 #[project.scripts]
 #armi = "armi.__main__:main"
