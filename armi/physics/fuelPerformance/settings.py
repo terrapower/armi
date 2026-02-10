@@ -96,17 +96,4 @@ def defineValidators(inspector):
             "",
             inspector.NO_ACTION,
         ),
-        Query(
-            lambda: (
-                inspector.cs[CONF_AXIAL_EXPANSION]
-                or inspector.cs[CONF_BOND_REMOVAL]
-                or inspector.cs[CONF_FGR_REMOVAL]
-                or inspector.cs[CONF_CLADDING_WASTAGE]
-                or inspector.cs[CONF_CLADDING_STRAIN]
-            )
-            and not inspector.cs["doTH"],
-            "A fuel performance behavior has been selected which may require thermal-hydraulics.",
-            "Would you like to turn the TH option on?",
-            lambda: inspector._assignCS("doTH", True),
-        ),
     ]

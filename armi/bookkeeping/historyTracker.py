@@ -67,7 +67,7 @@ See :ref:`detail-assems`.
 """
 
 import traceback
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from armi import interfaces, operators, runLog
 from armi.reactor import grids
@@ -198,8 +198,14 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def _writeDetailAssemblyHistories(self):
         """Write data file with assembly histories."""
-        for a in self.getDetailAssemblies():
-            self.writeAssemHistory(a)
+        detailAssems = self.getDetailAssemblies()
+        if len(detailAssems) == 0:
+            return
+        allBlockHistories = self.getAssemHistories(detailAssems)
+        dbi = self.getInterface("database")
+        locHistory = dbi.getHistories(detailAssems, ["location"])
+        assemLocations = {a: locHistory[a]["location"] for a in detailAssems}
+        self.writeAssemHistories(detailAssems, allBlockHistories, assemLocations)
 
     def _getAssemHistoryFileName(self, assem):
         return self._getHistoryFileName(assem.getName(), "a")
@@ -246,52 +252,59 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Get all blocks in all detail assemblies."""
         return [block for a in self.getDetailAssemblies() for block in a]
 
-    def writeAssemHistory(self, a: "Assembly", fName: str = ""):
-        """Write the assembly history report to a text file."""
-        fName = fName or self._getAssemHistoryFileName(a)
+    def nonStationaryBlocks(self, a: "Assembly"):
+        return [b for b in a if not any(b.hasFlags(sbf) for sbf in self.r.core.stationaryBlockFlagsList)]
+
+    def getAssemHistories(self, assemList: List["Assembly"]):
+        """Get the histories for all blocks in detailed assemblies."""
+        return self.getInterface("database").getHistories(
+            [b for a in assemList for b in self.nonStationaryBlocks(a)],
+            self.getTrackedParams(),
+        )
+
+    def writeAssemHistories(self, detailAssems, allBlockHistories, assemLocations):
+        """Write detailed assembly histories to text files."""
         dbi = self.getInterface("database")
         times = dbi.getHistory(self.r, ["time"])["time"]
-
-        with open(fName, "w") as out:
-            # ts is a tuple, remove the spaces from the string representation so it is easy to load into a spreadsheet
-            # or whatever
-            headers = [str(ts).replace(" ", "") for ts in times.keys()]
-            out.write(
-                tabulate.tabulate(
-                    data=(times.values(),),
-                    headers=headers,
-                    tableFmt="plain",
-                    floatFmt="11.5E",
+        params = self.getTrackedParams()
+        for a in detailAssems:
+            fName = self._getAssemHistoryFileName(a)
+            with open(fName, "w") as out:
+                # ts is a tuple, remove the spaces from the string representation so it is easy to load into a
+                # spreadsheet or whatever
+                headers = [str(ts).replace(" ", "") for ts in times.keys()]
+                out.write(
+                    tabulate.tabulate(
+                        data=(times.values(),),
+                        headers=headers,
+                        tableFmt="plain",
+                        floatFmt="11.5E",
+                    )
                 )
-            )
-            out.write("\n")
-
-            params = self.getTrackedParams()
-            blocks = [b for b in a if not any(b.hasFlags(sbf) for sbf in self.r.core.stationaryBlockFlagsList)]
-            blockHistories = dbi.getHistories(blocks, params)
-
-            for param in params:
-                out.write("\n\nkey: {0}\n".format(param))
-
-                data = [blockHistories[b][param].values() for b in blocks]
-                out.write(tabulate.tabulate(data, tableFmt="plain", floatFmt="11.5E"))
                 out.write("\n")
 
-            # loc is a tuple, remove the spaces from the string representation so it is easy to load into a spreadsheet
-            # or whatever
-            location = [str(loc).replace(" ", "") for loc in dbi.getHistory(a, ["location"])["location"].values()]
-            out.write("\n\nkey: location\n")
-            out.write(tabulate.tabulate((location,), tableFmt="plain"))
-            out.write("\n\n\n")
+                for param in params:
+                    out.write("\n\nkey: {0}\n".format(param))
 
-            headers = "EOL bottom top center".split()
-            data = [("", b.p.zbottom, b.p.ztop, b.p.z) for b in blocks]
-            out.write(tabulate.tabulate(data, headers=headers, tableFmt="plain", floatFmt="10.3f"))
+                    data = [allBlockHistories[b][param].values() for b in self.nonStationaryBlocks(a)]
+                    out.write(tabulate.tabulate(data, tableFmt="plain", floatFmt="11.5E"))
+                    out.write("\n")
 
-            out.write("\n\n\nAssembly info\n")
-            out.write("{0} {1}\n".format(a.getName(), a.getType()))
-            for b in blocks:
-                out.write('"{}" {} {}\n'.format(b.getType(), b.p.xsType, b.p.envGroup))
+                # loc is a tuple, remove the spaces from the string representation so it is easy to load into a
+                # spreadsheet or whatever
+                location = [str(loc).replace(" ", "") for loc in assemLocations[a].values()]
+                out.write("\n\nkey: location\n")
+                out.write(tabulate.tabulate((location,), tableFmt="plain"))
+                out.write("\n\n\n")
+
+                headers = "EOL bottom top center".split()
+                data = [("", b.p.zbottom, b.p.ztop, b.p.z) for b in self.nonStationaryBlocks(a)]
+                out.write(tabulate.tabulate(data, headers=headers, tableFmt="plain", floatFmt="10.3f"))
+
+                out.write("\n\n\nAssembly info\n")
+                out.write("{0} {1}\n".format(a.getName(), a.getType()))
+                for b in self.nonStationaryBlocks(a):
+                    out.write('"{}" {} {}\n'.format(b.getType(), b.p.xsType, b.p.envGroup))
 
     def preloadBlockHistoryVals(self, names, keys, timesteps):
         """

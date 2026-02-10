@@ -235,13 +235,19 @@ Software Tested and Date
 The software tested and date of testing are below:
 
 .. exec::
+    import os
     import sys
     from datetime import datetime
-    from armi import __version__ as armi_version
+    from armi import __version__ as armiVersion
 
-    txt = [datetime.now().strftime("%Y-%m-%d")]
-    txt.append(armi_version)
-    txt.append(sys.version)
+    armiCommit = str(os.environ["GIT_COMMIT"]).strip()
+
+    txt = [f"Date: {datetime.now().strftime('%Y-%m-%d')}"]
+    txt.append(f"Python version: {sys.version}")
+    txt.append(f"ARMI version: {armiVersion}")
+    if armiCommit:
+        txt.append(f"ARMI commit: {armiCommit}")
+
     return "\n\n".join(txt)
 
 
