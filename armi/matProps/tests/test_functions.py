@@ -52,7 +52,7 @@ class TestFunctions(MatPropsFunTestBase):
     def test_datafilesInvType(self):
         """Test that makes sure a KeyError is thrown if an unsupported function type is provided."""
         data = {"type": "fake function"}
-        with self.assertRaisesRegex(KeyError, "Unknown function type"):
+        with self.assertRaisesRegex(KeyError, "fake function"):
             self._createFunction(data)
 
     def test_refTempEval(self):

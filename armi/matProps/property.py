@@ -71,25 +71,6 @@ class Property:
         global properties
         return any(name == p.name for p in properties)
 
-    @staticmethod
-    def properties():
-        """
-        Returns a copy list of all the Property object instances.
-
-        Returns
-        -------
-        list of Property
-            Copy list of all Property objects
-        """
-        # TODO: This is mixing a global collection of this class inside this class. I hate it.
-        global properties
-
-        props = []
-        for p in properties:
-            props.append(p)
-
-        return props
-
 
 def defProp(symbol: str, name: str, tex: str, units: str):
     """
@@ -111,7 +92,6 @@ def defProp(symbol: str, name: str, tex: str, units: str):
         raise KeyError(f"Property already defined: {name}")
 
     p = Property(name, symbol, tex, units)
-    exec(f"global {symbol};{symbol} = p")  # TODO: Not myfavorite. Not very Python.
     properties.add(p)
 
 

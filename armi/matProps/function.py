@@ -218,25 +218,21 @@ class Function:
         Function
             Function pointer parsed from the specified property.
         """
-        # TODO: This seems like a suspect design.
         from armi.matProps.piecewiseFunction import PiecewiseFunction
         from armi.matProps.symbolicFunction import SymbolicFunction
         from armi.matProps.tableFunction1D import TableFunction1D
         from armi.matProps.tableFunction2D import TableFunction2D
 
+        funTypes = {
+            "symbolic": SymbolicFunction,
+            "table": TableFunction1D,
+            "two dimensional table": TableFunction2D,
+            "piecewise": PiecewiseFunction,
+        }
+
         func_node = node["function"]
         funcType = str(func_node["type"])
-        func = None
-        if funcType == "symbolic":
-            func = SymbolicFunction(mat, prop)
-        elif funcType == "table":
-            func = TableFunction1D(mat, prop)
-        elif funcType == "two dimensional table":
-            func = TableFunction2D(mat, prop)
-        elif funcType == "piecewise":
-            func = PiecewiseFunction(mat, prop)
-        else:
-            raise KeyError(f"Unknown function type `{funcType}`")
+        func = funTypes[funcType](mat, prop)
 
         func._parse(node)
         return func
@@ -273,7 +269,6 @@ class Function:
         node
             YAML containing object to be parsed
         """
-        # TODO: This seems like a suspect design.
         from armi.matProps.reference import Reference
         from armi.matProps.tableFunction1D import TableFunction1D
         from armi.matProps.tableFunction2D import TableFunction2D
