@@ -38,4 +38,4 @@ jobs:
           cd armi/matProps
           pip install -e .[test]
           cd ../../
-          pytest -n 4 armi
+          pytest -n 4 armi/matProps
