@@ -516,20 +516,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     @classmethod
     def load(cls, stream, roundTrip=False):
-        """This method is a wrapper around the `yamlize.Object.load()` method.
-
-        The reason for the wrapper is to allow us to default to `Cloader`. Essentially,
-        the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
-        write) access to YAMLs; for that we have the `RoundTripLoader`.
-        """
+        """This method is a wrapper around the `yamlize.Object.load()` method."""
         # With the release of ruamel.yaml 0.19.1, we began getting the following error:
         # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
         # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
-        # to side step the issue entirely.
-        # Update comment to talk about yamlize
+        # to side step the issue entirely. This occurs because of the way `yamlize` works when it calls
+        # `get_single_node`. Reworking blueprints loading to drop yamlize (a dead project) is the only real solution
+        # here.
         RoundTripLoader.max_depth = None
-        loader = RoundTripLoader # if roundTrip else CLoader
-        return super().load(stream, Loader=loader)
+        return super().load(stream, Loader=RoundTripLoader)
 
     def addDefaultSFP(self):
         """Create a default SFP if it's not in the blueprints."""
