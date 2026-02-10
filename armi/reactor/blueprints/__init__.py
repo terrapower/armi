@@ -75,7 +75,7 @@ import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
-from ruamel.yaml import CLoader, RoundTripLoader
+from ruamel.yaml import RoundTripLoader
 
 from armi import (
     context,
@@ -526,8 +526,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
         # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
         # to side step the issue entirely.
-        RoundTripLoader.max_depth = None
-        loader = RoundTripLoader if roundTrip else CLoader
+        # RoundTripLoader.max_depth = None
+        loader = RoundTripLoader # if roundTrip else CLoader
         return super().load(stream, Loader=loader)
 
     def addDefaultSFP(self):
