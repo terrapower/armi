@@ -20,10 +20,10 @@ from pathlib import Path
 from ruamel.yaml import YAML
 
 import armi.matProps.property
+from armi.matProps import property
 from armi.matProps.constituent import Constituent
 from armi.matProps.function import Function
 from armi.matProps.materialType import MaterialType
-from armi.matProps.property import Property
 
 
 class Material:
@@ -95,7 +95,7 @@ class Material:
             if propName in {"composition", "material type", "file format"}:
                 continue
 
-            if not Property.contains(propName):
+            if not property.contains(propName):
                 msg = f"Invalid property node `{propName}` found in: {filePath}"
                 raise KeyError(msg)
 

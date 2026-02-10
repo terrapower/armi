@@ -51,24 +51,23 @@ class Property:
         """Provides string representation of Property instance."""
         return f"<Property {self.name}, {self.symbol}, in {self.units}>"
 
-    @staticmethod
-    def contains(name: str):
-        """
-        Checks to see if a string representing a desired property is in the global properties list.
 
-        Parameters
-        ----------
-        name: str
-            Name of the property whose value is searched for in global properties list.
+def contains(name: str):
+    """
+    Checks to see if a string representing a desired property is in the global properties list.
 
-        Returns
-        -------
-        bool
-            True if name is in properties, False otherwise.
-        """
-        # TODO: This is mixing a global collection of this class inside this class. I hate it.
-        global properties
-        return any(name == p.name for p in properties)
+    Parameters
+    ----------
+    name: str
+        Name of the property whose value is searched for in global properties list.
+
+    Returns
+    -------
+    bool
+        True if name is in properties, False otherwise.
+    """
+    global properties
+    return any(name == p.name for p in properties)
 
 
 def defProp(symbol: str, name: str, tex: str, units: str):
@@ -87,7 +86,7 @@ def defProp(symbol: str, name: str, tex: str, units: str):
         String representing the units of the property.
     """
     global properties
-    if Property.contains(name):
+    if contains(name):
         raise KeyError(f"Property already defined: {name}")
 
     p = Property(name, symbol, tex, units)
