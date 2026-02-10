@@ -1,0 +1,41 @@
+name: Test MatProps Solo
+
+permissions:
+  contents: read
+
+on:
+  push:
+  #  branches:
+  #    - main
+  #  paths-ignore:
+  #    - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: [3.9, '3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - name: Install MatProps
+        run: |
+          set -x
+          cd armi/matProps
+          pip install -e .
+          cd ../../
+          pytest -n 4 armi
