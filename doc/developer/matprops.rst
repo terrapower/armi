@@ -1,11 +1,1 @@
-********
-MatProps
-********
-
-TODO
-
-
-Topic 1
-=======
-
-TODO
+.. include:: ../../armi/matProps/README.rst

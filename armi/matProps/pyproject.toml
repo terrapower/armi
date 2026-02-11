@@ -23,9 +23,9 @@ build-backend = "setuptools.build_meta"
 name = "matProps"
 version = "3.0.0"
 description = "A material library for scientific modeling, where YAML data can be loaded into Python objects."
-#license = {file = "LICENSE.md"}
+license = {file = "../../LICENSE.md"}
 requires-python = ">3.8"
-#readme = "TODO"
+readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
