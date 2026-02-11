@@ -26,10 +26,7 @@ import sysconfig
 import warnings
 from glob import glob
 
-from armi.matProps import material as material_file
-from armi.matProps.material import Material
-
-__all__ = ["Material", "material_file", "getPaths"]
+from material import Material
 
 
 loadedRootDirs = []
@@ -216,7 +213,7 @@ def loadedMaterials() -> list:
 
 def getValidFileFormatVersions():
     """Get a vector of strings with all of the valid file format versions."""
-    return material_file.getValidFileFormatVersions()
+    return Material.getValidFileFormatVersions()
 
 
 def getLoadedRootDirs() -> list:
