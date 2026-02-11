@@ -33,11 +33,11 @@ test_results.*
 wheelhouse
 
 # No workspace crumbs
+**.egg-info/
 **/.coverage*
 **/__pycache__
 **/logs/*
 *.ascii
-*.egg-info/
 *.sublime-project
 *.sublime-workspace
 *.temp
