@@ -22,10 +22,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "matProps"
 version = "3.0.0"
-description = "An open-source TODO."
-license = {file = "LICENSE.md"}
+#description = "An open-source TODO."
+#license = {file = "LICENSE.md"}
 requires-python = ">3.8"
-readme = "TODO"
+#readme = "TODO"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
@@ -54,7 +54,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://terrapower.github.io/armi/"
-Documentation = "https://terrapower.github.io/armi"
+Documentation = "https://terrapower.github.io/armi"  # TODO
 Changelog = "https://github.com/terrapower/armi/releases"  # TODO
 Repository = "https://github.com/terrapower/armi"
 "Bug Tracker" = "https://github.com/terrapower/armi/issues"
@@ -65,12 +65,17 @@ test = [
     "pytest>=7.0.0", # Our primary test tooling
 ]
 
-# TODO
-#[project.scripts]
-#armi = "armi.__main__:main"
+#[tool.setuptools]
+#packages = "find:"
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "armi.matProps",
+    "armi.matProps.*"
+    #"armi.matProps.armi.matProps.",
+    #"armi.matProps.armi.matProps.*"
+]
 
 
 #######################################################################

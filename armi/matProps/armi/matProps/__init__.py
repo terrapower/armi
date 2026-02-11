@@ -29,6 +29,9 @@ from glob import glob
 from armi.matProps import material as material_file
 from armi.matProps.material import Material
 
+__all__ = ["Material", "material_file", "getPaths"]
+
+
 loadedRootDirs = []
 materials = {}
 
