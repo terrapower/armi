@@ -72,6 +72,8 @@ test = [
 where = ["."]
 include = [
     "*",
+    "dataSchema",
+    "dataSchema.*",
     #"armi.matProps",
     #"armi.matProps.*"
     #"armi.matProps.armi.matProps.",

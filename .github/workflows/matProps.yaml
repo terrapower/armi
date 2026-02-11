@@ -1,4 +1,4 @@
-name: Test MatProps Solo
+name: Test MatProps
 
 permissions:
   contents: read
@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - name: Install MatProps
+      - name: Install & Test MatProps
         run: |
           set -x
           cd armi/matProps
