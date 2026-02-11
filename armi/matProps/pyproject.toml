@@ -71,8 +71,9 @@ test = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
-    "armi.matProps",
-    "armi.matProps.*"
+    "*",
+    #"armi.matProps",
+    #"armi.matProps.*"
     #"armi.matProps.armi.matProps.",
     #"armi.matProps.armi.matProps.*"
 ]
