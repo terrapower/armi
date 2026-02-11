@@ -16,7 +16,7 @@
 #                        GENERAL PYTHON CONFIG                        #
 #######################################################################
 [build-system]
-requires = ["setuptools>=61.2", "wheel"]  # TODO: Is wheel needed?
+requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -45,12 +45,11 @@ dependencies = [
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
-    #"sympy>=1.14", # Used to represent mathematical curves for material properties
+    "sympy>=1.14", # Used to represent mathematical curves for material properties
     "toml>0.9.5", # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1", # Used to validate YAML data files
     "yamlize==0.7.1", # Custom YAML-to-object library
     "matProps @ file:armi/matProps",
-    #"armi.matProps",  # TODO
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -126,23 +125,11 @@ docs = [
 [project.scripts]
 armi = "armi.__main__:main"
 
-#[tool.setuptools]
-#packages = ["armi", "armi.matProps"]
-
-#[tool.setuptools]
-#packages = "find_namespace:"
-
 [tool.setuptools.packages.find]
 where = ["."]
-# Include the top-level 'armi' package and any subpackages, such as armi.matProps
-#include = ["armi", "armi.*"]
 include = [
     "armi",
     "armi.*",
-    "armi.matProps",
-    "armi.matProps.*",
-    #"armi.matProps.armi.matProps.",
-    #"armi.matProps.armi.matProps.*"
 ]
 
 

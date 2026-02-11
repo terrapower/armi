@@ -1,3 +1,4 @@
+# The goal of this Workflow is to test MatProps as a stand-alone library, separate from ARMI.
 name: Test MatProps
 
 permissions:

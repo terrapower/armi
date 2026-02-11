@@ -22,7 +22,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "matProps"
 version = "3.0.0"
-#description = "An open-source TODO."
+description = "A material library for scientific modeling, where YAML data can be loaded into Python objects."
 #license = {file = "LICENSE.md"}
 requires-python = ">3.8"
 #readme = "TODO"
@@ -68,9 +68,6 @@ test = [
     "pytest>=7.0.0", # Our primary test tooling
 ]
 
-#[tool.setuptools]
-#packages = "find:"
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
@@ -78,10 +75,6 @@ include = [
     "matProps.*",
     "matProps.dataSchema",
     "matProps.dataSchema.*",
-    #"armi.matProps",
-    #"armi.matProps.*"
-    #"armi.matProps.armi.matProps.",
-    #"armi.matProps.armi.matProps.*"
 ]
 
 
@@ -97,6 +90,12 @@ python_files = "test_*.py"
 #######################################################################
 [tool.setuptools.package-data]
 mat_props = [
-    "matProps/dataSchema/*.json",
-    "tests/*",
+    "dataSchema/dataSchema.json",
+    "dataSchema/tests/inputs/*.yaml",
+    "tests/invalidTestFiles/*",
+    "tests/testDir1/*",
+    "tests/testDir2/*",
+    "tests/testDir3/*",
+    "tests/testDir4/*",
+    "tests/testMaterialsData/*",
 ]

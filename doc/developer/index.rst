@@ -18,7 +18,9 @@ into their workflow and/or enhance ARMI for the community.
    guide
    making_armi_based_apps
    entrypoints
-   documenting
+   matprops
    parallel_coding
+   testing
+   documenting
    profiling
    *
