@@ -18,7 +18,7 @@ import unittest
 from copy import deepcopy
 from io import StringIO
 
-from ruamel.yaml.cyaml import CLoader
+from ruamel.yaml import RoundTripLoader
 from ruamel.yaml.nodes import MappingNode, ScalarNode
 
 from armi import context, getApp
@@ -110,7 +110,7 @@ class TestPassThroughYamlize(unittest.TestCase):
 
         # pass the YAML string through the known YAML
         pty = PassThroughYamlize()
-        loader = CLoader(StringIO(""))
+        loader = RoundTripLoader(StringIO(""))
         _p = pty.from_yaml(loader, node)
 
         # prove the section has been cleared
