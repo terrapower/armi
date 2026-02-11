@@ -28,14 +28,12 @@ from armi.settings.fwSettings.globalSettings import (
 )
 from armi.utils import directoryChangers
 
-CONF_BC_COEFFICIENT = "bcCoefficient"
 CONF_BOUNDARIES = "boundaries"
 CONF_DPA_PER_FLUENCE = "dpaPerFluence"
 CONF_EIGEN_PROB = "eigenProb"
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
 CONF_EPS_FSPOINT = "epsFSPoint"
-CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_GEN_XS = "genXS"  # gamma stuff and neutronics plugin/lattice physics
 CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
@@ -44,7 +42,6 @@ CONF_LOADING_FILE = "loadingFile"
 CONF_MCNP_LIB_BASE = "mcnpLibraryVersion"
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
-CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
@@ -71,10 +68,7 @@ CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
-CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
-CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
 CONF_XS_KERNEL = "xsKernel"
-CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 
 
 def defineSettings():
@@ -122,12 +116,6 @@ def defineSettings():
             default=4.01568627451e-22,
             label="DPA Per Fluence",
             description="A quick and dirty conversion that is used to get dpaPeak",
-        ),
-        setting.Setting(
-            CONF_BC_COEFFICIENT,
-            default=0.0,
-            label="Parameter A for generalized BC",
-            description="Value for the parameter A of the generalized boundary condition.",
         ),
         setting.Setting(
             CONF_BOUNDARIES,
@@ -178,20 +166,6 @@ def defineSettings():
             description="Is this a eigenvalue problem or a fixed source problem?",
         ),
         setting.Setting(
-            CONF_EXISTING_FIXED_SOURCE,
-            default="",
-            label="Existing fixed source input",
-            description="Specify an exiting fixed source input file.",
-            options=["", "FIXSRC", "VARSRC"],
-        ),
-        setting.Setting(
-            CONF_NUMBER_MESH_PER_EDGE,
-            default=1,
-            label="Number of Mesh per Edge",
-            description="Number of mesh per block edge for finite-difference planar mesh refinement.",
-            oldNames=[("hexSideSubdivisions", None)],
-        ),
-        setting.Setting(
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
@@ -214,9 +188,8 @@ def defineSettings():
             default=0.0,
             label="Load pad elevation (cm)",
             description=(
-                "The elevation of the bottom of the above-core load pad (ACLP) in cm "
-                "from the bottom of the upper grid plate. Used for calculating the "
-                "load pad dose"
+                "The elevation of the bottom of the above-core load pad (ACLP) in cm from the bottom of the upper grid "
+                "plate. Used for calculating the load pad dose"
             ),
         ),
         setting.Setting(
@@ -247,8 +220,8 @@ def defineSettings():
             CONF_INNERS_,
             default=0,
             label="Inner Iterations",
-            description="XY and Axial partial current sweep inner iterations. 0 lets "
-            "the neutronics code pick a default.",
+            description="XY and Axial partial current sweep inner iterations. 0 lets the neutronics code pick a "
+            "default.",
         ),
         setting.Setting(
             CONF_GRID_PLATE_DPA_XS_SET,
@@ -281,9 +254,8 @@ def defineSettings():
             CONF_MINIMUM_NUCLIDE_DENSITY,
             default=1e-15,
             label="Minimum nuclide density",
-            description="Density to use for nuclides and fission products at infinite dilution. "
-            "This is also used as the minimum density considered for computing macroscopic cross "
-            "sections.",
+            description="Density to use for nuclides and fission products at infinite dilution. This is also used as "
+            "the minimum density considered for computing macroscopic cross sections.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
@@ -324,33 +296,10 @@ def defineSettings():
             CONF_LATTICE_PHYSICS_FREQUENCY,
             default="BOC",
             label="Frequency of lattice physics updates",
-            description="Define the frequency at which cross sections are updated with "
-            "new lattice physics interactions.",
+            description="Define the frequency at which cross sections are updated with new lattice physics "
+            "interactions.",
             options=[opt.name for opt in list(LatticePhysicsFrequency)],
             enforcedOptions=True,
-        ),
-        setting.Setting(
-            CONF_XS_SCATTERING_ORDER,
-            default=3,
-            label="Scattering Order",
-            description="Scattering order for the lattice physics calculation",
-        ),
-        setting.Setting(
-            CONF_XS_BUCKLING_CONVERGENCE,
-            default=1e-05,
-            label="Buckling Convergence Criteria",
-            description="Convergence criteria for the buckling iteration if it is "
-            "available in the lattice physics solver",
-            oldNames=[
-                ("mc2BucklingConvergence", None),
-                ("bucklingConvergence", None),
-            ],
-        ),
-        setting.Setting(
-            CONF_XS_EIGENVALUE_CONVERGENCE,
-            default=1e-05,
-            label="Eigenvalue Convergence Criteria",
-            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
     ]
 
