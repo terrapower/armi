@@ -71,9 +71,10 @@ test = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
-    "*",
-    "dataSchema",
-    "dataSchema.*",
+    "matProps",
+    "matProps.*",
+    "matProps.dataSchema",
+    "matProps.dataSchema.*",
     #"armi.matProps",
     #"armi.matProps.*"
     #"armi.matProps.armi.matProps.",
@@ -93,6 +94,6 @@ python_files = "test_*.py"
 #######################################################################
 [tool.setuptools.package-data]
 mat_props = [
-    "data_schema/*",
+    "matProps/dataSchema/*.json",
     "tests/*",
 ]

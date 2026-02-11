@@ -1,0 +1,312 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "matProps schema",
+    "description": "Schema for uniform data input for matProps material database",
+    "type": "object",
+    "properties": {
+        
+        "refDataSchema": {
+            "$id": "referenceSchema",
+            "type": "array",
+            "items": {
+                "properties": {
+                    "ref": { "type": "string" },
+                    "refType" : { "type": "string" },
+                    "min temp" : { "type": "number" },
+                    "max temp" : { "type": "number" }
+                },
+                "required": ["ref", "refType"]
+            },
+            "additionalItems": false
+        },
+        
+        "tabDataSchema": {
+            "$id": "tabulatedData",
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": [
+                    { "anyOf": [
+                        { "type": "null"   },
+                        { "type": "number" }]
+                    },
+                    { "anyOf": [
+                        { "type": "number" },
+                        { "type": "array",
+                            "items": [ { "type": "number" } ]  } ]
+                    }
+                ],
+                "additionalItems": false
+            },
+            "additionalItems": false
+        },
+
+        "file format": {
+            "type": "string",
+            "enum": ["1.0"]
+        },
+
+        "material type": {
+            "type": "string",
+            "enum": ["Fuel", "Metal", "Fluid", "Ceramic", "ASME2015", "ASME2017"]
+        },
+       
+        "composition": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-zA-Z]{1,2}$": { 
+                    "oneOf": [
+                        {
+                            "type": "array",
+                                "items": [
+                                    { "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 100 },
+                                    { "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 100 }
+                                ]
+                        },
+                        {
+                            "const": "balance"
+                        }
+                    ]
+                }
+            },
+            "properties": {
+                "references": { "$ref": "referenceSchema" }
+            },
+            "required": ["references"],
+            "minProperties": 1,
+            "additionalProperties": false
+        },
+
+        "material property": {
+            "$id": "materialProperty",
+            "type": "object",
+            "properties": {
+                "function": {
+                    "$id" : "functionSchema",
+                    "type": "object",
+                    "properties": {
+                        "min degrees C": { 
+                            "type": "number",
+                            "minimum": -273.15
+                        },
+                        "max degrees C": { "type": "number" },
+                        "function type" : {
+                                "type": "string",
+                                "enum": ["constant", "polynomial", "hyperbolic", "power law", "piecewise", 
+                                         "temperature dependent table", "time and temperature dependent table", 
+                                         "cycles and temperature dependent table", "hard coded"]
+                        }
+                    },
+                    "required": ["min degrees C", "max degrees C"],
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": { "function type": { "const": "constant" } },
+                                "required": ["function"]
+                            },
+                            "then": {
+                                "properties": {
+                                    "value": { "type": "number" }
+                                },
+                                "required": ["function type", "value"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": { "const": "polynomial" } }
+                            },
+                            "then": {
+                                "properties": {
+                                    "coefficients": {
+                                        "type": "object",
+                                        "patternProperties": {
+                                            "^[0-9]$": { "type": "number" }
+                                        }, 
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "reference temperature": { "type": "number" }
+                                },
+                                "required": ["function type", "coefficients"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": { "const": "hyperbolic" } }
+                            },
+                            "then": {
+                                "properties": {
+                                    "coefficients": {
+                                        "type": "object",
+                                        "properties": {
+                                            "hyperbolic function": { "type": "string", 
+                                                                    "enum": ["tanh"]},
+                                            "intercept": { "type": "number" },
+                                            "outer multiplier": { "type": "number" },
+                                            "inner denominator": { "type": "number" },
+                                            "inner adder": { "type": "number" }                            
+                                        },
+                                        "required": ["hyperbolic function", "intercept", "outer multiplier", 
+                                                     "inner denominator", "inner adder"]
+                                    }
+                                },
+                                "required": ["coefficients", "function type"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": { "const": "power law" } }
+                            },
+                            "then": {
+                                "properties": {
+                                    "coefficients": {
+                                        "type": "object",
+                                        "properties": {
+                                            "exponent": { "type": "number" },
+                                            "outer multiplier": { "type": "number" },
+                                            "inner adder": { "type": "number" }
+                                        },
+                                        "required": ["exponent", "outer multiplier", "inner adder"]
+                                    }
+                                },
+                                "required": ["coefficients", "function type"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": {"const": "piecewise" } }
+                            },
+                            "then": {
+                                "properties": {
+                                    "functions": {
+                                        "type": "array",
+                                        "items": { 
+                                            "properties": {
+                                                "function": { "$ref": "functionSchema" },
+                                                "tabulated data": { "$ref": "tabulatedData" }
+                                            },
+                                            "required": ["function", "tabulated data"]
+                                        },
+                                        "additionalItems": false
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": {"const": "temperature dependent table"} }
+                            },
+                            "then": {
+                                "properties": {
+                                    "rounding scheme": { "type": "number" }
+                                },
+                                "required": ["rounding scheme", "function type"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": {"const": "time and temperature dependent table"} }
+                            },
+                            "then": {
+                                "properties": {
+                                    "interpolation scheme": { 
+                                        "type": "string",
+                                        "enum": ["log-lin", "lin-lin"]
+                                    },
+                                    "rounding scheme": { "type": "number" }
+                                },
+                                "required": ["interpolation scheme", "rounding scheme", "function type"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": {"const": "cycles and temperature dependent table"} }
+                            },
+                            "then": {
+                                "properties": {
+                                    "interpolation scheme": { 
+                                        "type": "string",
+                                        "enum": ["log-lin", "lin-lin"]
+                                    },
+                                    "rounding scheme": { "type": "number" }
+                                },
+                                "required": ["interpolation scheme", "rounding scheme", "function type"]
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": { "function type": {"const": "hard coded"} }
+                            },
+                            "then": {
+                                "properties": {
+                                    "name": { "type": "string" }
+                                },
+                                "required": ["name", "function type"]
+                            }    
+                        }
+                    ]
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": { "function": { "properties": { "function type": { "const": "constant" } } } }
+                    },
+                    "then": {
+                        "properties": {
+                            "references": { "$ref": "referenceSchema" }
+                        },
+                        "required": ["references"]
+                    },
+                    "else": {
+                        "properties": {
+                            "tabulated data": { "$ref": "tabulatedData" },
+                            "references": { "$ref": "referenceSchema" }
+                        },
+                        "required": ["tabulated data", "references"]
+                    }
+                }
+            ],
+            "required": ["function"]            
+        },
+
+        "instantaneous coefficient of thermal expansion": { "$ref": "materialProperty" },
+        "mean coefficient of thermal expansion": { "$ref": "materialProperty" },
+        "specific heat capacity": { "$ref": "materialProperty" },
+        "Young's modulus": { "$ref": "materialProperty" },
+        "thermal conductivity": { "$ref": "materialProperty" },
+        "dynamic viscosity": { "$ref": "materialProperty" },
+        "kinematic viscosity": { "$ref": "materialProperty" },
+        "Poisson's ratio": { "$ref": "materialProperty" },
+        "density": { "$ref": "materialProperty" },
+        "allowable stress": { "$ref": "materialProperty" },
+        "design stress": { "$ref": "materialProperty" },
+        "service reference stress": { "$ref": "materialProperty" },
+        "design reference stress": { "$ref": "materialProperty" },
+        "stress to rupture": { "$ref": "materialProperty" },
+        "time dependent design stress": { "$ref": "materialProperty" },
+        "tensile strength": { "$ref": "materialProperty" },
+        "yield strength": { "$ref": "materialProperty" },
+        "allowable time to rupture": { "$ref": "materialProperty" },
+        "allowable time to allowable stress": { "$ref": "materialProperty" },
+        "tensile strength reduction factor": { "$ref": "materialProperty" },
+        "yield strength reduction factor": { "$ref": "materialProperty" },
+        "latent heat of vaporization": { "$ref": "materialProperty" },
+        "design fatigue strain range": { "$ref": "materialProperty" },
+        "design fatigue stress": { "$ref": "materialProperty" },
+        "surface tension": { "$ref": "materialProperty" },
+        "electrical conductance": { "$ref": "materialProperty" },
+        "vapor pressure": { "$ref": "materialProperty" },
+        "isothermal compressibility": { "$ref": "materialProperty" },
+        "melting temperature": { "$ref": "materialProperty" },
+        "boiling temperature": { "$ref": "materialProperty" },
+        "enthalpy of fusion": { "$ref": "materialProperty" } 
+
+    },
+    "additionalProperties": false,
+    "required": ["material type", "composition"]
+}
