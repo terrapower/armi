@@ -30,8 +30,7 @@ authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
 dependencies = [
-    "numpy",
-    "scipy",
+    "jsonschema",
     "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
     "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
@@ -63,6 +62,8 @@ Repository = "https://github.com/terrapower/armi"
 
 [project.optional-dependencies]
 test = [
+    "numpy>=1.11.3",
+    "scipy>=1.1.0",
     "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
     "pytest>=7.0.0", # Our primary test tooling
 ]
