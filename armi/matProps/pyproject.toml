@@ -20,7 +20,7 @@ requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "matProps"
+name = "mat-props"
 version = "3.0.0"
 description = "A material library for scientific modeling, where YAML data can be loaded into Python objects."
 license = {text = "Apache-2.0"}

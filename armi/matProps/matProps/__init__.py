@@ -19,6 +19,11 @@ The package uses resource files (YAML) to define Material objects with Property 
 not include any material data files. The user may create their own data files to use with matProps by passing a path in
 matProps.loadAll(path). ARMI does come with a set of material data files at TODO that are useful examples of how these
 YAML files are structured.
+
+TODO: A discussion of design is important here. The mat-props library uses global data, which is not ideal. It seems on
+the surface like a better design would be to make a class ``MaterialLibrary`` to encapsulate this global data
+(loadedRootDirs, materials, and properties from property.py), and the functions in this file (getPaths, addMaterial,
+etc). This would make mat-props more flexible, and would certainly ease testing.
 """
 
 import os

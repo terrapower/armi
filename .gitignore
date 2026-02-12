@@ -33,11 +33,11 @@ test_results.*
 wheelhouse
 
 # No workspace crumbs
-**.egg-info/
 **/.coverage*
 **/__pycache__
 **/logs/*
 *.ascii
+*.egg-info/
 *.sublime-project
 *.sublime-workspace
 *.temp
@@ -61,6 +61,11 @@ wheelhouse
 .vim-bookmarks
 .vscode
 armi-venv/*
+armi/material/*.egg-info/
+armi/material/bdist_wheel/
+armi/material/dist/
+bdist_wheel/
+dist/
 dump-temp-*
 dump-tests*
 phabricator-lint.txt
