@@ -56,7 +56,6 @@ classifiers = [
 [project.urls]
 Homepage = "https://terrapower.github.io/armi/"
 Documentation = "https://terrapower.github.io/armi"
-Changelog = "https://github.com/terrapower/armi/releases"  # TODO
 Repository = "https://github.com/terrapower/armi"
 "Bug Tracker" = "https://github.com/terrapower/armi/issues"
 

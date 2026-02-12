@@ -25,7 +25,7 @@ IGNORED_OBJECTS = [
     "armi.egg-info",
     "armi/logs/ARMI.armiRun.",
     "armi/logs/armiRun.mpi.log",
-    "armi/matProps/mat_props.build/",
+    "armi/matProps/build/",
     "armi/matProps/mat_props.egg-info/",
     "armi/tests/tutorials/case-suite/",
     "armi/tests/tutorials/logs/",
