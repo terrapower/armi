@@ -1,15 +1,15 @@
-# The goal of this Workflow is to test MatProps as a stand-alone library, separate from ARMI.
-name: Test MatProps
+# The goal of this Workflow is to test mat-props as a stand-alone library, separate from ARMI.
+name: Test mat-props
 
 permissions:
   contents: read
 
 on:
   push:
-  #  branches:
-  #    - main
-  #  paths-ignore:
-  #    - 'doc/**'
+    branches:
+      - main
+    paths-ignore:
+      - 'doc/**'
   pull_request:
     paths-ignore:
       - 'doc/**'
@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - name: Install & Test MatProps
+      - name: Install & Test mat-props
         run: |
           set -x
           cd armi/matProps
