@@ -11,9 +11,10 @@
 *.fls
 *.lib
 /bin
-armi/material/bdist*/
-armi/material/build/
-armi/material/dist*/
+armi/matProps/*.egg-info/
+armi/matProps/bdist*/
+armi/matProps/build/
+armi/matProps/dist*/
 armi/tests/tutorials/case-suite
 bdist*/
 bin/*
@@ -64,7 +65,6 @@ wheelhouse
 .vim-bookmarks
 .vscode
 armi-venv/*
-armi/material/*.egg-info/
 dump-temp-*
 dump-tests*
 phabricator-lint.txt
