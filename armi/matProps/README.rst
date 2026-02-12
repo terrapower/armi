@@ -8,11 +8,21 @@ TODO: Independent of ARMI...
 Installation
 ************
 
-TODO
+TODO::
+
+    $ pip install -e .[test]
 
 
 Testing
 *******
 
-TODO
+TODO::
 
+    $ cd armi/matProps
+    $ python -m pytest .
+
+
+Loading Data
+************
+
+TODO

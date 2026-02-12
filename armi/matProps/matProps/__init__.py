@@ -17,8 +17,8 @@ The package matProps is a material library capable of computing material propert
 
 The package uses resource files (YAML) to define Material objects with Property Function attributes. This package does
 not include any material data files. The user may create their own data files to use with matProps by passing a path in
-matProps.loadAll(path). ARMI does come with a set of material data files at armi.testing.materials that are useful
-examples of how these YAML files are structured. TODO
+matProps.loadAll(path). ARMI does come with a set of material data files at TODO that are useful examples of how these
+YAML files are structured.
 """
 
 import os
