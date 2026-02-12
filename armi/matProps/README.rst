@@ -102,7 +102,3 @@ easy to do, using standard PIP tools:
 
 And now, in the directory `armi/matProps/dist/` you will have several wheels, but one of them will be the one you want:
 `mat_props-1.2.3-py3-none-any.whl`.
-
-
-
-TODO: Ensure the mat-props API shows up in the API docs, that will be needed for sphinx-needs later.
