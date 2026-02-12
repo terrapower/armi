@@ -30,4 +30,4 @@ One-line Impact on Requirements: NA
 - [ ] [Tests](https://terrapower.github.io/armi/developer/tooling.html#test-it) have been added/updated to verify any new/changed code.
 - [ ] The [documentation](https://terrapower.github.io/armi/developer/tooling.html#document-it) is still up-to-date in the `doc` folder.
 - [ ] The code style follows [good practices](https://terrapower.github.io/armi/developer/standards_and_practices.html).
-- [ ] The dependencies are still up-to-date in `pyproject.toml`.
+- [ ] The dependencies are still up-to-date in `pyproject.toml` and `armi/matProps/pyproject.toml`.

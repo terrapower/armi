@@ -66,23 +66,25 @@ or, to run the tests faster in parllel:
 Loading Data
 ************
 
-TODO:
+In your Python code, you can load a full set of mat-props materials into memory with just one or two lines of code. You just have to provide a path to a directory filled with correctly-formatted YAML files:
 
 .. code-block:: python
 
     import matProps
 
-    pathToMaterialYAMLs = "xyz"
+    pathToMaterialYAMLs = "path/to/materialDir/"
     matProps.loadSafe(pathToMaterialYAMLs)
 
 
-TODO default path:
+If you do not specify a directory for the YAML files, there is a default location in your virtual environment you can
+store the data files (in a package named `material_data`):
 
 .. code-block:: python
 
     import matProps
 
     matProps.loadSafe()
+
 
 
 Building a Wheel
@@ -93,7 +95,14 @@ easy to do, using standard PIP tools:
 
 .. code-block:: bash
 
-    TODO: We need to add some stuff to the pyproject.toml here.
+    cd armi/matProps
+
+    mkdir dist
+    pip wheel . -w dist/
+
+And now, in the directory `armi/matProps/dist/` you will have several wheels, but one of them will be the one you want:
+`mat_props-1.2.3-py3-none-any.whl`.
+
 
 
 TODO: Ensure the mat-props API shows up in the API docs, that will be needed for sphinx-needs later.

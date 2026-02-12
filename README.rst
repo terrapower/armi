@@ -74,8 +74,7 @@ Now clone and install ARMI::
     $ pip install -e .
     $ armi --help
 
-The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0.x/>`_
-locally ::
+The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0.x/>`_ locally::
 
     $ pip install -e ".[test]"
     $ pytest -n 4 armi
