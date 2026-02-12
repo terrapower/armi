@@ -19,11 +19,13 @@ import subprocess
 # A list of objects we expect during a run, and don't mind (like pycache dirs).
 IGNORED_OBJECTS = [
     ".pytest_cache",
+    ".ruff_cache/",
     ".tox",
     "__pycache__",
     "armi.egg-info",
     "armi/logs/ARMI.armiRun.",
     "armi/logs/armiRun.mpi.log",
+    "armi/matProps/mat_props.egg-info/",
     "armi/tests/tutorials/case-suite/",
     "armi/tests/tutorials/logs/",
     "armiRun.h5",

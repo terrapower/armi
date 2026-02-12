@@ -10,14 +10,13 @@
 *.fdb_latexmk
 *.fls
 *.lib
-/bin
+bin
 armi/matProps/*.egg-info/
 armi/matProps/bdist*/
 armi/matProps/build/
 armi/matProps/dist*/
 armi/tests/tutorials/case-suite
 bdist*/
-bin/*
 build
 coverage.lcov
 coverage.xml
