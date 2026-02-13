@@ -44,9 +44,18 @@ print("\n\nTODO JOHN TESTING\n")
 print(os.getcwd())
 print(__file__)
 print(os.listdir("."))
+
+
+for line in sys.path:
+    print(line)
+
 print("\n\nTODO JOHN TESTING\n")
 
-from doc.getTestResults import getTestResult
+try:
+    from doc.getTestResults import getTestResult
+except Exception as e:
+    print(e)
+    from getTestResults import getTestResult
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
