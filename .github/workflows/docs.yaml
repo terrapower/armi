@@ -54,7 +54,9 @@ jobs:
           cd doc
           git submodule init
           git submodule update
+          pwd
           make html
+          pwd
 
           echo "Build PDF docs..."
           make latex
