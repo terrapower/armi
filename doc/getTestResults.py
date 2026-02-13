@@ -121,26 +121,11 @@ def getTestResult(app, need, needs):
         return "passed"
 
 
-# Here is where we fill out all the test results, so it is only done once
-for file in glob.glob(os.path.join(RESULTS_DIR, "*.xml")):
-    TEST_RESULTS.extend(parseTestXML(file))
+def fillGlobalData():
+    global TEST_RESULTS
+    # Here is where we fill out all the test results, so it is only done once
+    for file in glob.glob(os.path.join(RESULTS_DIR, "*.xml")):
+        TEST_RESULTS.extend(parseTestXML(file))
 
-if __name__ == "__main__":
-    # Prints results of all the tests found in the repo in a pytest-like way
-    colors = {
-        "passed": "\033[92m",
-        "skipped": "\033[93m",
-        "failure": "\033[91m",
-        "end": "\033[0m",
-    }
-    for testcase in TEST_RESULTS:
-        print(
-            "{} {} {} {}::{}::{}".format(
-                colors[testcase["result"]],
-                testcase["result"].upper(),
-                colors["end"],
-                testcase["file"],
-                testcase["class"],
-                testcase["method"],
-            )
-        )
+
+fillGlobalData()
