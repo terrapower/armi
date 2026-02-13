@@ -126,11 +126,8 @@ docs = [
 armi = "armi.__main__:main"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = [
-    "armi",
-    "armi.*",
-]
+where = ["armi"]
+exclude = ["armi.matProps", "armi.matProps.*"]
 
 
 #######################################################################
