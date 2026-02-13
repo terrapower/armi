@@ -42,25 +42,6 @@ from sphinx.domains.python import PythonDomain
 from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
 from sphinx_needs.api import add_dynamic_function
 
-print("\n\nTODO JOHN TESTING\n")
-print(os.getcwd())
-print(__file__)
-print(os.listdir("."))
-
-
-for line in sys.path:
-    print(line)
-
-print("\n\nTODO JOHN TESTING\n")
-
-"""
-try:
-    from doc.getTestResults import getTestResult
-except ModuleNotFoundError as e:
-    print(e)
-    from getTestResults import getTestResult
-"""
-
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
@@ -84,7 +65,6 @@ APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 STATIC_DIR = ".static"
 _TUTORIAL_FILES = [fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
-
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(THIS_DIR, "..")
 TEST_RESULTS = []
@@ -92,6 +72,8 @@ TEST_RESULTS = []
 
 def parseTestXML(file):
     """Parse the test result XML file to gather results in a list of dictionaries.
+
+    This is a helper function for getTestResult() below.
 
     Parameters
     ----------
@@ -191,6 +173,7 @@ def getTestResult(app, need, needs):
 
 
 def fillGlobalData():
+    """This method is meant to be run after the unit tests are complete, to fill data needed by sphinx-needs."""
     global TEST_RESULTS
     # Here is where we fill out all the test results, so it is only done once
     for file in glob.glob(os.path.join(RESULTS_DIR, "*.xml")):

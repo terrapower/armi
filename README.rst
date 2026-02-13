@@ -232,8 +232,7 @@ For example, one ARMI sequence may involve the calculation of:
 * shutdown margin,
 * frequency stability margins,
 * total levelized cost of electricity for the run,
-* and the peak cladding temperature in a variety of design and beyond-design basis
-  transients.
+* and the peak cladding temperature in a variety of design and beyond-design basis transients.
 
 Another sequence may simply compute the cost of feed uranium and enrichment in an initial core and quit. The
 possibilities are limited only by our creativity.
