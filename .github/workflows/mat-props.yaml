@@ -37,7 +37,10 @@ jobs:
       - name: Install & Test mat-props
         run: |
           set -x
-          cd mat-props
+          cd armi
+          mv __init__.py tmpinit
+          touch __init__.py
+          cd ../mat-props
           pip freeze
           pip uninstall -y armi
           pip install -e .[test]
