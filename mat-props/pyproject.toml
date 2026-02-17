@@ -68,12 +68,12 @@ test = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["../armi"]
 include = [
-    "matProps",
-    "matProps.*",
-    "matProps.dataSchema",
-    "matProps.dataSchema.*",
+    "armi.matProps",
+    "armi.matProps.*",
+    "armi.matProps.dataSchema",
+    "armi.matProps.dataSchema.*",
 ]
 
 

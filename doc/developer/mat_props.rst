@@ -1,1 +1,1 @@
-.. include:: ../../armi/matProps/README.rst
+.. include:: ../../mat-props/README.rst
