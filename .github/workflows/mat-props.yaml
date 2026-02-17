@@ -53,8 +53,10 @@ jobs:
           cp ../armi/matProps/tests/test_point.py .
           pytest test_point.py
       - name: Archive Wheel
+        # TODO: Before the PR is merged, I want to make this: ==
+        if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: mat-props-wheel
-          path: mat-props/dist/mat_props-*.whl
+          name: mat-props-whl
+          path: mat-props/dist/mat_props-*-py3-none-any.whl
           retention-days: 5
