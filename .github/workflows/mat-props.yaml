@@ -58,5 +58,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mat-props-whl
-          path: mat-props/dist/mat_props-*-py3-none-any.whl
+          path: mat-props/dist/
           retention-days: 5
