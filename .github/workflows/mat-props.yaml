@@ -38,8 +38,11 @@ jobs:
         run: |
           set -x
           cd mat-props
+          pip freeze
           pip uninstall -y armi
           pip install -e .[test]
+          python -c "import armi;print(dir(armi))"
+          python -c "import armi.matProps;print(dir(armi.matProps))"
           mkdir tmp
           cd tmp
           cp ../../armi/matProps/tests/test_point.py .
