@@ -48,6 +48,8 @@ jobs:
           pip install .[test]
           pip uninstall -y mat-props
           pip install dist/mat_props*
+          rm !(dist/mat*)
+          ls .
 
           # copy over a simple test file, to make sure mat-props was installed correctly
           cp ../armi/matProps/tests/test_point.py .
@@ -57,6 +59,6 @@ jobs:
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: mat-props-whl
-          path: mat-props/dist/
+          name: mat-whl
+          path: mat-props/dist
           retention-days: 5
