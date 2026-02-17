@@ -36,6 +36,7 @@ jobs:
       - name: Install & Test mat-props
         run: |
           set -x
-          cd armi/matProps
+          cd mat-props
           pip install -e .[test]
+          cd ../armi/matProps
           pytest -n 4 .
