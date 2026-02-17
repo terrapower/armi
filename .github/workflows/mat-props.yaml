@@ -24,8 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        #python: [3.9, '3.10', '3.11', '3.12', '3.13']
-        python: ['3.13']
+        python: [3.9, '3.10', '3.11', '3.12', '3.13']
 
     steps:
       - uses: actions/checkout@v4
@@ -40,4 +39,5 @@ jobs:
           cd mat-props
           pip install -e .[test]
           cp ../armi/matProps/tests/test_point.py .
+          pip freeze
           pytest test_point.py
