@@ -218,10 +218,10 @@ class Function:
         Function
             Function pointer parsed from the specified property.
         """
-        from matProps.piecewiseFunction import PiecewiseFunction
-        from matProps.symbolicFunction import SymbolicFunction
-        from matProps.tableFunction1D import TableFunction1D
-        from matProps.tableFunction2D import TableFunction2D
+        from armi.matProps.piecewiseFunction import PiecewiseFunction
+        from armi.matProps.symbolicFunction import SymbolicFunction
+        from armi.matProps.tableFunction1D import TableFunction1D
+        from armi.matProps.tableFunction2D import TableFunction2D
 
         funTypes = {
             "symbolic": SymbolicFunction,
@@ -269,9 +269,9 @@ class Function:
         node
             YAML containing object to be parsed
         """
-        from matProps.reference import Reference
-        from matProps.tableFunction1D import TableFunction1D
-        from matProps.tableFunction2D import TableFunction2D
+        from armi.matProps.reference import Reference
+        from armi.matProps.tableFunction1D import TableFunction1D
+        from armi.matProps.tableFunction2D import TableFunction2D
 
         func_node = node["function"]
 

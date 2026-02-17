@@ -31,7 +31,7 @@ import sysconfig
 import warnings
 from glob import glob
 
-from matProps.material import Material
+from armi.matProps.material import Material
 
 loadedRootDirs = []
 materials = {}

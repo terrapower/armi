@@ -17,7 +17,7 @@
 import math
 import unittest
 
-from matProps.material import Material
+from armi.matProps.material import Material
 
 
 class MatPropsFunTestBase(unittest.TestCase):

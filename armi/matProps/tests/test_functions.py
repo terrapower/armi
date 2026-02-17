@@ -14,7 +14,7 @@
 
 """Unit tests for the Function class."""
 
-from matProps.tests import MatPropsFunTestBase
+from armi.matProps.tests import MatPropsFunTestBase
 
 
 class TestFunctions(MatPropsFunTestBase):

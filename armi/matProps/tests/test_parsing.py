@@ -19,7 +19,7 @@ import tempfile
 import unittest
 from os import path
 
-import matProps
+import armi.matProps
 
 
 class TestParsing(unittest.TestCase):
@@ -39,64 +39,64 @@ class TestParsing(unittest.TestCase):
                 if fileName.lower().endswith((".yaml", ".yml")):
                     cls.dummyMatFiles[fileName] = os.path.join(root, fileName)
 
-        matProps.clear()
+        armi.matProps.clear()
 
     def tearDown(self):
-        matProps.clear()
+        armi.matProps.clear()
 
     def test_datafilesMatOwner(self):
         for matFile, matPath in self.dummyMatFiles.items():
             matNam = path.splitext(matFile)[0]
             # the default behavior is loadMaterial(matPath, false)
-            m = matProps.loadMaterial(matPath)
+            m = armi.matProps.loadMaterial(matPath)
             self.assertIsNotNone(m)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
-                matProps.getMaterial(matNam)
-            m = matProps.loadMaterial(self.dummyMatFiles[matFile], False)
+                armi.matProps.getMaterial(matNam)
+            m = armi.matProps.loadMaterial(self.dummyMatFiles[matFile], False)
             self.assertIsNotNone(m)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
-                matProps.getMaterial(matNam)
-            m = matProps.loadMaterial(self.dummyMatFiles[matFile], True)
+                armi.matProps.getMaterial(matNam)
+            m = armi.matProps.loadMaterial(self.dummyMatFiles[matFile], True)
             self.assertIsNotNone(m)
-            m = matProps.getMaterial(matNam)
+            m = armi.matProps.getMaterial(matNam)
             self.assertIsNotNone(m)
 
     def test_multiDataLoadingLoadingAll(self):
-        matProps.loadAll(self.dummyDataPath)
-        self.assertEqual(len(self.dummyMatFiles), len(matProps.loadedMaterials()))
+        armi.matProps.loadAll(self.dummyDataPath)
+        self.assertEqual(len(self.dummyMatFiles), len(armi.matProps.loadedMaterials()))
 
-        matProps.clear()
-        self.assertEqual(0, len(matProps.loadedMaterials()))
+        armi.matProps.clear()
+        self.assertEqual(0, len(armi.matProps.loadedMaterials()))
 
     def test_loadSafe(self):
-        matProps.clear()
-        self.assertEqual(0, len(matProps.loadedMaterials()))
+        armi.matProps.clear()
+        self.assertEqual(0, len(armi.matProps.loadedMaterials()))
 
         # verify that it is safe to call loadSafe() multiple times in a row
         for _ in range(3):
-            matProps.loadSafe(self.dummyDataPath)
-            self.assertEqual(len(self.dummyMatFiles), len(matProps.loadedMaterials()))
+            armi.matProps.loadSafe(self.dummyDataPath)
+            self.assertEqual(len(self.dummyMatFiles), len(armi.matProps.loadedMaterials()))
 
         # verify the correct behavior if a bad directory is provided
         badDir = "does_not_exist_2924"
         with self.assertRaisesRegex(FileNotFoundError, f"Directory {badDir} not found"):
-            matProps.loadSafe(badDir)
+            armi.matProps.loadSafe(badDir)
 
     def test_dataLoadingPrioSameDir(self):
-        matProps.loadAll(self.dummyDataPath)
+        armi.matProps.loadAll(self.dummyDataPath)
         with self.assertRaises(KeyError):
-            matProps.loadAll(self.dummyDataPath)
+            armi.matProps.loadAll(self.dummyDataPath)
 
     def test_datafilesBadPath(self):
         badDir = "nopity-nopers-missing"
         with self.assertRaisesRegex(FileNotFoundError, f"Directory {badDir} not found"):
-            matProps.loadAll(badDir)
+            armi.matProps.loadAll(badDir)
 
         with self.assertRaisesRegex(NotADirectoryError, "Input path"):
-            matProps.loadAll(path.abspath(__file__))
+            armi.matProps.loadAll(path.abspath(__file__))
 
         with tempfile.TemporaryDirectory() as tmpDirName:
-            matProps.loadAll(tmpDirName)
+            armi.matProps.loadAll(tmpDirName)
 
     def test_multiDataLoadingMultidir(self):
         """Tests loading multiple data directories.
@@ -108,11 +108,11 @@ class TestParsing(unittest.TestCase):
         dir2 = path.join(self.dirname, "testDir2")
 
         # Load the two directories
-        matProps.loadAll(dir1)
-        matProps.loadAll(dir2)
+        armi.matProps.loadAll(dir1)
+        armi.matProps.loadAll(dir2)
 
         # Check that the two directories are in loaded materials
-        loadList = matProps.getLoadedRootDirs()
+        loadList = armi.matProps.getLoadedRootDirs()
         self.assertTrue(dir1 in loadList)
         self.assertTrue(dir2 in loadList)
         self.assertTrue(len(loadList) == 2)
@@ -125,7 +125,7 @@ class TestParsing(unittest.TestCase):
             fileSet.add(path.splitext(fileName)[0])
 
         materialSet = set()
-        for material in matProps.loadedMaterials():
+        for material in armi.matProps.loadedMaterials():
             materialSet.add(material.name)
 
         self.assertTrue(fileSet == materialSet)
@@ -140,11 +140,11 @@ class TestParsing(unittest.TestCase):
         dir1 = path.join(self.dirname, "testDir1")
         dir3 = path.join(self.dirname, "testDir3")
 
-        matProps.loadAll(dir1)
+        armi.matProps.loadAll(dir1)
         with self.assertRaisesRegex(KeyError, "already exists"):
-            matProps.loadAll(dir3)
+            armi.matProps.loadAll(dir3)
 
-        matA = matProps.getMaterial("a")
+        matA = armi.matProps.getMaterial("a")
         density = matA.rho
         # Will evaluate to 1.0 if we have the data loaded from testDir1/a.yaml.
         # If we load from testDir3/a.yaml it will have a different value
@@ -157,9 +157,9 @@ class TestParsing(unittest.TestCase):
 
         Also tests trying to access an unknown material.
         """
-        matProps.loadAll(self.dummyDataPath)
-        for mat in matProps.loadedMaterials():
-            self.assertEqual(mat, matProps.getMaterial(mat.name))
+        armi.matProps.loadAll(self.dummyDataPath)
+        for mat in armi.matProps.loadedMaterials():
+            self.assertEqual(mat, armi.matProps.getMaterial(mat.name))
 
         with self.assertRaisesRegex(KeyError, "No material named `Fahrvergnugen` was loaded"):
-            matProps.getMaterial("Fahrvergnugen")
+            armi.matProps.getMaterial("Fahrvergnugen")

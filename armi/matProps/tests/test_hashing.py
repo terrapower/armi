@@ -17,7 +17,7 @@
 import os
 import unittest
 
-import matProps
+import armi.matProps
 
 
 class TestHashValues(unittest.TestCase):
@@ -31,8 +31,8 @@ class TestHashValues(unittest.TestCase):
         testFileA = os.path.join(self.testDir, "testDir1", "a.yaml")
         testFileB = os.path.join(self.testDir, "testMaterialsData", "materialB.yaml")
 
-        matA = matProps.loadMaterial(testFileA, False)
-        matB = matProps.loadMaterial(testFileB, False)
+        matA = armi.matProps.loadMaterial(testFileA, False)
+        matB = armi.matProps.loadMaterial(testFileB, False)
 
         hA = matA.hash()
         hB = matB.hash()

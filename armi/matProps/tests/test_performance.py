@@ -20,7 +20,7 @@ import pickle
 import timeit
 import unittest
 
-import matProps
+import armi.matProps
 
 # NOTE: This is a sketchy magic number for testing that are heavily machine dependent.
 _LIMIT_SECONDS = 15
@@ -34,22 +34,22 @@ class TestPerformance(unittest.TestCase):
 
     def test_load(self):
         """Tests the speed of loading a set of material files."""
-        matProps.clear()
+        armi.matProps.clear()
 
         testFiles = os.path.join(os.path.dirname(__file__), "testMaterialsData")
 
-        t = timeit.timeit(lambda: (matProps.loadAll(testFiles), matProps.clear()), number=10)
+        t = timeit.timeit(lambda: (armi.matProps.loadAll(testFiles), armi.matProps.clear()), number=10)
 
         self.assertLess(t, _LIMIT_SECONDS, msg="matProps material loading takes too long to execute.")
 
     def test_pickle(self):
         """Tests the speed of pickling a set of material files. Pickling is important for multiprocessing."""
-        matProps.clear()
+        armi.matProps.clear()
 
         # This directory's material has many properties so it is more representative for pickle size.
         testFiles = os.path.join(os.path.dirname(__file__), "testDir4")
-        matProps.loadAll(testFiles)
-        mat = matProps.getMaterial("sampleProperty")
+        armi.matProps.loadAll(testFiles)
+        mat = armi.matProps.getMaterial("sampleProperty")
 
         t = timeit.timeit(lambda: pickle.loads(pickle.dumps(mat)), number=100)
 
@@ -57,12 +57,12 @@ class TestPerformance(unittest.TestCase):
 
     def test_calc(self):
         """Tests the speed of calculating a property value."""
-        matProps.clear()
+        armi.matProps.clear()
 
         testFiles = os.path.join(os.path.dirname(__file__), "testMaterialsData")
-        matProps.loadAll(testFiles)
+        armi.matProps.loadAll(testFiles)
         # This material's density is a linear function.
-        mat = matProps.getMaterial("materialA")
+        mat = armi.matProps.getMaterial("materialA")
         prop = mat.rho
 
         t = timeit.timeit(lambda: prop.calc({"T": 300}), number=10000)
@@ -74,12 +74,12 @@ class TestPerformance(unittest.TestCase):
         Tests the speed of deepcopying a material. Copying is important for copying other objects that may be
         referencing a matProps material.
         """
-        matProps.clear()
+        armi.matProps.clear()
 
         # This directory's material has many properties so it is more representative for copy size.
         testFiles = os.path.join(os.path.dirname(__file__), "testDir4")
-        matProps.loadAll(testFiles)
-        mat = matProps.getMaterial("sampleProperty")
+        armi.matProps.loadAll(testFiles)
+        mat = armi.matProps.getMaterial("sampleProperty")
 
         t = timeit.timeit(lambda: copy.deepcopy(mat), number=100)
 

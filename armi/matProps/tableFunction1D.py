@@ -14,9 +14,9 @@
 
 """A simple implementation for a one dimensional table to replace analytic curves in the YAML data files."""
 
-from matProps.interpolationFunctions import linearLinear
-from matProps.point import Point
-from matProps.tableFunction import TableFunction
+from armi.matProps.interpolationFunctions import linearLinear
+from armi.matProps.point import Point
+from armi.matProps.tableFunction import TableFunction
 
 
 class TableFunction1D(TableFunction):

@@ -22,7 +22,7 @@ import unittest
 
 import numpy as np
 
-from matProps.material import Material
+from armi.matProps.material import Material
 
 
 class TestSymbolicFunction(unittest.TestCase):

@@ -17,6 +17,7 @@
 properties = set()
 
 
+# TODO: The name of this file conflicts with the Python reserved keyword "property". I found this cause problems.
 class Property:
     """A Property of a material. Most properties are computed as temperature-dependent functions."""
 

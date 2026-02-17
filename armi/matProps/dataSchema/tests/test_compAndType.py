@@ -19,7 +19,7 @@ import unittest
 
 from jsonschema.exceptions import ValidationError
 
-from matProps.dataSchema.dataSchemaValidator import validateFile
+from armi.matProps.dataSchema.dataSchemaValidator import validateFile
 
 THIS_DIR = os.path.dirname(__file__)
 INPUTS_DIR = os.path.join(THIS_DIR, "inputs")

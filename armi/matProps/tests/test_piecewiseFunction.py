@@ -14,8 +14,8 @@
 
 """Tests related to piecewise functions."""
 
-from matProps.material import Material
-from matProps.tests import MatPropsFunTestBase
+from armi.matProps.material import Material
+from armi.matProps.tests import MatPropsFunTestBase
 
 
 class TestPiecewiseFunction(MatPropsFunTestBase):

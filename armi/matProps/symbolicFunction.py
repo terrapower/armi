@@ -22,7 +22,7 @@ from sympy import symbols
 from sympy.parsing import parse_expr
 from sympy.utilities.lambdify import lambdastr
 
-from matProps.function import Function
+from armi.matProps.function import Function
 
 
 class SymbolicFunction(Function):

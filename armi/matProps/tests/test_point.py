@@ -16,7 +16,7 @@
 
 import unittest
 
-from matProps.point import Point
+from armi.matProps.point import Point
 
 
 class TestPoint(unittest.TestCase):

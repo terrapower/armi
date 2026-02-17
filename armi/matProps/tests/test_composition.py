@@ -19,8 +19,8 @@ import unittest
 
 from ruamel.yaml.constructor import DuplicateKeyError
 
-import matProps
-from matProps.material import Material
+import armi.matProps
+from armi.matProps.material import Material
 
 
 class TestComposition(unittest.TestCase):
@@ -178,4 +178,4 @@ class TestComposition(unittest.TestCase):
             "duplicateComposition.yaml",
         )
         with self.assertRaises(DuplicateKeyError):
-            matProps.loadMaterial(duplicateTestFile)
+            armi.matProps.loadMaterial(duplicateTestFile)

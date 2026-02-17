@@ -18,8 +18,8 @@ import os
 import unittest
 from os import path
 
-import matProps
-from matProps.property import properties
+from armi.matProps import loadMaterial
+from armi.matProps.property import properties
 
 
 class PropertyTests(unittest.TestCase):
@@ -96,20 +96,20 @@ class PropertyTests(unittest.TestCase):
         tempFileName = os.path.join(os.path.dirname(__file__), "invalidTestFiles", "badProperty.yaml")
 
         with self.assertRaisesRegex(KeyError, "Invalid property node"):
-            matProps.loadMaterial(tempFileName)
+            loadMaterial(tempFileName)
 
     def test_propertiesDefinitions(self):
         """
-        Check a logic branch in the Function.factory method which initializes matProps.Function objects to be
-        null. matProps.Function objects only get set to a non-null object if the appropriate property node is provided
-        in the YAML file. A test YAML file with only the density property provided. It checks to make sure that the
-        Material.rho object corresponding with density is not a null object and performs an evaluation. A check is then
-        performed on the Material.k object. This object, which corresponds to the thermal conductivity property, should
-        be null as it is not defined in the test YAML file.
+        Check a logic branch in the Function.factory method which initializes armi.matProps.Function objects to be
+        null. armi.matProps.Function objects only get set to a non-null object if the appropriate property node is
+        provided in the YAML file. A test YAML file with only the density property provided. It checks to make sure that
+        the Material.rho object corresponding with density is not a null object and performs an evaluation. A check is
+        then performed on the Material.k object. This object, which corresponds to the thermal conductivity property,
+        should be null as it is not defined in the test YAML file.
         """
         # Only the density property exists for the material below. It is a constant function
         yamlFilePath = path.join(path.dirname(path.realpath(__file__)), "testDir1", "a.yaml")
-        mat = matProps.loadMaterial(yamlFilePath)
+        mat = loadMaterial(yamlFilePath)
         # Name of density function is rho for materials
         self.assertIsNotNone(mat.rho)
         self.assertAlmostEqual(mat.rho.calc({"T": 150.0}), 1.0)
@@ -119,7 +119,7 @@ class PropertyTests(unittest.TestCase):
     def test_spotCheckAllPropsDict(self):
         """Spot check every property at least once, using a dictionary of input values."""
         pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
-        testMat = matProps.loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
+        testMat = loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
         self.assertAlmostEqual(testMat.rho.calc({"T": 300.0}), 1.0)
         self.assertAlmostEqual(testMat.c_p.calc({"T": 300.0}), 2.0)
         self.assertAlmostEqual(testMat.k.calc({"T": 300.0}), 3.0)
@@ -171,7 +171,7 @@ class PropertyTests(unittest.TestCase):
     def test_spotCheckAllPropsKwargs(self):
         """Spot check every property at least once, using kwargs."""
         pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
-        testMat = matProps.loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
+        testMat = loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
         self.assertAlmostEqual(testMat.rho.calc(T=300.0), 1.0)
         self.assertAlmostEqual(testMat.c_p.calc(T=300.0), 2.0)
         self.assertAlmostEqual(testMat.k.calc(T=300.0), 3.0)

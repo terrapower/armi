@@ -19,7 +19,7 @@ import unittest
 import numpy as np
 from scipy import interpolate
 
-from matProps.interpolationFunctions import linearLinear, logLinear
+from armi.matProps.interpolationFunctions import linearLinear, logLinear
 
 
 class TestInterpolationFunctions(unittest.TestCase):

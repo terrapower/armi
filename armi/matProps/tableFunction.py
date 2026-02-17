@@ -14,7 +14,7 @@
 
 """A simple implementation for a simple table to replace analytic curves in the YAML data files."""
 
-from matProps.function import Function
+from armi.matProps.function import Function
 
 
 class TableFunction(Function):

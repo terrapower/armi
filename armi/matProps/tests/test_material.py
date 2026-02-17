@@ -17,9 +17,9 @@
 import os
 import unittest
 
-import matProps
-from matProps.material import Material
-from matProps.materialType import MaterialType
+import armi.matProps
+from armi.matProps.material import Material
+from armi.matProps.materialType import MaterialType
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -61,19 +61,19 @@ class TestMapPropsMaterial(unittest.TestCase):
         return mat
 
     def test_getValidFileFormatVersions(self):
-        versions = matProps.Material.getValidFileFormatVersions()
+        versions = armi.matProps.Material.getValidFileFormatVersions()
         self.assertGreater(len(versions), 1)
         for version in versions:
             if type(version) is not float:
                 self.assertEqual(version, "TESTS")
 
     def test_loadFile(self):
-        mat = matProps.Material()
+        mat = armi.matProps.Material()
         self.assertEqual(str(mat), "<Material None None>")
         fPath = os.path.join(THIS_DIR, "testMaterialsData", "materialA.yaml")
-        self.assertEqual(len(sorted(matProps.materials.keys())), 0)
+        self.assertEqual(len(sorted(armi.matProps.materials.keys())), 0)
         mat.loadFile(fPath)
-        self.assertEqual(len(sorted(matProps.materials.keys())), 0)
+        self.assertEqual(len(sorted(armi.matProps.materials.keys())), 0)
 
     def test_datafilesType(self):
         materialTypeNames = [

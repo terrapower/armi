@@ -17,9 +17,9 @@
 import copy
 import math
 
-from matProps.interpolationFunctions import findIndex, logLinear
-from matProps.point import Point
-from matProps.tableFunction import TableFunction
+from armi.matProps.interpolationFunctions import findIndex, logLinear
+from armi.matProps.point import Point
+from armi.matProps.tableFunction import TableFunction
 
 
 class TableFunction2D(TableFunction):

@@ -16,7 +16,7 @@
 
 import unittest
 
-from matProps.reference import Reference
+from armi.matProps.reference import Reference
 
 
 class TestReference(unittest.TestCase):

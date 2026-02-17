@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from matProps.tests import MatPropsFunTestBase
+from armi.matProps.tests import MatPropsFunTestBase
 
 
 class TestTableFunctions(MatPropsFunTestBase):

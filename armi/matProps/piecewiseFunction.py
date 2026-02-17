@@ -20,7 +20,7 @@ Each piece can be of any other type that matProps supports.
 
 import math
 
-from matProps.function import Function
+from armi.matProps.function import Function
 
 
 class PiecewiseFunction(Function):
