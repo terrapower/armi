@@ -38,5 +38,5 @@ jobs:
           set -x
           cd mat-props
           pip install -e .[test]
-          cd ../armi/matProps
-          pytest -n 4 .
+          cp ../armi/matProps/tests/test_point.py .
+          pytest .

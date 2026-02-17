@@ -283,6 +283,14 @@ ignore_errors = true
 [tool.setuptools.package-data]
 armi = [
     "bookkeeping/tests/armiRun-A0032-aHist-ref.txt",
+    "matProps/dataSchema/dataSchema.json",
+    "matProps/dataSchema/tests/inputs/*.yaml",
+    "matProps/tests/invalidTestFiles/*",
+    "matProps/tests/testDir1/*",
+    "matProps/tests/testDir2/*",
+    "matProps/tests/testDir3/*",
+    "matProps/tests/testDir4/*",
+    "matProps/tests/testMaterialsData/*",
     "nuclearDataIO/cccc/tests/fixtures/labels.ascii",
     "nuclearDataIO/cccc/tests/fixtures/labels.binary",
     "nuclearDataIO/cccc/tests/fixtures/mc2v3.dlayxs",

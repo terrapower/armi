@@ -67,34 +67,8 @@ test = [
     "pytest>=7.0.0", # Our primary test tooling
 ]
 
-[tool.setuptools.packages.find]
-where = ["../armi"]
-include = [
-    "armi.matProps",
-    "armi.matProps.*",
-    "armi.matProps.dataSchema",
-    "armi.matProps.dataSchema.*",
-]
+[tool.setuptools]
+packages = ["armi", "armi.matProps"]
 
-
-#######################################################################
-#                            PYTEST CONFIG                            #
-#######################################################################
-[tool.pytest.ini_options]
-python_files = "test_*.py"
-
-
-#######################################################################
-#              DATA FILES TO BE INCLUDED WITH THE PROJECT             #
-#######################################################################
-[tool.setuptools.package-data]
-mat_props = [
-    "dataSchema/dataSchema.json",
-    "dataSchema/tests/inputs/*.yaml",
-    "tests/invalidTestFiles/*",
-    "tests/testDir1/*",
-    "tests/testDir2/*",
-    "tests/testDir3/*",
-    "tests/testDir4/*",
-    "tests/testMaterialsData/*",
-]
+[tool.setuptools.package-dir]
+armi = "../armi"

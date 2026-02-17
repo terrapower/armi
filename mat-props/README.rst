@@ -2,6 +2,8 @@
 mat-props
 #########
 
+TODO: This is no longer accurate. We are back to "armi.matProps"
+
 **mat-props** is a Python library for defining materials for use in scientific modeling. The mat-props library takes in
 YAML-formatted files that define various properties of materials, like density. mat-props produces custom Material
 objects from the YAML data.
@@ -24,7 +26,7 @@ To install **mat-props**, without ARMI, via PIP:
 
 .. code-block:: bash
 
-    cd armi/armi/matProps
+    cd mat-props
     pip install -e .
 
 
@@ -70,10 +72,10 @@ In your Python code, you can load a full set of mat-props materials into memory 
 
 .. code-block:: python
 
-    import matProps
+    import armi.matProps
 
     pathToMaterialYAMLs = "path/to/materialDir/"
-    matProps.loadSafe(pathToMaterialYAMLs)
+    armi.matProps.loadSafe(pathToMaterialYAMLs)
 
 
 If you do not specify a directory for the YAML files, there is a default location in your virtual environment you can
@@ -81,9 +83,9 @@ store the data files (in a package named `material_data`):
 
 .. code-block:: python
 
-    import matProps
+    import armi.matProps
 
-    matProps.loadSafe()
+    armi.matProps.loadSafe()
 
 
 
@@ -95,10 +97,10 @@ easy to do, using standard PIP tools:
 
 .. code-block:: bash
 
-    cd armi/matProps
+    cd mat-props
 
     mkdir dist
     pip wheel . -w dist/
 
-And now, in the directory `armi/matProps/dist/` you will have several wheels, but one of them will be the one you want:
+And now, in the directory `mat-props/dist/` you will have several wheels, but one of them will be the one you want:
 `mat_props-1.2.3-py3-none-any.whl`.
