@@ -37,7 +37,10 @@ jobs:
         run: |
           set -x
           cd mat-props
+          pip uninstall -y armi
           pip install -e .[test]
-          cp ../armi/matProps/tests/test_point.py .
+          mkdir tmp
+          cd tmp
+          cp ../../armi/matProps/tests/test_point.py .
           pip freeze
           pytest test_point.py
