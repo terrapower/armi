@@ -13,12 +13,17 @@
 # limitations under the License.
 
 """
-The package matProps is a material library capable of computing material property quantities.
+The package armi.matProps is a material library capable of representing and computing material properties.
 
-The package uses resource files (YAML) to define Material objects with Property Function attributes. This package does
-not include any material data files. The user may create their own data files to use with matProps by passing a path in
-matProps.loadAll(path). ARMI does come with a set of material data files at TODO that are useful examples of how these
-YAML files are structured.
+The matProps package allows users to define materials in a custom YAML format. The format is simple, extensible, and
+easy to use. Each material has a list of "properties" (like density, specific heat, vapor pressure, etc). Each of those
+properties be an arbitrary function of multiple independent variables, or a look up table of one or more variables. Each
+of these properties can define their own set of references, to allow for trustworthy modeling. A major idea in matProps
+is that we separate out materials as "data", rather than representing them directly in Python as "code".
+
+This package does not include any material data files. The user may create their own data files to use with matProps by
+passing a path in armi.matProps.loadAll(path). The unit tests in this package have many example YAML files. And ARMI
+comes packaged with more real world examples at: ``armi/resources/materials/``.
 
 TODO: A discussion of design is important here. The mat-props library uses global data, which is not ideal. It seems on
 the surface like a better design would be to make a class ``MaterialLibrary`` to encapsulate this global data
