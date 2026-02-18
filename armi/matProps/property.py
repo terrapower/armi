@@ -16,12 +16,63 @@
 
 properties = set()
 
+PROPERTIES = {
+    "alpha_d": ("thermal diffusivity", "m^2/s", r"(\alpha_d)"),
+    "alpha_inst": ("instantaneous coefficient of thermal expansion", r"(1/^\circ{}C)", r"(\alpha_{inst})"),
+    "alpha_mean": ("mean coefficient of thermal expansion", r"(1/^\circ{}C)", r"(\alpha_{mean})"),
+    "c_p": ("specific heat capacity", r"U(J/(kg\dot{}^\circ{}C))U"),
+    "dH_fus": ("enthalpy of fusion", "J/kg", r"(\Delta H_{f})"),
+    "dH_vap": ("latent heat of vaporization", "J/kg", r"(\Delta H_{v})"),
+    "dl_l": ("linear expansion", "unitless", r"\Delta l_{percent}"),
+    "dV": ("volumetric expansion", r"m^3/(^\circ{}C)", r"\Delta V"),
+    "E": ("Young's modulus", "Pa"),
+    "Elong": ("elongation", "%", r"\epsilon"),
+    "eps_iso": ("strain from isochronous stress-strain curve", "unitless"),
+    "eps_t": ("design fatigue strain range", "unitless"),
+    "f": ("factor f from ASME.III.5 Fig. HBB-T-1432-2", "unitless"),
+    "G": ("electrical conductance", r"U(1/(\Omega\dot m))U"),
+    "gamma": ("surface tension", r"(N\dot m)", r"(\gamma)"),
+    "H": ("enthalpy", "J/kg"),
+    "H_calc_T": ("temperature from enthalpy", r"(^\circ{}C)", r"(^\circ{}C)"),
+    "HBW": ("Brinell Hardness", "BHN"),
+    "k": ("thermal conductivity", r"U(W/(m\dot{}^\circ{}C))U"),
+    "K_IC": ("fracture toughness", r"MPa\dot\sqrt(m)", r"K_{IC}"),
+    "kappa": ("isothermal compressibility", r"(1/Pa)", r"(\kappa)"),
+    "Kv_prime": ("factor Kv' from ASME.III.5 Fig. HBB-T-1432-3", "unitless", r"K_{v}^{'}"),
+    "mu_d": ("dynamic viscosity", r"(Pa\dot{}s)", r"(\mu_d)"),
+    "mu_k": ("kinematic viscosity", "m^2/s", r"(\mu_k)"),
+    "nu": ("Poisson's ratio", "unitless", r"(\nu)"),
+    "nu_g": ("vapor specific volume", "m^3/kg", r"\nu"),
+    "P_sat": ("vapor pressure", r"(Pa)", "P_{sat}"),
+    "rho": ("density", "kg/m^3", r"(\rho)"),
+    "S": ("shear modulus", "Pa"),
+    "Sa": ("allowable stress", "Pa"),
+    "SaFat": ("design fatigue stress", "Pa"),
+    "Sm": ("design stress", "Pa"),
+    "Smt": ("service reference stress", "Pa"),
+    "So": ("design reference stress", "Pa"),
+    "Sr": ("stress to rupture", "Pa"),
+    "St": ("time dependent design stress", "Pa"),
+    "Su": ("tensile strength", "Pa"),
+    "Sy": ("yield strength", "Pa"),
+    "T_boil": ("boiling temperature", r"(^\circ{}C)", r"(T_{boil})"),
+    "T_liq": ("liquidus temperature", r"(^\circ{}C)", r"(T_{liq})"),
+    "T_melt": ("melting temperature", r"(^\circ{}C)", r"(T_{melt})"),
+    "T_sol": ("solidus temperature", r"(^\circ{}C)", r"(T_{sol})"),
+    "tMaxSr": ("allowable time to rupture", "s"),
+    "tMaxSt": ("allowable time to allowable stress", "s"),
+    "TSRF": ("tensile strength reduction factor", "unitless"),
+    "v_sound": ("speed of sound", "m/s", r"(v_{sound})"),
+    "WSRF": ("weld strength reduction factor", "unitless"),
+    "YSRF": ("yield strength reduction factor", "unitless"),
+}
+
 
 # TODO: The name of this file conflicts with the Python reserved keyword "property". I found this cause problems.
 class Property:
     """A Property of a material. Most properties are computed as temperature-dependent functions."""
 
-    def __init__(self, name: str, symbol: str, tex: str, units: str):
+    def __init__(self, name: str, symbol: str, units: str, tex: str = None):
         """
         Constructor for Property class.
 
@@ -31,10 +82,10 @@ class Property:
             Name of the property.
         symbol: str
             Symbol of the property.
-        tex: str
-            TeX symbol used to represent the property.
         units: str
             String representing the units of the property.
+        tex: str (optional)
+            TeX symbol used to represent the property. Defaults to symbol.
         """
         self.name: str = name
         """Name of the Property, used to retrieve the property from the data file"""
@@ -42,11 +93,11 @@ class Property:
         self.symbol: str = symbol
         """Symbol of the property, same as the module-level attribute and Material attribute"""
 
-        self.TeX: str = tex
-        """math-style TeX symbol"""
-
         self.units: str = units
         """Units of the Property"""
+
+        self.TeX: str = tex if tex is not None else symbol
+        """math-style TeX symbol"""
 
     def __repr__(self):
         """Provides string representation of Property instance."""
@@ -71,7 +122,7 @@ def contains(name: str):
     return any(name == p.name for p in properties)
 
 
-def defProp(symbol: str, name: str, tex: str, units: str):
+def defProp(symbol: str, name: str, units: str, tex: str = None):
     """
     Method which constructs and adds Property objects to global properties object.
 
@@ -81,85 +132,30 @@ def defProp(symbol: str, name: str, tex: str, units: str):
         Name of the property.
     symbol: str
         Symbol of the property.
-    tex: str
-        TeX symbol used to represent the property.
     units: str
         String representing the units of the property.
+    tex: str (optional)
+        TeX symbol used to represent the property. Defaults to symbol.
     """
     global properties
     if contains(name):
         raise KeyError(f"Property already defined: {name}")
 
-    p = Property(name, symbol, tex, units)
+    if tex is None:
+        tex = symbol
+
+    p = Property(name, symbol, units, tex)
     properties.add(p)
 
 
 # TODO: I would be happier if this list was easily extensible. An ARMI Setting, maybe?
 def initialize():
-    """Method which constructs list of approved properties in matProps."""
-    defProp("alpha_d", "thermal diffusivity", r"(\alpha_d)", "m^2/s")
-    defProp(
-        "alpha_inst",
-        "instantaneous coefficient of thermal expansion",
-        r"(\alpha_{inst})",
-        r"(1/^\circ{}C)",
-    )
-    defProp(
-        "alpha_mean",
-        "mean coefficient of thermal expansion",
-        r"(\alpha_{mean})",
-        r"(1/^\circ{}C)",
-    )
-    defProp("c_p", "specific heat capacity", "c_p", r"U(J/(kg\dot{}^\circ{}C))U")
-    defProp("E", "Young's modulus", "E", "Pa")
-    defProp("S", "shear modulus", "S", "Pa")
-    defProp("Elong", "elongation", r"\epsilon", "%")
-    defProp("k", "thermal conductivity", "k", r"U(W/(m\dot{}^\circ{}C))U")
-    defProp("mu_d", "dynamic viscosity", r"(\mu_d)", r"(Pa\dot{}s)")
-    defProp("mu_k", "kinematic viscosity", r"(\mu_k)", "m^2/s")
-    defProp("nu", "Poisson's ratio", r"(\nu)", "unitless")
-    defProp("rho", "density", r"(\rho)", "kg/m^3")
-    defProp("Sa", "allowable stress", "Sa", "Pa")
-    defProp("Sm", "design stress", "Sm", "Pa")
-    defProp("Smt", "service reference stress", "Smt", "Pa")
-    defProp("So", "design reference stress", "So", "Pa")
-    defProp("Sr", "stress to rupture", "Sr", "Pa")
-    defProp("St", "time dependent design stress", "St", "Pa")
-    defProp("Su", "tensile strength", "Su", "Pa")
-    defProp("Sy", "yield strength", "Sy", "Pa")
-    defProp("tMaxSr", "allowable time to rupture", "tMaxSr", "s")
-    defProp("tMaxSt", "allowable time to allowable stress", "tMaxSt", "s")
-    defProp("TSRF", "tensile strength reduction factor", "TSRF", "unitless")
-    defProp("YSRF", "yield strength reduction factor", "YSRF", "unitless")
-    defProp("WSRF", "weld strength reduction factor", "WSRF", "unitless")
-    defProp("eps_t", "design fatigue strain range", "eps_t", "unitless")
-    defProp("eps_iso", "strain from isochronous stress-strain curve", "eps_iso", "unitless")
-    defProp("SaFat", "design fatigue stress", "SaFat", "Pa")
-    defProp("gamma", "surface tension", r"(\gamma)", r"(N\dot m)")
-    defProp("G", "electrical conductance", "G", r"U(1/(\Omega\dot m))U")
-    defProp("P_sat", "vapor pressure", "P_{sat}", r"(Pa)")
-    defProp("kappa", "isothermal compressibility", r"(\kappa)", r"(1/Pa)")
-    defProp("T_melt", "melting temperature", r"(T_{melt})", r"(^\circ{}C)")
-    defProp("T_boil", "boiling temperature", r"(T_{boil})", r"(^\circ{}C)")
-    defProp("dl_l", "linear expansion", r"\Delta l_{percent}", "unitless")
-    defProp("nu_g", "vapor specific volume", r"\nu", "m^3/kg")
-    defProp("v_sound", "speed of sound", r"(v_{sound})", "m/s")
-    defProp("T_sol", "solidus temperature", r"(T_{sol})", r"(^\circ{}C)")
-    defProp("T_liq", "liquidus temperature", r"(T_{liq})", r"(^\circ{}C)")
-    defProp("dV", "volumetric expansion", r"\Delta V", r"m^3/(^\circ{}C)")
-    defProp("H", "enthalpy", "H", "J/kg")
-    defProp("H_calc_T", "temperature from enthalpy", r"(^\circ{}C)", r"(^\circ{}C)")
-    defProp("dH_fus", "enthalpy of fusion", r"(\Delta H_{f})", "J/kg")
-    defProp("dH_vap", "latent heat of vaporization", r"(\Delta H_{v})", "J/kg")
-    defProp("K_IC", "fracture toughness", r"K_{IC}", r"MPa\dot\sqrt(m)")
-    defProp("HBW", "Brinell Hardness", "HBW", "BHN")
-    defProp("f", "factor f from ASME.III.5 Fig. HBB-T-1432-2", "f", "unitless")
-    defProp(
-        "Kv_prime",
-        "factor Kv' from ASME.III.5 Fig. HBB-T-1432-3",
-        r"K_{v}^{'}",
-        "unitless",
-    )
+    """Construct the global list of approved properties in matProps."""
+    for symbol, vals in PROPERTIES.items():
+        name = vals[0]
+        units = vals[1]
+        tex = vals[2] if len(vals) > 2 else symbol
+        defProp(symbol, name, units, tex)
 
 
 initialize()
