@@ -94,6 +94,7 @@ def defProp(symbol: str, name: str, tex: str, units: str):
     properties.add(p)
 
 
+# TODO: I would be happier if this list was easily extensible. An ARMI Setting, maybe?
 def initialize():
     """Method which constructs list of approved properties in matProps."""
     defProp("alpha_d", "thermal diffusivity", r"(\alpha_d)", "m^2/s")
