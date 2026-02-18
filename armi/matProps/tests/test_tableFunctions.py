@@ -92,6 +92,9 @@ class TestTableFunctions(MatPropsFunTestBase):
         self.assertAlmostEqual(mat.rho.calc(T=729.7), 24.9014572864322)
         self.assertAlmostEqual(mat.rho.calc(T=759.7), 24.61)
 
+        with self.assertRaises(ValueError):
+            mat.rho.calc(T=999)
+
     def test_interpolation1DtableInt(self):
         """Test interpolation for one-dimensional tables with all integer values."""
         tableData = [

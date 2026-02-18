@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Some definition of material types."""
-
-import warnings
+"""Some definition of material types: fluid, fuel, metal, etc."""
 
 
 class MaterialType:
@@ -70,12 +68,6 @@ class MaterialType:
 
         return MaterialType(value)
 
-    @staticmethod
-    def from_string(name: str) -> "MaterialType":
-        """Pass-through to temporarily support an old API."""
-        warnings.warn("Please use matProps.fromString, not matProps.from_string.", DeprecationWarning)
-        return MaterialType.fromString(name)
-
     def __repr__(self):
         """Provides string representation of MaterialType instance."""
         name = "None"
@@ -88,7 +80,7 @@ class MaterialType:
 
     def __eq__(self, other) -> bool:
         """
-        Support for "and" comparison operator.
+        Support for "==" comparison operator.
 
         Parameters
         ----------
@@ -106,27 +98,3 @@ class MaterialType:
             return self._value == other._value
         else:
             raise TypeError(f"Cannot compare MaterialType to type {type(other)}")
-
-    def __hash__(self):
-        """Hash method is needed if __eq__ is overridden."""
-        return hash(self._value)
-
-    def __and__(self, mat):
-        """
-        Support for the bitwise & operator.
-
-        Parameters
-        ----------
-        mat: MaterialType
-            MaterialType object whose ._value object will undergo a bitwise AND operation with this instance.
-
-        Returns
-        -------
-        int
-            Int containing result of bitwise AND between MaterialType instance and mat.
-        """
-        val = mat
-        if type(mat) is not int:
-            val = mat._value
-
-        return self._value & val

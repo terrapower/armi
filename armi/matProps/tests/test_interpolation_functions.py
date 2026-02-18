@@ -19,11 +19,27 @@ import unittest
 import numpy as np
 from scipy import interpolate
 
-from armi.matProps.interpolationFunctions import linearLinear, logLinear
+from armi.matProps.interpolationFunctions import findIndex, linearLinear, logLinear
 
 
 class TestInterpolationFunctions(unittest.TestCase):
     """Class which creates tests for the matProps InterpolationFunctions files."""
+
+    def test_findIndex(self):
+        x = [2, 4, 6, 8]
+        self.assertEqual(findIndex(2, x), 0)
+        self.assertEqual(findIndex(3, x), 0)
+        self.assertEqual(findIndex(3.14, x), 0)
+        self.assertEqual(findIndex(4, x), 0)  # NOTE: This is 0, not 1.
+        self.assertEqual(findIndex(4.001, x), 1)
+        self.assertEqual(findIndex(6, x), 1)  # NOTE: This is 1, not 2.
+        self.assertEqual(findIndex(6.2, x), 2)
+
+        with self.assertRaises(ValueError):
+            findIndex(-9, x)
+
+        with self.assertRaises(ValueError):
+            findIndex(9, x)
 
     def test_linearLinear(self):
         """

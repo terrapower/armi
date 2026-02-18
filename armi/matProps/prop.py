@@ -152,7 +152,7 @@ def defProp(symbol: str, name: str, units: str, tex: str = None):
 
 # TODO: I would be happier if this list was easily extensible. An ARMI Setting, maybe?
 def initialize():
-    """Construct the global list of approved properties in matProps."""
+    """Construct the global list of default properties in matProps."""
     for symbol, vals in PROPERTIES.items():
         name = vals[0]
         units = vals[1]
