@@ -19,7 +19,7 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
-from armi.matProps import property as prop
+from armi.matProps import prop
 from armi.matProps.constituent import Constituent
 from armi.matProps.function import Function
 from armi.matProps.materialType import MaterialType

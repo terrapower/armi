@@ -19,7 +19,7 @@ import unittest
 from os import path
 
 from armi.matProps import loadMaterial
-from armi.matProps.property import properties
+from armi.matProps.prop import properties
 
 
 class PropertyTests(unittest.TestCase):
