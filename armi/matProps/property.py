@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A particular material property."""
+"""
+In the parlance of matProps, a material 'Property' is a physical characteristic of the material that can be described
+mathematically. For instance, density, specific heat, specific gravity, coefficient of linear expansion, etc.
+"""
 
 properties = set()
 
