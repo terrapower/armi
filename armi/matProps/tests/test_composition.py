@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Program that runs all of the tests for the TestComposition class."""
+"""Basic tests of the Composition class."""
 
 import os
 import unittest
@@ -24,8 +24,6 @@ from armi.matProps.material import Material
 
 
 class TestComposition(unittest.TestCase):
-    """Class which encapsulates the unit tests data and methods to test the matProps Composition class."""
-
     def setUp(self):
         self.testName = self.id().split(".")[-1]
         searchStr = "test_"

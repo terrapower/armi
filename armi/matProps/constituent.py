@@ -85,18 +85,13 @@ class Constituent:
         sumMin = 0.0
         sumMax = 0.0
         numBalance = 0
-        for nodeName, nodeContent in node.items():
-            element = nodeName
+        for element, nodeContent in node.items():
             if element == "references":
                 continue
 
-            if element in elementSet:
-                msg = f"Composition has a duplicate element {element} present."
-                raise KeyError(msg)
-            else:
-                elementSet.add(element)
+            elementSet.add(element)
 
-            if type(nodeContent) is str and nodeContent == "balance":
+            if nodeContent == "balance":
                 balanceName = element
                 numBalance += 1
             elif type(nodeContent) is str or len(nodeContent) != 2:
