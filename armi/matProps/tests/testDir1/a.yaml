@@ -2,6 +2,9 @@ file format: TESTS
 material type: Fluid
 composition:
   a: balance
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
 
 density:
   function:
