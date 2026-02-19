@@ -93,3 +93,23 @@ class TestFunctions(MatPropsFunTestBase):
 
         with self.assertRaises(KeyError):
             fun.getMaxBound("Y")
+
+    def test_calcEdgeCases(self):
+        mat = self._createFunction(self.baseConstantData)
+        fun = mat.rho
+
+        with self.assertRaises(ValueError):
+            fun.calc({"T": 200}, T=300)
+
+        with self.assertRaises(ValueError):
+            fun.calc()
+
+        with self.assertRaises(KeyError):
+            fun.calc({"Z": 200})
+
+    def test_points(self):
+        mat = self._createFunction(self.baseConstantData)
+        fun = mat.rho
+
+        with self.assertRaises(KeyError):
+            fun.points()

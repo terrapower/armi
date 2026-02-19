@@ -97,6 +97,7 @@ class TestTableFunctions(MatPropsFunTestBase):
 
         # bonus test of method to clear table data
         self.assertIsNotNone(mat.rho.tableData)
+        self.assertGreater(len(mat.rho.points()), 0)
         mat.rho.clear()
         self.assertIsNone(mat.rho.tableData)
 

@@ -144,7 +144,7 @@ class Function:
         # This method should take in one dictionary or a set of kwargs, but not both
         if point is not None and kwargs:
             raise ValueError("Please provide either a single dictionary or a set of kwargs, but not both.")
-        elif point is None and kwargs is None:
+        elif point is None and not kwargs:
             raise ValueError("Please provide at least one input to this method.")
 
         # select the inputs provided
