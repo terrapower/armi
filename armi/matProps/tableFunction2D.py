@@ -127,28 +127,6 @@ class TableFunction2D(TableFunction):
                 else:
                     self._data[cIndex].append(float(value))
 
-    def points(self):
-        """
-        Get a list of `Point` values represented by this TableFunction2D. This list of Point quantities will have the
-        non-NaN `Point` time values.
-        """
-        points = []
-        for cIndex in range(len(self._columnValues)):
-            for rIndex in range(len(self._rowValues)):
-                value = self._data[cIndex][rIndex]
-                if value == "null" or value is None or math.isnan(float(value)):
-                    continue
-
-                points.append(
-                    Point(
-                        self._columnValues[cIndex],
-                        self._rowValues[rIndex],
-                        value,
-                    )
-                )
-
-        return points
-
     def _calcSpecific(self, point: dict) -> float:
         """
         Performs 2D interpolation on tabular data.
@@ -172,11 +150,3 @@ class TableFunction2D(TableFunction):
         cVal0 = self._columnValues[cIndex]
         cVal1 = self._columnValues[cIndex + 1]
         return (columnVal - cVal0) / (cVal1 - cVal0) * (rVal1 - rVal0) + rVal0
-
-    def lookup(self, columnVal: float, rowVal: float):
-        """Given the two independent values, return the dependent value by interpolating the table data."""
-        cIndex = findIndex(columnVal, self._columnValues)
-        rIndex0 = findIndex(rowVal, self._data[cIndex])
-        rIndex1 = findIndex(rowVal, self._data[cIndex + 1])
-        interpVals = [self._data[cIndex][rIndex0], self._data[cIndex + 1][rIndex1]]
-        return logLinear(rowVal, interpVals, self._rowValues)
