@@ -155,9 +155,9 @@ class Material:
 
         # grab the material name from the file name
         n = Path(filePath).name
-        if n.endswith(".yaml"):
+        if n.lower().endswith(".yaml"):
             n = n[:-5]
-        elif n.endswith(".yml"):
+        elif n.lower().endswith(".yml"):
             n = n[:-4]
         self.name = n
 

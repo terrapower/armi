@@ -92,6 +92,13 @@ class TestMapPropsMaterial(unittest.TestCase):
             expectedType = MaterialType(typeIdx)
             self.assertEqual(parseType, expectedType)
 
+    def test_invalidFileFormat(self):
+        fPath = os.path.join(THIS_DIR, "invalidTestFiles", "badFileFormat.YAML")
+        mat = armi.matProps.Material()
+
+        with self.assertRaises(ValueError):
+            mat.loadFile(fPath)
+
     def test_datafilesInvType(self):
         with self.assertRaisesRegex(KeyError, "Invalid material type"):
             self._createFunction("Solid")

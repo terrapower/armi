@@ -1,0 +1,12 @@
+file format: INVALID
+material type: Fluid
+composition:
+  a: balance
+
+density:
+  function:
+    T:
+      min: 100.0
+      max: 200.0
+    type: symbolic
+    equation: 1.0
