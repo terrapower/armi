@@ -63,10 +63,7 @@ class Function:
         """Reference data"""
 
     def clear(self):
-        if self.tableData != self:
-            del self.tableData
-        else:
-            self.tableData = None
+        self.tableData = None
 
     @staticmethod
     def isTable():

@@ -95,6 +95,11 @@ class TestTableFunctions(MatPropsFunTestBase):
         with self.assertRaises(ValueError):
             mat.rho.calc(T=999)
 
+        # bonus test of method to clear table data
+        self.assertIsNotNone(mat.rho.tableData)
+        mat.rho.clear()
+        self.assertIsNone(mat.rho.tableData)
+
     def test_interpolation1DtableInt(self):
         """Test interpolation for one-dimensional tables with all integer values."""
         tableData = [

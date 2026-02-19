@@ -138,7 +138,7 @@ def loadSafe(rootDir: str = None) -> None:
     loadAll(rootDir)
 
 
-def gethashes() -> dict:
+def getHashes() -> dict:
     """Calls Material.hash() for each Material object in materials."""
     global materials
     hashes = {}
@@ -218,11 +218,6 @@ def loadedMaterials() -> list:
         mats.append(mat)
 
     return mats
-
-
-def getValidFileFormatVersions():
-    """Get a vector of strings with all of the valid file format versions."""
-    return Material.getValidFileFormatVersions()
 
 
 def getLoadedRootDirs() -> list:

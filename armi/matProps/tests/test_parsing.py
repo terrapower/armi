@@ -56,7 +56,9 @@ class TestParsing(unittest.TestCase):
             self.assertIsNotNone(m)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
                 armi.matProps.getMaterial(matNam)
-            m = armi.matProps.loadMaterial(self.dummyMatFiles[matFile], True)
+
+            # test the pass-through function load_material, instead of the preferred loadMaterial
+            m = armi.matProps.load_material(self.dummyMatFiles[matFile], True)
             self.assertIsNotNone(m)
             m = armi.matProps.getMaterial(matNam)
             self.assertIsNotNone(m)
@@ -80,12 +82,20 @@ class TestParsing(unittest.TestCase):
         # verify the correct behavior if a bad directory is provided
         badDir = "does_not_exist_2924"
         with self.assertRaisesRegex(FileNotFoundError, f"Directory {badDir} not found"):
-            armi.matProps.loadSafe(badDir)
+            # test with the pass through "load_safe", instead of the preferred loadSafe
+            armi.matProps.load_safe(badDir)
 
     def test_dataLoadingPrioSameDir(self):
         armi.matProps.loadAll(self.dummyDataPath)
         with self.assertRaises(KeyError):
             armi.matProps.loadAll(self.dummyDataPath)
+
+        # bonus test of getHashes
+        hashes = armi.matProps.getHashes()
+        self.assertGreater(len(hashes), 3)
+        for h in hashes:
+            self.assertGreater(len(h), 8)
+            self.assertIsInstance(h, str)
 
     def test_datafilesBadPath(self):
         badDir = "nopity-nopers-missing"
@@ -101,8 +111,8 @@ class TestParsing(unittest.TestCase):
     def test_multiDataLoadingMultidir(self):
         """Tests loading multiple data directories.
 
-        Load all files present in the following subdirectories of the matProps repository: tests/testDir1
-        and tests/testDir2.
+        Load all files present in the following subdirectories of the matProps repository: tests/testDir1 and
+        tests/testDir2.
         """
         dir1 = path.join(self.dirname, "testDir1")
         dir2 = path.join(self.dirname, "testDir2")
@@ -112,7 +122,7 @@ class TestParsing(unittest.TestCase):
         armi.matProps.loadAll(dir2)
 
         # Check that the two directories are in loaded materials
-        loadList = armi.matProps.getLoadedRootDirs()
+        loadList = armi.matProps.get_loaded_root_dirs()
         self.assertTrue(dir1 in loadList)
         self.assertTrue(dir2 in loadList)
         self.assertTrue(len(loadList) == 2)
@@ -157,9 +167,12 @@ class TestParsing(unittest.TestCase):
 
         Also tests trying to access an unknown material.
         """
-        armi.matProps.loadAll(self.dummyDataPath)
-        for mat in armi.matProps.loadedMaterials():
+        # test the deprecated "load_all", that is just a pass-through for "loadAll"
+        armi.matProps.load_all(self.dummyDataPath)
+        # test with the pass-through loaded_materials instead of the preferred loadedMaterials
+        for mat in armi.matProps.loaded_materials():
             self.assertEqual(mat, armi.matProps.getMaterial(mat.name))
 
         with self.assertRaisesRegex(KeyError, "No material named `Fahrvergnugen` was loaded"):
-            armi.matProps.getMaterial("Fahrvergnugen")
+            # test with the pass-through get_material instead of the preferred getMaterial
+            armi.matProps.get_material("Fahrvergnugen")

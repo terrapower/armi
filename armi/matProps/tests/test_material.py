@@ -95,3 +95,9 @@ class TestMapPropsMaterial(unittest.TestCase):
     def test_datafilesInvType(self):
         with self.assertRaisesRegex(KeyError, "Invalid material type"):
             self._createFunction("Solid")
+
+    def test_saveLogic(self):
+        mat = self._createFunction("Metal")
+        self.assertFalse(mat.saved())
+        mat.save()
+        self.assertTrue(mat.saved())
