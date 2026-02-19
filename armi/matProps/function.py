@@ -251,6 +251,7 @@ class Function:
                 "intended to be an independent variable, please ensure that the Function.FUNCTION_NODES set is updated "
                 "properly."
             )
+
         minVal = float(node["min"])
         maxVal = float(node["max"])
         if maxVal < minVal:

@@ -14,6 +14,7 @@
 
 """Unit tests for the Function class."""
 
+from armi.matProps.material import Material
 from armi.matProps.tableFunction import TableFunction
 from armi.matProps.tests import MatPropsFunTestBase
 
@@ -107,6 +108,69 @@ class TestFunctions(MatPropsFunTestBase):
 
         with self.assertRaises(KeyError):
             fun.calc({"Z": 200})
+
+        # whoops, I forgot to declare a "max" value
+        materialData = {
+            "file format": "TESTS",
+            "composition": {"Fe": "balance"},
+            "material type": "Metal",
+            "density": {"function": {"T": {"min": 1.0}, "type": "symbolic", "equation": 1.0}},
+        }
+
+        mat = Material()
+        with self.assertRaises(KeyError):
+            mat.loadNode(materialData)
+
+    def test_references(self):
+        materialData = {
+            "file format": "TESTS",
+            "composition": {"Fe": "balance"},
+            "material type": "Metal",
+            "density": {
+                "function": {
+                    "T": {"min": 1.0, "max": 10.0},
+                    "type": "symbolic",
+                    "equation": 1.0,
+                },
+                "references": [{"ref": "things", "type": "open literature"}],
+            },
+        }
+
+        mat = Material()
+        mat.loadNode(materialData)
+        self.assertEqual(len(mat.rho.references), 1)
+        self.assertEqual(mat.rho.references[0].getRef(), "things")
+
+    def test_tabulatedData(self):
+        tableData = [
+            [300, 25],
+            [400, 26.28],
+            [500, 26.26],
+            [600, 25.89],
+            [700, 25.19],
+            [800, 25.10],
+            [900, 26.32],
+        ]
+
+        materialData = {
+            "file format": "TESTS",
+            "composition": {"Fe": "balance"},
+            "material type": "Metal",
+            "density": {
+                "function": {
+                    "T": {"min": 1.0, "max": 10.0},
+                    "type": "symbolic",
+                    "equation": 1.0,
+                },
+                "tabulated data": tableData,
+            },
+        }
+
+        mat = Material()
+        mat.loadNode(materialData)
+        self.assertEqual(len(mat.rho.references), 0)
+        self.assertEqual(len(mat.rho.tableData.points()), 7)
+        self.assertEqual(mat.rho.tableData.points()[0].value, 25)
 
     def test_points(self):
         mat = self._createFunction(self.baseConstantData)
