@@ -26,8 +26,6 @@ INPUTS_DIR = os.path.join(THIS_DIR, "inputs")
 
 
 class TestParameter(unittest.TestCase):
-    """Class for testing the parameter related data in the material data file schema."""
-
     @classmethod
     def setUpClass(cls):
         cls.cwd = os.getcwd()

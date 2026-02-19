@@ -19,15 +19,13 @@ import unittest
 
 from jsonschema.exceptions import ValidationError
 
-from armi.matProps.dataSchema.dataSchemaValidator import validateFile
+from armi.matProps.dataSchema.dataSchemaValidator import validateDir, validateFile
 
 THIS_DIR = os.path.dirname(__file__)
 INPUTS_DIR = os.path.join(THIS_DIR, "inputs")
 
 
 class TestMaterialType(unittest.TestCase):
-    """Class for testing the material type data in the material data file schema."""
-
     @classmethod
     def setUpClass(cls):
         cls.cwd = os.getcwd()
@@ -41,6 +39,13 @@ class TestMaterialType(unittest.TestCase):
         """This contains an incorrect material type, not included in the enum in the "material type schema."""
         with self.assertRaises(ValidationError):
             validateFile("materialTypeFail.yaml")
+
+
+class TestValidateDir(unittest.TestCase):
+    def test_validateDir(self):
+        # The validation will complain that these file formats are "TESTS" and not "1.0".
+        with self.assertRaises(ValidationError):
+            validateDir(os.path.join(THIS_DIR, "..", "..", "tests", "testDir1"))
 
 
 class TestComposition(unittest.TestCase):

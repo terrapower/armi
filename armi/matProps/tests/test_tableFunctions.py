@@ -16,6 +16,7 @@
 
 import numpy as np
 
+from armi.matProps.tableFunction2D import TableFunction2D
 from armi.matProps.tests import MatPropsFunTestBase
 
 
@@ -226,9 +227,21 @@ class TestTableFunctions(MatPropsFunTestBase):
         with self.assertRaises(KeyError):
             fun.independentVars["t"]
 
+        # Bad inputs
+        with self.assertRaises(ValueError):
+            fun._setBounds(2, "X")
+
     def test_inputCheckTable2DMaxVar2(self):
         """Ensure an ValueError is raised when evaluating above the valid range."""
         mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         func = mat.rho
         with self.assertRaises(ValueError):
             func.calc({"T": 1, "t": 1000})
+
+    def test_calcSpec2dEdgeCase(self):
+        f = TableFunction2D("mat", "prop")
+        f.independentVars = {"T": (250.0, 800.0), "t": (1, 3)}
+
+        # This should fail correctly when given a bad input param
+        with self.assertRaises(ValueError):
+            f._calcSpecific({"Pa": 1.0})

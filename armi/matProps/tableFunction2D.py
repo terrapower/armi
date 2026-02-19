@@ -128,10 +128,7 @@ class TableFunction2D(TableFunction):
             var1DependentData = rowNode[1]
             for cIndex in range(len(self._columnValues)):
                 value = var1DependentData[cIndex]
-                if value == "null" or value is None:
-                    self._data[cIndex].append(None)
-                else:
-                    self._data[cIndex].append(float(value))
+                self._data[cIndex].append(None if value in ("null", None) else float(value))
 
     def _calcSpecific(self, point: dict) -> float:
         """
