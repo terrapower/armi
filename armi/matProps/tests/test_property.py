@@ -19,7 +19,7 @@ import unittest
 from os import path
 
 from armi.matProps import loadMaterial
-from armi.matProps.prop import properties
+from armi.matProps.prop import defProp, properties
 
 
 class PropertyTests(unittest.TestCase):
@@ -219,3 +219,7 @@ class PropertyTests(unittest.TestCase):
         self.assertAlmostEqual(testMat.Kv_prime.calc(T=300.0), 45.0)
         self.assertAlmostEqual(testMat.S.calc(T=300.0), 46.0)
         self.assertAlmostEqual(testMat.Elong.calc(T=300.0), 47.0)
+
+    def test_defPropDup(self):
+        with self.assertRaises(KeyError):
+            defProp("rho", "density", "kg/m^3", "rho")

@@ -156,7 +156,7 @@ def initialize():
     for symbol, vals in PROPERTIES.items():
         name = vals[0]
         units = vals[1]
-        tex = vals[2] if len(vals) > 2 else symbol
+        tex = vals[2] if len(vals) > 2 else None
         defProp(symbol, name, units, tex)
 
 

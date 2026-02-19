@@ -53,6 +53,10 @@ class TestTableFunctions(MatPropsFunTestBase):
             self.assertAlmostEqual(func.calc({"T": np.float64(val)}), 5.0 + val)
             self.assertAlmostEqual(func.calc({"T": val}), 5.0 + val)
 
+        # directly check error is correctly raised if the variable is unknown
+        with self.assertRaises(ValueError):
+            func._calcSpecific({"X": 1})
+
     def test_points(self):
         mat = self._createFunction(self.baseOneDimTableData, self.baseOneDimTable)
         func = mat.rho

@@ -71,6 +71,10 @@ class TestPiecewiseFunction(MatPropsFunTestBase):
         self.assertAlmostEqual(func.calc({"T": 50.1}), -99)
         self.assertAlmostEqual(func.calc({"T": 100}), -99)
 
+        func.clear()
+        with self.assertRaises(ValueError):
+            func.calc({"T": 0})
+
     def test_piecewiseEqnGap(self):
         """Test that PiecewiseFunction evaluates correctly with gaps."""
         data = {

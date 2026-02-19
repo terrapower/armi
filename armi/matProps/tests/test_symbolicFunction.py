@@ -48,7 +48,6 @@ class TestSymbolicFunction(unittest.TestCase):
         """Loads the material file based on `self.yaml` and returns the material object."""
         mat = Material()
         mat.loadNode(self.yaml)
-
         return mat
 
     def functionTest(self, func, num=1):
@@ -846,3 +845,55 @@ class TestSymbolicFunction(unittest.TestCase):
                 prop.calc({"X": minsEdited[0], "Y": minsEdited[1], "Z": minsEdited[2]})
             with self.assertRaises(ValueError):
                 prop.calc({"X": maxsEdited[0], "Y": maxsEdited[1], "Z": maxsEdited[2]})
+
+
+class TestBrokenSymbolicFunctions(unittest.TestCase):
+    def test_complexNumbers(self):
+        yaml = {
+            "file format": "TESTS",
+            "material type": "Metal",
+            "composition": {"a": "balance"},
+            "density": {
+                "function": {
+                    "type": "symbolic",
+                    "X": {"min": -10, "max": 500.0},
+                    "Y": {"min": 1.0, "max": 20.0},
+                    "Z": {"min": -30.0, "max": -10.0},
+                    "equation": 1.0,
+                }
+            },
+        }
+
+        mat = Material()
+        mat.loadNode(yaml)
+
+        # stomp all over the equation, to force it to return a complex number
+        mat.rho.eqn = eval("lambda x, y, z: 1.0 + 2.0j")
+
+        with self.assertRaises(ValueError):
+            mat.rho._calcSpecific({"X": 1, "Y": 2, "Z": -20})
+
+    def test_isNan(self):
+        yaml = {
+            "file format": "TESTS",
+            "material type": "Metal",
+            "composition": {"a": "balance"},
+            "density": {
+                "function": {
+                    "type": "symbolic",
+                    "X": {"min": -10, "max": 500.0},
+                    "Y": {"min": 1.0, "max": 20.0},
+                    "Z": {"min": -30.0, "max": -10.0},
+                    "equation": 1.0,
+                }
+            },
+        }
+
+        mat = Material()
+        mat.loadNode(yaml)
+
+        # stomp all over the equation, to force it to return a complex number
+        mat.rho.eqn = eval("lambda x, y, z: math.nan")
+
+        with self.assertRaises(ValueError):
+            mat.rho._calcSpecific({"X": 1, "Y": 2, "Z": -20})
