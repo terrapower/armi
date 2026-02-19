@@ -87,6 +87,7 @@ class TableFunction2D(TableFunction):
             if self.independentVars:
                 # Need to re-arrange order.
                 cache = copy.deepcopy(self.independentVars)
+                self.independentVars = {}
 
             self.independentVars[var] = (
                 float(min(self._columnValues)),

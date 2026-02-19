@@ -206,22 +206,25 @@ class TestTableFunctions(MatPropsFunTestBase):
         self.assertEqual(fun.independentVars["T"], (2.0, 632.4555))
         self.assertEqual(fun.independentVars["t"], (1.0, 316.2278))
 
-        # we won't over-write existing values. Which is surprising.
+        # calling _setBounds will wipe out the "t" variable, but not update "T"
         fun._columnValues = [123, 987]
         fun._setBounds(0, "T")
         self.assertEqual(fun.independentVars["T"], (2.0, 632.4555))
-        self.assertEqual(fun.independentVars["t"], (1.0, 316.2278))
+        with self.assertRaises(KeyError):
+            fun.independentVars["t"]
 
-        # We WILL over-write the values for new variables
+        # Here we update "T" with new column values
         fun._columnValues = [123, 987]
         fun._setBounds(0, "X")
         self.assertEqual(fun.independentVars["X"], (123.0, 987.0))
 
+        # Here we update the new variable "X" with new row values
         fun._rowValues = [11, 99]
         fun._setBounds(1, "X")
         self.assertEqual(fun.independentVars["T"], (2.0, 632.4555))
-        self.assertEqual(fun.independentVars["t"], (1.0, 316.2278))
         self.assertEqual(fun.independentVars["X"], (11.0, 99.0))
+        with self.assertRaises(KeyError):
+            fun.independentVars["t"]
 
     def test_inputCheckTable2DMaxVar2(self):
         """Ensure an ValueError is raised when evaluating above the valid range."""
