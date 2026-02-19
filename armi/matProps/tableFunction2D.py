@@ -15,10 +15,8 @@
 """A simple implementation for a 2D table to replace analytic curves in the YAML data files."""
 
 import copy
-import math
 
 from armi.matProps.interpolationFunctions import findIndex, logLinear
-from armi.matProps.point import Point
 from armi.matProps.tableFunction import TableFunction
 
 
