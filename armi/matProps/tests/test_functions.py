@@ -78,3 +78,18 @@ class TestFunctions(MatPropsFunTestBase):
         func = mat.rho
         with self.assertRaisesRegex(ValueError, "Reference temperature is undefined"):
             func.getReferenceTemperature()
+
+    def test_independentVars(self):
+        mat = self._createFunction(self.baseConstantData)
+        fun = mat.rho
+
+        self.assertEqual(len(fun.independentVars), 1)
+        self.assertEqual(fun.getIndependentVariables(), ["T"])
+        self.assertEqual(fun.getMinBound("T"), -100)
+        self.assertEqual(fun.getMaxBound("T"), 500)
+
+        with self.assertRaises(KeyError):
+            fun.getMinBound("X")
+
+        with self.assertRaises(KeyError):
+            fun.getMaxBound("Y")
