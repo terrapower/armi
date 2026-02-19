@@ -227,8 +227,8 @@ class Function:
             "piecewise": PiecewiseFunction,
         }
 
-        func_node = node["function"]
-        funcType = str(func_node["type"])
+        funcNode = node["function"]
+        funcType = str(funcNode["type"])
         func = funTypes[funcType](mat, prop)
 
         func._parse(node)
@@ -270,13 +270,13 @@ class Function:
         from armi.matProps.tableFunction1D import TableFunction1D
         from armi.matProps.tableFunction2D import TableFunction2D
 
-        func_node = node["function"]
+        funcNode = node["function"]
 
-        refTempNode = func_node.get("reference temperature", None)
+        refTempNode = funcNode.get("reference temperature", None)
         if refTempNode is not None:
             self._referenceTemperature = float(refTempNode)
 
-        funcType = str(func_node["type"])
+        funcType = str(funcNode["type"])
         references = node.get("references", [])
         for ref in references:
             self._references.append(Reference._factory(ref))
@@ -296,9 +296,9 @@ class Function:
         elif self.isTable():
             raise KeyError("Missing node `tabulated data`")
 
-        for var in func_node:
+        for var in funcNode:
             if var not in self.FUNCTION_NODES:
-                self._setBounds(func_node[var], var)
+                self._setBounds(funcNode[var], var)
 
         if not self.isTable():
             self._parseSpecific(node)

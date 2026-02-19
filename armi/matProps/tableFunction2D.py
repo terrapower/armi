@@ -66,16 +66,21 @@ class TableFunction2D(TableFunction):
         """Provides string representation of TableFunction2D object."""
         return "<TableFunction2D>"
 
-    def _setBounds(self, node: dict, var: str):
+    def _setBounds(self, node: int, var: str):
         """
         Validate and set the min and max bounds for a variable.
 
         Parameters
         ----------
-        node: dict
-            dictionary that contains min and max values.
+        node: int
+            This number is zero for columns, and one for rows.
         var: str
             name of the variable
+
+        Notes
+        -----
+        The method declaration here does not match the one in the super class Function. The type of the "node" arguement
+        should be dict, but it is int. This is a surprising and acquard asymmetry.
         """
         if node == 0:
             cache = None
@@ -92,6 +97,8 @@ class TableFunction2D(TableFunction):
                 self.independentVars[list(cache.keys())[0]] = list(cache.values())[0]
         elif node == 1:
             self.independentVars[var] = (float(min(self._rowValues)), float(max(self._rowValues)))
+        else:
+            raise ValueError(f"The node value must be 0 or 1, but was: {node}")
 
     def _parseSpecific(self, prop):
         """
