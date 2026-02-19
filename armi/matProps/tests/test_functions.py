@@ -14,6 +14,7 @@
 
 """Unit tests for the Function class."""
 
+from armi.matProps.tableFunction import TableFunction
 from armi.matProps.tests import MatPropsFunTestBase
 
 
@@ -113,3 +114,11 @@ class TestFunctions(MatPropsFunTestBase):
 
         with self.assertRaises(KeyError):
             fun.points()
+
+        # return some nonsense data, just to prove the plumbing is working
+        tableData = TableFunction("mat", "prop")
+        tableData.points = lambda: 7
+
+        fun.tableData = tableData
+        points = fun.points()
+        self.assertEqual(points, 7)
