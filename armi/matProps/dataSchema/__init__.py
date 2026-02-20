@@ -32,9 +32,8 @@ refDataSchema
 "refDataSchema" is a global schema intended to be referenced by another section of the file, by using the JSON keyword
 "$ref": "referenceSchema." References are listed in YAML as a sequence, as in the following example::
 
-    references:
-        - ref: Bibliographic citation in your favorite format.
-          refType: open literature
+      - ref: Bibliographic citation in your favorite format.
+        refType: open literature
 
 However, in JSON, references are organized as arrays. Each array contains the "ref" (string), and the "refType"
 (string), which are the names of the keywords used in the YAML file. "additionalItems": true means that you can have as
@@ -157,7 +156,7 @@ YAML file.
 
 Example
 -------
-The YAML file example.yaml provides an example of the ideal data file to pass validation.
+There is an example, ideal mat-props YAML file at: ``matProps/dataSchema/tests/inputs/example.yaml``.
 
 
 Validation
