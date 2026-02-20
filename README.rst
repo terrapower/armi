@@ -288,8 +288,6 @@ development, engineering demo, and commercial demo that are the hard parts.
 
 Thus, ARMI was released under an open-source license in 2019 to facilitate mutually beneficial collaboration across the
 nuclear industry, where many teams are independently developing similar reactor analysis/automation frameworks.
-TerraPower will make its proprietary analysis routines, physics kernels, and material properties available under
-commercial licenses.
 
 We also hope that if more people can rapidly analyze the performance of their reactor ideas, limited available funding
 can be spent more effectively.
@@ -297,14 +295,9 @@ can be spent more effectively.
 
 System Requirements
 *******************
-Being largely written in the Python programming language, the ARMI system works on basically any kind of computer. We
-have developed it predominantly within a Microsoft Windows environment, but have performed tests under various flavors
-of Linux as well. It can perform meaningful analysis on a single laptop, but the full value of design optimization and
-large problems is realized with parallel runs over MPI with 32-128 CPUs, or more (requires installation optional
-``mpi4py`` library). Serious engineering models can consume significant RAM, so at least 16 GB is recommended.
-
-The original developer's HPC environment has been Windows based, so some development is needed to support the more
-traditional Linux HPC environments.
+Being largely written in the Python programming language, the ARMI system works on most platforms.  It can perform
+meaningful analysis on a single laptop, but the full value of design optimization and large problems is realized with
+parallel runs over large clusters (using the optional ``mpi4py`` library).
 
 .. _getting-help:
 
@@ -315,20 +308,15 @@ by e-mailing armi-devs@terrapower.com.
 
 Disclaimers
 ***********
-Due to TerraPower goals and priorities, many ARMI modules were developed with the sodium-cooled TWR as the target, and
-are not necessarily yet optimized for other plants. On the other hand, we have attempted to keep the framework general
-where possible, and many modules are broadly applicable to many reactors. We have run parts of ARMI on various SFRs
-(TWRs, FFTF, Joyo, Phenix), some fast critical assemblies (such as ZPPRs and BFS), molten salt reactors, and some
-thermal systems. Support for the basic needs of thermal reactors (like a good spatial description of pin maps) exists
-but has not been subject to as much use.
+Due to TerraPower goals and priorities, many ARMI modules were developed with the sodium-cooled fast reactors as a
+target, and are not necessarily yet optimized for other plants. This is a known issue with code organization and we are
+working on it. On the other hand, the framework is sufficiently general that people have modeled other reactor types
+with ARMI, including thermal reactors.
 
 ARMI was developed within a rapidly changing R&D environment. It evolved accordingly, and naturally carries some legacy.
 We continuously attempt to identify and update problematic parts of the code. Users should understand that ARMI is not a
 polished consumer software product, but rather a powerful and flexible engineering tool. It has the potential to
-accelerate work on many kinds of reactors. But in many cases, it will require serious and targeted investment.
-
-ARMI was largely written by nuclear and mechanical engineers. We (as a whole) only really, truly, recognized the value
-of things like static typing in a complex system like ARMI somewhat recently.
+accelerate work on many kinds of reactors.
 
 ARMI has been written to support specific engineering/design tasks. As such, polish in the GUIs and output is somewhat
 lacking.
