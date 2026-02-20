@@ -112,28 +112,20 @@ MIN_FUEL_HM_MOLES_PER_CC = 1e-10
 FLOAT_DIMENSION_DECIMALS = 8
 EFFECTIVELY_ZERO = 10.0 ** (-1 * FLOAT_DIMENSION_DECIMALS)
 
-#
 # STEFAN_BOLTZMANN_CONSTANT is for constant for radiation heat transfer [W m^-2 K^-4]
-#
 STEFAN_BOLTZMANN_CONSTANT = 5.67e-8  # W/m^2-K^4
 
-#
 # GRAVITY is the acceleration due to gravity at the Earths surface in [m s^-2].
-#
 GRAVITY = 9.80665
 
-#
 # :code:`REYNOLDS_TURBULENT` is the Reynolds number below which a duct flow will exhibit "laminar"
 # conditions. Reyonlds numbers greater than :code:`REYNOLDS_TURBULENT` will involve flows that are
 # "transitional" or "turbulent".
-#
 REYNOLDS_LAMINAR = 2100.0
 
-#
 # :code:`REYNOLDS_TURBULENT` is the Reynolds number above which a duct flow will exhibit "turbulent"
 # conditions. Reynolds numbers lower than :code:`REYNOLDS_TURBULENT` will involve flows that are
 # "transitional" or "laminar".
-#
 REYNOLDS_TURBULENT = 4000.0
 
 
