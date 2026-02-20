@@ -24,7 +24,6 @@ All configuration values have a default; values that are commented out serve to 
 
 # ruff: noqa: E402
 import datetime
-import glob
 import inspect
 import os
 import pathlib
@@ -33,7 +32,6 @@ import shutil
 import subprocess
 import sys
 import warnings
-import xml.etree.ElementTree as ET
 
 import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
@@ -41,6 +39,8 @@ from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
 from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
 from sphinx_needs.api import add_dynamic_function
+
+from doc.getTestResults import getTestResult
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
@@ -65,122 +65,6 @@ APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 STATIC_DIR = ".static"
 _TUTORIAL_FILES = [fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-RESULTS_DIR = os.path.join(THIS_DIR, "..")
-TEST_RESULTS = []
-
-
-def parseTestXML(file):
-    """Parse the test result XML file to gather results in a list of dictionaries.
-
-    This is a helper function for getTestResult() below.
-
-    Parameters
-    ----------
-    file : path
-        Path of XML file to be parsed
-
-    Returns
-    -------
-    list
-        Dictionaries containing:
-
-        - File location of the test: 'file'
-        - Class signature of test: 'class'
-        - Method signature of test: 'method'
-        - Runtime of test: 'time'
-        - The result of the test: 'result' (passed, skipped, failure)
-        - Console message when skipped or failed: 'info'
-    """
-    tree = ET.parse(file)
-
-    results = []
-    for testcase in tree.getroot().iter("testcase"):
-        cn = testcase.attrib.get("classname", "unknown")
-        tc_dict = {
-            "file": "/".join(cn.split(".")[:-1]) + ".py",
-            "class": cn.split(".")[-1],
-            "method": testcase.attrib.get("name", "unknown"),
-            "time": float(testcase.attrib.get("time", -1)),
-            "result": "passed",
-            "info": None,
-        }
-        if testcase.find("skipped") is not None:
-            tc_dict["result"] = "skipped"
-            tc_dict["info"] = testcase.find("skipped").attrib["message"]
-        elif testcase.find("failure") is not None:
-            tc_dict["result"] = "failure"
-            tc_dict["info"] = testcase.find("failure").text
-
-        results.append(tc_dict)
-
-    return results
-
-
-def getTestResult(app, need, needs):
-    """Dynamic function used by sphinx-needs to gather the result of a test tag."""
-    if not need["signature"]:
-        return "none"
-
-    # Get all the tests that match the method signature
-    results = [test_case["result"] for test_case in TEST_RESULTS if need["signature"] == test_case["method"]]
-    # Logic is as follows if there are multiple matches:
-    #   - If one is a "failure", then return "failure"
-    #   - If all are "skipped", then return "skipped"
-    #   - Otherwise, return "passed"
-    if results:
-        if "failure" in results:
-            return "failure"
-        elif "passed" in results:
-            return "passed"
-        else:
-            return "skipped"
-
-    # Things get a little more complicated when the test tag has a class-level signature.
-    # Basically we have to determine if all the methods in the class passed or if any of skipped/failed.
-    # First, gather all the results related to the class signature from the tag and categorize by method
-    results = {}
-    for test_case in TEST_RESULTS:
-        if need["signature"] == test_case["class"]:
-            if test_case["method"] in results:
-                results[test_case["method"]].append(test_case["result"])
-            else:
-                results[test_case["method"]] = [test_case["result"]]
-
-    # If we haven't found the test by now, we never will
-    if not results:
-        return "none"
-
-    # Apply logic from before for each method in the class
-    for m, r in results.items():
-        if "failure" in r:
-            results[m] = "failure"
-        elif "passed" in r:
-            results[m] = "passed"
-        else:
-            results[m] = "skipped"
-
-    # Now for the class logic
-    #  - If any of the methods failed, return "failure"
-    #  - If any of the methods skipped, return "skipped"
-    #  - If all of the methods passed, return "passed"
-    if "failure" in results.values():
-        return "failure"
-    elif "skipped" in results.values():
-        return "skipped"
-    else:
-        return "passed"
-
-
-def fillGlobalData():
-    """This method is meant to be run after the unit tests are complete, to fill data needed by sphinx-needs."""
-    global TEST_RESULTS
-    # Here is where we fill out all the test results, so it is only done once
-    for file in glob.glob(os.path.join(RESULTS_DIR, "*.xml")):
-        TEST_RESULTS.extend(parseTestXML(file))
-
-
-fillGlobalData()
 
 
 class PatchedPythonDomain(PythonDomain):
