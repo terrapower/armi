@@ -20,7 +20,6 @@ TODO: This high-level discussion of mat-props is in the wrong place. Also it is 
 dataSchema module
 =================
 
-
 Schema
 ------
 Links to the meta schema of the JSON Schema version utilized to validate this schema. JSON Schema draft 7 notes can be
@@ -32,8 +31,8 @@ refDataSchema
 "refDataSchema" is a global schema intended to be referenced by another section of the file, by using the JSON keyword
 "$ref": "referenceSchema." References are listed in YAML as a sequence, as in the following example::
 
-      - ref: Bibliographic citation in your favorite format.
-        refType: open literature
+    - ref: Bibliographic citation in your favorite format.
+      refType: open literature
 
 However, in JSON, references are organized as arrays. Each array contains the "ref" (string), and the "refType"
 (string), which are the names of the keywords used in the YAML file. "additionalItems": true means that you can have as
