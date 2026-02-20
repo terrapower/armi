@@ -1,0 +1,45 @@
+file format: 1.0
+# This YAML is missing references for a material property
+material type: ASME2017
+composition:
+  C: [0, 0.30]
+  Mn: [0.29, 1.06]
+  P: [0, 0.03]
+  S: [0, 0.03]
+  Si: [0.1, 100]
+  Ni: [0, 0.4]
+  Cr: [0, 0.4]
+  Mo: [0, 0.15]
+  Cu: [0, 0.40]
+  Fe: balance
+  references:
+    - ref: ASME BPVC.II.A-2017, SA-106/106M pg 182
+      refType: open literature
+
+Young's modulus:
+  function:
+    min degrees C: 0
+    max degrees C: 700
+    function type: polynomial
+    coefficients:
+      0: 2.154E11
+      1: -6.82E7
+      2: -3.63E3
+  tabulated data:
+    - [20, 2.15E+11]
+    - [25, 2.13E+11]
+    - [50, 2.12E+11]
+    - [100, 2.07E+11]
+    - [150, 2.05E+11]
+    - [200, 2.01E+11]
+    - [250, 1.98E+11]
+    - [300, 1.94E+11]
+    - [350, 1.91E+11]
+    - [400, 1.87E+11]
+    - [450, 1.84E+11]
+    - [500, 1.80E+11]
+    - [550, 1.75E+11]
+    - [600, 1.73E+11]
+    - [650, 1.69E+11]
+    - [700, 1.65E+11]
+    

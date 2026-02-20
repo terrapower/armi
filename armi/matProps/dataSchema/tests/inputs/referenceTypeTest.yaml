@@ -1,0 +1,17 @@
+file format: 1.0
+# This YAML contains an incorrect type for the "ref" key in references
+material type: ASM2015
+composition:
+  C: [0.030, 0.030]
+  Mn: [2.0, 2.0]
+  P: [0.045, 0.045]
+  S: [0.03, 0.03]
+  Si: [0.75, 0.75]
+  Ni: [10.0, 14.0]
+  Cr: [16.0, 18.0]
+  Mo: [2.0, 3.0]
+  N: [0.10, 0.16]
+  Fe: balance
+  references:
+    - ref: 1234
+      refType: open literature

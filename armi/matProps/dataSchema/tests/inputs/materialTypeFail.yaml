@@ -1,0 +1,18 @@
+file format: 1.0
+# this contains an incorrect material type, not included in the enum in the "material type schema"
+material type: test
+composition:
+  C: [0.03, 0.03]
+  Mn: [2.0, 2.0]
+  P: [0.03, 0.03]
+  S: [0.03, 0.03]
+  Si: [0.4, 0.4]
+  Ni: [10.0, 15.0]
+  Cr: [16.0, 19.0]
+  Mo: [2.0, 3.0]
+  N: [0.10, 0.15]
+  Fe: balance
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+      

@@ -1,0 +1,28 @@
+file format: 1.0
+# This YAML contains a string that is not in the enum for the "function type" string
+material type: ASME2017
+composition:
+  C: [0, 0.3]
+  Mn: [0.29, 1.06]
+  P: [0, 0.04]
+  S: [0, 0.04]
+  Si: [0.1, 1]
+  Ni: [0, 0.4]
+  Cr: [0, 0.4]
+  Mo: [0, 0.15]
+  Cu: [0, 0.4]
+  Fe: balance
+  references:
+    - ref: ACME II.2017, Table 1 pg 3182
+      refType: open literature
+
+density:
+  function:
+    min degrees C: -200.
+    max degrees C: 1000.
+    function type: test
+    value: 7700.
+  references:
+    - ref: ACME II.2017, Table 1 pg 2141
+      refType: open literature
+      
