@@ -19,31 +19,31 @@ TODO: This high-level discussion of mat-props is in the wrong place. Also it is 
 
 dataSchema module
 =================
+Below is listed each section in the local ``dataSchema.json`` file, which is used as the source of truth when validating
+mat-props data files.
+
+Sections in the dataSchem.json file
+-----------------------------------
 
 Schema
-------
-Links to the meta schema of the JSON Schema version utilized to validate this schema. JSON Schema draft 7 notes can be
-found at https://json-schema.org/specification-links.html#draft-7.
+^^^^^^
+Links to the exact library version we are using to define this schema.
 
 
 refDataSchema
--------------
-"refDataSchema" is a global schema intended to be referenced by another section of the file, by using the JSON keyword
-"$ref": "referenceSchema." References are listed in YAML as a sequence, as in the following example::
+^^^^^^^^^^^^^
+Defines what a "reference" will look like. Since nearly everything in a mat-props data file can have a reference, this
+is a generic type of scheme that can be used elsewhere as "$ref": "referenceSchema". These are lists or arrays, an
+ordered sequence. In the YAML format, a reference will look like this::
 
     - ref: Bibliographic citation in your favorite format.
       refType: open literature
 
-However, in JSON, references are organized as arrays. Each array contains the "ref" (string), and the "refType"
-(string), which are the names of the keywords used in the YAML file. "additionalItems": true means that you can have as
-many references as necessary.
-
 
 tabDataSchema
--------------
-"tabDataSchema" is a global schema that can be referenced by a material property through the JSON keyword
-"$ref": "tabulatedData." Tabulated data are listed in YAML as a sequence, denoted by dashes, of arrays, such as the
-following example::
+^^^^^^^^^^^^^
+A description of tabulated data in the mat-props data files. This will appear in multiple places in the JSON file as
+"$ref": "tabulatedData." Tabulated data are listed in YAML as a sequence, and might look like the following example::
 
     tabulated data:
       - [ 25, 6.974E+08]
@@ -53,9 +53,8 @@ following example::
       - [200, 6.842E+08]
       - [250, 6.753E+08]
 
-In JSON, this is considered an array of arrays. Each child array has two values. In a 1D table, seen above, the first
-and second values are numbers, governed by both "anyOf" in "tabDataSchema." In general, all 1D tables will take this
-form::
+The example above is a 1D table. Each row has two items: the position and the value. Of course, for 2D tables that value
+might be a list. Thus, a 2D table might look like this::
 
     tabulated data:
       - [null,   [   375.,    400.,    425.,    450.,    475.,    500.,    525.,    550.,    575.,    600.,    625.]]
@@ -67,37 +66,44 @@ form::
       - [3000.,  [487.e+6, 475.e+6, 436.e+6, 374.e+6, 317.e+6, 266.e+6, 222.e+6, 178.e+6, 149.e+6, 118.e+6,  94.e+6]]
       - [10000., [487.e+6, 475.e+6, 412.e+6, 350.e+6, 295.e+6, 247.e+6, 204.e+6, 166.e+6, 135.e+6, 106.e+6,  81.e+6]]
 
-For 2D tables, seen in the second, larger table, the first value has an option for null. This is like the blank space at
-the corner of a table with two axes. Null and numbers are both allowed for the first value under the "anyOf" in the
-first part of "tabDataSchema." The second value will be a list of numbers. This is governed by the second "anyOf" and
-within these lists can only be numbers. In general, 2D tables will follow this form.
+Notice the "null" value in the top-left of the table above. That is because the rows are number 10-10000 and the columns
+are numbered 375-625. The null is there because it is not an index value in the rows or the columns.
 
 
 file format
------------
-The "file format" schema governs the first line of the YAML file and communicates version of the mat-props YAML file.
+^^^^^^^^^^^
+This communicates which version of the mat-props data format is being used, and is the first line in your YAML file.
 
 
 material type
--------------
-The "material type" schema governs the YAML item of the same name. This enum only allows a small set of values, such as:
-Fuel, Metal, Fluid, Ceramic, ASME2015, ASME2017.
+^^^^^^^^^^^^^
+This is an enum of a small set of values describing your material, such as: Fuel, Metal, Fluid, Ceramic, ASME2015...
 
 
 composition
------------
-"composition" governs the input chemical makeup of the material. In this schema, "patternProperties" is a regular
-expression used to conform all keys to any 1 or 2 letters. This is controlled by the regexes "^[a-zA-Z]{1,2}$". While
-this allows for input of the elements on the periodic table, this also allows random keys like "nC" or "oo." These keys
-are mapped to an array with 2 values that can only contain numbers between 0 and 100. These keys can also be mapped to
-the string "balance." Under “properties”, the references property uses the $ref keyword to reference the
-referenceSchema, conforming any references to that schema. additionalProperties: false means that any property under the
-composition node must conform to the requirements. The “required” after this to ensure the inclusion of “references” for
-validation.
+^^^^^^^^^^^
+This describes the chemical make-up of the material. Other than the references, this is meant be a simple list of
+elemental composition with two values: min and max percentages of the materials. For instance, an example steel-like
+material might be::
+
+    composition:
+      C: [0.03, 0.03]
+      Si: [0.4, 0.4]
+      Ni: [10.0, 15.0]
+      Cr: [16.0, 19.0]
+      Fe: balance
+
+Above we can see that Chromium (Cr) makes up between 16 and 19% of the total mass of the material. And we also see the
+special keyword "balance" on Fe, which just says that Iron makes up whatever percentage of the material is left over
+after the others. The keys above are limited to strings of length 1 or 2, and can only include letters.
 
 
 material property
------------------
+^^^^^^^^^^^^^^^^^
+This is another generic tool, meant to be used through the schema with the keyword "$ref": "materialProperty".
+
+
+
 "material property" is a global schema that governs the format of materials properties in the YAML file by allowing each
 material property to use the keyword "$ref": "materialProperty." This schema has the properties: “tabulated data”,
 ”references”, and “function”. “tabulated data” and “references” use the global schemas "tabDataSchema" and
@@ -152,25 +158,25 @@ the list of properties that are identified in the unit test, test_materials.py. 
 the listed materials properties are acceptable. Material type and composition are both required in order to validate the
 YAML file.
 
+TODO: This final block is hard-coded? That's awful, I want to fix that.
+
 
 Example
 -------
 There is an example, ideal mat-props YAML file at: ``matProps/dataSchema/tests/inputs/example.yaml``.
 
 
-Validation
-----------
-This folder also includes the python script dataSchemaValidator.py. This script is used to validate YAML files against
-the dataSchema. For the validator to execute individual YAML files it must be in the same folder as the schema and the
-validator. To validate a folder of  YAML files, the folder should be in the same location as the schema and validator.
-To execute this code, you can use the "--dir" for directories::
+Running Validation
+------------------
+This folder includes the python script ``dataSchemaValidator.py``. This is used to validate mat-props YAML files. This
+script must be run in the same directory as the folder of YAML files. The tool is easy to run::
 
     python dataSchemaValidator.py example.yaml
-    python dataSchemaValidator.py --dir schema_tests
+    python dataSchemaValidator.py --dir inputs
 
 
-Test files
-----------
-In schema_tests, a variety of files were created to test the JSON schema. These include purposely incorrect or missing
-values to ensure that the schema will catch any errors present.
+Test Files
+^^^^^^^^^^
+There are a variety of files to test the JSON schema at: ``armi/matProps/dataValidator/tests/inputs/``. Some of these
+have purposefully incorrect file formats, for testing purposes.
 """
