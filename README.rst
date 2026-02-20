@@ -26,9 +26,9 @@ A few demos of ARMI can be seen in the `ARMI example gallery <https://terrapower
 
 Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can perform a full analysis of a reactor
 system and then repeat the same level of analysis with some changed input parameters for almost no additional cost. Even
-better, thousands of perturbed cases can be executed in parallel on large computers, helping conceptual design teams
-home in on an optimal design, or helping detailed design teams understand sensitivities all the way from, for example,
-an impurity in a control material to the peak structural temperature in a design-basis transient.
+better, thousands of perturbed cases can be executed in parallel on large clusters, helping conceptual design teams home
+in on an optimal design. Or design teams can analyze sensitivities all the way from, for example, an impurity in a
+control material to the peak structural temperature in a design-basis transient.
 
 .. note:: ARMI does not come with a full selection of physics kernels. They will need to be acquired or developed for
    your specific project in order to make full use of this tool. Many of the example use-cases discussed in this manual
@@ -120,18 +120,16 @@ coolants, moderators, power levels, safety systems, and power cycles. We can run
 decades, tossing various off-normal conditions at them now and then, to see how they perform in terms of capability,
 economics, and safety.
 
-.. note:: Of course, experimental validation remains necessary for many new configurations and situations during licensing.
-
-Perhaps surprisingly, some nuclear software written in the 1960s is still in use today (mostly ported to Fortran 90 by
-now). These codes are validated against physical experiments that no longer exist. Meanwhile, new cutting-edge nuclear
-software is being developed today for powerful computers. Both old and new, these tools are often challenging to operate
-and to use in concert with other sub-specialty codes that are necessary to reach a full system analysis.
+Perhaps surprisingly, some nuclear software written in the 1960s is still in use today. These codes are validated
+against physical experiments that no longer exist. Meanwhile, new cutting-edge nuclear software is being developed for
+todays powerful computers. Both old and new, these tools are often challenging to operate and coordinate to produce a
+full reactor analysis.
 
 The ARMI approach was born out of this situation: how can we best leverage an eclectic mix of legacy and modern tools
-with a small team to do full-scope analysis? We built an environment that lets us automate the tedious, uncoupled, and
+with a small team to do full-scope analysis? We built an framework that lets us automate the tedious, uncoupled, and
 error-prone parts of reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis
 given a major change (e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to
-multiple machines and then perform multiobjective optimization on the resulting design space.
+multiple machines and then perform multi-objective optimization on the resulting design space.
 
 The ARMI system is largely written in the Python programming language. Its high-level nature allows nuclear and
 mechanical engineers to rapidly automate their analysis tasks from their sub-specialties. This helps eliminate the
@@ -139,11 +137,8 @@ translation step between computer-scientists and power plant design engineers. T
 computer scientists can focus on the overall performance and maintainability of the framework, while the power plant
 engineers focus on power plant engineering.
 
-We have spent over 10 years developing this system in a reactor design context. We focused primarily on what's needed to
-do advanced reactor design and analysis.
-
-Because of ARMI's high-level nature, we believe we can collaborate effectively with all ongoing reactor software
-developments.
+We have spent over 10 years developing this system. Because of ARMI's high-level nature, we believe we can collaborate
+effectively with all ongoing reactor software developments.
 
 Communication and coupling
 **************************
@@ -162,7 +157,6 @@ physics kernels.
 
 Automation
 **********
-
 ARMI can quickly and easily produce complex input files with high levels of detail in various approximations. This
 enables users to perform rapid high-fidelity analyses to make sure all important physics are captured. It also enables
 sensitivity studies of different modeling approximations (e.g. symmetries, transport vs. diffusion vs. Monte Carlo,
@@ -209,47 +203,43 @@ Writing a module within ARMI automatically features access to the ARMI API, incl
 
 Use cases
 *********
-
-Given input describing a reactor, a typical ARMI run loops over a set of plugins in a certain sequence. Some plugins
+Given an input describing a reactor, a typical ARMI run loops over a set of plugins in a certain sequence. Some plugins
 trigger third-party simulation codes, producing input files for them, executing them, and translating the output back
-onto the reactor model as state information. Other plugins perform physics simulations directly. A variety of plugins
-are available from TerraPower LLC with certain licensing terms, and it is our hope that a rich ecosystem of useful
-plugins will be developed and curated by the community (university research teams, national labs, other companies,
-etc.).
+onto the reactor model. Other plugins perform physics simulations directly.
 
 For example, one ARMI sequence may involve the calculation of:
 
-* nuclear cross sections,
-* global flux and power,
-* subchannel temperatures,
-* duct wall pressures,
-* cladding strain and wastage,
-* fission gas pressure,
-* reactivity feedbacks (including from core mechanical),
-* flow orificing,
-* the equilibrium fuel cycle,
-* control rod worth,
-* shutdown margin,
-* frequency stability margins,
-* total levelized cost of electricity for the run,
-* and the peak cladding temperature in a variety of design and beyond-design basis transients.
+* nuclear cross sections
+* global flux and power
+* subchannel temperatures
+* duct wall pressures
+* cladding strain and wastage
+* fission gas pressure
+* reactivity feedbacks
+* flow orificing
+* the equilibrium fuel cycle
+* control rod worth
+* shutdown margin
+* frequency stability margins
+* peak cladding temperature
+* transient analysis
+* total levelized cost of electricity for the run
 
-Another sequence may simply compute the cost of feed uranium and enrichment in an initial core and quit. The
-possibilities are limited only by our creativity.
+Another ARMI sequence may simply compute the cost of feed uranium and enrichment in an initial core and quit.
 
-These large runs may also be run through the multiobjective design optimization system, which runs many cases with input
-perturbations to help find the best overall system, considering all important physics at the same time.
+Larger siumulations may also run through the multi-objective design optimization system, which runs many cases with
+input perturbations to help find the best overall system, considering all important physics at the same time.
 
 Other interest may come from the following:
 
 The Research Scientist
 ======================
-A nuclear reactor research scientist, whether at a national lab or on a graduate or undergraduate university team, may
-benefit greatly from using ARMI. It's not uncommon for such people to spend significant fractions of effort on data
-management. ARMI will handle the tedium so that researchers can better focus on designing and testing their research.
+A nuclear reactor research scientist, at a national lab or university, may benefit from ARMI. An ARMI workflow can
+reduce the time spent on data management. ARMI can handle the tedium so that researchers can better focus on designing
+and testing their research.
 
-For example, if an ARMI input file describing the FFTF reactor in detail is provided, the researcher can start running
-benchmark cases with their new code method very rapidly, rather than spending the time building their own FFTF model.
+For example, if an ARMI input file describing the FFTF reactor is provided, the researcher can start running benchmark
+cases with their new code method very rapidly, rather than spending the time building their own FFTF model.
 
 If someone wants to try varying nuclear cross sections by a percent here and there to compute sensitivities, ARMI is a
 perfect platform upon which to operate.
@@ -356,7 +346,7 @@ The ARMI system is licensed as follows:
 
 .. code-block:: none
 
-	Copyright 2009-2026 TerraPower, LLC
+	Copyright 2009 TerraPower, LLC
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
