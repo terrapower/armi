@@ -20,7 +20,6 @@ from armi.settings import setting, settingsValidation
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
 CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
 CONF_CIRCULAR_RING_MODE = "circularRingMode"
-CONF_CIRCULAR_RING_ORDER = "circularRingOrder"
 CONF_FUEL_HANDLER_NAME = "fuelHandlerName"
 CONF_SHUFFLE_SEQUENCE_FILE = "shuffleSequenceFile"
 CONF_JUMP_RING_NUM = "jumpRingNum"
@@ -54,13 +53,6 @@ def getFuelCycleSettings():
             default=False,
             description="Toggle between circular ring definitions to hexagonal ring definitions",
             label="Use Circular Rings",
-        ),
-        setting.Setting(
-            CONF_CIRCULAR_RING_ORDER,
-            default="angle",
-            description="Order by which locations are sorted in circular rings for equilibrium shuffling",
-            label="Eq. circular sort type",
-            options=["angle", "distance", "distanceSmart"],
         ),
         setting.Setting(
             CONF_RUN_LATTICE_BEFORE_SHUFFLING,

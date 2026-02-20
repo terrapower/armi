@@ -1208,8 +1208,5 @@ class TestFuelPlugin(unittest.TestCase):
 
     def test_settingsAreDiscovered(self):
         cs = caseSettings.Settings()
-        nm = settings.CONF_CIRCULAR_RING_ORDER
-        self.assertEqual(cs[nm], "angle")
-
-        setting = cs.getSetting(nm)
-        self.assertIn("distance", setting.options)
+        nm = settings.CONF_JUMP_RING_NUM
+        self.assertEqual(cs[nm], 8)
