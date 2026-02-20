@@ -9,7 +9,8 @@ a material as a function of temperature, the melting point as a function of pres
 expansion as a function of temperature and pressure. The ``matProps`` format also provides a place to explicitly list
 references for each of these material properties: a crucial feature for any valid scientific calculation.
 
-``armi.matProps`` is packaged inside the ARMI framework, but can also be installed and used entirely independently from ARMI.
+``armi.matProps`` is packaged inside the ARMI framework, but can also be installed and used entirely independently from
+ARMI.
 
 
 Installation
@@ -79,7 +80,8 @@ or, to run the mat-props tests faster in parllel:
 Loading Data
 ************
 
-In your Python code, you can load a full set of mat-props materials into memory with just one or two lines of code. You just have to provide a path to a directory filled with correctly-formatted YAML files:
+In your Python code, you can load a full set of mat-props materials into memory with just one or two lines of code. You
+just have to provide a path to a directory filled with correctly-formatted YAML files:
 
 .. code-block:: python
 
