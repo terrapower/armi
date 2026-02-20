@@ -13,25 +13,29 @@
 # limitations under the License.
 
 """
+The dataSchema module contains tools for validating matProps data files.
+
+TODO: This high-level discussion of mat-props is in the wrong place. Also it is too verbose & some of it is out of date.
+
 dataSchema module
-*****************
-Tools for validating matProps data files.
+=================
 
 
 Schema
-======
-Links to the meta schema of the JSON Schema version utilized to validate this schema. JSON Schema
-draft 7 notes can be found at https://json-schema.org/specification-links.html#draft-7.
+------
+Links to the meta schema of the JSON Schema version utilized to validate this schema. JSON Schema draft 7 notes can be
+found at https://json-schema.org/specification-links.html#draft-7.
 
 
 refDataSchema
-=============
+-------------
 "refDataSchema" is a global schema intended to be referenced by another section of the file (such as a material property
 or at the end of “composition”) by using the JSON keyword "$ref": "referenceSchema." References are listed in YAML as a
 sequence, denoted by dashes, such as the following example::
 
 References
 ----------
+^^^^^^^^^^
     - ref: Bibliographic citation in your favorite format.
       refType: open literature
 
@@ -41,7 +45,7 @@ many references as necessary.
 
 
 tabDataSchema
-=============
+-------------
 "tabDataSchema" is a global schema that can be referenced by a material property through the JSON keyword
 "$ref": "tabulatedData." Tabulated data are listed in YAML as a sequence, denoted by dashes, of arrays, such as the
 following example::
@@ -78,19 +82,19 @@ within these lists can only be numbers. In general, 2D tables will follow this f
 
 
 file format
-===========
+-----------
 The "file format" schema governs the first line of the YAML file and communicates version information for the material
 YAML file used.
 
 
 material type
-=============
+-------------
 The "material type" schema governs the "material type" values communicated by the YAML. The enum only allows the string
 values: Fuel, Metal, Fluid, Ceramic, ASME2015, ASME2017.
 
 
 composition
-===========
+-----------
 "composition" governs the input chemical makeup of the material. In this schema, "patternProperties" is a regular
 expression used to conform all keys to any 1 or 2 letters. This is controlled by the regexes "^[a-zA-Z]{1,2}$". While
 this allows for input of the elements on the periodic table, this also allows random keys like "nC" or "oo." These keys
@@ -102,7 +106,7 @@ validation.
 
 
 material property
-=================
+-----------------
 "material property" is a global schema that governs the format of materials properties in the YAML file by allowing each
 material property to use the keyword "$ref": "materialProperty." This schema has the properties: “tabulated data”,
 ”references”, and “function”. “tabulated data” and “references” use the global schemas "tabDataSchema" and
@@ -159,12 +163,12 @@ YAML file.
 
 
 Example
-=======
+-------
 The YAML file example.yaml provides an example of the ideal data file to pass validation.
 
 
 Validation
-==========
+----------
 This folder also includes the python script dataSchemaValidator.py. This script is used to validate YAML files against
 the dataSchema. For the validator to execute individual YAML files it must be in the same folder as the schema and the
 validator. To validate a folder of  YAML files, the folder should be in the same location as the schema and validator.
@@ -175,7 +179,8 @@ To execute this code, you can use the "--dir" for directories::
 
 
 Test files
-==========
+----------
 In schema_tests, a variety of files were created to test the JSON schema. These include purposely incorrect or missing
 values to ensure that the schema will catch any errors present.
+
 """
