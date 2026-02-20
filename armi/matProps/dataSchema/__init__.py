@@ -29,15 +29,12 @@ found at https://json-schema.org/specification-links.html#draft-7.
 
 refDataSchema
 -------------
-"refDataSchema" is a global schema intended to be referenced by another section of the file (such as a material property
-or at the end of “composition”) by using the JSON keyword "$ref": "referenceSchema." References are listed in YAML as a
-sequence, denoted by dashes, such as the following example::
+"refDataSchema" is a global schema intended to be referenced by another section of the file, by using the JSON keyword
+"$ref": "referenceSchema." References are listed in YAML as a sequence, as in the following example::
 
-References
-----------
-^^^^^^^^^^
-    - ref: Bibliographic citation in your favorite format.
-      refType: open literature
+    references:
+        - ref: Bibliographic citation in your favorite format.
+          refType: open literature
 
 However, in JSON, references are organized as arrays. Each array contains the "ref" (string), and the "refType"
 (string), which are the names of the keywords used in the YAML file. "additionalItems": true means that you can have as
@@ -71,9 +68,6 @@ form::
       - [1000.,  [487.e+6, 475.e+6, 459.e+6, 396.e+6, 338.e+6, 285.e+6, 239.e+6, 198.e+6, 163.e+6, 132.e+6, 105.e+6]]
       - [3000.,  [487.e+6, 475.e+6, 436.e+6, 374.e+6, 317.e+6, 266.e+6, 222.e+6, 178.e+6, 149.e+6, 118.e+6,  94.e+6]]
       - [10000., [487.e+6, 475.e+6, 412.e+6, 350.e+6, 295.e+6, 247.e+6, 204.e+6, 166.e+6, 135.e+6, 106.e+6,  81.e+6]]
-      - [30000., [487.e+6, 461.e+6, 390.e+6, 329.e+6, 276.e+6, 229.e+6, 189.e+6, 153.e+6, 122.e+6,  94.e+6,  67.e+6]]
-      - [100000.,[487.e+6, 435.e+6, 366.e+6, 308.e+6, 257.e+6, 212.e+6, 173.e+6, 139.e+6, 110.e+6,  82.e+6,  53.e+6]]
-      - [300000.,[487.e+6, 412.e+6, 345.e+6, 289.e+6, 240.e+6, 196.e+6, 159.e+6, 127.e+6,  99.e+6,  72.e+6,  42.e+6]]
 
 For 2D tables, seen in the second, larger table, the first value has an option for null. This is like the blank space at
 the corner of a table with two axes. Null and numbers are both allowed for the first value under the "anyOf" in the
@@ -83,14 +77,13 @@ within these lists can only be numbers. In general, 2D tables will follow this f
 
 file format
 -----------
-The "file format" schema governs the first line of the YAML file and communicates version information for the material
-YAML file used.
+The "file format" schema governs the first line of the YAML file and communicates version of the mat-props YAML file.
 
 
 material type
 -------------
-The "material type" schema governs the "material type" values communicated by the YAML. The enum only allows the string
-values: Fuel, Metal, Fluid, Ceramic, ASME2015, ASME2017.
+The "material type" schema governs the YAML item of the same name. This enum only allows a small set of values, such as:
+Fuel, Metal, Fluid, Ceramic, ASME2015, ASME2017.
 
 
 composition
@@ -182,5 +175,4 @@ Test files
 ----------
 In schema_tests, a variety of files were created to test the JSON schema. These include purposely incorrect or missing
 values to ensure that the schema will catch any errors present.
-
 """

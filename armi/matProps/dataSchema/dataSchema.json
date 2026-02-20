@@ -1,6 +1,6 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "matProps schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "mat-props schema",
     "description": "Schema for uniform data input for matProps material database",
     "type": "object",
     "properties": {
