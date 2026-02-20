@@ -126,7 +126,7 @@ todays powerful computers. Both old and new, these tools are often challenging t
 full reactor analysis.
 
 The ARMI approach was born out of this situation: how can we best leverage an eclectic mix of legacy and modern tools
-with a small team to do full-scope analysis? We built an framework that lets us automate the tedious, uncoupled, and
+with a small team to do full-scope analysis? We built a framework that lets us automate the tedious, uncoupled, and
 error-prone parts of reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis
 given a major change (e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to
 multiple machines and then perform multi-objective optimization on the resulting design space.
