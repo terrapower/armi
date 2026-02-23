@@ -1365,7 +1365,7 @@ class Core(composites.Composite):
 
         return np.array(flux)
 
-    def getAssembliesOfType(self, typeSpec, exactMatch=False):
+    def getAssembliesWithFlags(self, typeSpec, exactMatch=False):
         """Return a list of assemblies in the core that are of type assemType."""
         return self.getChildrenWithFlags(typeSpec, exactMatch=exactMatch)
 
