@@ -68,6 +68,16 @@ class HexCoreTests(unittest.TestCase):
                 self.assertTrue(a.hasFlags(spec))
             self.assertAllIs(actual, expected)
 
+    def test_getAssembliesWithFlags(self):
+        aa = self.core.getAssembliesWithFlags(Flags.BOOSTER)
+        self.assertEqual(len(aa), 0)
+
+        aa = self.core.getAssembliesWithFlags(Flags.FUEL)
+        self.assertTrue(20 < len(aa) < 100)
+
+        aa = self.core.getAssembliesWithFlags(Flags.CONTROL)
+        self.assertTrue(1 < len(aa) < 10)
+
     def test_getAssemsInZones(self):
         """Test the ability to produce assemblies in a zone."""
         # Grab a few assemblies and add their locations to those in the zones
