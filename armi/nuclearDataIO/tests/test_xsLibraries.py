@@ -19,6 +19,7 @@ import os
 import pickle
 import traceback
 import unittest
+from time import sleep
 
 import numpy as np
 
@@ -303,6 +304,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
             except OSError as e:
                 if a >= (maxAttempts - 1):
                     raise e
+                sleep(1)
 
     def setUp(self):
         TempFileMixin.setUp(self)
@@ -362,6 +364,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         emptyXSLib.merge(self.libAA)
         self.libAA = None
         self.getWriteFunc()(emptyXSLib, self.testFileName)
+        sleep(1)
         self.assertTrue(os.path.exists(self.testFileName))
         self.assertGreater(os.path.getsize(self.testFileName), 0)
         self.assertTrue(filecmp.cmp(self.getLibAAPath(), self.testFileName))
@@ -375,6 +378,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.assertEqual(set(self.libCombined.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.assertTrue(xsLibraries.compare(emptyXSLib, self.libCombined))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
+        sleep(1)
         self.assertTrue(os.path.exists(self.testFileName))
         self.assertGreater(os.path.getsize(self.testFileName), 0)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
