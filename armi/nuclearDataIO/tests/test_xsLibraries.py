@@ -139,10 +139,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
                 with mockRunLogs.BufferLog() as log:
                     lib = xsLibraries.IsotxsLibrary()
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                    self.assertIn(
-                        f"{dummyFileName} in the merging of ISOXX files",
-                        log.getStdout(),
-                    )
+                    self.assertIn(f"{dummyFileName} in the merging of ISOXX files", log.getStdout())
             finally:
                 pass
 
@@ -166,7 +163,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
                 self.assertEqual(listLength, len(getattr(lib, attrName)))
             else:
                 with self.assertRaises(properties.ImmutablePropertyError):
-                    print("Getting the value {}".format(attrName))
+                    print(f"Getting the value {attrName}")
                     print(getattr(lib, attrName))
 
     def test_isotxsLibraryAttributes(self):
@@ -203,7 +200,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
             raise Exception("see stdout for stack trace")
-        # check to make sure they labels overlap... or are actually the same
+        # check to make sure they labels overlap, or are actually the same
         labels = set(self.xsLib.nuclideLabels)
         self.assertEqual(labels, set(self.isotxsAA.nuclideLabels))
         self.assertEqual(labels, set(self.gamisoAA.nuclideLabels))
@@ -281,8 +278,7 @@ class TestGetISOTXSFilesWorkDir(unittest.TestCase):
         """
         Utility method for saying what things contain.
 
-        This could just check the contents and the length, but the error produced when you pass
-        shouldNotBeThere is much nicer.
+        This could just check the contents and length, but the error produced from shouldNotBeThere is much nicer.
         """
         container = set(container)
         self.assertEqual(container, set(shouldBeThere))
@@ -300,12 +296,20 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
 
     def setUp(self):
         TempFileMixin.setUp(self)
-        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
-        # Actinides, structure, and coolant
+        # Load a library that is in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and
+        # coolant.
         self.libAA = self.getReadFunc()(self.getLibAAPath())
         self.libAB = self.getReadFunc()(self.getLibABPath())
-        self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
-        self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
+        try:
+            self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
+        except OSError:
+            self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
+
+        try:
+            self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
+        except OSError:
+            self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
+
         self.nuclideBases = NuclideBases()
 
     def getErrorType(self):
@@ -333,10 +337,13 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         """Cannot merge XS libraries with the same nuclide names."""
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
+
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libAA)
+
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
+
         with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
@@ -491,6 +498,7 @@ class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
             nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
+
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
@@ -498,8 +506,8 @@ class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
 
 class TestCombinedMerge(unittest.TestCase):
     def setUp(self):
-        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
-        # Actinides, structure, and coolant
+        # Load a library that is in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and
+        # coolant.
         self.isotxsAA = isotxs.readBinary(ISOTXS_AA)
         self.gamisoAA = gamiso.readBinary(GAMISO_AA)
         self.pmatrxAA = pmatrx.readBinary(PMATRX_AA)
