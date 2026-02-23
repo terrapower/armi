@@ -67,10 +67,7 @@ class TempFileMixin:
 
     @property
     def testFileName(self):
-        return os.path.join(
-            self.td.destination,
-            "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
-        )
+        return os.path.join(self.td.destination, f"{self.__class__.__name__}-{self._testMethodName}.nucdata")
 
 
 class TestXSLibrary(TempFileMixin, unittest.TestCase):
@@ -296,7 +293,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
     """
 
     def _readFileAttempts(self, path):
-        """Run the file read a few times, because sometime GitHub CI is flaky with these tests."""
+        """Run the file read a few times, because sometimes GitHub CI is flaky with these tests."""
         maxAttempts = 5
         for a in range(maxAttempts):
             try:
