@@ -294,22 +294,23 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
     This is just a base class, it isn't run directly.
     """
 
+    def _readFileAttempts(self, path):
+        """Run the file read a few times, because sometime GitHub CI is flaky with these tests."""
+        maxAttempts = 5
+        for a in range(maxAttempts):
+            try:
+                return self.getReadFunc()(path)
+            except OSError as e:
+                if a >= (maxAttempts - 1):
+                    raise e
+
     def setUp(self):
         TempFileMixin.setUp(self)
-        # Load a library that is in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and
-        # coolant.
-        self.libAA = self.getReadFunc()(self.getLibAAPath())
-        self.libAB = self.getReadFunc()(self.getLibABPath())
-        try:
-            self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
-        except OSError:
-            self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
-
-        try:
-            self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
-        except OSError:
-            self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
-
+        # Load a library in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and coolant.
+        self.libAA = self._readFileAttempts(self.getLibAAPath())
+        self.libAB = self._readFileAttempts(self.getLibABPath())
+        self.libCombined = self._readFileAttempts(self.getLibAA_ABPath())
+        self.libLumped = self._readFileAttempts(self.getLibLumpedPath())
         self.nuclideBases = NuclideBases()
 
     def getErrorType(self):
@@ -506,8 +507,7 @@ class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
 
 class TestCombinedMerge(unittest.TestCase):
     def setUp(self):
-        # Load a library that is in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and
-        # coolant.
+        # Load a library in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and coolant.
         self.isotxsAA = isotxs.readBinary(ISOTXS_AA)
         self.gamisoAA = gamiso.readBinary(GAMISO_AA)
         self.pmatrxAA = pmatrx.readBinary(PMATRX_AA)
