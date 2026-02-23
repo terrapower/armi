@@ -362,6 +362,8 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         emptyXSLib.merge(self.libAA)
         self.libAA = None
         self.getWriteFunc()(emptyXSLib, self.testFileName)
+        self.assertTrue(os.path.exists(self.testFileName))
+        self.assertGreater(os.path.getsize(self.testFileName), 0)
         self.assertTrue(filecmp.cmp(self.getLibAAPath(), self.testFileName))
 
     def test_mergeTwoXSLibFiles(self):
@@ -373,6 +375,8 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.assertEqual(set(self.libCombined.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.assertTrue(xsLibraries.compare(emptyXSLib, self.libCombined))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
+        self.assertTrue(os.path.exists(self.testFileName))
+        self.assertGreater(os.path.getsize(self.testFileName), 0)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
 
 
