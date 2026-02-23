@@ -33,26 +33,24 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
 FIXTURE_DIR = os.path.join(THIS_DIR, "fixtures")
-# CCCC fixtures are less fancy than these merging ones.
-FIXTURE_DIR_CCCC = os.path.join(os.path.dirname(isotxs.__file__), "tests", "fixtures")
-
-ISOTXS_AA = os.path.join(FIXTURE_DIR, "ISOAA")
-ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
-ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
-ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
-
-PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
-PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
-PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
-PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
 
 GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
-GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
 GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
+GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
 GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
-
-DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
+ISOTXS_AA = os.path.join(FIXTURE_DIR, "ISOAA")
+ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
+ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
+ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
+PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
+PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
+PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
+PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
 UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
+
+# CCCC fixtures are less fancy than these merging ones.
+FIXTURE_DIR_CCCC = os.path.join(os.path.dirname(isotxs.__file__), "tests", "fixtures")
+DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 
 
 class TempFileMixin:
