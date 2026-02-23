@@ -225,7 +225,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
             raise Exception("See stdout for stack trace")
-        # check to make sure they labels overlap... or are actually the same
+        # check to make sure they labels overlap, or are actually the same
         writer.writeBinary(self.xsLib, self.testFileName)
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
