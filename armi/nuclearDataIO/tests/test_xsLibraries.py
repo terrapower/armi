@@ -289,7 +289,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
 
     Notes
     -----
-    This is just a base class, it isn't run directly.
+    This is a base class; it is not run directly.
     """
 
     def _readFileAttempts(self, path):
