@@ -101,6 +101,19 @@ store the data files (in a package named ``material_data``):
     armi.matProps.loadSafe()
 
 
+Adding a Property
+*****************
+mat-props comes with a large set of common material properties. But it is quite easy to add another material property to
+your simulation, if you need to.
+
+.. code-block:: python
+
+    from armi.matProps.prop import defProp
+
+    defProp("fuzz", "fuzziness", "1/m^2")
+    defProp("goo", "gooiness", "m^2/s")
+    defProp("squish", "squishiness", "1/Pa")
+
 
 Building a Wheel
 ****************
