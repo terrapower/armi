@@ -30,10 +30,12 @@ from armi.tests import mockRunLogs
 from armi.utils import properties
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
+# test input pathing
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
 FIXTURE_DIR = os.path.join(THIS_DIR, "fixtures")
 
+# specific tests files
 GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
 GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
 GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
@@ -54,7 +56,7 @@ DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 
 
 class TempFileMixin:
-    """Not a test; just helpful test tooling."""
+    """A helpful test tooling; creating temporary directories and nucdata test file path."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
