@@ -25,13 +25,13 @@ from ruamel.yaml import YAML
 def keysToString(d):
     """Used to change numeric keys in YAML, to strings, because JSON cannot parse numbers as keys."""
     if isinstance(d, dict):
-        d_new = {str(key): keysToString(value) for key, value in d.items()}
+        newDict = {str(key): keysToString(value) for key, value in d.items()}
     elif isinstance(d, list):
-        d_new = [keysToString(value) for value in d]
+        newDict = [keysToString(value) for value in d]
     else:
-        d_new = d
+        newDict = d
 
-    return d_new
+    return newDict
 
 
 def loadSchema():
