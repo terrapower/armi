@@ -114,6 +114,8 @@ your simulation, if you need to.
     defProp("goo", "gooiness", "m^2/s")
     defProp("squish", "squishiness", "1/Pa")
 
+    armi.matProps.loadSafe("path/to/hilarious/materials/")
+
 
 Building a Wheel
 ****************

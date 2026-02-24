@@ -58,15 +58,6 @@ class TestTableFunctions(MatPropsFunTestBase):
         with self.assertRaises(ValueError):
             func._calcSpecific({"X": 1})
 
-    def test_points(self):
-        mat = self._createFunction(self.baseOneDimTableData, self.baseOneDimTable)
-        func = mat.rho
-        points = func.points()
-        self.assertAlmostEqual(points[0].variable1, 0.0)
-        self.assertAlmostEqual(points[0].value, 5.0)
-        self.assertAlmostEqual(points[1].variable1, 100.0)
-        self.assertAlmostEqual(points[1].value, 105.0)
-
     def test_interpolation1DtableMissnode(self):
         """Test to make sure a KeyError is thrown if 'tabulated data' node is absent."""
         with self.assertRaisesRegex(KeyError, "tabulated data"):
@@ -102,7 +93,6 @@ class TestTableFunctions(MatPropsFunTestBase):
 
         # bonus test of method to clear table data
         self.assertIsNotNone(mat.rho.tableData)
-        self.assertGreater(len(mat.rho.points()), 0)
         mat.rho.clear()
         self.assertIsNone(mat.rho.tableData)
 

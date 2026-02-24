@@ -15,13 +15,12 @@
 """A simple implementation for a one dimensional table to replace analytic curves in the YAML data files."""
 
 from armi.matProps.interpolationFunctions import linearLinear
-from armi.matProps.point import Point
 from armi.matProps.tableFunction import TableFunction
 
 
 class TableFunction1D(TableFunction):
     """
-    A one dimensional table function.
+    A one dimensional table function, containing pairs of data.
 
     An example with the YAML format is::
 
@@ -29,12 +28,11 @@ class TableFunction1D(TableFunction):
           <var>: 0
           type: table
           tabulated data:
-            - [0.0, 0.0]  # obviously, this data is non-physical
+            - [0.0, 0.0]
             - [50, 1e99]
             - [100, 2e-99]
             - [150, 100]
 
-    The tabulated data entry contains pairs of data, which is also the return value from TableFunction1D.points.
     """
 
     def __init__(
@@ -90,13 +88,6 @@ class TableFunction1D(TableFunction):
         for val in tabulated_data:
             self._var1s.append(float(val[0]))
             self._values.append(float(val[1]))
-
-    def points(self):
-        points = []
-        for ii in range(len(self._var1s)):
-            points.append(Point(self._var1s[ii], None, self._values[ii]))
-
-        return points
 
     def _calcSpecific(self, point: dict) -> float:
         """

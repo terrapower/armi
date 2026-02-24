@@ -24,11 +24,6 @@ class TableFunction(Function):
     def isTable():
         return True
 
-    @staticmethod
-    def points():
-        """Returns the underlying Point quantities."""
-        raise NotImplementedError()
-
     def _setBounds(self, node: dict):
         """
         Validate and set the min and max bounds for a variable.

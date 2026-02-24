@@ -182,15 +182,6 @@ class Function:
                 return False
         return True
 
-    def points(self):
-        """Returns a list of points within the TableFunction of this Function."""
-        if self.tableData:
-            return self.tableData.points()
-        else:
-            msg = f"Requested points from {self.property} on {self.material}, which is not tabulated data and "
-            msg += "therefore has no points."
-            raise KeyError(msg)
-
     def __repr__(self):
         """Provides string representation of Function object."""
         return f"<{self.__class__.__name__}>"
