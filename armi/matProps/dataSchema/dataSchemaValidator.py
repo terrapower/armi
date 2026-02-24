@@ -22,12 +22,12 @@ import jsonschema
 from ruamel.yaml import YAML
 
 
-def keys2string(d):
+def keysToString(d):
     """Used to change numeric keys in YAML, to strings, because JSON cannot parse numbers as keys."""
     if isinstance(d, dict):
-        d_new = {str(key): keys2string(value) for key, value in d.items()}
+        d_new = {str(key): keysToString(value) for key, value in d.items()}
     elif isinstance(d, list):
-        d_new = [keys2string(value) for value in d]
+        d_new = [keysToString(value) for value in d]
     else:
         d_new = d
 
@@ -46,7 +46,7 @@ def validateFile(file_name):
     yaml = YAML()
     schema = loadSchema()
     yamlData = yaml.load(pathlib.Path(file_name))
-    yamlData = keys2string(yamlData)
+    yamlData = keysToString(yamlData)
     jsonschema.validate(yamlData, schema, format_checker=jsonschema.FormatChecker)
 
 

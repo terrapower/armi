@@ -20,8 +20,8 @@ dataSchema module
 Below is listed each section in the local ``dataSchema.json`` file, which is used as the source of truth when validating
 mat-props data files.
 
-Sections in the dataSchem.json file
------------------------------------
+Sections in the dataSchema.json file
+------------------------------------
 
 Schema
 ^^^^^^
@@ -31,7 +31,7 @@ Links to the exact library version we are using to define this schema.
 refDataSchema
 ^^^^^^^^^^^^^
 Defines what a "reference" will look like. Since nearly everything in a mat-props data file can have a reference, this
-is a generic type of scheme that can be used elsewhere as "$ref": "referenceSchema". These are lists or arrays, an
+is a generic type of schema that can be used elsewhere as "$ref": "referenceSchema". These are lists or arrays, an
 ordered sequence. In the YAML format, a reference will look like this::
 
     - ref: Bibliographic citation in your favorite format.
@@ -70,12 +70,13 @@ are numbered 375-625. The null is there because it is not an index value in the 
 
 file format
 ^^^^^^^^^^^
-This communicates which version of the mat-props data format is being used, and is the first line in your YAML file.
+This communicates which version of the mat-props data format is being used, and is the first line in the YAML file.
 
 
 material type
 ^^^^^^^^^^^^^
-This is an enum of a small set of values describing your material, such as: Fuel, Metal, Fluid, Ceramic, ASME2015...
+This is an enum of a small set of values describing the material.  Allowed values include: Fuel, Metal, Fluid, Ceramic,
+ASME2015, ASME2017, and ASME2019. Though items may get added to that list over time.
 
 
 composition
@@ -98,51 +99,34 @@ after the others. The keys above are limited to strings of length 1 or 2, and ca
 
 material property
 ^^^^^^^^^^^^^^^^^
-This is another generic tool, meant to be used throughout the schema with the keyword "$ref": "materialProperty". This
-schema has the properties: “tabulated data”, ”references”, and “function”. (The “tabulated data” and “references” use
-pre-defined global schemas.)
+This is another generic tool, meant to be used throughout the schema with the keyword ``"$ref": "materialProperty"``.
+This has the properties: tabulated data, references, and function. (The "tabulated data" and "references" are global
+defined above.)
 
-* **function**: can be of any “function type” listed in the “enum.” “function” has the properties "min degrees C" and
-  "max degrees C," both of which can only be numbers and are required.. The property “function type” can only be the
-  string values listed after the “enum,” which represent the strings that can be parsed in Python and represent
-  mathematical functions.
+* **function**: can be of any ``function type`` listed in the ``enum``. This enum lists the supported mathematical
+  functions. It also has the properties ``min degrees C`` and ``max degrees C``, both of which are required numbers.
 
-    * The "allOf" brackets: describe the various function types listed in the “enum” of the “properties” for “function”.
-      This block of the schema uses conditionals that depend on the "function type" value. The logic follows the general
-      flow of "if”: “function type”, “then”: specific function properties. For all of the function types, both their
-      “function type” and the supporting “properties” that describe the function type are required for validation.
-    * "constant": has one property, “value,” which can only be a number.
-    * **polynomial** has one property: "coefficients". This uses the "patternProperties" keyword to conform all keys of
-      "coefficients" to follow the regular expression "^[0-9]$". This regular expression validates the numeric values of
-      zero to nine for polynomials. If polynomials are expected to go higher than ninth order, this will have to be
-      amended. "polynomial" requires a minimum of 1 coefficient key, and uses “additionalProperties”: false to confirm
-      that all keys in "polynomial" follow the set regex.
-    * **hyperbolic** has one property: "coefficients". That has the properties: "hyperbolic function" (string),
-      "intercept" (number), "outer multiplier" (number), "inner denominator" (number), and "inner adder" (number). These
-      are all required to describe a hyperbolic function. Currently, matProps only support the hyperbolic tangent
-      function. Hyperbolic functions are added to matProps directly through the python backend in HyperbolicFunction.py.
-    * **power law** has one property: "coefficients". This has the properties: "exponent" (number), "outer multiplier"
-      (number), and "inner adder" (number). These are all required. Power law functions are added to matProps directly
-      through the Python backend in PowerLaw.py.
-    * **piecewise** is a recursive function that has one property: "functions". This is an array with two properties;
-      the recursive "function": { "$ref": "functionSchema" } and "tabulated data" which uses the global schema
-      "tabulatedData". The "$ref": "$functionSchema" to recursively call the parent schema to validate any functions
-      listed. "additionalItems": false only allows items in the arrays to contain "function" and "tabulated data" to
-      validate. Piecewise functions are added to matProps directly through the python backend in PiecewiseFunction.py.
-    * **temperature dependent table** has one required property: "rounding scheme" (number). Temperature dependent table
-      functions are added to matProps directly through the python backend in TemperatureDependentTableFunction.py.
-    * **time and temperature dependent table** and "cycles and temperature dependent table" both follow the same schema.
-      They have two required properties: "interpolation scheme" (string), and "rounding scheme" (number). "interpolation
-      scheme" can only be the values (strings): “log-lin,” and "lin-lin". 2D table functions are added to matProps
-      directly through the python backend in TableFunction2D.py.
+    * **allOf**: This is a long switch statement mapping each ``function type`` above to its number and type of inputs.
+    * **constant**: always returns the same ``value``.
+    * **polynomial**: the list of ``coefficients`` here represent the float coefficents of terms summed together with
+      exponents from 0 to 9. This is a limitation until someone needs higher-order terms.
+    * **hyperbolic** (HyperbolicFunction.py): a list of ``coefficients``. Each coefficient has a set of properties:
+      "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator" (number),
+      and "inner adder" (number).  Currently, matProps only support the hyperbolic tangent function.
+    * **power law** (PowerLaw.py): has one property: "coefficients". This has three required properties: "exponent"
+      (number), "outer multiplier" (number), and "inner adder" (number).
+    * **piecewise** (PiecewiseFunction.py): a recursive descriptoin that has one property: "functions". Each "function"
+      is mapped to "tabulated data".
+    * **temperature dependent table** (TemperatureDependentTableFunction.py): has one required number "rounding scheme".
+    * **time and temperature dependent table** and "cycles and temperature dependent table" (TableFunction2D.py): both
+      have two required properties: "interpolation scheme" (string), and "rounding scheme" (number). "interpolation
+      scheme" can only be the values (strings): "log-lin," and "lin-lin".
 
-* The last "allOf" block is another conditional for the function "constant". Constant functions do not require tabulated
-  data as they are one data point. This conditional removes the requirement for tabulated data if the "function type" in
-  "function" of any material property is "constant".
+* The last ``allOf`` simplifies the logic for ``constant`` functions. This conditional just removes the requirement that
+constant functions take tabulated data.
 
-The final block of schema are the allowed materials properties that are currently in matProps. This is a hard-coded list
-of all the material properties supported by mat-props. But since that set can easily be added to during run time, this
-list might have to be ammended before validation.
+The final block is a hard-coded list of all the material properties in mat-props (for instance, density). But you can
+easily add more material properties to mat-props and if you do so you will need to amend this list before validation.
 
 
 Example

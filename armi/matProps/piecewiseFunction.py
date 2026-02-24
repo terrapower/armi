@@ -26,9 +26,9 @@ from armi.matProps.function import Function
 class PiecewiseFunction(Function):
     """
     A piecewise function is composed of many other subfunctions, any of which can be any subclass of the Function type,
-    including PiecewiseFunction.
+    including ``PiecewiseFunction``.
 
-    The PiecewiseFunction uses the `Function.inRange` method to determine which sub-function should be used for
+    The PiecewiseFunction uses the ``Function.inRange`` method to determine which sub-function should be used for
     computing the quantity. An example with the YAML format is::
 
         function:

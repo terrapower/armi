@@ -631,7 +631,7 @@ class TestSymbolicFunction(unittest.TestCase):
         """
         Test that undefined functions results in errors for symbolic equations.
 
-        A logarthmic function is evaluated at two points in the valid range to show that the material input is parsed
+        A logarithmic function is evaluated at two points in the valid range to show that the material input is parsed
         correctly. The function is then evaluated at a value that results in a negative expression inside the logarithm
         which is undefined.
         """
@@ -746,24 +746,22 @@ class TestSymbolicFunction(unittest.TestCase):
         self.functionTest(func, 4)
 
     def test_symbolicExamples(self):
-        """Test a handful of representative equations from materials_database for symbolic equations."""
-        # Hypothetical HT9 Yield Strength
-        func = lambda x, y, z: 10**6 * (
-            (-640 / (1 + math.exp(-0.018 * (x - 520))) + 580) + (-120 / (1 + math.exp(-0.0432 * (x - 120))) + 95)
+        """Test a handful of complicated symbolic equations."""
+        # example 1
+        func = lambda x, y, z: 10**5 * (
+            (-540 / (1 + math.exp(-0.02 * (x - 220))) + 520) + (-120 / (1 + math.exp(-0.02 * (x - 122))) + 92)
         )
-        self.setEqnField("10**6*((-640/(1+exp(-0.018*(X-520)))+ 580)+ (-120/(1+exp(-0.0432*(X-120)))+ 95))")
+        self.setEqnField("10**5*((-540/(1+exp(-0.02*(X-220)))+ 520)+ (-120/(1+exp(-0.02*(X-122)))+ 92))")
         self.functionTest(func, 1)
 
-        # Sodium Density, from open literature
-        func = (
-            lambda x, y, z: 219.0 + 275.32 * (1 - (x + 273.15) / 2503.7) + 511.58 * (1 - (x + 273.15) / 2503.7) ** 0.5
-        )
-        self.setEqnField("219.0 + 275.32 * (1 - (X + 273.15) / 2503.7) + 511.58 * (1 - (X + 273.15) / 2503.7) ** 0.5")
+        # example 2
+        func = lambda x, y, z: 222.0 + 225.2 * (1 - (x + 273.15) / 2500) + 512.2 * (1 - (x + 273.15) / 2502) ** 0.5
+        self.setEqnField("222.0 + 225.2 * (1 - (X + 273.15) / 2500) + 512.2 * (1 - (X + 273.15) / 2502) ** 0.5")
         self.functionTest(func, 2)
 
-        # B4C Modulus, multi-variable
-        func = lambda x, y, z: (5.2e11 - 7.1e6 * x - 4.1e3 * x**2) * (y / (4.512 - 3.1 * y))
-        self.setEqnField("(5.2E11 - 7.1E6 * X - 4.1E3 * X**2) * (Y / (4.512 - 3.1 * Y))")
+        # example 3
+        func = lambda x, y, z: (2.2e11 - 7.2e6 * x - 4.2e2 * x**2) * (y / (4.2 - 2.2 * y))
+        self.setEqnField("(2.2E11 - 7.2E6 * X - 4.2E2 * X**2) * (Y / (4.2 - 2.2 * Y))")
         self.functionTest(func, 3)
 
     def test_symbolicBadparse(self):

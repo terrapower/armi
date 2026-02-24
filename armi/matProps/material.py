@@ -128,7 +128,7 @@ class Material:
         Parameters
         ----------
         node: dict
-            Material defition, like a YAML taht become a dict.
+            Material definition, like a dict that is loaded from a YAML file.
         """
         self.materialType = MaterialType.fromString(self.getNode(node, "material type"))
         self.composition = Constituent.parseComposition(self.getNode(node, "composition"))

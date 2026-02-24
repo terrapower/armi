@@ -36,7 +36,7 @@ class TestMaterialType(unittest.TestCase):
         os.chdir(cls.cwd)
 
     def test_materialTypeFail(self):
-        """This contains an incorrect material type, not included in the enum in the "material type schema."""
+        """This contains an incorrect material type, not included in the enum in the 'material type' schema."""
         with self.assertRaises(ValidationError):
             validateFile("materialTypeFail.yaml")
 
@@ -62,8 +62,8 @@ class TestComposition(unittest.TestCase):
 
     def test_compositionBalanceTest(self):
         """
-        This YAML contains the key Fe: with the incorrect string "test" that will be caught because it is not the only
-        allowed string "balance".
+        This YAML contains the key "Fe:"" with the incorrect string "test" that will be caught because it is not the
+        only allowed string "balance".
         """
         with self.assertRaises(ValidationError):
             validateFile("compositionBalanceTest.yaml")

@@ -111,6 +111,11 @@ class TestParameter(unittest.TestCase):
         with self.assertRaises(ValidationError):
             validateFile("unidentifiedFxnTest.yaml")
 
-    def test_loadExampleFile(self):  # noqa: PLR6301, could be static function
+    def test_loadExampleFile(self):
         """Loads the example file in the data_schema directory to make sure it loads without raising an exception."""
         validateFile("example.yaml")
+
+        # The validateFile function will raise an error if anything goes wrong. So if it success, and returns nothing,
+        # we do not have much to test. The function either raises an error or it does not.
+        # This is a good test file, so no error should be raised.
+        self.assertTrue(True)

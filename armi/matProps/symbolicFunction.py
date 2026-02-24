@@ -26,7 +26,7 @@ from armi.matProps.function import Function
 
 
 class SymbolicFunction(Function):
-    r"""
+    """
     A symbolic function. A functional form defined in the YAML file is parsed.
 
     An example with the YAML format is::

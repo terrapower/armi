@@ -139,4 +139,4 @@ easy to do, using standard PIP tools:
     mv ../armi/backup_init ../armi/__init__.py
 
 And now, in the directory ``mat-props/dist/`` you will have several wheels, one of which will be the one you want:
-``mat_props-1.2.3-py3-none-any.whl``.
+``mat_props-x.y.z-py3-none-any.whl``.
