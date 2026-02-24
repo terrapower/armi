@@ -198,6 +198,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
             raise Exception("see stdout for stack trace")
+
         # check to make sure they labels overlap, or are actually the same
         labels = set(self.xsLib.nuclideLabels)
         self.assertEqual(labels, set(self.isotxsAA.nuclideLabels))
@@ -225,6 +226,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
             raise Exception("See stdout for stack trace")
+
         # check to make sure they labels overlap, or are actually the same
         writer.writeBinary(self.xsLib, self.testFileName)
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
@@ -455,6 +457,7 @@ class TestIsotxsMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
             nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
+
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
