@@ -21,24 +21,21 @@ properties be an arbitrary function of multiple independent variables, or a look
 of these properties can define their own set of references, to allow for trustworthy modeling. A major idea in matProps
 is that we separate out materials as "data", rather than representing them directly in Python as "code".
 
-This package does not include any material data files. The user may create their own data files to use with matProps by
-passing a path in armi.matProps.loadAll(path). The unit tests in this package have many example YAML files. And ARMI
-comes packaged with more real world examples at: ``armi/resources/materials/``.
+This package does not include any material data files. The unit tests in this package have many example YAML files, and ARMI
+comes packaged with more real world examples at: ``armi/resources/materials/``. The user may create their own data files to use 
+with ``matProps`` in a directory, and pass in that path via ``armi.matProps.loadAll(path)``. 
 
 A Note on Design
 ================
-At the high-level, the mat-props API exposes the functions in this file (loadAll, loadSafe, getMaterials, etc). And
-these functions all work off three global data collections: armi.matProps.loadedRootDirs, armi.matProps.materials, and
-armi.matProps.prop.propterties.
+At the high-level, the ``matProps`` API exposes the functions in this file (``loadAll``, ``loadSafe``, ``getMaterials``, etc). And
+these functions all work off three global data collections: ``armi.matProps.loadedRootDirs``, ``armi.matProps.materials``, and
+``armi.matProps.prop.properties``.
 
-This design has worked for several years now and we have not ran into any problems with the data being stored globally.
-Though it is still worth noting that this design centers around global data. You could imagine a more object-oriented
-approach where the functions below and these three data sets were all stored in a class, maybe call it
-``MaterialLibrary``. Something like that would be more Pythonic, and allow for multiple collections of materials, say
+It is worth noting that this design centers around global data. This could have a more object-oriented
+approach where the functions below and these three data sets are all stored in a class, e.g. via a
+``MaterialLibrary`` class. This would be more Pythonic, and allow for multiple collections of materials, say
 for testing. So far, no one has ever needed multiple colletions of materials from mat-props, because a single scientific
 model generally only needs one source of truth for what materials are.
-
-For now, the status quo remains. But it is worth understanding the current code design.
 """
 
 import os
