@@ -27,9 +27,9 @@ files to use with ``matProps`` in a directory, and pass in that path via ``armi.
 
 A Note on Design
 ================
-At the high-level, the ``matProps`` API exposes the functions in this file (``loadAll``, ``loadSafe``, ``getMaterials``,
-etc). And these functions all work off three global data collections: ``armi.matProps.loadedRootDirs``,
-``armi.matProps.materials``, and ``armi.matProps.prop.properties``.
+At the high-level, the ``mat-props`` API exposes the functions in this file (``loadAll``, ``loadSafe``,
+``getMaterials``, etc). And these functions all work off three global data collections:
+``armi.matProps.loadedRootDirs``, ``armi.matProps.materials``, and ``armi.matProps.prop.properties``.
 
 It is worth noting that this design centers around global data. This could have a more object-oriented approach where
 the functions below and these three data sets are all stored in a class, e.g. via a ``MaterialLibrary`` class. This
