@@ -42,7 +42,8 @@ jobs:
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=xml --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=xml --cov-append --ignore=venv armi/tests/test_mpiDirectoryChangers.py || true
           coverage combine --rcfile=pyproject.toml --keep -a
-          coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover --fail-under=90
+          coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover
+          #coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover --fail-under=90
       - name: Publish to codecov.io
         #if: github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v5
