@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-The dataSchema module contains tools for validating matProps data files.
+The dataSchema module contains tools for validating mat-props data files.
 
 dataSchema module
 =================
@@ -100,7 +100,7 @@ after the others. The keys above are limited to strings of length 1 or 2, and ca
 material property
 ^^^^^^^^^^^^^^^^^
 This is another generic tool, meant to be used throughout the schema with the keyword ``"$ref": "materialProperty"``.
-This has the properties: tabulated data, references, and function. (The "tabulated data" and "references" are global
+This has the properties: tabulated data, references, and function. (The "tabulated data" and "references" are global,
 defined above.)
 
 * **function**: can be of any ``function type`` listed in the ``enum``. This enum lists the supported mathematical
@@ -109,16 +109,16 @@ defined above.)
     * **allOf**: This is a long switch statement mapping each ``function type`` above to its number and type of inputs.
     * **constant**: always returns the same ``value``.
     * **polynomial**: the list of ``coefficients`` here represent the float coefficents of terms summed together with
-      exponents from 0 to 9. This is a limitation until someone needs higher-order terms.
-    * **hyperbolic** (HyperbolicFunction.py): a list of ``coefficients``. Each coefficient has a set of properties:
+      exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
+    * **hyperbolic**: a list of ``coefficients``. Each coefficient has a set of properties:
       "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator" (number),
-      and "inner adder" (number).  Currently, matProps only support the hyperbolic tangent function.
-    * **power law** (PowerLaw.py): has one property: "coefficients". This has three required properties: "exponent"
+      and "inner adder" (number).  Currently, mat-props only supports the hyperbolic tangent function.
+    * **power law**: has one property: "coefficients". This has three required properties: "exponent"
       (number), "outer multiplier" (number), and "inner adder" (number).
-    * **piecewise** (PiecewiseFunction.py): a recursive descriptoin that has one property: "functions". Each "function"
+    * **piecewise** (piecewiseFunction.py): a recursive description that has one property: "functions". Each "function"
       is mapped to "tabulated data".
-    * **temperature dependent table** (TemperatureDependentTableFunction.py): has one required number "rounding scheme".
-    * **time and temperature dependent table** and "cycles and temperature dependent table" (TableFunction2D.py): both
+    * **temperature dependent table** (tableFunction1D.py): has one required number, "rounding scheme".
+    * **time and temperature dependent table** and "cycles and temperature dependent table" (tableFunction2D.py): both
       have two required properties: "interpolation scheme" (string), and "rounding scheme" (number). "interpolation
       scheme" can only be the values (strings): "log-lin," and "lin-lin".
 
