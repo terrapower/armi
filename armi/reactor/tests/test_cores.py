@@ -68,14 +68,14 @@ class HexCoreTests(unittest.TestCase):
                 self.assertTrue(a.hasFlags(spec))
             self.assertAllIs(actual, expected)
 
-    def test_getAssembliesWithFlags(self):
-        aa = self.core.getAssembliesWithFlags(Flags.BOOSTER)
+    def test_iterChildrenWithFlags(self):
+        aa = list(self.core.iterChildrenWithFlags(Flags.BOOSTER))
         self.assertEqual(len(aa), 0)
 
-        aa = self.core.getAssembliesWithFlags(Flags.FUEL)
+        aa = list(self.core.iterChildrenWithFlags(Flags.FUEL))
         self.assertTrue(20 < len(aa) < 100)
 
-        aa = self.core.getAssembliesWithFlags(Flags.CONTROL)
+        aa = list(self.core.iterChildrenWithFlags(Flags.CONTROL))
         self.assertTrue(1 < len(aa) < 10)
 
     def test_getAssemsInZones(self):
