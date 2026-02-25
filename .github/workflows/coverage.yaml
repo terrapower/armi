@@ -45,6 +45,6 @@ jobs:
           coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover --fail-under=90
       - name: Publish to codecov.io
         #if: github.ref == 'refs/heads/main'
-        run: |
-          pip install codecov
-          codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
