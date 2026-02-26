@@ -108,19 +108,22 @@ defined above.)
 
     * **allOf**: This is a long switch statement mapping each ``function type`` above to its number and type of inputs.
     * **constant**: always returns the same ``value``.
-    * **polynomial**: the list of ``coefficients`` here represent the float coefficents of terms summed together with
-      exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
-    * **hyperbolic**: a list of ``coefficients``. Each coefficient has a set of properties:
-      "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator" (number),
-      and "inner adder" (number).  Currently, matProps only supports the hyperbolic tangent function.
-    * **power law**: has one property: "coefficients". This has three required properties: "exponent"
-      (number), "outer multiplier" (number), and "inner adder" (number).
     * **piecewise** (piecewiseFunction.py): a recursive description that has one property: "functions". Each "function"
       is mapped to "tabulated data".
     * **temperature dependent table** (tableFunction1D.py): has one required number, "rounding scheme".
     * **time and temperature dependent table** and "cycles and temperature dependent table" (tableFunction2D.py): both
       have two required properties: "interpolation scheme" (string), and "rounding scheme" (number). "interpolation
       scheme" can only be the values (strings): "log-lin," and "lin-lin".
+    * symbolic functions: matProps contains some generic symbolic logic to support a wide range of function types. For
+      instance:
+
+        * **polynomial**: the list of ``coefficients`` here represent the float coefficents of terms summed together with
+          exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
+        * **hyperbolic**: a list of ``coefficients``. Each coefficient has a set of properties:
+          "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator" (number),
+          and "inner adder" (number).  Currently, matProps only supports the hyperbolic tangent function.
+        * **power law**: has one property: "coefficients". This has three required properties: "exponent"
+          (number), "outer multiplier" (number), and "inner adder" (number).
 
 * The last ``allOf`` simplifies the logic for ``constant`` functions. This conditional just removes the requirement that
 constant functions take tabulated data.
