@@ -117,11 +117,11 @@ defined above.)
     * symbolic functions: matProps contains some generic symbolic logic to support a wide range of function types. For
       instance:
 
-        * **polynomial**: the list of ``coefficients`` here represent the float coefficents of terms summed together with
-          exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
+        * **polynomial**: the list of ``coefficients`` here represent the float coefficents of terms summed together
+          with exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
         * **hyperbolic**: a list of ``coefficients``. Each coefficient has a set of properties:
-          "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator" (number),
-          and "inner adder" (number).  Currently, matProps only supports the hyperbolic tangent function.
+          "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator"
+          (number), and "inner adder" (number).  Currently, matProps only supports the hyperbolic tangent function.
         * **power law**: has one property: "coefficients". This has three required properties: "exponent"
           (number), "outer multiplier" (number), and "inner adder" (number).
 
