@@ -123,9 +123,8 @@ docs = [
 [project.scripts]
 armi = "armi.__main__:main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["armi", "armi.*"]
+[tool.setuptools.packages]
+find = {}
 
 
 #######################################################################
