@@ -19,7 +19,6 @@ import subprocess
 # A list of objects we expect during a run, and don't mind (like pycache dirs).
 IGNORED_OBJECTS = [
     ".pytest_cache",
-    ".ruff_cache/",
     ".tox",
     "__pycache__",
     "armi.egg-info",
