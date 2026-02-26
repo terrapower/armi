@@ -1,0 +1,164 @@
+file format: "1.0"
+material type: Metal
+composition:
+  C: [0.10, 0.23]
+  Mn: [0.3, 0.6]
+  P: [0.0, 0.04]
+  S: [0.0, 0.4]
+  Si: [0.2, 0.3]
+  Ni: [0.4, 14.6]
+  Cr: [13.0, 13.5]
+  Mo: [0.8, 1.4]
+  Nb: [0.0, 0.06]
+  W: [0.3, 0.5]
+  Al: [0.0, 0.04]
+  Fe: balance
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+
+yield strength:
+  function:
+    min degrees C: 25
+    max degrees C: 650
+    function type: hyperbolic
+    coefficients:
+      hyperbolic function: tanh
+      intercept: 1.12E7
+      outer multiplier: -5.4321E8
+      inner denominator: 123.4
+      inner adder: -543.21
+  tabulated data:
+    - [ 25, 5.534E+8]
+    - [ 50, 6.165E+8]
+    - [100, 6.230E+8]
+    - [150, 6.372E+8]
+    - [200, 6.122E+8]
+    - [250, 6.153E+8]
+    - [300, 6.878E+8]
+    - [350, 6.707E+8]
+    - [400, 6.125E+8]
+    - [450, 5.924E+8]
+    - [500, 5.1298E+8]
+    - [550, 4.987E+8]
+    - [600, 3.901E+8]
+    - [650, 2.927E+8]
+  references:
+    - ref: Breaking Point Quarterly, 1986.
+      refType: open literature
+
+Young's modulus:
+  function:
+    min degrees C: 0
+    max degrees C: 650
+    function type: polynomial
+    coefficients:
+      0:  5.123E11
+      1: -6.543E7
+      2: -1.123E3
+  tabulated data:
+    - [20, 5.141E+11]
+    - [25, 4.137E+11]
+    - [50, 4.120E+11]
+    - [100, 3.196E+11]
+    - [150, 3.151E+11]
+    - [200, 3.316E+11]
+    - [250, 2.881E+11]
+    - [300, 2.846E+11]
+    - [350, 2.811E+11]
+    - [400, 2.776E+11]
+    - [450, 2.740E+11]
+    - [500, 2.704E+11]
+    - [550, 2.558E+11]
+    - [600, 1.552E+11]
+    - [650, 1.432E+11]
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+
+instantaneous coefficient of thermal expansion:
+  tabulated data: &ht9_alpha_inst_tabulated_data
+    - [ 50, 5.208E-5]
+    - [100, 5.247E-5]
+    - [150, 5.292E-5]
+    - [200, 5.315E-5]
+    - [250, 5.325E-5]
+    - [300, 5.373E-5]
+    - [350, 5.395E-5]
+    - [400, 5.496E-5]
+    - [450, 5.438E-5]
+    - [500, 5.448E-5]
+    - [550, 5.457E-5]
+    - [600, 5.454E-5]
+    - [650, 5.451E-5]
+  function:
+    min degrees C: 50
+    max degrees C: 650
+    function type: piecewise
+    functions:
+      - function:
+          min degrees C: 20
+          max degrees C: 608
+          function type: polynomial
+          coefficients:
+            0:  4.423E-5
+            1:  1.423E-9
+            2: -4.423E-12
+        tabulated data: *ht9_alpha_inst_tabulated_data
+      - function:
+          min degrees C: 608
+          max degrees C: 697
+          function type: polynomial
+          coefficients:
+            0:  8.424E-3
+            1: -4.423E-5
+            2:  1.424E-9
+            3: -1.425E-7
+            4:  4.425E-12
+        tabulated data: *ht9_alpha_inst_tabulated_data
+      - function:
+          min degrees C: 697
+          max degrees C: 725
+          function type: polynomial
+          coefficients:
+            0:  1.423E-1
+            1: -3.428E-4
+            2: -6.425E-7
+            3: -2.421E-10
+        tabulated data: *ht9_alpha_inst_tabulated_data
+      - function:
+          min degrees C: 725
+          max degrees C: 800
+          function type: polynomial
+          coefficients:
+            0:  1.42E-3
+            1: -5.42E-6
+            2:  1.42E-9
+            3: -4.42E-12
+        tabulated data: *ht9_alpha_inst_tabulated_data
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+
+service reference stress:
+  function:
+    min degrees C: 375
+    max degrees C: 625
+    function type: time and temperature dependent table
+    interpolation scheme: log-lin
+    rounding scheme: 1e5
+  tabulated data:
+    - [null,   [   375.,    400.,    425.,    450.,    475.,    500.,    525.,    550.,    575.,    600.,   625.]]
+    - [1.,     [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 125.e+6, 118.e+6, 101.e+6, 88.e+6]]
+    - [10.,    [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 125.e+6, 117.e+6, 101.e+6, 88.e+6]]
+    - [30.,    [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 125.e+6, 116.e+6, 101.e+6, 88.e+6]]
+    - [100.,   [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 125.e+6, 115.e+6, 101.e+6, 86.e+6]]
+    - [300.,   [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 125.e+6, 114.e+6,  97.e+6, 78.e+6]]
+    - [1000.,  [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 125.e+6, 108.e+6,  86.e+6, 70.e+6]]
+    - [3000.,  [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 138.e+6, 121.e+6,  99.e+6,  80.e+6, 63.e+6]]
+    - [10000., [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 133.e+6, 111.e+6,  93.e+6,  71.e+6, 54.e+6]]
+    - [30000., [181.e+6, 177.e+6, 171.e+6, 167.e+6, 157.e+6, 147.e+6, 127.e+6, 102.e+6,  81.e+6,  63.e+6, 42.e+6]]
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+      

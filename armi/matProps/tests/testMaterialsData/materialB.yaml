@@ -1,0 +1,12 @@
+file format: TESTS
+material type: Fluid
+composition:
+  b: balance
+
+specific heat capacity:
+  function:
+    T: 
+      min: 202.0
+      max: 602.0
+    type: symbolic
+    equation: 102.0
