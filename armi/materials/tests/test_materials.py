@@ -27,13 +27,7 @@ from armi.utils import units
 
 
 class AbstractMaterialTest:
-    """
-    Base for all specific material test cases.
-
-    Notes
-    -----
-    This name does not match our naming conventions because we are hiding this base class from pytest auto-discovery.
-    """
+    """Base for material tests."""
 
     MAT_CLASS = None
     VALID_TEMP_K = 500
