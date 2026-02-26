@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """
-The dataSchema module contains tools for validating mat-props data files.
+The dataSchema module contains tools for validating matProps data files.
 
 dataSchema module
 =================
 Below is listed each section in the local ``dataSchema.json`` file, which is used as the source of truth when validating
-mat-props data files.
+matProps data files.
 
 Sections in the dataSchema.json file
 ------------------------------------
@@ -30,7 +30,7 @@ Links to the exact library version we are using to define this schema.
 
 refDataSchema
 ^^^^^^^^^^^^^
-Defines what a "reference" will look like. Since nearly everything in a mat-props data file can have a reference, this
+Defines what a "reference" will look like. Since nearly everything in a matProps data file can have a reference, this
 is a generic type of schema that can be used elsewhere as "$ref": "referenceSchema". These are lists or arrays, an
 ordered sequence. In the YAML format, a reference will look like this::
 
@@ -40,7 +40,7 @@ ordered sequence. In the YAML format, a reference will look like this::
 
 tabDataSchema
 ^^^^^^^^^^^^^
-A description of tabulated data in the mat-props data files. This will appear in multiple places in the JSON file as
+A description of tabulated data in the matProps data files. This will appear in multiple places in the JSON file as
 "$ref": "tabulatedData". Tabulated data are listed in YAML as a sequence, and might look like the following example::
 
     tabulated data:
@@ -70,7 +70,7 @@ are numbered 375-625. The null is there because it is not an index value in the 
 
 file format
 ^^^^^^^^^^^
-This communicates which version of the mat-props data format is being used, and is the first line in the YAML file.
+This communicates which version of the matProps data format is being used, and is the first line in the YAML file.
 
 
 material type
@@ -112,7 +112,7 @@ defined above.)
       exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
     * **hyperbolic**: a list of ``coefficients``. Each coefficient has a set of properties:
       "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator" (number),
-      and "inner adder" (number).  Currently, mat-props only supports the hyperbolic tangent function.
+      and "inner adder" (number).  Currently, matProps only supports the hyperbolic tangent function.
     * **power law**: has one property: "coefficients". This has three required properties: "exponent"
       (number), "outer multiplier" (number), and "inner adder" (number).
     * **piecewise** (piecewiseFunction.py): a recursive description that has one property: "functions". Each "function"
@@ -125,18 +125,18 @@ defined above.)
 * The last ``allOf`` simplifies the logic for ``constant`` functions. This conditional just removes the requirement that
 constant functions take tabulated data.
 
-The final block is a hard-coded list of all the material properties in mat-props (for instance, density). But you can
-easily add more material properties to mat-props and if you do so you will need to amend this list before validation.
+The final block is a hard-coded list of all the material properties in matProps (for instance, density). But you can
+easily add more material properties to matProps and if you do so you will need to amend this list before validation.
 
 
 Example
 -------
-There is an example, ideal mat-props YAML file at: ``matProps/dataSchema/tests/inputs/example.yaml``.
+There is an example, ideal matProps YAML file at: ``matProps/dataSchema/tests/inputs/example.yaml``.
 
 
 Running Validation
 ------------------
-This folder includes the python script ``dataSchemaValidator.py``. This is used to validate mat-props YAML files. This
+This folder includes the python script ``dataSchemaValidator.py``. This is used to validate matProps YAML files. This
 script must be run in the same directory as the folder of YAML files. The tool is easy to run::
 
     python dataSchemaValidator.py example.yaml

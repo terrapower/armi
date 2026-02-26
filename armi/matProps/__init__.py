@@ -25,16 +25,57 @@ This package does not include any material data files. The unit tests in this pa
 ARMI comes packaged with more real world examples at: ``armi/resources/materials/``. The user may create their own data
 files to use with ``matProps`` in a directory, and pass in that path via ``armi.matProps.loadAll(path)``.
 
+
+Loading Data
+============
+
+In your Python code, you can load a full set of matProps materials into memory with just one or two lines of code. You
+just have to provide a path to a directory filled with correctly-formatted YAML files:
+
+.. code-block:: python
+
+    import armi.matProps
+
+    pathToMaterialYAMLs = "path/to/materialDir/"
+    armi.matProps.loadSafe(pathToMaterialYAMLs)
+
+
+If you do not specify a directory for the YAML files, there is a default location in your virtual environment you can
+store the data files (in a package named ``material_data``):
+
+.. code-block:: python
+
+    import armi.matProps
+
+    armi.matProps.loadSafe()
+
+
+Adding a Property
+=================
+matProps comes with a large set of common material properties. But it is quite easy to add another material property to
+your simulation, if you need to.
+
+.. code-block:: python
+
+    from armi.matProps.prop import defProp
+
+    defProp("fuzz", "fuzziness", "1/m^2")
+    defProp("goo", "gooiness", "m^2/s")
+    defProp("squish", "squishiness", "1/Pa")
+
+    armi.matProps.loadSafe("path/to/hilarious/materials/")
+
+
 A Note on Design
 ================
-At the high-level, the ``mat-props`` API exposes the functions in this file (``loadAll``, ``loadSafe``,
+At the high-level, the ``matProps`` API exposes the functions in this file (``loadAll``, ``loadSafe``,
 ``getMaterials``, etc). And these functions all work off three global data collections:
 ``armi.matProps.loadedRootDirs``, ``armi.matProps.materials``, and ``armi.matProps.prop.properties``.
 
 It is worth noting that this design centers around global data. This could have a more object-oriented approach where
 the functions below and these three data sets are all stored in a class, e.g. via a ``MaterialLibrary`` class. This
 would be more Pythonic, and allow for multiple collections of materials, say for testing. So far, no one has ever needed
-multiple colletions of materials from mat-props, because a single scientific model generally only needs one source of
+multiple colletions of materials from matProps, because a single scientific model generally only needs one source of
 truth for what materials are.
 """
 
@@ -97,7 +138,7 @@ def loadAll(rootDir: str = None) -> None:
     Notes
     -----
     Hidden in here is a default directory which you can load your YAML files from. Inside your Python virtual
-    environment, you can create a data directory named "materials_data", and store all your mat-props formatted YAML
+    environment, you can create a data directory named "materials_data", and store all your matProps formatted YAML
     files. This is optional, of course, you can just explicitly pass a directory path into this method.
     """
     global loadedRootDirs

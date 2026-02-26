@@ -31,10 +31,6 @@ doc/tutorials/anl-afci-177*
 doc/tutorials/case-suite
 doc/user/tutorials
 htmlcov/
-mat-props/*.egg-info/
-mat-props/bdist*/
-mat-props/build/
-mat-props/dist*/
 monkeytype.*
 test_results.*
 wheelhouse

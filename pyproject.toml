@@ -126,7 +126,6 @@ armi = "armi.__main__:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["armi", "armi.*"]
-exclude = ["mat-props", "mat-props.*"]
 
 
 #######################################################################

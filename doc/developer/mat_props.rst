@@ -1,1 +1,0 @@
-.. include:: ../../mat-props/README.rst

@@ -16,8 +16,8 @@
 
 Notes
 -----
-This file is used to verify the mat-props stand-alone wheel installation. As such, it needs to remain small. Do not
-add any tests to this file with explicit file IO: no temporary directories, and no test YAML files.
+This file is used to verify the matProps stand-alone wheel installation. As such, it needs to remain small. Do not add
+any tests to this file with explicit file IO: no temporary directories, and no test YAML files.
 """
 
 import unittest
