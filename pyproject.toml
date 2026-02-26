@@ -38,7 +38,6 @@ dependencies = [
     "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
-    "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
     "ruamel.yaml>=0.19.1 ; python_version >= '3.11.0'", # Our foundational YAML library
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
