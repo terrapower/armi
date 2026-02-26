@@ -10,10 +10,6 @@
 *.fdb_latexmk
 *.fls
 *.lib
-armi/matProps/*.egg-info/
-armi/matProps/bdist*/
-armi/matProps/build/
-armi/matProps/dist*/
 armi/tests/tutorials/case-suite
 bdist*/
 bin

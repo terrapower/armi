@@ -98,7 +98,7 @@
                                 "type": "string",
                                 "enum": ["constant", "polynomial", "hyperbolic", "power law", "piecewise", 
                                          "temperature dependent table", "time and temperature dependent table", 
-                                         "cycles and temperature dependent table", "hard coded"]
+                                         "cycles and temperature dependent table"]
                         }
                     },
                     "required": ["min degrees C", "max degrees C"],
@@ -236,17 +236,6 @@
                                 },
                                 "required": ["interpolation scheme", "rounding scheme", "function type"]
                             }
-                        },
-                        {
-                            "if": {
-                                "properties": { "function type": {"const": "hard coded"} }
-                            },
-                            "then": {
-                                "properties": {
-                                    "name": { "type": "string" }
-                                },
-                                "required": ["name", "function type"]
-                            }    
                         }
                     ]
                 }
