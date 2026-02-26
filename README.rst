@@ -362,8 +362,8 @@ that have MIT or BSD licenses.
 .. |Build Status| image:: https://github.com/terrapower/armi/actions/workflows/unittests.yaml/badge.svg?branch=main
     :target: https://github.com/terrapower/armi/actions/workflows/unittests.yaml
 
-.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=main&kill_cache=2
-    :target: https://coveralls.io/github/terrapower/armi?branch=main
+.. |Code Coverage| image:: https://codecov.io/gh/terrapower/armi/branch/main/graph/badge.svg
+    :target: https://app.codecov.io/gh/terrapower/armi/tree/main
 
 .. |Commit Activity| image:: https://img.shields.io/github/commit-activity/m/terrapower/armi
     :target: https://github.com/terrapower/armi/pulse
