@@ -16,14 +16,14 @@
 import unittest
 
 from armi.materials.b4c import B4C
-from armi.materials.tests.test_materials import _Material_Test
+from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class B4C_TestCase(_Material_Test, unittest.TestCase):
+class B4C_TestCase(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = B4C
 
     def setUp(self):
-        _Material_Test.setUp(self)
+        AbstractMaterialTest.setUp(self)
         self.mat = B4C()
 
         self.B4C_theoretical_density = B4C()
