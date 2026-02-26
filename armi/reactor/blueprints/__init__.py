@@ -521,8 +521,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
         # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
         # to side step the issue entirely. This occurs because of the way `yamlize` works when it calls
-        # `get_single_node`. Reworking blueprints loading to drop yamlize (a dead project) is the only real solution
-        # here.
+        # `get_single_node`.
         RoundTripLoader.max_depth = None
         return super().load(stream, Loader=RoundTripLoader)
 
