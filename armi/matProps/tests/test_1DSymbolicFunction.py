@@ -84,6 +84,16 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         self.assertAlmostEqual(mat.rho.calc(T=50), self.polynomialEvaluation(self.basePolynomialMap, 50))
         self.assertAlmostEqual(mat.rho.calc(T=100), self.polynomialEvaluation(self.basePolynomialMap, 100))
 
+        # test using input dict for __call__
+        self.assertAlmostEqual(mat.rho({"T": 0}), self.polynomialEvaluation(self.basePolynomialMap, 0))
+        self.assertAlmostEqual(mat.rho({"T": 50}), self.polynomialEvaluation(self.basePolynomialMap, 50))
+        self.assertAlmostEqual(mat.rho({"T": 100}), self.polynomialEvaluation(self.basePolynomialMap, 100))
+
+        # test using kwargs for _call__
+        self.assertAlmostEqual(mat.rho(T=0), self.polynomialEvaluation(self.basePolynomialMap, 0))
+        self.assertAlmostEqual(mat.rho(T=50), self.polynomialEvaluation(self.basePolynomialMap, 50))
+        self.assertAlmostEqual(mat.rho(T=100), self.polynomialEvaluation(self.basePolynomialMap, 100))
+
     def test_polynomialEqnFloatInt(self):
         """Evaluates a PolynomialFunction with floating point coefficients and integer point power terms."""
         coefficientsMap = {0: -2.523536, 1: 5.374489, 2: 4.897134}
@@ -103,6 +113,18 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         self.assertAlmostEqual(func.calc(T=0.0), self.polynomialEvaluation(coefficientsMap, 0.0))
         self.assertAlmostEqual(func.calc(T=100.0), self.polynomialEvaluation(coefficientsMap, 100.0))
         self.assertAlmostEqual(func.calc(T=500.0), self.polynomialEvaluation(coefficientsMap, 500.0))
+
+        # test using input dict for __call__
+        self.assertAlmostEqual(func({"T": -100.0}), self.polynomialEvaluation(coefficientsMap, -100.0))
+        self.assertAlmostEqual(func({"T": 0.0}), self.polynomialEvaluation(coefficientsMap, 0.0))
+        self.assertAlmostEqual(func({"T": 100.0}), self.polynomialEvaluation(coefficientsMap, 100.0))
+        self.assertAlmostEqual(func({"T": 500.0}), self.polynomialEvaluation(coefficientsMap, 500.0))
+
+        # test using kwargs for __call__
+        self.assertAlmostEqual(func(T=-100.0), self.polynomialEvaluation(coefficientsMap, -100.0))
+        self.assertAlmostEqual(func(T=0.0), self.polynomialEvaluation(coefficientsMap, 0.0))
+        self.assertAlmostEqual(func(T=100.0), self.polynomialEvaluation(coefficientsMap, 100.0))
+        self.assertAlmostEqual(func(T=500.0), self.polynomialEvaluation(coefficientsMap, 500.0))
 
     def test_polynomialEqnFloatFloat(self):
         """Evaluates a PolynomialFunction with floating point coefficients and floating point power terms."""
@@ -145,11 +167,11 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         mat = self._createFunction(self.basePowerLawData)
         func = mat.rho
         self.assertAlmostEqual(func.calc({"T": 0}), self.powerLawEvaluation(self.basePowerLawTerms, 0))
-        self.assertAlmostEqual(func.calc({"T": 12.5}), self.powerLawEvaluation(self.basePowerLawTerms, 12.5))
-        self.assertAlmostEqual(func.calc({"T": 25}), self.powerLawEvaluation(self.basePowerLawTerms, 25))
-        self.assertAlmostEqual(func.calc({"T": 50}), self.powerLawEvaluation(self.basePowerLawTerms, 50))
+        self.assertAlmostEqual(func({"T": 12.5}), self.powerLawEvaluation(self.basePowerLawTerms, 12.5))
+        self.assertAlmostEqual(func.calc(T=25), self.powerLawEvaluation(self.basePowerLawTerms, 25))
+        self.assertAlmostEqual(func(T=50), self.powerLawEvaluation(self.basePowerLawTerms, 50))
         self.assertAlmostEqual(func.calc({"T": 75}), self.powerLawEvaluation(self.basePowerLawTerms, 75))
-        self.assertAlmostEqual(func.calc({"T": 100}), self.powerLawEvaluation(self.basePowerLawTerms, 100))
+        self.assertAlmostEqual(func({"T": 100}), self.powerLawEvaluation(self.basePowerLawTerms, 100))
 
     def test_powerEqnAllInt(self):
         """Evaluates a PowerLaw with integer coefficients and exponents."""
@@ -166,11 +188,11 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
 
         mat = self._createFunction(powerLawDataInt)
         func = mat.rho
-        self.assertAlmostEqual(func.calc({"T": 0}), self.powerLawEvaluation(coefficients, 0))
-        self.assertAlmostEqual(func.calc({"T": 25}), self.powerLawEvaluation(coefficients, 25))
-        self.assertAlmostEqual(func.calc({"T": 50}), self.powerLawEvaluation(coefficients, 50))
-        self.assertAlmostEqual(func.calc({"T": 75}), self.powerLawEvaluation(coefficients, 75))
-        self.assertAlmostEqual(func.calc({"T": 100}), self.powerLawEvaluation(coefficients, 100))
+        self.assertAlmostEqual(func.calc(T=0), self.powerLawEvaluation(coefficients, 0))
+        self.assertAlmostEqual(func(T=25), self.powerLawEvaluation(coefficients, 25))
+        self.assertAlmostEqual(func.calc(T=50), self.powerLawEvaluation(coefficients, 50))
+        self.assertAlmostEqual(func(T=75), self.powerLawEvaluation(coefficients, 75))
+        self.assertAlmostEqual(func.calc(T=100), self.powerLawEvaluation(coefficients, 100))
 
     def test_powerEqnFloatInt(self):
         """Evaluates a PowerLaw with a mixture of integer and floating point coefficients and exponents."""
@@ -187,11 +209,11 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
 
         mat = self._createFunction(powerLawDataInt)
         func = mat.rho
-        self.assertAlmostEqual(func.calc({"T": 0}), self.powerLawEvaluation(coefficients, 0))
+        self.assertAlmostEqual(func({"T": 0}), self.powerLawEvaluation(coefficients, 0))
         self.assertAlmostEqual(func.calc({"T": 25}), self.powerLawEvaluation(coefficients, 25))
-        self.assertAlmostEqual(func.calc({"T": 50}), self.powerLawEvaluation(coefficients, 50))
+        self.assertAlmostEqual(func({"T": 50}), self.powerLawEvaluation(coefficients, 50))
         self.assertAlmostEqual(func.calc({"T": 75}), self.powerLawEvaluation(coefficients, 75))
-        self.assertAlmostEqual(func.calc({"T": 100}), self.powerLawEvaluation(coefficients, 100))
+        self.assertAlmostEqual(func({"T": 100}), self.powerLawEvaluation(coefficients, 100))
 
     def test_powerEqnNoInter(self):
         """Evaluates a PowerLaw with no intercept term."""
@@ -212,13 +234,13 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         data = {"type": "symbolic", "equation": self.createEqnPower(coefficients)}
 
         mat = self._createFunction(data)
-        func = mat.rho
+        density = mat.rho
         # Outer multiplier in self.powerLawEvaluation is 1.0 to reflect default value in matProps
-        self.assertAlmostEqual(func.calc({"T": 0}), self.powerLawEvaluation(coefficients, 0))
-        self.assertAlmostEqual(func.calc({"T": 25}), self.powerLawEvaluation(coefficients, 25))
-        self.assertAlmostEqual(func.calc({"T": 50}), self.powerLawEvaluation(coefficients, 50))
-        self.assertAlmostEqual(func.calc({"T": 75}), self.powerLawEvaluation(coefficients, 75))
-        self.assertAlmostEqual(func.calc({"T": 100}), self.powerLawEvaluation(coefficients, 100))
+        self.assertAlmostEqual(density(T=0), self.powerLawEvaluation(coefficients, 0))
+        self.assertAlmostEqual(density(T=25), self.powerLawEvaluation(coefficients, 25))
+        self.assertAlmostEqual(density(T=50), self.powerLawEvaluation(coefficients, 50))
+        self.assertAlmostEqual(density(T=75), self.powerLawEvaluation(coefficients, 75))
+        self.assertAlmostEqual(density(T=100), self.powerLawEvaluation(coefficients, 100))
 
     def test_powerEqnNoOuterInter(self):
         """Evaluates a PowerLaw with no outer multiplier or intercept term."""
@@ -226,37 +248,37 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         data = {"type": "symbolic", "equation": self.createEqnPower(coefficients)}
 
         mat = self._createFunction(data)
-        func = mat.rho
-        self.assertAlmostEqual(func.calc({"T": 0}), self.powerLawEvaluation(coefficients, 0))
-        self.assertAlmostEqual(func.calc({"T": 25}), self.powerLawEvaluation(coefficients, 25))
-        self.assertAlmostEqual(func.calc({"T": 50}), self.powerLawEvaluation(coefficients, 50))
-        self.assertAlmostEqual(func.calc({"T": 75}), self.powerLawEvaluation(coefficients, 75))
-        self.assertAlmostEqual(func.calc({"T": 100}), self.powerLawEvaluation(coefficients, 100))
+        density = mat.rho
+        self.assertAlmostEqual(density(T=0), self.powerLawEvaluation(coefficients, 0))
+        self.assertAlmostEqual(density(T=25), self.powerLawEvaluation(coefficients, 25))
+        self.assertAlmostEqual(density(T=50), self.powerLawEvaluation(coefficients, 50))
+        self.assertAlmostEqual(density(T=75), self.powerLawEvaluation(coefficients, 75))
+        self.assertAlmostEqual(density(T=100), self.powerLawEvaluation(coefficients, 100))
 
     def test_constantsEval(self):
         """Evaluates a PowerLaw for integer and floating point values."""
         mat = self._createFunction(self.baseConstantData)
-        func = mat.rho
-        self.assertAlmostEqual(func.calc({"T": 0}), 9123.5)
-        self.assertAlmostEqual(func.calc({"T": 12.5}), 9123.5)
-        self.assertAlmostEqual(func.calc({"T": 50}), 9123.5)
-        self.assertAlmostEqual(func.calc({"T": 100}), 9123.5)
+        density = mat.rho
+        self.assertAlmostEqual(density(T=0), 9123.5)
+        self.assertAlmostEqual(density(T=12.5), 9123.5)
+        self.assertAlmostEqual(density(T=50), 9123.5)
+        self.assertAlmostEqual(density(T=100), 9123.5)
 
     def test_hyperbolicEqnEval(self):
         """Evaluates a HyperbolicFunction for integer and floating point values."""
         mat = self._createFunction(self.baseHyperbolicData)
 
         # test using input dict for calc
-        self.assertAlmostEqual(mat.rho.calc({"T": 0}), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 0))
-        self.assertAlmostEqual(mat.rho.calc({"T": 12.5}), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 12.5))
-        self.assertAlmostEqual(mat.rho.calc({"T": 50}), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 50))
-        self.assertAlmostEqual(mat.rho.calc({"T": 100}), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 100))
+        self.assertAlmostEqual(mat.rho(T=0), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 0))
+        self.assertAlmostEqual(mat.rho(T=12.5), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 12.5))
+        self.assertAlmostEqual(mat.rho(T=50), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 50))
+        self.assertAlmostEqual(mat.rho(T=100), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 100))
 
         # test using kwargs for calc
-        self.assertAlmostEqual(mat.rho.calc(T=0), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 0))
-        self.assertAlmostEqual(mat.rho.calc(T=12.5), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 12.5))
-        self.assertAlmostEqual(mat.rho.calc(T=50), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 50))
-        self.assertAlmostEqual(mat.rho.calc(T=100), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 100))
+        self.assertAlmostEqual(mat.rho(T=0), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 0))
+        self.assertAlmostEqual(mat.rho(T=12.5), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 12.5))
+        self.assertAlmostEqual(mat.rho(T=50), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 50))
+        self.assertAlmostEqual(mat.rho(T=100), self.hyperbolicEvaluation(self.baseHyperbolicTerms, 100))
 
     def test_hyperbolicEqnEval2(self):
         """Evaluates a HyperbolicFunction for a different set of floating point values."""
@@ -271,4 +293,4 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         mat = self._createFunction(data)
         func = mat.rho
         expectedValue = self.hyperbolicEvaluation(coefficients, 500)
-        self.assertAlmostEqual(func.calc({"T": 500}), expectedValue, delta=expectedValue * 1e-5)
+        self.assertAlmostEqual(func(T=500), expectedValue, delta=expectedValue * 1e-5)

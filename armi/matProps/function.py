@@ -62,6 +62,64 @@ class Function:
         self._references = []
         """Reference data"""
 
+    def __call__(self, point: dict = None, **kwargs):
+        """
+        Calculate the quantity of a specific Property.
+
+        The user must provide a "point" dictionary, or kwargs, but not both or neither.
+
+        Parameters
+        ----------
+        point: dict
+            dictionary of independent variable/value pairs
+        kwargs:
+            dictionary of independent variable/value pairs, same purpose but to allow a nicer API.
+
+        Returns
+        -------
+        float
+            property evaluation
+        """
+        # This method should take in one dictionary or a set of kwargs, but not both
+        if point is not None and kwargs:
+            raise ValueError("Please provide either a single dictionary or a set of kwargs, but not both.")
+        elif point is None and not kwargs:
+            raise ValueError("Please provide at least one input to this method.")
+
+        # select the inputs provided
+        if point:
+            data = point
+        else:
+            data = kwargs
+
+        # input sanity checking
+        if not self.independentVars.keys() <= data.keys():
+            raise KeyError(
+                f"Specified point {data} does contain the correct independent variables: {self.independentVars}"
+            )
+        elif not self.inRange(data):
+            raise ValueError(f"Requested calculation point, {data} is not in the valid range of the function")
+
+        return self._calcSpecific(data)
+
+    def calc(self, point: dict = None, **kwargs):
+        """
+        A simple pass-through to __call__.
+
+        Parameters
+        ----------
+        point: dict
+            dictionary of independent variable/value pairs
+        kwargs:
+            dictionary of independent variable/value pairs, same purpose but to allow a nicer API.
+
+        Returns
+        -------
+        float
+            property evaluation
+        """
+        return self.__call__(point=point, **kwargs)
+
     def clear(self):
         self.tableData = None
 
@@ -122,46 +180,6 @@ class Function:
     @property
     def references(self) -> list:
         return self._references
-
-    def calc(self, point: dict = None, **kwargs):
-        """
-        Calculate the quantity of a specific Property.
-
-        The user must provide a "point" dictionary, or kwargs, but not both or neither.
-
-        Parameters
-        ----------
-        point: dict
-            dictionary of independent variable/value pairs
-        kwargs:
-            dictionary of independent variable/value pairs, same purpose but to allow a nicer API.
-
-        Returns
-        -------
-        float
-            property evaluation
-        """
-        # This method should take in one dictionary or a set of kwargs, but not both
-        if point is not None and kwargs:
-            raise ValueError("Please provide either a single dictionary or a set of kwargs, but not both.")
-        elif point is None and not kwargs:
-            raise ValueError("Please provide at least one input to this method.")
-
-        # select the inputs provided
-        if point:
-            data = point
-        else:
-            data = kwargs
-
-        # input sanity checking
-        if not self.independentVars.keys() <= data.keys():
-            raise KeyError(
-                f"Specified point {data} does contain the correct independent variables: {self.independentVars}"
-            )
-        elif not self.inRange(data):
-            raise ValueError(f"Requested calculation point, {data} is not in the valid range of the function")
-
-        return self._calcSpecific(data)
 
     def inRange(self, point: dict) -> bool:
         """
