@@ -75,8 +75,8 @@ This communicates which version of the matProps data format is being used, and i
 
 material type
 ^^^^^^^^^^^^^
-This is an enum of a small set of values describing the material.  Allowed values include: Fuel, Metal, Fluid, Ceramic,
-ASME2015, ASME2017, and ASME2019. Though items may get added to that list over time.
+This is an enum of a small set of values describing the material. Allowed values include: Fuel, Metal, Fluid, Ceramic,
+SimpleSolid and Composite. Though items may get added to that list over time.
 
 
 composition
@@ -121,7 +121,7 @@ defined above.)
           with exponents from 0 to 9. This is a limitation if someone needs higher-order terms.
         * **hyperbolic**: a list of ``coefficients``. Each coefficient has a set of properties:
           "hyperbolic function" (string), "intercept" (number), "outer multiplier" (number), "inner denominator"
-          (number), and "inner adder" (number).  Currently, matProps only supports the hyperbolic tangent function.
+          (number), and "inner adder" (number). Currently, matProps only supports the hyperbolic tangent function.
         * **power law**: has one property: "coefficients". This has three required properties: "exponent"
           (number), "outer multiplier" (number), and "inner adder" (number).
 

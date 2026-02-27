@@ -647,10 +647,9 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(cur, 3123.0)
 
     def test_density(self):
-        # Reference data taken from ORNL/TM-2000/351. "Thermophysical Properties of MOX and UO2
-        # Fuels Including the Effects of Irradiation.", Popov, et al.  Table 3.2 "Parameters of
-        # thermal expansion of stoichiometric MOX fuel and density of UO2 as a function of
-        # temperature"
+        # Reference data taken from ORNL/TM-2000/351. "Thermophysical Properties of MOX and UO2 Fuels Including the
+        # Effects of Irradiation.", Popov, et al. Table 3.2 "Parameters of thermal expansion of stoichiometric MOX fuel
+        # and density of UO2 as a function of temperature"
         cur = self.mat.density(Tk=700)
         ref = 1.0832e4 * 0.001  # Convert to grams/cc
         delta = ref * 0.02

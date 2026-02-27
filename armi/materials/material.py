@@ -153,8 +153,7 @@ class Material:
 
         Warning
         -------
-        Some code in ARMI expects the "name" of a material matches its class name. So you use this method at your own
-        risk.
+        Some code in ARMI expects the "name" of a material matches its class name. So leave this method alone.
 
         See Also
         --------
@@ -361,8 +360,8 @@ class Material:
             if isinstance(
                 nuclideBases.byName[nuclideName], nuclideBases.NaturalNuclideBase
             ) or nuclideBases.isMonoIsotopicElement(nuclideName):
-                # If there are not any other nuclides, assume we are enriching an entire element.
-                # Consequently, allIndicesUpdated is no longer the element's indices, but the materials indices
+                # If there are not any other nuclides, assume we are enriching an entire element. Consequently,
+                # allIndicesUpdated is no longer the element's indices, but the materials indices
                 allIndicesUpdated = range(len(nucsNames))
             else:
                 raise ValueError(  # could be warning if problematic
@@ -390,8 +389,8 @@ class Material:
                 # derived from solving the following equation for enrchedWeight:
                 # massFraction = enrichedWeight / (enrichedWeight + balanceWeight)
                 massDensities[enrichedIndex] = massFraction * balanceWeight / (1 - massFraction)
-        # ratio is set by here but atoms not conserved yet
 
+        # ratio is set by here but atoms not conserved yet
         updatedNucsMolesPerCC = massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
         updatedNucsMolesPerCC *= molesPerCC[allIndicesUpdated].sum() / updatedNucsMolesPerCC.sum()  # conserve atoms
         molesPerCC[allIndicesUpdated] = updatedNucsMolesPerCC
@@ -533,12 +532,7 @@ class Material:
             self._setCache(propName, (Tk, val))
             return val
 
-    def getMassFrac(
-        self,
-        nucName=None,
-        normalized=True,
-        expandFissionProducts=False,
-    ):
+    def getMassFrac(self, nucName=None, normalized=True, expandFissionProducts=False):
         """
         Return mass fraction of nucName.
 
@@ -617,11 +611,7 @@ class Material:
                 runLog.error(msg)
                 raise ValueError(msg)
             else:
-                runLog.warning(
-                    msg,
-                    single=True,
-                    label=f"T out of bounds for {self.name} {label}",
-                )
+                runLog.warning(msg, single=True, label=f"T out of bounds for {self.name} {label}")
 
     def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:
         """
