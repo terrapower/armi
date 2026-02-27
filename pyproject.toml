@@ -39,9 +39,7 @@ dependencies = [
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml<0.19.0 ; python_version >= '3.11.0'", # Our foundational YAML library
-    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
-    "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml>=0.19.1 ; python_version >= '3.11.0'", # Our foundational YAML library
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
     "sympy>=1.14", # Used to represent mathematical curves for material properties
