@@ -1,0 +1,45 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Calcium Hydride
+
+material type: SimpleSolid
+composition:
+  H: [4.7884869, 4.7884869]
+  Ca: balance
+  references:
+  - ref: http://atom.kaeri.re.kr/ton/
+    type: open literature
+
+density:
+  function:
+    T:
+      min: -100
+      max: 816
+    type: symbolic
+    equation: 1700
+  references:
+  - ref: http://en.wikipedia.org/wiki/Calcium_hydride
+    type: open literature
+
+linear expansion:
+    T:
+      min: -100
+      max: 816
+    type: symbolic
+    equation: 0.0
+  references:
+  - ref: http://en.wikipedia.org/wiki/Calcium_hydride
+    type: open literature

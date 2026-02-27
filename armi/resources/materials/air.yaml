@@ -1,0 +1,73 @@
+# Copyright 2022 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Simple model of air at sea level
+
+file format: 3.0
+
+material type: Fluid
+composition:
+  C: [0.0124, 0.0124]
+  Ar: [1.2827, 1.2827]
+  O: [23.1781, 23.1781]
+  N: balance
+
+thermal conductivity:
+  function:
+    T:
+      min: -73.15
+      max: 576.85
+    type: symbolic
+    equation: (2.13014e-08 * (T+273.15)**3 - 6.31916e-05 * (T+273.15)**2 + 1.11629e-01 * (T+273.15) - 2.00043) * 1e-3
+  tabulated data:
+    - [-73.15, 1.797E-2]
+    - [-50, 2.000E-2]
+    - [0, 2.421E-2]
+    - [50, 2.819E-2]
+    - [100, 3.196E-2]
+    - [200, 3.893E-2]
+    - [300, 4.523E-2]
+    - [400, 5.101E-2]
+    - [500, 5.638E-2]
+    - [576.85, 6.031E-2]
+  references:
+    - ref: Table A.4 in Fundamentals of Heat and Mass Transfer - Incropera, DeWitt
+      type: open literature
+
+specific heat capacity:
+  function:
+    T:
+      min: -173.15
+      max: 1026.85
+    type: symbolic
+    equation: 1000 * (1.38642e-13 * (T+273.15)**4 - 6.47481e-10 * (T+273.15)**3 + 1.02345e-06 * (T+273.15)**2 - 4.32829e-04 * (T+273.15) + 1.06133)
+  tabulated data:
+    - [-173.15, 1.028E+03]
+    - [-150, 1.022E+03]
+    - [-100, 1.014E+03]
+    - [0, 1.007E+03]
+    - [100, 1.011E+03]
+    - [200, 1.024E+03]
+    - [300, 1.043E+03]
+    - [400, 1.065E+03]
+    - [500, 1.089E+03]
+    - [600, 1.113E+03]
+    - [700, 1.137E+03]
+    - [800, 1.159E+03]
+    - [900, 1.179E+03]
+    - [1000, 1.197E+03]
+    - [1026.85, 1.202E+03]
+  references:
+    - ref: Table A.4 in Fundamentals of Heat and Mass Transfer - Incropera, DeWitt
+      type: open literature
