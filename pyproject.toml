@@ -328,7 +328,7 @@ armi = [
     "physics/neutronics/tests/rzmflxYA",
     "resources/burn-chain.yaml",
     "resources/elements.dat",
-    "resources/materials/inconel1600.yaml",
+    "resources/materials/",
     "resources/mcc-nuclides.yaml",
     "resources/nuclides.dat",
     "resources/referenceFissionProducts.dat",
