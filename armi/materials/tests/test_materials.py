@@ -919,17 +919,15 @@ class Lead_TestCase(AbstractMaterialTest, unittest.TestCase):
             self.mat.volumetricExpansion(800),
             1.1472e-4,
             4,
-            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                self.mat.volumetricExpansion(800), 1.1472e-4
-            ),
+            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:"
+            f"{self.mat.volumetricExpansion(800)}\nExpected:{1.1472e-4}\n",
         )
         self.assertAlmostEqual(
             self.mat.volumetricExpansion(1200),
             1.20237e-4,
             4,
-            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                self.mat.volumetricExpansion(1200), 1.20237e-4
-            ),
+            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:"
+            f"{self.mat.volumetricExpansion(1200)}\nExpected:{1.20237e-4}\n",
         )
 
     def test_linearExpansion(self):
@@ -1250,7 +1248,7 @@ class Inconel_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.Inconel800.linearExpansionPercent(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 800 linearExpansionPercent()\nReceived:{}\nExpected:{}\n".format(cur, ref)
+            errorMsg = f"\n\nIncorrect Inconel 800 linearExpansionPercent()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_propertyValidTemperature(self):
@@ -1298,9 +1296,7 @@ class Inconel600_TestCase(AbstractMaterialTest, unittest.TestCase):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
             errorMsg = (
-                "\n\nIncorrect Inconel 600 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                    cur, ref
-                )
+                f"\n\nIncorrect Inconel 600 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1320,9 +1316,7 @@ class Inconel600_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 600 linearExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Inconel 600 linearExpansion(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_03_pseudoDensity(self):
@@ -1341,9 +1335,7 @@ class Inconel600_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.pseudoDensity(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 600 pseudoDensity(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Inconel 600 pseudoDensity(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_heatCapacity(self):
@@ -1416,9 +1408,7 @@ class Inconel625_TestCase(AbstractMaterialTest, unittest.TestCase):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
             errorMsg = (
-                "\n\nIncorrect Inconel 625 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                    cur, ref
-                )
+                f"\n\nIncorrect Inconel 625 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1438,9 +1428,7 @@ class Inconel625_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 625 linearExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Inconel 625 linearExpansion(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_03_pseudoDensity(self):
@@ -1459,9 +1447,7 @@ class Inconel625_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.pseudoDensity(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 625 pseudoDensity(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Inconel 625 pseudoDensity(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_heatCapacity(self):
@@ -1532,9 +1518,7 @@ class InconelX750_TestCase(AbstractMaterialTest, unittest.TestCase):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
             errorMsg = (
-                "\n\nIncorrect Inconel X750 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                    cur, ref
-                )
+                f"\n\nIncorrect Inconel X750 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1554,9 +1538,7 @@ class InconelX750_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel X750 linearExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Inconel X750 linearExpansion(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_03_pseudoDensity(self):
@@ -1575,9 +1557,7 @@ class InconelX750_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.pseudoDensity(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel X750 pseudoDensity(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Inconel X750 pseudoDensity(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_heatCapacity(self):
@@ -1663,7 +1643,7 @@ class HastelloyN_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.thermalConductivity(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Hastelloy N thermalConductivity()\nReceived:{}\nExpected:{}\n".format(cur, ref)
+            errorMsg = f"\n\nIncorrect Hastelloy N thermalConductivity()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_heatCapacity(self):
@@ -1681,7 +1661,7 @@ class HastelloyN_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.heatCapacity(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Hastelloy N heatCapacity()\nReceived:{}\nExpected:{}\n".format(cur, ref)
+            errorMsg = f"\n\nIncorrect Hastelloy N heatCapacity()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_linearExpansionPercent(self):
@@ -1700,7 +1680,7 @@ class HastelloyN_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Hastelloy N linearExpansionPercent()\nReceived:{}\nExpected:{}\n".format(cur, ref)
+            errorMsg = f"\n\nIncorrect Hastelloy N linearExpansionPercent()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_meanCoefficientThermalExpansion(self):
@@ -1719,9 +1699,7 @@ class HastelloyN_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.meanCoefficientThermalExpansion(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Hastelloy N meanCoefficientThermalExpansion()\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect Hastelloy N meanCoefficientThermalExpansion()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
     def test_propertyValidTemperature(self):
@@ -1778,9 +1756,7 @@ class TZM_TestCase(AbstractMaterialTest, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect TZM linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
-            )
+            errorMsg = f"\n\nIncorrect TZM linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-3, msg=errorMsg)
 
     def test_propertyValidTemperature(self):

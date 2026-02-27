@@ -72,8 +72,8 @@ class Sodium(material.Fluid):
 
         if (Tc is not None) and (Tc <= 97.72):
             runLog.warning(
-                "Sodium frozen at Tc: {0}".format(Tc),
-                label="Sodium frozen at Tc={0}".format(Tc),
+                f"Sodium frozen at Tc: {Tc}",
+                label=f"Sodium frozen at Tc={Tc}",
                 single=True,
             )
 

@@ -494,7 +494,7 @@ class Material:
         refD = self.refDens
         if refD is None:
             runLog.warning(
-                "{0} has no reference density".format(self),
+                f"{self} has no reference density",
                 single=True,
                 label="No refD " + self.getName(),
             )
@@ -624,7 +624,7 @@ class Material:
             The name of the function or property that is being checked.
         """
         if not minT <= val <= maxT:
-            msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(val, minT, maxT, self.name, label)
+            msg = f"Temperature {val} out of range ({minT} to {maxT}) for {self.name} {label}"
             if FAIL_ON_RANGE or np.isnan(val):
                 runLog.error(msg)
                 raise ValueError(msg)
@@ -743,10 +743,8 @@ class Fluid(Material):
         deltaT = tAtPerturbedDensity - Tc
         if not quiet:
             runLog.info(
-                "A change in density of {} percent in {} at an initial temperature of {} C would "
-                "require a change in temperature of {} C.".format(
-                    (densityFrac - 1.0) * 100.0, self.getName(), Tc, deltaT
-                ),
+                f"A change in density of {(densityFrac - 1.0) * 100.0} percent in {self.getName()} at an initial "
+                f"temperature of {Tc} C would require a change in temperature of {deltaT} C.",
                 single=True,
             )
         return deltaT

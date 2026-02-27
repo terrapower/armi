@@ -26,7 +26,7 @@ from armi.nucDirectory import nucDir
 class Hafnium(SimpleSolid):
     def setDefaultMassFracs(self):
         for a, abund in nucDir.getNaturalMassIsotopics("HF"):
-            self.setMassFrac("HF{0}".format(a), abund)
+            self.setMassFrac(f"HF{a}", abund)
 
     def density(self, Tk=None, Tc=None):
         r"""http://www.lenntech.com/periodic/elements/hf.htm."""
