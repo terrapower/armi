@@ -1,0 +1,42 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Copper metal
+
+material type: Metal
+composition:
+  Cu: balance
+
+density: 
+  function:
+    T:
+      min: -232.72
+      max: 515.68
+    type: symbolic
+    equation: 8913
+  references:
+  - ref: P. Pichler, B. J. Simonds, J. W. Sowards and G. Pottlacher, "Measurements of thermophysical properties of solid and liquid NIST SRM 316L stainless steel," Journal of Materials Science, vol. 55, p. 4081.4093, 2020.
+    type: open literature
+
+linear expansion:
+  function:
+    T:
+      min: -232.72
+      max: 515.68
+    type: symbolic
+    equation: 5.0298e-07 * (T+273.15)**2 + 1.3042e-03 * (T+273.15) - 4.3097e-01
+  references:
+  - ref: Digitized from Figure 21 of Thrust Chamber Life Prediction - Volume I - Mechanical and Physical Properties of High Performance Rocket Nozzle Materials (NASA CR - 134806)
+    type: open literature

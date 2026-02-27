@@ -1,0 +1,48 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Alloy-200 are wrought commercially pure nickel
+
+file format: 3.0
+
+material type: Metal
+composition:
+  C: [0.00, 0.15]
+  Mn: [0.00, 0.35]
+  S: [0.00, 0.01]
+  Si: [0.00, 0.35]
+  Cu: [0.00, 0.25]
+  Fe: [0.00, 0.40]
+  Ni: balance
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [-200, 1.010E-05]
+    - [-100, 1.130E-05]
+    - [100, 1.330E-05]
+    - [200, 1.390E-05]
+    - [300, 1.430E-05]
+    - [400, 1.480E-05]
+    - [500, 1.520E-05]
+    - [600, 1.560E-05]
+    - [700, 1.580E-05]
+    - [800, 1.620E-05]
+    - [900, 1.650E-05]
+    - [1000, 1.670E-05]
+  references:
+  - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
+    type: open literature
