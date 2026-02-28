@@ -428,6 +428,8 @@ class Material:
         """Fraction of the material that is gas void (unitless)."""
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
+    # TODO: This is still the only definition of pseudoDensity we need. But we can skip refDens and base this on
+    #       density. Also, do we need more bounds checking?
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D (in g/cm^3).
@@ -460,6 +462,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 2
         return self.refDens / f
 
+    # TODO: Note: this appears to be unused to me in the wild.
     def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D in units of kg/m^3.
@@ -495,6 +498,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
+    # TODO: Note: this appears to be unused to me in the wild.
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
 
@@ -505,6 +509,7 @@ class Material:
         """
         return self.density(Tk, Tc) * 1000.0
 
+    # TODO: I can only see this being used in once place downstream. Does it really need to be in the base class?
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
         """Given a temperature, get the corrosion rate of the material (in microns/year)."""
         return 0.0
@@ -517,6 +522,7 @@ class Material:
         """Thermal conductivity for given T (in units of W/m/K)."""
         pass
 
+    # TODO: Is this really used? Could it at least be private?
     def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:
         """Gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
@@ -564,6 +570,7 @@ class Material:
         """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
+    # TODO: Only used in one place in the world, perhaps we just move this downstream to that place.
     def removeNucMassFrac(self, nuc: str) -> None:
         self.setMassFrac(nuc, 0)
         try:
@@ -572,6 +579,7 @@ class Material:
             # the nuc isn't in the mass Frac vector
             pass
 
+    # TODO: This logic seems like it will need to be replaced.
     def checkPropertyTempRange(self, label, val):
         """Checks if the given property / value combination fall between the min and max valid temperatures provided in
         the propertyValidTemperature object.
@@ -636,6 +644,7 @@ class Material:
 
         return rhoCp
 
+    # TODO: Now is the time to remove this.
     def getNuclides(self):
         """
         Return nuclides in the component that contains this Material.
@@ -650,6 +659,7 @@ class Material:
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
         return self.parent.getNuclides()
 
+    # TODO: Looks safe to remove, and silly to exist.
     def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
         """Return a temperature difference for a given density perturbation."""
         linearExpansion = self.linearExpansion(Tc=Tc)
@@ -678,6 +688,7 @@ class Material:
         self.clearCache()
 
 
+# TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
@@ -712,6 +723,7 @@ class Fluid(Material):
         """
         return 0.0
 
+    # TODO: Looks safe to remove, and silly to exist.
     def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
         """Return a temperature difference for a given density perturbation."""
         currentDensity = self.pseudoDensity(Tc=Tc)
@@ -737,6 +749,7 @@ class Fluid(Material):
         return self.pseudoDensity(Tk=Tk, Tc=Tc)
 
 
+# TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
 class SimpleSolid(Material):
     """Base material for a simple material that primarily defines density."""
 
@@ -785,6 +798,8 @@ class SimpleSolid(Material):
         return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()
 
 
+# TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
+#       Or DOES this do something useful for us? applyInputParams
 class FuelMaterial(Material):
     """
     Material that is considered a nuclear fuel.

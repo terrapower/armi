@@ -27,6 +27,36 @@ attached plugins. It is expected that most teams will have special material defi
 It may also make sense in the future to support user-input materials that are not hard-coded into the app.
 
 The base class for all materials is in :py:mod:`armi.materials.material`.
+
+
+TODO: The Plan
+==============
+
+The idea here is that when we load a set of materials through ARMI, we do:
+
+1. The old logic: Look for Python files, find things that subclass "armi.material.Material", and load.
+2. ALSO, the new logic, look for a "resources/" directory in that location and load the YAMLs you find inside
+
+All of our materials will be an armi.material.Material(armi.matProps.material.Material). Yeah, the name class is
+unfortunate, but oh well.
+
+But the logic in this file only does two things:
+
+1. Mock up a meh material registry.
+2. Handle retrieving materials from this registry, based on our namespace ordering.
+
+What we would like to add is the ability to automatically load a YAML file as a matProps material. So, we could use the
+global "materials" dict in matProps/__init__.py. But those are not ARMI subclasses, those are pure matProps. We could
+certainly stomp all over that, and MAKE them ARMI subclasses. And then we just handle the look up logic here. Though
+maybe now would be a good time to build a material registry that is better than all this complicated look-up logic.
+
+Complications:
+
+1. We will need two places to store two different types of YAML material files: the first type is the simplest where we
+   directly load the material in the YAML file. But the second type is where we want to load the YAML file AND wrap it
+   in custom Python logic.
+2. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
+   respect those "material types" where possible: and map Fluid.
 """
 
 import importlib
