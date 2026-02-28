@@ -68,9 +68,7 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
     """
     Import all Material subclasses into the top subpackage.
 
-    This allows devs to use ``from armi.materials import HT9``
-
-    This can be used in plugins for similar purposes.
+    This allows devs to use ``from armi.materials import HT9``. This can be used in plugins for similar purposes.
 
     .. warning::
         Do not directly import materials from this namespace in code. Use the full module import instead. This is just
