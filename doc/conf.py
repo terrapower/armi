@@ -413,8 +413,10 @@ latex_elements = {
     "pointsize": "10pt",
     "preamble": r"""\usepackage{amsmath}
 
-\usepackage{wasysym}
+\usepackage{pdflscape}
 """,
+    "secnumdepth": 5,
+    "tocdepth": 5,
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
