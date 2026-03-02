@@ -52,10 +52,10 @@ maybe now would be a good time to build a material registry that is better than 
 
 Complications:
 
-1. We will need two places to store two different types of YAML material files: the first type is the simplest where we
-   directly load the material in the YAML file. But the second type is where we want to load the YAML file AND wrap it
-   in custom Python logic.
-2. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
+1. We will store YAML files to be directly loaded into ARMI materials under: armi/materials/resources/*.yaml
+2. There will also be a secondary directory where we keep ARMI material YAML files that are designed to be wrapped by
+   custom Python code at: armi/materials/resources/wrapped/*.yaml
+3. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
    respect those "material types" where possible: and map Fluid.
 """
 

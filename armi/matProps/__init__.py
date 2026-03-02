@@ -22,8 +22,11 @@ of these properties can define their own set of references, to allow for trustwo
 is that we separate out materials as "data", rather than representing them directly in Python as "code".
 
 This package does not include any material data files. The unit tests in this package have many example YAML files, and
-ARMI comes packaged with more real world examples at: ``armi/resources/materials/``. The user may create their own data
+ARMI comes packaged with more real world examples at: ``armi/materials/resources/``. The user may create their own data
 files to use with ``matProps`` in a directory, and pass in that path via ``armi.matProps.loadAll(path)``.
+
+**NOTE**: Nowhere in matProps do we import anything else from ARMI. This is important and by design. People want to use
+matProps without the rest of ARMI. No exceptions will be made to change this directional paradigm.
 
 
 Loading Data
