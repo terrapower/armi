@@ -428,22 +428,13 @@ class Material:
         """Fraction of the material that is gas void (unitless)."""
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
-    # TODO: This is still the only definition of pseudoDensity we need. But we can skip refDens and base this on
-    #       density. Also, do we need more bounds checking?
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D (in g/cm^3).
 
-        Warning
-        -------
-        This will not typically agree with ``Material.density()`` or ``Component.density()`` since this method only
-        expands in 2 dimensions. Depending on your use of ``inputHeightsConsideredHot`` and
-        ``Component.temperatureInC``, ``Material.psuedoDensity()`` may be a factor of (1+dLL) different than
-        ``Material.density()`` or ``Component.density()``.
-
-        In the case of fluids, density and pseudoDensity are the same as density is not driven by linear expansion, but
-        rather an explicit density function dependent on temperature. ``Material.linearExpansionPercent()`` is zero for
-        a fluid.
+        This is not a material property that is physically measurable in the laboratory. This is merely the product of
+        real density with a factor derived from linear expansion. This method is purely a helper method, useful to
+        people modeling pin-type reactors.
 
         See Also
         --------
@@ -527,7 +518,7 @@ class Material:
         mathematically equivalent.
 
         This function returns the normalized mass fraction (they will add to 1.0) as long as the mass fracs are modified
-        only by get and setMassFrac
+        only by get and setMassFrac.
 
         This is a performance-critical method as it is called millions of times in a typical ARMI run.
 
@@ -541,7 +532,7 @@ class Material:
         """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
-    # TODO: This logic seems like it will need to be replaced.
+    # TODO: The logic here will have to be re-written to wrap the related matProps logic
     def checkPropertyTempRange(self, label, val):
         """Checks if the given property / value combination fall between the min and max valid temperatures provided in
         the propertyValidTemperature object.
@@ -555,11 +546,12 @@ class Material:
 
         Notes
         -----
-        This was designed as a convenience method for ``checkTempRange``.
+        This was designed as a wrapper method around ``checkTempRange``.
         """
         (minT, maxT) = self.propertyValidTemperature[label][0]
         self.checkTempRange(minT, maxT, val, label)
 
+    # TODO: The logic here will have to be re-written to wrap the related matProps logic
     def checkTempRange(self, minT, maxT, val, label=""):
         """
         Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
@@ -597,8 +589,7 @@ class Material:
         Returns
         -------
         rhoCP : float
-            Calculated value for the HT9 density* heat capacity
-            unit (J/m^3-K)
+            Calculated value for the HT9 density * heat capacity in units of J/m^3-K.
         """
         Tc = getTc(Tc, Tk)
 
@@ -607,7 +598,7 @@ class Material:
         return rhoCp
 
     # TODO: Now is the time to remove this.
-    def getNuclides(self):
+    def TODOgetNuclides(self):
         """
         Return nuclides in the component that contains this Material.
 
@@ -699,16 +690,6 @@ class Fluid(Material):
                 single=True,
             )
         return deltaT
-
-    def TODOpseudoDensity(self, Tk=None, Tc=None):
-        """
-        Return the pseudoDensity at the specified temperature for 3D expansion (in g/cm^3).
-
-        Notes
-        -----
-        For fluids, there is no such thing as 2D expansion so pseudoDensity() is already 3D.
-        """
-        return self.density(Tk=Tk, Tc=Tc)  # TODO: NOPE!  RECURSION!
 
 
 # TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
