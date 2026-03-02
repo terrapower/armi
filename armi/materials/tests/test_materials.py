@@ -699,11 +699,6 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         error = math.fabs((ref_density - test_density) / ref_density)
         self.assertLess(error, 0.005)
 
-    def test_densityTimesHeatCapactiy(self):
-        Tc = 500.0
-        expectedRhoCp = self.mat.density(Tc=Tc) * 1000.0 * self.mat.heatCapacity(Tc=Tc)
-        self.assertAlmostEqual(expectedRhoCp, self.mat.densityTimesHeatCapacity(Tc=Tc))
-
     def test_duplicate(self):
         """Test the material duplication.
 

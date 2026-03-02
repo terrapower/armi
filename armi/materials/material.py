@@ -27,7 +27,7 @@ from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
-from armi.utils.units import getTc, getTk
+from armi.utils.units import getTk
 
 # globals
 FAIL_ON_RANGE = True
@@ -569,28 +569,6 @@ class Material:
                 raise ValueError(msg)
             else:
                 runLog.warning(msg, single=True, label=f"T out of bounds for {self.name} {label}")
-
-    def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Return heat capacity * density at a temperature.
-
-        Parameters
-        ----------
-        Tk : float, optional
-            Temperature in Kelvin.
-        Tc : float, optional
-            Temperature in degrees Celsius
-
-        Returns
-        -------
-        rhoCP : float
-            Calculated value for the HT9 density * heat capacity in units of J/m^3-K.
-        """
-        Tc = getTc(Tc, Tk)
-
-        rhoCp = self.density(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
-
-        return rhoCp
 
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""
