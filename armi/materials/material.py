@@ -24,6 +24,7 @@ import traceback
 import numpy as np
 
 from armi import runLog
+from armi.matProps.material import Material as MatPropsMaterial
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
@@ -59,7 +60,7 @@ def parentAwareDensityRedirect(f):
     return inner
 
 
-class Material:
+class Material(MatPropsMaterial):
     r"""
     A material is made up of elements or isotopes. It has bulk properties like density.
 
@@ -88,8 +89,7 @@ class Material:
     massFrac : dict
         Mass fractions for all nuclides in the material keyed on the nuclide symbols
     refDens : float
-        A reference density used by some materials, for instance `SimpleSolid`\ s, during thermal
-        expansion
+        A reference density used by some materials, for instance `SimpleSolid`\ s, during thermal expansion
     theoreticalDensityFrac : float
         Fraction of the material's density in reality, which is commonly different from 1.0 in solid materials due to
         the manufacturing process. Can often be set from the blueprints input via the TD_frac material modification. For
@@ -126,6 +126,7 @@ class Material:
     about thermal scattering."""
 
     def __init__(self):
+        MatPropsMaterial.__init__(self)
         self.parent = None
         self.massFrac = {}
         self.refDens = 0.0

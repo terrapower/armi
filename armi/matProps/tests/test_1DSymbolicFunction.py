@@ -72,7 +72,7 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
         # these polynomials have up to 8 powers/terms (including 0)
         mat = self._createFunction(self.basePolynomialData)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
 
         # test using input dict for calc
         self.assertAlmostEqual(mat.rho.calc({"T": 0}), self.polynomialEvaluation(self.basePolynomialMap, 0))
@@ -133,7 +133,7 @@ class Test1DSymbolicFunction(MatPropsFunTestBase):
 
         mat = self._createFunction(data, minT=0.0)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         func = mat.rho
 
         self.assertAlmostEqual(func.calc({"T": 0.0}), self.polynomialEvaluation(coefficientsMap, 0.0))
