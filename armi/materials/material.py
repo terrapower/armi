@@ -411,13 +411,10 @@ class Material:
 
         self.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
         if self.refDens != 0.0:
-            # don't update density if not assigned
+            # Do not update density if not assigned.
             self.refDens = updatedDensity
 
-    def volumetricExpansion(self, Tk=None, Tc=None):
-        pass
-
-    def getTemperatureAtDensity(self, targetDensity: float, tempGuessInC: float) -> float:
+    def getTemperatureAtDensity(self, targetDensity: float, tempGuessInC: float) -> float:  # TODO: REMOVE
         """Get the temperature at which the perturbed density occurs (in Celsius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity

@@ -21,22 +21,7 @@ from armi.utils.units import getTk
 class Lead(material.Fluid):
     """Natural lead."""
 
-    propertyValidTemperature = {
-        "density": ((600, 1700), "K"),
-        "heat capacity": ((600, 1500), "K"),
-        "volumetric expansion": ((600, 1700), "K"),
-    }
-
-    def volumetricExpansion(self, Tk=None, Tc=None):
-        """Volumetric expansion inferred from density.
-
-        NOT BASED ON MEASUREMENT.
-        Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247
-        """
-        Tk = getTk(Tc, Tk)
-        self.checkPropertyTempRange("volumetric expansion", Tk)
-
-        return 1.0 / (9516.9 - Tk)
+    propertyValidTemperature = {"density": ((600, 1700), "K"), "heat capacity": ((600, 1500), "K")}
 
     def setDefaultMassFracs(self):
         """Mass fractions."""

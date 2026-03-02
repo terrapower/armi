@@ -16,15 +16,11 @@
 
 from armi import runLog
 from armi.materials import material
-from armi.utils.mathematics import linearInterpolation
 from armi.utils.units import getTk
 
 
 class Sulfur(material.Fluid):
-    propertyValidTemperature = {
-        "density": ((334, 430), "K"),
-        "volumetric expansion": ((334, 430), "K"),
-    }
+    propertyValidTemperature = {"density": ((334, 430), "K")}
 
     def applyInputParams(self, sulfur_density_frac=None, TD_frac=None):
         if sulfur_density_frac is not None:
@@ -66,15 +62,3 @@ class Sulfur(material.Fluid):
         self.checkPropertyTempRange("density", Tk)
 
         return (2.18835 - 0.00098187 * Tk) * (self.fullDensFrac)
-
-    def volumetricExpansion(self, Tk=None, Tc=None):
-        """
-        This is just a two-point interpolation.
-
-        P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
-        """
-        Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["volumetric expansion"][0]
-        self.checkPropertyTempRange("volumetric expansion", Tk)
-
-        return linearInterpolation(x0=334, y0=5.28e-4, x1=430, y1=5.56e-4, targetX=Tk)

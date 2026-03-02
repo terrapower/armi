@@ -883,22 +883,6 @@ class Lead_TestCase(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Lead
     VALID_TEMP_K = 600
 
-    def test_volumetricExpansion(self):
-        self.assertAlmostEqual(
-            self.mat.volumetricExpansion(800),
-            1.1472e-4,
-            4,
-            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:"
-            f"{self.mat.volumetricExpansion(800)}\nExpected:{1.1472e-4}\n",
-        )
-        self.assertAlmostEqual(
-            self.mat.volumetricExpansion(1200),
-            1.20237e-4,
-            4,
-            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:"
-            f"{self.mat.volumetricExpansion(1200)}\nExpected:{1.20237e-4}\n",
-        )
-
     def test_linearExpansion(self):
         """Unit tests for lead materials linear expansion.
 
@@ -971,17 +955,6 @@ class LeadBismuth_TestCase(AbstractMaterialTest, unittest.TestCase):
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-    def test_volumetricExpansion(self):
-        cur = self.mat.volumetricExpansion(400)
-        ref = 1.2526e-4
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
-        cur = self.mat.volumetricExpansion(800)
-        ref = 1.3187e-4
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
     def test_heatCapacity(self):
         cur = self.mat.heatCapacity(400)
         ref = 149.2592
@@ -1045,12 +1018,6 @@ class Sulfur_TestCase(AbstractMaterialTest, unittest.TestCase):
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(400)
         ref = 1.7956
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
-    def test_volumetricExpansion(self):
-        cur = self.mat.volumetricExpansion(334)
-        ref = 5.28e-4
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 
