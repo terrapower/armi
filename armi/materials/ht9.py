@@ -16,10 +16,6 @@
 Simple/academic/incomplete HT9 ferritic-martensitic stainless steel material.
 
 This is a famous SFR cladding/duct material because it doesn't void swell that much.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 from armi import materials
@@ -31,8 +27,7 @@ class HT9(materials.Material):
     Simplified HT9 stainless steel.
 
     .. warning:: This is an academic-quality material.
-        When more detail is desired, a custom material should be implemented via a
-        user-provided plugin.
+        When more detail is desired, a custom material should be implemented via a user-provided plugin.
 
     .. [MFH] Metallic Fuels Handbook
             Hofman, G. L., Billone, M. C., Koenig, J. F., Kramer, J. M., Lambert, J. D. B., Leibowitz, L.,

@@ -16,10 +16,6 @@
 Thorium Metal.
 
 Data is from [IAEA-TECDOC-1450]_.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 from armi.materials.material import FuelMaterial
@@ -37,14 +33,14 @@ class Thorium(FuelMaterial):
         self.setMassFrac("TH232", 1.0)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""Linear Expansion in m/m/K from IAEA TECDOC 1450."""
+        """Linear Expansion in m/m/K from IAEA TECDOC 1450."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
 
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""W/m-K from IAEA TE 1450."""
+        """W/m-K from IAEA TE 1450."""
         return 43.1
 
     def meltingPoint(self):

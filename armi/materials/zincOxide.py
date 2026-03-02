@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Zinc Oxide.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Zinc Oxide."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTk
@@ -39,8 +34,7 @@ class ZnO(Material):
 
         Notes
         -----
-        Digitized from Figure 1.24 from
-        Zinc Oxide: Fundamentals, Materials and Device Technology
+        Digitized from Figure 1.24 from Zinc Oxide: Fundamentals, Materials and Device Technology
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)

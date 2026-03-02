@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTc, getTk
@@ -37,9 +32,9 @@ class HastelloyN(Material):
     """
 
     materialIntro = (
-        "Hastelloy N alloy is a nickel-base alloy that was invented at Oak RIdge National Laboratories "
-        "as a container material for molten fluoride salts. It has good oxidation resistance to hot fluoride "
-        "salts in the temperature range of 704 to 871C (1300 to 1600F)"
+        "Hastelloy N alloy is a nickel-base alloy that was invented at Oak RIdge National Laboratories as a container "
+        "material for molten fluoride salts. It has good oxidation resistance to hot fluoride salts in the temperature "
+        "range of 704 to 871C (1300 to 1600F)"
     )
 
     propertyValidTemperature = {

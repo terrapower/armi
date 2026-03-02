@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Sulfur.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Sulfur."""
 
 from armi import runLog
 from armi.materials import material
@@ -34,8 +29,8 @@ class Sulfur(material.Fluid):
     def applyInputParams(self, sulfur_density_frac=None, TD_frac=None):
         if sulfur_density_frac is not None:
             runLog.warning(
-                "The 'sulfur_density_frac' material modification for Sulfur "
-                "will be deprecated. Update your inputs to use 'TD_frac' instead.",
+                "The 'sulfur_density_frac' material modification for Sulfur will be deprecated. Update your inputs to "
+                "use 'TD_frac' instead.",
                 single=True,
             )
             if TD_frac is not None:

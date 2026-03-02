@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TZM.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""TZM."""
 
 from numpy import interp
 
@@ -28,9 +23,9 @@ from armi.utils.units import getTc
 class TZM(Material):
     propertyValidTemperature = {"linear expansion percent": ((21.11, 1382.22), "C")}
     references = {
-        "linear expansion percent": "Report on the Mechanical and Thermal Properties of Tungsten \
-            and TZM Sheet Produced in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau \
-            of Naval Weapons Contract No. N600(19)-59530, Southern Research Institute"
+        "linear expansion percent": "Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet \
+            Produced in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. \
+            N600(19)-59530, Southern Research Institute"
     }
 
     temperatureC = [
@@ -75,8 +70,13 @@ class TZM(Material):
         """
         Return linear expansion in %dL/L from interpolation of tabular data.
 
-        This function is used to expand a material from its reference temperature (21C)
-        to a particular hot temperature.
+        This function is used to expand a material from its reference temperature (21C) to a particular hot temperature.
+
+        Source: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced in the Refractory
+                Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, 1966
+                Southern Research Institute.
+
+        See Table viii-b, Appendix B, page 181.
 
         Parameters
         ----------
@@ -84,12 +84,6 @@ class TZM(Material):
             temperature in K
         Tc : float
             temperature in C
-
-        Source: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced
-                in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons
-                Contract No. N600(19)-59530, 1966 Southern Research Institute.
-
-        See Table viii-b, Appendix B, page 181.
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tc)

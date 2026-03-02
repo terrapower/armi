@@ -288,7 +288,6 @@ class Material:
     def getThermalExpansionDensityReduction(self, prevTempInC: float, newTempInC: float) -> float:
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
-        print("THREEEEEEEEEEEEEEEEEEEEEE?  TODO    ", dLL)
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):

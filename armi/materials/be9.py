@@ -16,10 +16,6 @@
 Beryllium is a lightweight metal with lots of interesting nuclear use-cases.
 
 It has a nice (n,2n) reaction and is an inhalation hazard.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 from armi.materials.material import Material
@@ -38,9 +34,8 @@ class Be9(Material):
         self.refDens = 1.85
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
-        Finds the linear expansion coefficient of Be9. given T in C
-        returns m/m-K
+        """
+        Finds the linear expansion coefficient of Be9. given T in C, returns m/m-K
         Based on http://www-ferp.ucsd.edu/LIB/PROPS/PANOS/be.html
         which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987).
         """

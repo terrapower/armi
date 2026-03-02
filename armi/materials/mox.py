@@ -21,9 +21,6 @@ A definitive source for these properties is [#ornltm20002]_.
     Irradiation. S.G. Popov, et.al. Oak Ridge National Laboratory.
     ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 from armi import runLog
@@ -36,8 +33,8 @@ class MOX(UraniumOxide):
     """
     MOX fuel.
 
-    Some parameters (density, thermal conductivity, etc) are inherited from UraniumOxide. These
-    parameters are sufficiently equivalent to pure UO2 in the literature to leave them unchanged.
+    Some parameters (density, thermal conductivity, etc) are inherited from UraniumOxide. These parameters are
+    sufficiently equivalent to pure UO2 in the literature to leave them unchanged.
 
     Specific MOX mixtures may be defined in blueprints under custom isotopics.
     """

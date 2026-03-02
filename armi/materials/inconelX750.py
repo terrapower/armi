@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inconel X750.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Inconel X750."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTc
@@ -43,9 +38,8 @@ class InconelX750(Material):
     def __init__(self):
         Material.__init__(self)
         self.refDens = 8.28  # g/cc
-        # Only density measurement presented in the reference.
-        # Presumed to be performed at 21C since this was the reference temperature for linear
-        # expansion measurements.
+        # Only density measurement presented in the reference. Presumed to be performed at 21C since this was the
+        # reference temperature for linear expansion measurements.
 
     def setDefaultMassFracs(self):
         massFracs = {
@@ -66,7 +60,7 @@ class InconelX750(Material):
             self.setMassFrac(element, massFrac)
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns the thermal conductivity of InconelX750.
 
         Parameters
@@ -87,7 +81,7 @@ class InconelX750(Material):
         return thermalCond  # W/m-C
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns the specific heat capacity of InconelX750.
 
         Parameters
@@ -128,12 +122,12 @@ class InconelX750(Material):
         return linExpPercent
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""
+        """
         From http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
-        to convert from percent strain to strain, then differentiated with respect to temperature to
-        find the correlation for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert from
+        percent strain to strain, then differentiated with respect to temperature to find the correlation for
+        instantaneous linear expansion.
 
         i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
         correlation is 2*a/100*Tc + b/100

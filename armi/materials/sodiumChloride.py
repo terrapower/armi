@@ -15,10 +15,6 @@
 """
 Sodium Chloride salt.
 
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-
 Notes
 -----
 This is a very simple description of this material.
@@ -40,8 +36,7 @@ class NaCl(SimpleSolid):
 
         Notes
         -----
-        From equation 10 of Thermophysical Properties of NaCl
-        NaBr and NaF by y-ray attenuation technique
+        From equation 10 of Thermophysical Properties of NaCl. NaBr and NaF by y-ray attenuation technique.
         """
         Tk = getTk(Tc, Tk)
         return -3.130e-04 * Tk + 2.23

@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Magnesium Oxide.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Magnesium Oxide."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTc, getTk
@@ -47,8 +42,7 @@ class MgO(Material):
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """The coefficient of expansion of magnesium oxide.
 
-        Milo A. Durand
-        Journal of Applied Physics 7, 297 (1936); doi: 10.1063/1.174539
+        Milo A. Durand. Journal of Applied Physics 7, 297 (1936); doi: 10.1063/1.174539
 
         This is based on a 3rd order polynomial fit of the data in Table I.
         """

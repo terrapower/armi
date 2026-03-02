@@ -16,10 +16,6 @@
 Thorium Uranium metal.
 
 Data is from [IAEA-TECDOC-1450]_.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 from armi import runLog
@@ -41,7 +37,7 @@ class ThU(FuelMaterial):
 
     def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
         runLog.warning(
-            "Material {} has not yet been tested for accuracy".format("ThU"),
+            f"Material {ThU} has not yet been tested for accuracy",
             single=True,
             label="ThU applyInputParams",
         )

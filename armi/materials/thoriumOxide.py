@@ -20,9 +20,6 @@ Data is from [IAEA-TECDOC-1450]_.
 .. [IAEA-TECDOC-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 from armi import runLog
@@ -62,7 +59,7 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
-        r"""ThO2 mass fractions. Using Pure Th-232. 100% 232.
+        """ThO2 mass fractions. Using Pure Th-232. 100% 232.
 
         Thorium: 232.030806 g/mol
         Oxygen:  15.9994 g/mol
@@ -86,8 +83,8 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
-        Approximate the linear thermal expansion percent from the linear expansion
-        coefficient, taking 298K as the reference temperature.
+        Approximate the linear thermal expansion percent from the linear expansion coefficient, taking 298K as the
+        reference temperature.
         """
         Tk = getTk(Tc=Tc, Tk=Tk)
         linearExpansionCoef = self.linearExpansion(Tk=Tk)
@@ -103,7 +100,7 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         return 3643.0
 
     def density(self, Tk=None, Tc=None):
-        return Material.density(self, Tk, Tc) * self.getTD()  # TODO: JOHN... THIS WAS SUSPICIOUS BEFORE!!!
+        return Material.density(self, Tk, Tc) * self.getTD()
 
 
 class ThO2(ThoriumOxide):

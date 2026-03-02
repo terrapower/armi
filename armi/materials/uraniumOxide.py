@@ -15,15 +15,10 @@
 """
 Uranium Oxide properties.
 
-UO2 is a common ceramic nuclear fuel form. It's properties are well known. This mostly
-uses data from [#ornltm2000]_.
+UO2 is a common ceramic nuclear fuel form. It's properties are well known. This mostly uses data from [#ornltm2000]_.
 
 .. [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
     et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 import collections
@@ -211,8 +206,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         """
         Thermal conductivity.
 
-        Ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics
-        simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
+        Ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama.
+        Physical Review B, Volume 60, Number 1, July 1999
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)

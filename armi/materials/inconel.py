@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inconel is a austenitic nickel-chromium superalloy.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Inconel is a austenitic nickel-chromium superalloy."""
 
 from armi.materials.material import SimpleSolid
 
@@ -49,7 +44,6 @@ class Inconel(SimpleSolid):
 
 class Inconel617(Inconel):
     """
-    Note: historically the 'Inconel' material represented the high-nickel alloy
-    Inconel 617. This material enables the user to know with certainty that
-    this material represents Inconel 617 and doesn't break any older models.
+    Note: historically the 'Inconel' material represented the high-nickel alloy Inconel 617. This material enables the
+    user to know with certainty that this material represents Inconel 617 and doesn't break any older models.
     """

@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inconel625.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""Inconel625."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTc
@@ -66,7 +61,7 @@ class Inconel625(Material):
             self.setMassFrac(element, massFrac)
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns the thermal conductivity of Inconel625.
 
         Parameters
@@ -128,12 +123,12 @@ class Inconel625(Material):
         return linExpPercent
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""
+        """
         From http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
-        to convert from percent strain to strain, then differentiated with respect to temperature to
-        find the correlation for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert from
+        percent strain to strain, then differentiated with respect to temperature to find the correlation for
+        instantaneous linear expansion.
 
         i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
         correlation is 2*a/100*Tc + b/100
