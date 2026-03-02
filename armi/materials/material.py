@@ -28,7 +28,7 @@ from armi.matProps.material import Material as MatPropsMaterial
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
-from armi.utils.units import getTk
+from armi.utils.units import getTc, getTk
 
 # globals
 FAIL_ON_RANGE = True
@@ -150,8 +150,8 @@ class Material(MatPropsMaterial):
     def name(self, nomen):
         """Setter for the private name attribute of this Material.
 
-        Warning
-        -------
+        Notes
+        -----
         Some code in ARMI expects the "name" of a material matches its class name. So leave this method alone.
 
         See Also
@@ -254,7 +254,11 @@ class Material(MatPropsMaterial):
         --------
         linearExpansion : handle instantaneous thermal expansion coefficients
         """
-        return 0.0
+        if hasattr(self, "dl_l"):
+            Tc = getTc(Tc, Tk)
+            return self.dl_l(T=Tc)
+        else:
+            return 0.0
 
     def linearExpansionFactor(self, Tc: float, T0: float) -> float:
         """
@@ -458,11 +462,7 @@ class Material(MatPropsMaterial):
         dLL = self.linearExpansionPercent(Tk=Tk)
         refD = self.refDens
         if refD is None:
-            runLog.warning(
-                f"{self} has no reference density",
-                single=True,
-                label="No refD " + self.getName(),
-            )
+            runLog.warning(f"{self} has no reference density", single=True, label=f"No refD {self.getName()}")
             return None
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
@@ -474,11 +474,21 @@ class Material(MatPropsMaterial):
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         """Returns yield strength at given T in MPa."""
-        pass
+        if hasattr(self, "Sy"):
+            Tc = getTc(Tc, Tk)
+            return self.Sy(T=Tc)
+        else:
+            # TODO: I would prefer if this was unnecessary.
+            return 0.0
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """Thermal conductivity for given T (in units of W/m/K)."""
-        pass
+        if hasattr(self, "k"):
+            Tc = getTc(Tc, Tk)
+            return self.k(T=Tc)
+        else:
+            # TODO: I would prefer if this was unnecessary.
+            return 0.0
 
     # TODO: Used to get density from cache in a VERY small number of cases.
     def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:
