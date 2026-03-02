@@ -95,15 +95,15 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         return 100 * (linearExpansionCoef * (Tk - 298))
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""Thermal conductivity in W/m-K from IAEA TE 1450."""
+        """Thermal conductivity in W/m-K from IAEA TE 1450."""
         return 6.20
 
     def meltingPoint(self):
-        r"""Melting point in K from IAEA TE 1450."""
+        """Melting point in K from IAEA TE 1450."""
         return 3643.0
 
     def density(self, Tk=None, Tc=None):
-        return Material.density(self, Tk, Tc) * self.getTD()
+        return Material.density(self, Tk, Tc) * self.getTD()  # TODO: JOHN... THIS WAS SUSPICIOUS BEFORE!!!
 
 
 class ThO2(ThoriumOxide):

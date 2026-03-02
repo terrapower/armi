@@ -35,15 +35,14 @@ class TestFluids(TestCase):
     def test_fluidDensityWrapperNoWarning(self):
         """Test that Component.material.density does not raise a warning for fluids.
 
-        The ARMI Framework contains a mechanism to warn users if they ask for the density of a
-        material attached to a component. But the component is the source of truth for volume and
-        composition. And can be thermally expanded during operation. Much of the framework operates
-        on ``Component.density`` and other ``Component`` methods for mass accounting. However,
-        ``comp.material.density`` does not know about the new composition or volumes and can diverge
-        from ``component.density``.
+        The ARMI Framework contains a mechanism to warn users if they ask for the density of a material attached to a
+        component. But the component is the source of truth for volume and composition. And can be thermally expanded
+        during operation. Much of the framework operates on ``Component.density`` and other ``Component`` methods for
+        mass accounting. However, ``comp.material.density`` does not know about the new composition or volumes and can
+        diverge from ``component.density``.
 
-        Additionally, the framework does not do any thermal expansion on fluids. So the above calls
-        to ``component.material.density`` are warranted for fluids.
+        Additionally, the framework does not do any thermal expansion on fluids. So the above calls to
+        ``component.material.density`` are warranted for fluids.
         """
         self._checkCompDensityLogs(
             mat=self.MySolid(),

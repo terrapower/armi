@@ -13,11 +13,7 @@
 # limitations under the License.
 
 """
-Lithium.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
+A liquid Lithium material.
 
 Warning
 -------
@@ -55,8 +51,8 @@ class Lithium(material.Fluid):
         if enrich is not None:
             self.adjustMassEnrichment(LI6_wt_frac)
 
-    def pseudoDensity(self, Tk=None, Tc=None):
-        r"""Density (g/cc) from Wikipedia.
+    def density(self, Tk=None, Tc=None):
+        """Density (g/cc) from Wikipedia.
 
         Will be liquid above 180C.
 

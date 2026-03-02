@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Lead.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""A liquid Lead material."""
 
 from armi.materials import material
 from armi.utils.units import getTk
@@ -33,7 +28,7 @@ class Lead(material.Fluid):
     }
 
     def volumetricExpansion(self, Tk=None, Tc=None):
-        r"""Volumetric expansion inferred from density.
+        """Volumetric expansion inferred from density.
 
         NOT BASED ON MEASUREMENT.
         Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247
@@ -47,7 +42,7 @@ class Lead(material.Fluid):
         """Mass fractions."""
         self.setMassFrac("PB", 1)
 
-    def pseudoDensity(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """Density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)

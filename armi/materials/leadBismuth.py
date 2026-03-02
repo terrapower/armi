@@ -13,13 +13,9 @@
 # limitations under the License.
 
 """
-Lead-Bismuth eutectic.
+A liquid Lead-Bismuth eutectic material.
 
 This is a great coolant for superfast neutron reactors. It's heavy though.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
 """
 
 import math
@@ -40,19 +36,19 @@ class LeadBismuth(material.Fluid):
     }
 
     def setDefaultMassFracs(self):
-        r"""Mass fractions."""
+        """Mass fractions."""
         self.setMassFrac("PB", 0.445)
         self.setMassFrac("BI209", 0.555)
 
-    def pseudoDensity(self, Tk=None, Tc=None):
-        r"""Density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247."""
+    def density(self, Tk=None, Tc=None):
+        """Density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
         return 11.096 - 0.0013236 * Tk  # pre-converted from kg/m^3 to g/cc
 
     def dynamicVisc(self, Tk=None, Tc=None):
-        r"""Dynamic viscosity in Pa-s from Sobolev.
+        """Dynamic viscosity in Pa-s from Sobolev.
 
         Accessed online at:
         http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12
@@ -63,14 +59,14 @@ class LeadBismuth(material.Fluid):
         return 4.94e-4 * math.exp(754.1 / Tk)
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""Heat ccapacity in J/kg/K from Sobolev. Expected accuracy 5%."""
+        """Heat ccapacity in J/kg/K from Sobolev. Expected accuracy 5%."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
         return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk**2
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""Thermal conductivity in W/m/K from Sobolev.
+        """Thermal conductivity in W/m/K from Sobolev.
 
         Accessed online at:
         http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12
@@ -81,7 +77,7 @@ class LeadBismuth(material.Fluid):
         return 2.45 * Tk / (86.334 + 0.0511 * Tk)
 
     def volumetricExpansion(self, Tk=None, Tc=None):
-        r"""Volumetric expansion inferred from density.
+        """Volumetric expansion inferred from density.
 
         NOT BASED ON MEASUREMENT.
         Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247

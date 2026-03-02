@@ -49,7 +49,7 @@ class Sodium(material.Fluid):
         self.setMassFrac("NA", 1.0)
         self.refDens = 0.968
 
-    def pseudoDensity(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """
         Returns density of Sodium in g/cc.
 

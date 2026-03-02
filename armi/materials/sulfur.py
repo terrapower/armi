@@ -58,7 +58,7 @@ class Sulfur(material.Fluid):
         self.setMassFrac("S34", 0.0429)
         self.setMassFrac("S36", 0.002)
 
-    def pseudoDensity(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """Density of Liquid Sulfur.
 
         Ref: P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"

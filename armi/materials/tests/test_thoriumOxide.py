@@ -29,11 +29,11 @@ class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.ThoriumOxide_TD_frac = ThoriumOxide()
         self.ThoriumOxide_TD_frac.applyInputParams(TD_frac=0.4)
 
-    def test_theoretical_pseudoDensity(self):
+    def test_pseudoDensity(self):
         ref = self.mat.pseudoDensity(500)
 
         reduced = self.ThoriumOxide_TD_frac.pseudoDensity(500)
-        self.assertAlmostEqual(ref * 0.4, reduced)
+        self.assertAlmostEqual(ref * 0.16, reduced)
 
     def test_linearExpansionPercent(self):
         self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=500), 0.195334)

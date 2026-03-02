@@ -34,9 +34,7 @@ class Air(material.Fluid):
             https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
     """
 
-    """
-    temperature ranges based on where values are more than 1% off of reference
-    """
+    """Temperature ranges based on where values are more than 1% off of reference."""
     propertyValidTemperature = {
         "pseudoDensity": ((100, 2400), "K"),
         "heat capacity": ((100, 1300), "K"),
@@ -49,10 +47,9 @@ class Air(material.Fluid):
 
         Notes
         -----
-        Mass fraction reference McConn, Ronald J., et al. Compendium of
-        material composition data for radiation transport modeling. No.
-        PNNL-15870 Rev. 1. Pacific Northwest National Lab.(PNNL), Richland,
-        WA (United States), 2011.
+        Mass fraction reference McConn, Ronald J., et al. Compendium of material composition data for radiation
+        transport modeling. No.
+        PNNL-15870 Rev. 1. Pacific Northwest National Lab.(PNNL), Richland, WA (United States), 2011.
 
         https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
         """
@@ -61,16 +58,11 @@ class Air(material.Fluid):
         self.setMassFrac("O", 0.231781)
         self.setMassFrac("AR", 0.012827)
 
-    def pseudoDensity(
-        self,
-        Tk=None,
-        Tc=None,
-    ):
+    def density(self, Tk=None, Tc=None):
         """
         Returns density of Air in g/cc.
 
-        This is from Table A.4 in
-        Fundamentals of Heat and Mass Transfer Incropera, DeWitt
+        This is from Table A.4 in Fundamentals of Heat and Mass Transfer Incropera, DeWitt.
 
         Parameters
         ----------

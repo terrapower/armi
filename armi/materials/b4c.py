@@ -170,16 +170,6 @@ class B4C(material.Material):
 
         return b10NumFrac * b10AtomicMass / (b10NumFrac * b10AtomicMass + (1.0 - b10NumFrac) * b11AtomicMass)
 
-    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Return density that preserves mass when thermally expanded in 2D.
-
-        Notes
-        -----
-        Applies theoretical density of B4C to parent method
-        """
-        return material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
-
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.

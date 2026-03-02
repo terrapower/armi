@@ -309,7 +309,7 @@ class SaturatedWater(Water):
     This is the Saturated Liquid Water Material Class. For steam look to the Saturated Steam Material Class.
     """
 
-    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Returns density in g/cc.
 
@@ -353,6 +353,10 @@ class SaturatedWater(Water):
         # past the supercritical point tau's raised to .5 cause complex #'s
         return normalized_rho.real * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
 
+    def pseudoDensity(self, Tk=None, Tc=None):
+        """Pseudo-density for arbitrary forms of water."""
+        return self.density(Tk=Tk, Tc=Tc)
+
 
 class SaturatedSteam(Water):
     """
@@ -364,7 +368,7 @@ class SaturatedSteam(Water):
     This is the Saturated Liquid Water Material Class. For steam look to the Saturated Steam Material Class.
     """
 
-    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Returns density in g/cc.
 
@@ -406,3 +410,7 @@ class SaturatedSteam(Water):
 
         # past the supercritical point tau's raised to .5 cause complex #'s
         return math.e**log_normalized_rho.real * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
+
+    def pseudoDensity(self, Tk=None, Tc=None):
+        """Pseudo-density for arbitrary forms of water."""
+        return self.density(Tk=Tk, Tc=Tc)

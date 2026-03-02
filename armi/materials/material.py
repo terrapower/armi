@@ -450,17 +450,11 @@ class Material:
         armi.reactor.components.component.Component.density
         """
         Tk = getTk(Tc, Tk)
+        density = self.density(Tk=Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
-        if self.refDens is None:
-            runLog.warning(
-                f"{self} has no reference density",
-                single=True,
-                label="No refD " + self.getName(),
-            )
-            self.refDens = 0.0
 
-        f = (1.0 + dLL / 100.0) ** 2
-        return self.refDens / f
+        f = 1.0 + dLL / 100.0
+        return density * f
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -678,8 +672,8 @@ class Fluid(Material):
         return rho1 / rho0
 
     def linearExpansion(self, Tk=None, Tc=None):
-        """For void, lets just not allow temperature changes to change dimensions since it is a liquid it will fill its
-        space.
+        """For fluids, lets just not allow temperature changes to change dimensions since it is a liquid it will fill
+        its space.
 
         .. impl:: Fluid materials are not thermally expandable.
             :id: I_ARMI_MAT_FLUID
@@ -706,15 +700,15 @@ class Fluid(Material):
             )
         return deltaT
 
-    def density(self, Tk=None, Tc=None):
+    def TODOpseudoDensity(self, Tk=None, Tc=None):
         """
-        Return the density at the specified temperature for 3D expansion (in g/cm^3).
+        Return the pseudoDensity at the specified temperature for 3D expansion (in g/cm^3).
 
         Notes
         -----
         For fluids, there is no such thing as 2D expansion so pseudoDensity() is already 3D.
         """
-        return self.pseudoDensity(Tk=Tk, Tc=Tc)
+        return self.density(Tk=Tk, Tc=Tc)  # TODO: NOPE!  RECURSION!
 
 
 # TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.

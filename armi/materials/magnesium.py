@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Magnesium.
-
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
-"""
+"""A liquid Magnesium material."""
 
 from armi.materials import material
 from armi.utils.units import getTk
@@ -29,7 +24,7 @@ class Magnesium(material.Fluid):
     def setDefaultMassFracs(self):
         self.setMassFrac("MG", 1.0)
 
-    def pseudoDensity(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """Returns mass density of magnesium in g/cm3.
 
         The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961.

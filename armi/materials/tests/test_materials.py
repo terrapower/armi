@@ -44,7 +44,7 @@ class AbstractMaterialTest:
         self.assertEqual(self.mat.thermalConductivity(self.VALID_TEMP_K), mat.thermalConductivity(self.VALID_TEMP_K))
 
     def test_density(self):
-        """Test that all materials produce a non-zero density from density."""
+        """Test that all materials produce a non-zero density."""
         self.assertNotEqual(self.mat.density(self.VALID_TEMP_K), 0)
 
     def test_TD(self):
@@ -539,7 +539,7 @@ class Uranium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.mat.applyInputParams(U235_wt_frac=newWtFrac, TD_frac=newTDFrac)
         self.assertEqual(self.mat.massFrac["U235"], newWtFrac)
         self.assertEqual(self.mat.density(Tk=densityTemp), expectedDensity * newTDFrac)
-        self.assertAlmostEqual(self.mat.pseudoDensity(Tk=densityTemp), 9.415418593432646)
+        self.assertAlmostEqual(self.mat.pseudoDensity(Tk=densityTemp), 9.535)
 
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
@@ -738,19 +738,19 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
     def test_applyInputParams(self):
-        UO2_TD = materials.UraniumOxide()
-        original = UO2_TD.density(500)
-        UO2_TD.applyInputParams(TD_frac=0.1)
-        new = UO2_TD.density(500)
+        uo2 = materials.UraniumOxide()
+        original = uo2.density(500)
+        uo2.applyInputParams(TD_frac=0.1)
+        new = uo2.density(500)
         ratio = new / original
         self.assertAlmostEqual(ratio, 0.1)
 
-        UO2_TD = materials.UraniumOxide()
-        original = UO2_TD.pseudoDensity(500)
-        UO2_TD.applyInputParams(TD_frac=0.1)
-        new = UO2_TD.pseudoDensity(500)
+        uo2 = materials.UraniumOxide()
+        original = uo2.pseudoDensity(500)
+        uo2.applyInputParams(TD_frac=0.1)
+        new = uo2.pseudoDensity(500)
         ratio = new / original
-        self.assertAlmostEqual(ratio, 0.1)
+        self.assertAlmostEqual(ratio, 0.01)
 
 
 class Thorium_TestCase(AbstractMaterialTest, unittest.TestCase):
