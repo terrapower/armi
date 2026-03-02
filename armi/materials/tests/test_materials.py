@@ -709,15 +709,6 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         expectedRhoCp = self.mat.density(Tc=Tc) * 1000.0 * self.mat.heatCapacity(Tc=Tc)
         self.assertAlmostEqual(expectedRhoCp, self.mat.densityTimesHeatCapacity(Tc=Tc))
 
-    def test_getTempChangeForDensityChange(self):
-        Tc = 500.0
-        linearExpansion = self.mat.linearExpansion(Tc=Tc)
-        densityFrac = 1.001
-        linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
-        expectedDeltaT = linearChange / linearExpansion
-        actualDeltaT = self.mat.getTempChangeForDensityChange(Tc, densityFrac, quiet=False)
-        self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
-
     def test_duplicate(self):
         """Test the material duplication.
 
@@ -1001,16 +992,6 @@ class LeadBismuth_TestCase(AbstractMaterialTest, unittest.TestCase):
         ref = 141.7968
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_getTempChangeForDensityChange(self):
-        Tc = 800.0
-        densityFrac = 1.001
-        currentDensity = self.mat.pseudoDensity(Tc=Tc)
-        perturbedDensity = currentDensity * densityFrac
-        tAtPerturbedDensity = self.mat.getTemperatureAtDensity(perturbedDensity, Tc)
-        expectedDeltaT = tAtPerturbedDensity - Tc
-        actualDeltaT = self.mat.getTempChangeForDensityChange(Tc, densityFrac, quiet=False)
-        self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
     def test_dynamicVisc(self):
         ref = self.mat.dynamicVisc(Tc=150)

@@ -596,21 +596,6 @@ class Material:
 
         return rhoCp
 
-    # TODO: Looks safe to remove, and silly to exist.
-    def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
-        """Return a temperature difference for a given density perturbation."""
-        linearExpansion = self.linearExpansion(Tc=Tc)
-        linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
-        deltaT = linearChange / linearExpansion
-        if not quiet:
-            runLog.info(
-                f"The linear expansion for {self.getName()} at initial temperature of {Tc} C is {linearExpansion}.\nA "
-                f"change in density of {(densityFrac - 1.0) * 100.0} percent at would require a change in temperature "
-                "of {deltaT} C.",
-                single=True,
-            )
-        return deltaT
-
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""
         raise NotImplementedError(f"Material {type(self).__name__} does not implement heatCapacity")
@@ -659,21 +644,6 @@ class Fluid(Material):
             sets the linear expansion coefficient to zero at all temperatures.
         """
         return 0.0
-
-    # TODO: Looks safe to remove, and silly to exist.
-    def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
-        """Return a temperature difference for a given density perturbation."""
-        currentDensity = self.pseudoDensity(Tc=Tc)
-        perturbedDensity = currentDensity * densityFrac
-        tAtPerturbedDensity = self.getTemperatureAtDensity(perturbedDensity, Tc)
-        deltaT = tAtPerturbedDensity - Tc
-        if not quiet:
-            runLog.info(
-                f"A change in density of {(densityFrac - 1.0) * 100.0} percent in {self.getName()} at an initial "
-                f"temperature of {Tc} C would require a change in temperature of {deltaT} C.",
-                single=True,
-            )
-        return deltaT
 
 
 # TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
