@@ -22,7 +22,6 @@ import functools
 import traceback
 
 import numpy as np
-from scipy.optimize import fsolve
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
@@ -413,14 +412,6 @@ class Material:
         if self.refDens != 0.0:
             # Do not update density if not assigned.
             self.refDens = updatedDensity
-
-    def getTemperatureAtDensity(self, targetDensity: float, tempGuessInC: float) -> float:  # TODO: REMOVE
-        """Get the temperature at which the perturbed density occurs (in Celsius)."""
-        # 0 at tempertature of targetDensity
-        densFunc = lambda temp: self.density(Tc=temp) - targetDensity
-        # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC)[0])
-        return tAtTargetDensity
 
     @property
     def liquidPorosity(self) -> float:

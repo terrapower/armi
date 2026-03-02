@@ -691,11 +691,6 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertAlmostEqual(self.mat.heatCapacity(1000), 320.0, delta=20)
         self.assertAlmostEqual(self.mat.heatCapacity(2000), 380.0, delta=20)
 
-    def test_getTemperatureAtDensity(self):
-        expectedTemperature = 100.0
-        tAtTargetDensity = self.mat.getTemperatureAtDensity(self.mat.density(Tc=expectedTemperature), 30.0)
-        self.assertAlmostEqual(expectedTemperature, tAtTargetDensity)
-
     def test_getDensityExpansion3D(self):
         expectedTemperature = 100.0
 
