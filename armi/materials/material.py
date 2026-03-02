@@ -20,7 +20,6 @@ Most temperatures may be specified in either K or C and the functions will conve
 
 import functools
 import traceback
-import warnings
 
 import numpy as np
 from scipy.optimize import fsolve
@@ -596,21 +595,6 @@ class Material:
         rhoCp = self.density(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
 
         return rhoCp
-
-    # TODO: Now is the time to remove this.
-    def TODOgetNuclides(self):
-        """
-        Return nuclides in the component that contains this Material.
-
-        Notes
-        -----
-        This method is the only reason Materials still have self.parent. Essentially, we want to change that, but right
-        now the logic for finding nuclides in the Reactor is recursive and considers Materials first. The bulk of the
-        work in finally removing this method will come in downstream repos, where users have fully embraced this method
-        and call it directly in many, many places. Please do not use this method, as it is being deprecated.
-        """
-        warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
-        return self.parent.getNuclides()
 
     # TODO: Looks safe to remove, and silly to exist.
     def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
