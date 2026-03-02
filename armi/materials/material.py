@@ -211,6 +211,14 @@ class Material:
         m.refDens = self.refDens
         m.theoreticalDensityFrac = self.theoreticalDensityFrac
 
+        # handle some special cases for subclasses, like fuels
+        if hasattr(self, "class1_wt_frac"):
+            m.class1_wt_frac = self.class1_wt_frac
+        if hasattr(self, "class1_custom_isotopics"):
+            m.class1_custom_isotopics = self.class1_custom_isotopics
+        if hasattr(self, "class2_custom_isotopics"):
+            m.class2_custom_isotopics = self.class2_custom_isotopics
+
         return m
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
@@ -658,47 +666,12 @@ class SimpleSolid(Material):
         Material.__init__(self)
         self.refDens = self.density(Tk=self.refTempK)
 
-    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Average thermal expansion dL/L. Used for computing hot dimensions and density.
-
-        Defaults to 0.0 for materials that don't expand.
-
-        Parameters
-        ----------
-        Tk : float
-            temperature in (K)
-        Tc : float
-            Temperature in (C)
-
-        Returns
-        -------
-        dLL(T) in % m/m/K
-
-        Notes
-        -----
-        This only method only works for Simple Solid Materials which assumes the density function returns 'free
-        expansion' density as a function temperature
-        """
-        density1 = self.density(Tk=self.refTempK)
-        density2 = self.density(Tk=Tk, Tc=Tc)
-
-        if density1 == density2:
-            return 0
-        else:
-            return 100 * ((density1 / density2) ** (1.0 / 3.0) - 1)
-
-    def density(self, Tk: float = None, Tc: float = None) -> float:
-        """Material density (in g/cm^3)."""
-        return 0.0
-
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """A 2D density, for materials linearly expanding (in g/cm^3)."""
-        return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()
+        return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()  # TODO: Suspect
 
 
-# TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
-#       Or DOES this do something useful for us? applyInputParams
+# TODO: Figure out what we are doing with these subclasses.
 class FuelMaterial(Material):
     """
     Material that is considered a nuclear fuel.
@@ -706,9 +679,11 @@ class FuelMaterial(Material):
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
 
-    class1_wt_frac = None
-    class1_custom_isotopics = None
-    class2_custom_isotopics = None
+    def __init__(self):
+        Material.__init__(self)
+        self.class1_wt_frac = None
+        self.class1_custom_isotopics = None
+        self.class2_custom_isotopics = None
 
     def applyInputParams(
         self,
@@ -763,21 +738,3 @@ class FuelMaterial(Material):
         class1Isotopics = customIsotopics[self.class1_custom_isotopics]
         class2Isotopics = customIsotopics[self.class2_custom_isotopics]
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
-
-    def duplicate(self):
-        """Copy without needing a deepcopy."""
-        m = self.__class__()
-
-        m.massFrac = {}
-        for key, val in self.massFrac.items():
-            m.massFrac[key] = val
-
-        m.parent = self.parent
-        m.refDens = self.refDens
-        m.theoreticalDensityFrac = self.theoreticalDensityFrac
-
-        m.class1_wt_frac = self.class1_wt_frac
-        m.class1_custom_isotopics = self.class1_custom_isotopics
-        m.class2_custom_isotopics = self.class2_custom_isotopics
-
-        return m
