@@ -328,10 +328,6 @@ class MOX_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.mat.clearMassFrac()
         self.assertEqual(len(self.mat.massFrac), 0)
 
-        # bonus coverage for removeNucMassFrac
-        self.mat.removeNucMassFrac("PassWithoutWarning")
-        self.assertEqual(len(self.mat.massFrac), 0)
-
 
 class NaCl_TestCase(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.NaCl
@@ -707,11 +703,6 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         test_density = self.mat.density(Tc=expectedTemperature) * 1000.0
         error = math.fabs((ref_density - test_density) / ref_density)
         self.assertLess(error, 0.005)
-
-    def test_removeNucMassFrac(self):
-        self.mat.removeNucMassFrac("O")
-        massFracs = [str(k) for k in self.mat.massFrac.keys()]
-        self.assertListEqual(["U235", "U238"], massFracs)
 
     def test_densityTimesHeatCapactiy(self):
         Tc = 500.0

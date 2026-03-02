@@ -486,7 +486,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
-    # TODO: I can only see this being used in once place downstream. Does it really need to be in the base class?
+    # TODO: Move this logic downstream. It is not well-supported or explained in ARMI.
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
         """Given a temperature, get the corrosion rate of the material (in microns/year)."""
         return 0.0
@@ -499,7 +499,7 @@ class Material:
         """Thermal conductivity for given T (in units of W/m/K)."""
         pass
 
-    # TODO: Is this really used? Could it at least be private?
+    # TODO: Used to get density from cache in a VERY small number of cases.
     def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:
         """Gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
@@ -546,15 +546,6 @@ class Material:
     def clearMassFrac(self) -> None:
         """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
-
-    # TODO: Only used in one place in the world, perhaps we just move this downstream to that place.
-    def removeNucMassFrac(self, nuc: str) -> None:
-        self.setMassFrac(nuc, 0)
-        try:
-            del self.massFrac[nuc]
-        except KeyError:
-            # the nuc isn't in the mass Frac vector
-            pass
 
     # TODO: This logic seems like it will need to be replaced.
     def checkPropertyTempRange(self, label, val):
