@@ -34,11 +34,10 @@ class Water(Fluid):
     Water.
 
     This is a good faith implementation of the Revised Supplementary Properties of Ordinary Water Substance (1992) by
-    IAPWS -- International Association for the Properties of Water and Steam .
+    IAPWS -- International Association for the Properties of Water and Steam.
 
     This is an abstract class implemented on the Saturated Water Material  and the Saturated Steam Material Class, which
-    should be good enough for
-    most uses.
+    should be good enough for most uses.
 
     http://www.iapws.org/relguide/supsat.pdf
     IAPWS-IF97 is now the international standard for calculations in the steam power industry
@@ -121,10 +120,8 @@ class Water(Fluid):
 
         Notes
         -----
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
-        IAPWS-IF97 is now the international standard for calculations in the
-        steam power industry
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         tau = self.tau(Tc=Tc, Tk=Tk)
         T_ratio = self.TEMPERATURE_CRITICAL_K / getTk(Tc=Tc, Tk=Tk)
@@ -181,10 +178,8 @@ class Water(Fluid):
 
         Notes
         -----
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
-        IAPWS-IF97 is now the international standard for calculations in the
-        steam power industry
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 is now the international standard for calculations in the steam power industry
 
         alpha is used in the relations for enthalpy
         h = alpha + T/pressure*dp/dT
@@ -223,8 +218,7 @@ class Water(Fluid):
         -----
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
-        IAPWS-IF97 is now the international standard for calculations in the
-        steam power industry
+        IAPWS-IF97 is now the international standard for calculations in the steam power industry
 
         alpha is used in the relations for enthalpy
         s = phi + 1/pressure*dp/dT
@@ -263,12 +257,11 @@ class Water(Fluid):
         -----
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
-        IAPWS-IF97 is now the international standard for calculations in the
-        steam power industry
+        IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         alpha = self.auxiliaryQuantitySpecificEnthalpy(Tc=Tc, Tk=Tk)
         T = getTk(Tc=Tc, Tk=Tk)
-        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensity(Tc=Tc, Tk=Tk) * 1000.0
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return alpha + T / rho * dp_dT
@@ -293,23 +286,16 @@ class Water(Fluid):
         -----
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
-        IAPWS-IF97 is now the international standard for calculations in the
-        steam power industry
+        IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         phi = self.auxiliaryQuantitySpecificEntropy(Tc=Tc, Tk=Tk)
-        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensity(Tc=Tc, Tk=Tk) * 1000.0
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return phi + 1.0 / rho * dp_dT
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        """
-        Density for arbitrary forms of water.
-
-        Notes
-        -----
-        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
-        """
+        """Density for arbitrary forms of water."""
         raise NotImplementedError("Please use a concrete instance: SaturatedWater or SaturatedSteam.")
 
 
@@ -317,12 +303,10 @@ class SaturatedWater(Water):
     """
     Saturated Water.
 
-    This is a good faith implementation of the Revised Supplementary Properties
-    of Ordinary Water Substance (1992) by IAPWS -- International Association for
-    the Properties of Water and Steam .
+    This is a good faith implementation of the Revised Supplementary Properties of Ordinary Water Substance (1992) by
+    IAPWS -- International Association for the Properties of Water and Steam.
 
-    This is the Saturated Liquid Water Material Class. For steam look to the
-    Saturated  Steam Material Class.
+    This is the Saturated Liquid Water Material Class. For steam look to the Saturated Steam Material Class.
     """
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
@@ -344,8 +328,7 @@ class SaturatedWater(Water):
         Note
         ----
         In ARMI, we define pseudoDensity() and density() as the same for Fluids.
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         tau = self.tau(Tc=Tc, Tk=Tk)
@@ -375,12 +358,10 @@ class SaturatedSteam(Water):
     """
     Saturated Steam.
 
-    This is a good faith implementation of the Revised Supplementary Properties
-    of Ordinary Water Substance (1992) by IAPWS -- International Association for
-    the Properties of Water and Steam .
+    This is a good faith implementation of the Revised Supplementary Properties of Ordinary Water Substance (1992) by
+    IAPWS -- International Association for the Properties of Water and Steam.
 
-    This is the Saturated Liquid Water Material Class. For steam look to the
-    Saturated  Steam Material Class.
+    This is the Saturated Liquid Water Material Class. For steam look to the Saturated Steam Material Class.
     """
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
@@ -402,8 +383,7 @@ class SaturatedSteam(Water):
         Notes
         -----
         In ARMI, we define pseudoDensity() and density() as the same for Fluids.
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         tau = self.tau(Tc=Tc, Tk=Tk)

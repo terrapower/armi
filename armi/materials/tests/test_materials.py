@@ -81,18 +81,6 @@ class AbstractMaterialTest:
         val = self.mat._getCached("Emmy")
         self.assertEqual(val, "Noether")
 
-    def test_densityKgM3(self):
-        """Test the density for kg/m^3."""
-        dens = self.mat.density(self.VALID_TEMP_K)
-        densKgM3 = self.mat.densityKgM3(self.VALID_TEMP_K)
-        self.assertEqual(dens * 1000.0, densKgM3)
-
-    def test_pseudoDensityKgM3(self):
-        """Test the pseudo density for kg/m^3."""
-        dens = self.mat.pseudoDensity(self.VALID_TEMP_K)
-        densKgM3 = self.mat.pseudoDensityKgM3(self.VALID_TEMP_K)
-        self.assertEqual(dens * 1000.0, densKgM3)
-
     def test_wrappedDensity(self):
         """Test that the density decorator is applied to non-fluids."""
         self.assertEqual(
@@ -716,7 +704,7 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         expectedTemperature = 100.0
 
         ref_density = 10.86792660463439e3
-        test_density = self.mat.densityKgM3(Tc=expectedTemperature)
+        test_density = self.mat.density(Tc=expectedTemperature) * 1000.0
         error = math.fabs((ref_density - test_density) / ref_density)
         self.assertLess(error, 0.005)
 

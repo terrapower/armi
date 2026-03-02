@@ -462,18 +462,6 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 2
         return self.refDens / f
 
-    # TODO: Note: this appears to be unused to me in the wild.
-    def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Return density that preserves mass when thermally expanded in 2D in units of kg/m^3.
-
-        See Also
-        --------
-        density:
-            Arguments are forwarded to the g/cc version
-        """
-        return self.pseudoDensity(Tk, Tc) * 1000.0
-
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D (in g/cm^3).
@@ -497,17 +485,6 @@ class Material:
             return None
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
-
-    # TODO: Note: this appears to be unused to me in the wild.
-    def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
-        """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
-
-        See Also
-        --------
-        density:
-            Arguments are forwarded to the g/cc version
-        """
-        return self.density(Tk, Tc) * 1000.0
 
     # TODO: I can only see this being used in once place downstream. Does it really need to be in the base class?
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:

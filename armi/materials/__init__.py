@@ -35,12 +35,12 @@ TODO: The Plan
 The idea here is that when we load a set of materials through ARMI, we do:
 
 1. The old logic: Look for Python files, find things that subclass "armi.material.Material", and load.
-2. ALSO, the new logic, look for a "resources/" directory in that location and load the YAMLs you find inside
+2. ALSO, the new logic, look for a "armi/materials/resources/" directory in that location and load the YAMLs inside
 
 All of our materials will be an armi.material.Material(armi.matProps.material.Material). Yeah, the name class is
 unfortunate, but oh well.
 
-But the logic in this file only does two things:
+The old logic in this file only did two things:
 
 1. Mock up a meh material registry.
 2. Handle retrieving materials from this registry, based on our namespace ordering.

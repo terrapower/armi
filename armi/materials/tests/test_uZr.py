@@ -78,28 +78,6 @@ class UZR_TestCase(TestCase):
         val = self.mat._getCached("Emmy")
         self.assertEqual(val, "Noether")
 
-    def test_densityKgM3(self):
-        """Test the density for kg/m^3.
-
-        .. test:: Test the material base class has temp-dependent density.
-            :id: T_ARMI_MAT_PROPERTIES2
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
-        dens = self.mat.density(500)
-        densKgM3 = self.mat.densityKgM3(500)
-        self.assertEqual(dens * 1000.0, densKgM3)
-
-    def test_pseudoDensityKgM3(self):
-        """Test the pseudo density for kg/m^3.
-
-        .. test:: Test the material base class has temp-dependent 2D density.
-            :id: T_ARMI_MAT_PROPERTIES3
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
-        dens = self.mat.pseudoDensity(500)
-        densKgM3 = self.mat.pseudoDensityKgM3(500)
-        self.assertEqual(dens * 1000.0, densKgM3)
-
     def test_density(self):
         """Test that all materials produce a zero density from density.
 
