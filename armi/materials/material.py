@@ -280,6 +280,7 @@ class Material:
     def getThermalExpansionDensityReduction(self, prevTempInC: float, newTempInC: float) -> float:
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
+        print("THREEEEEEEEEEEEEEEEEEEEEE?  TODO    ", dLL)
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
@@ -329,7 +330,7 @@ class Material:
         This adjusts the mass fraction of a specified nuclide relative to other nuclides of the same element. If there
         are no other nuclides within the element, then it is enriched relative to the entire material. For example,
         enriching U235 in UZr would enrich U235 relative to U238 and other naturally occurring uranium isotopes.
-        Likewise, enriching ZR in UZr would enrich ZR relative to uranium.
+        Likewise, enriching ZR in UZr would enrich ZR relative to Uranium.
 
         The method maintains a constant number of atoms, and adjusts ``refDens`` accordingly.
 
@@ -620,15 +621,16 @@ class Fluid(Material):
         if hasattr(cls.density, "__wrapped__"):
             cls.density = cls.density.__wrapped__
 
+    # TODO: This is the only thing we really need this class for.
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from one temperature (in Celsius) to a new
         temperature.
         """
-        rho0 = self.pseudoDensity(Tc=prevTempInC)
+        rho0 = self.density(Tc=prevTempInC)
         if not rho0:
             return 1.0
 
-        rho1 = self.pseudoDensity(Tc=newTempInC)
+        rho1 = self.density(Tc=newTempInC)
         return rho1 / rho0
 
     def linearExpansion(self, Tk=None, Tc=None):

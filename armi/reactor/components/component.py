@@ -583,18 +583,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         r"""
         Adjust temperature of this component.
 
-        This will cause thermal expansion or contraction of solid or liquid components and will
-        accordingly adjust number densities to conserve mass.
+        This will cause thermal expansion or contraction of solid or liquid components and will accordingly adjust
+        number densities to conserve mass.
 
-        Liquids still have a number density adjustment, but some mass tends to expand in or out of
-        the bounding area.
+        Liquids still have a number density adjustment, but some mass tends to expand in or out of the bounding area.
 
-        Since some composites have multiple materials in them that thermally expand differently,
-        the axial dimension is generally left unchanged. Hence, this a 2-D thermal expansion.
+        Since some composites have multiple materials in them that thermally expand differently, the axial dimension is
+        generally left unchanged. Hence, this a 2-D thermal expansion.
 
-        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`.
-        A multiplicative factor :math:`f_N` to apply to number densities when going from T to T'
-        is as follows:
+        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`. A multiplicative factor
+        :math:`f_N` to apply to number densities when going from T to T' is as follows:
 
         .. math::
 
@@ -667,9 +665,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Get number densities using direct array lookup.
 
-        When only a small subset of nuclide number densities are requested, it is
-        likely faster to lookup the index for each nuclide than to recreate the
-        entire dictionary for a lookup.
+        When only a small subset of nuclide number densities are requested, it is likely faster to lookup the index for
+        each nuclide than to recreate the entire dictionary for a lookup.
 
         Parameters
         ----------
@@ -704,9 +701,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_NUCLIDE_FRACS0
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
-            The method allows a user or plugin to set the number density of a Component. It also
-            indicates to other processes that may depend on a Component's status about this change
-            via the ``assigned`` attribute.
+            The method allows a user or plugin to set the number density of a Component. It also indicates to other
+            processes that may depend on a Component's status about this change via the ``assigned`` attribute.
 
         Parameters
         ----------
