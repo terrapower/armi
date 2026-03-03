@@ -301,12 +301,6 @@ def get_material(name: str) -> Material:
     return getMaterial(name)
 
 
-def load_material(yamlPath: str, saveMaterial: bool = False) -> Material:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadMaterial, not matProps.load_material.", DeprecationWarning)
-    return loadMaterial(yamlPath, saveMaterial)
-
-
 def loaded_materials() -> list:
     """Pass-through to temporarily support an old API."""
     warnings.warn("Please use matProps.loadedMaterials, not matProps.loaded_materials.", DeprecationWarning)

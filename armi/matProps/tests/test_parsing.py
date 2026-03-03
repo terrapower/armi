@@ -57,8 +57,7 @@ class TestParsing(unittest.TestCase):
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
                 armi.matProps.getMaterial(matNam)
 
-            # test the pass-through function load_material, instead of the preferred loadMaterial
-            m = armi.matProps.load_material(self.dummyMatFiles[matFile], True)
+            m = armi.matProps.loadMaterial(self.dummyMatFiles[matFile], True)
             self.assertIsNotNone(m)
             m = armi.matProps.getMaterial(matNam)
             self.assertIsNotNone(m)
