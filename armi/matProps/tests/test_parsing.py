@@ -121,7 +121,7 @@ class TestParsing(unittest.TestCase):
         armi.matProps.loadAll(dir2)
 
         # Check that the two directories are in loaded materials
-        loadList = armi.matProps.get_loaded_root_dirs()
+        loadList = armi.matProps.getLoadedRootDirs()
         self.assertTrue(dir1 in loadList)
         self.assertTrue(dir2 in loadList)
         self.assertTrue(len(loadList) == 2)
