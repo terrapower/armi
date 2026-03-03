@@ -189,9 +189,6 @@ class Californium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(self.mat.liquidPorosity, 0.0)
         self.assertEqual(self.mat.gasPorosity, 0.0)
 
-    def test_getCorrosionRate(self):
-        self.assertEqual(self.mat.getCorrosionRate(500), 0.0)
-
 
 class Cesium_TestCase(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Cs

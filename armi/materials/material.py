@@ -472,11 +472,6 @@ class Material(MatPropsMaterial):
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
-    # TODO: Move this logic downstream. It is not well-supported or explained in ARMI.
-    def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
-        """Given a temperature, get the corrosion rate of the material (in microns/year)."""
-        return 0.0
-
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         """Returns yield strength at given T in MPa."""
         Tc = getTc(Tc, Tk)
