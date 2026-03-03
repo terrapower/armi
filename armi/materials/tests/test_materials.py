@@ -41,7 +41,7 @@ class AbstractMaterialTest:
         mat = pickle.loads(stream)
 
         # check a property that is sometimes interpolated.
-        self.assertEqual(self.mat.thermalConductivity(self.VALID_TEMP_K), mat.thermalConductivity(self.VALID_TEMP_K))
+        self.assertEqual(self.mat.density(self.VALID_TEMP_K), mat.density(self.VALID_TEMP_K))
 
     def test_density(self):
         """Test that all materials produce a non-zero density."""

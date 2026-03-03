@@ -232,6 +232,10 @@ class Material(MatPropsMaterial):
         linearExpansionPercent : average linear thermal expansion to affect dimensions and density
         """
         raise NotImplementedError(f"{self} does not have a linear expansion property defined")
+        # TODO:
+        # Tk = getTk(Tc, Tk)
+        # deltaStrain = self.linearExpansionPercent(Tk + 1.0) / 100.0 - self.linearExpansionPercent(Tk - 1.0) / 100.0
+        # return deltaStrain / 2.0
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -258,6 +262,7 @@ class Material(MatPropsMaterial):
             Tc = getTc(Tc, Tk)
             return self.dl_l(T=Tc)
         else:
+            # TODO: I would prefer if this was unnecessary.
             return 0.0
 
     def linearExpansionFactor(self, Tc: float, T0: float) -> float:
@@ -474,21 +479,13 @@ class Material(MatPropsMaterial):
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         """Returns yield strength at given T in MPa."""
-        if hasattr(self, "Sy"):
-            Tc = getTc(Tc, Tk)
-            return self.Sy(T=Tc)
-        else:
-            # TODO: I would prefer if this was unnecessary.
-            return 0.0
+        Tc = getTc(Tc, Tk)
+        return self.Sy(T=Tc)
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """Thermal conductivity for given T (in units of W/m/K)."""
-        if hasattr(self, "k"):
-            Tc = getTc(Tc, Tk)
-            return self.k(T=Tc)
-        else:
-            # TODO: I would prefer if this was unnecessary.
-            return 0.0
+        Tc = getTc(Tc, Tk)
+        return self.k(T=Tc)
 
     # TODO: Used to get density from cache in a VERY small number of cases.
     def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:

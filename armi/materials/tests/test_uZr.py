@@ -37,7 +37,7 @@ class UZR_TestCase(TestCase):
         mat = pickle.loads(stream)
 
         # check a property that is sometimes interpolated.
-        self.assertEqual(self.mat.thermalConductivity(500), mat.thermalConductivity(500))
+        self.assertEqual(self.mat.density(500), mat.density(500))
 
     def test_TD(self):
         """Test the material theoretical density."""
