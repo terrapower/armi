@@ -167,8 +167,7 @@ class TestParsing(unittest.TestCase):
         Also tests trying to access an unknown material.
         """
         armi.matProps.loadAll(self.dummyDataPath)
-        # test with the pass-through loaded_materials instead of the preferred loadedMaterials
-        for mat in armi.matProps.loaded_materials():
+        for mat in armi.matProps.loadedMaterials():
             self.assertEqual(mat, armi.matProps.getMaterial(mat.name))
 
         with self.assertRaisesRegex(KeyError, "No material named `Fahrvergnugen` was loaded"):

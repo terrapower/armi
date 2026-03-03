@@ -301,12 +301,6 @@ def get_material(name: str) -> Material:
     return getMaterial(name)
 
 
-def loaded_materials() -> list:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadedMaterials, not matProps.loaded_materials.", DeprecationWarning)
-    return loadedMaterials()
-
-
 def get_loaded_root_dirs() -> list:
     """Pass-through to temporarily support an old API."""
     warnings.warn("Please use matProps.getLoadedRootDirs, not matProps.get_loaded_root_dirs.", DeprecationWarning)
