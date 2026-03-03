@@ -147,7 +147,7 @@ def loadAll(rootDir: str = None) -> None:
     global loadedRootDirs
 
     if rootDir is None:
-        rootDir = os.path.join(sysconfig.getPaths()["purelib"], "materials_data")
+        rootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
         if not os.path.exists(rootDir):
             raise OSError(f"No material directory provided, and default not found: {rootDir}")
 
