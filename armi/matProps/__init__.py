@@ -289,12 +289,6 @@ def getLoadedRootDirs() -> list:
     return loadedRootDirs
 
 
-def load_all(rootDir: str = None) -> None:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadAll, not matProps.load_all.", DeprecationWarning)
-    loadAll(rootDir)
-
-
 def load_safe(rootDir: str = None) -> None:
     """Pass-through to temporarily support an old API."""
     warnings.warn("Please use matProps.loadSafe, not matProps.load_safe.", DeprecationWarning)

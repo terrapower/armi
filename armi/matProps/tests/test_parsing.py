@@ -167,8 +167,7 @@ class TestParsing(unittest.TestCase):
 
         Also tests trying to access an unknown material.
         """
-        # test the deprecated "load_all", that is just a pass-through for "loadAll"
-        armi.matProps.load_all(self.dummyDataPath)
+        armi.matProps.loadAll(self.dummyDataPath)
         # test with the pass-through loaded_materials instead of the preferred loadedMaterials
         for mat in armi.matProps.loaded_materials():
             self.assertEqual(mat, armi.matProps.getMaterial(mat.name))
