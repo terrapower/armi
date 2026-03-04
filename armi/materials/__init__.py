@@ -62,9 +62,7 @@ Complications:
 
 import importlib
 import inspect
-import os
 import pkgutil
-from pathlib import Path
 from typing import List
 
 from armi.materials.material import Material
@@ -127,7 +125,6 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
         mod = importlib.import_module(modname)
         for item, obj in mod.__dict__.items():
             try:
-                # TODO: I guess it doesn't hurt anything, but this also load "Material" itself into the namespace.
                 if issubclass(obj, Material):
                     namespace[item] = obj
                     if updateSource:
@@ -135,26 +132,6 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
             except TypeError:
                 # some non-class local
                 pass
-
-    """
-    # load materials from matProps YAML files, in a flat directory called "resources" under the provided path
-    paths = [path] if isinstance(path, str) else path
-    for pth in paths:
-        for suffix in ("yaml", "yml"):
-            for yamlPath in Path(pth).glob(f"resources/*.{suffix}"):
-                mat = Material()
-                try:
-                    mat.loadFile(yamlPath)
-                except Exception:
-                    continue
-
-                name = os.path.basename(yamlPath).split(".")[0]
-                namespace[name] = mat
-                # setattr(sys.modules[modName], name, mat)
-                if updateSource:
-                    obj.DATA_SOURCE = updateSource
-
-    """
 
 
 importMaterialsIntoModuleNamespace(__path__, __name__, globals())

@@ -31,4 +31,4 @@ RESOURCES_DIR = os.path.join(THIS_DIR, "resources")  # TODO: COULD got back to a
 class Void(Fluid):
     """Void / Vacuum."""
 
-    YAML_PATH=os.path.join(RESOURCES_DIR, "Void.yaml")
+    YAML_PATH = os.path.join(RESOURCES_DIR, "Void.yaml")

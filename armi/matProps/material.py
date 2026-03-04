@@ -36,7 +36,6 @@ class Material:
     validFileFormatVersions = [3.0, "TESTS"]
     YAML_PATH = None
 
-
     def __init__(self, yamlPath=None):
         """Constructor for Material class."""
         self._saved = False

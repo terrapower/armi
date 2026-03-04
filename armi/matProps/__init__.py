@@ -152,8 +152,9 @@ def loadAll(rootDir: str = None) -> None:
 
     paths = getPaths(rootDir)
     for yamlPath in paths:
+        mat = Material()
         try:
-            mat = Material(yamlPath=yamlPath)
+            mat.loadFile(yamlPath)
         except Exception as exc:
             msg = f"Failed to load `{yamlPath}`."
             raise RuntimeError(msg) from exc
