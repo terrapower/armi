@@ -90,8 +90,8 @@ class Material(MatPropsMaterial):
     """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScatteringLabels` instances with information
     about thermal scattering."""
 
-    def __init__(self, yamlPath=None):
-        MatPropsMaterial.__init__(self, yamlPath=yamlPath)
+    def __init__(self):
+        MatPropsMaterial.__init__(self)
         self.parent = None
         self.massFrac = {}
         self.refDens = 0.0
@@ -111,6 +111,7 @@ class Material(MatPropsMaterial):
         """Getter for the private name attribute of this Material."""
         return self._name
 
+    # TODO: Conflicts with the matProps Material ".name"
     @name.setter
     def name(self, nomen):
         """Setter for the private name attribute of this Material.
@@ -431,12 +432,19 @@ class Material(MatPropsMaterial):
         - p*(dp/p(T) + 1) =p*( p + dp(T) )/p = p + dp(T) = p(T)
         - dp/p = (1-(1 + dL/L)**3)/(1 + dL/L)**3
         """
+        # try the YAML file first
+        if hasattr(self, "rho"):
+            Tc = getTc(Tc, Tk)
+            return self.rho(T=Tc)
+
+        # no YAML, use linear expansion
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
         refD = self.refDens
         if refD is None:
             runLog.warning(f"{self} has no reference density", single=True, label=f"No refD {self.getName()}")
             return None
+
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
@@ -561,9 +569,7 @@ class Fluid(Material):
 
     # TODO: This is the only thing we really need this class for.
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
-        """Return the factor required to update thermal expansion going from one temperature (in Celsius) to a new
-        temperature.
-        """
+        """Return the factor required to update thermal expansion going from one temperature (in C) to a another."""
         rho0 = self.density(Tc=prevTempInC)
         if not rho0:
             return 1.0

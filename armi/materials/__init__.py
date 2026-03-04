@@ -129,40 +129,32 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
             try:
                 # TODO: I guess it doesn't hurt anything, but this also load "Material" itself into the namespace.
                 if issubclass(obj, Material):
-                    # print(type(obj))
                     namespace[item] = obj
-                    # print(f"item: {item}")
                     if updateSource:
                         obj.DATA_SOURCE = updateSource
             except TypeError:
                 # some non-class local
                 pass
 
-    return  # TODO: Temporary, while I work.
+    """
     # load materials from matProps YAML files, in a flat directory called "resources" under the provided path
     paths = [path] if isinstance(path, str) else path
-    # print(f"paths: {paths}")
     for pth in paths:
-        # print(f"  pth: {pth}")
         for suffix in ("yaml", "yml"):
-            # print(f"    suffix: {suffix}")
             for yamlPath in Path(pth).glob(f"resources/*.{suffix}"):
-                # print(f"      yamlPath: {yamlPath}")
                 mat = Material()
                 try:
                     mat.loadFile(yamlPath)
                 except Exception:
                     continue
 
-                # print(type(mat))
                 name = os.path.basename(yamlPath).split(".")[0]
                 namespace[name] = mat
                 # setattr(sys.modules[modName], name, mat)
-                # print(f"name, mat: {name}, {mat}")
                 if updateSource:
                     obj.DATA_SOURCE = updateSource
 
-    assert False
+    """
 
 
 importMaterialsIntoModuleNamespace(__path__, __name__, globals())

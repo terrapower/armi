@@ -34,6 +34,8 @@ class Material:
     """
 
     validFileFormatVersions = [3.0, "TESTS"]
+    YAML_PATH = None
+
 
     def __init__(self, yamlPath=None):
         """Constructor for Material class."""
@@ -52,12 +54,12 @@ class Material:
         self._sha1 = None
         """SHA1 value of parsed material file."""
 
-        self.yamlPath = yamlPath
-        """Path to the YAML file that defines this material."""
-
         # Load the material, if the YAML was provided.
-        if yamlPath:
-            self.loadFile(yamlPath)
+        print("]]]]    BEFORE YAML LOADING    ]]]]]")
+        if self.YAML_PATH:
+            print("yamlPath FouND!")
+            self.loadFile(self.YAML_PATH)
+            print("YAML LOADED SUCCESSFULLY!")
 
     def __repr__(self):
         """Provides string representation for Material class."""

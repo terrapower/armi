@@ -13,9 +13,11 @@
 # limitations under the License.
 
 """
-TODO.
+A collection of materials that are defined in pure matProps YAML files.
 
-TODO.
+This file exists to wrap pure matProps YAML files so they become full-fledged versions of
+``armi.materials.material.Material``. The wrappers below are designed so new matProps material objects can be created on
+the fly, as needed.
 """
 
 import os
@@ -27,7 +29,6 @@ RESOURCES_DIR = os.path.join(THIS_DIR, "resources")  # TODO: COULD got back to a
 
 
 class Void(Fluid):
-    """TODO."""
+    """Void / Vacuum."""
 
-    def __call__(self):
-        return Fluid(os.path.join(RESOURCES_DIR, "Void.yaml"))
+    YAML_PATH=os.path.join(RESOURCES_DIR, "Void.yaml")

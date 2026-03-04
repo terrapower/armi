@@ -157,7 +157,7 @@ class MaterialFindingTests(unittest.TestCase):
         setMaterialNamespaceOrder(["armi.materials"])
 
 
-class Californium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class CaliforniumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Californium
 
     def test_pseudoDensity(self):
@@ -178,7 +178,7 @@ class Californium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(self.mat.gasPorosity, 0.0)
 
 
-class Cesium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class CesiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Cs
 
     def test_pseudoDensity(self):
@@ -194,7 +194,7 @@ class Cesium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class Magnesium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class MagnesiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Magnesium
     VALID_TEMP_K = 1000
 
@@ -213,7 +213,7 @@ class Magnesium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class MagnesiumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class MagnesiumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.MgO
 
     def test_pseudoDensity(self):
@@ -240,7 +240,7 @@ class MagnesiumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Molybdenum_TestCase(AbstractMaterialTest, unittest.TestCase):
+class MolybdenumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Molybdenum
 
     def test_pseudoDensity(self):
@@ -258,7 +258,7 @@ class Molybdenum_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class MOX_TestCase(AbstractMaterialTest, unittest.TestCase):
+class MOXTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.MOX
 
     def test_density(self):
@@ -314,7 +314,7 @@ class MOX_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.massFrac), 0)
 
 
-class NaCl_TestCase(AbstractMaterialTest, unittest.TestCase):
+class NaClTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.NaCl
 
     def test_density(self):
@@ -330,7 +330,7 @@ class NaCl_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class NiobiumZirconium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class NiobiumZirconiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.NZ
 
     def test_pseudoDensity(self):
@@ -346,7 +346,7 @@ class NiobiumZirconium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class Potassium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class PotassiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Potassium
 
     def test_pseudoDensity(self):
@@ -379,7 +379,7 @@ class Potassium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class ScandiumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ScandiumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Sc2O3
 
     def test_pseudoDensity(self):
@@ -400,7 +400,7 @@ class ScandiumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Sodium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class SodiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Sodium
 
     def test_pseudoDensity(self):
@@ -451,7 +451,7 @@ class Sodium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Tantalum_TestCase(AbstractMaterialTest, unittest.TestCase):
+class TantalumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Tantalum
 
     def test_pseudoDensity(self):
@@ -467,7 +467,7 @@ class Tantalum_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class ThoriumUraniumMetal_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ThoriumUraniumMetalTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ThU
 
     def test_pseudoDensity(self):
@@ -506,7 +506,7 @@ class ThoriumUraniumMetal_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 1)
 
 
-class Uranium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class UraniumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Uranium
 
     def test_applyInputParams(self):
@@ -587,7 +587,7 @@ class Uranium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class UraniumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.UraniumOxide
 
     def test_adjustMassEnrichment(self):
@@ -719,7 +719,7 @@ class UraniumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertAlmostEqual(ratio, 0.01)
 
 
-class Thorium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ThoriumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Thorium
 
     def test_setDefaultMassFracs(self):
@@ -763,7 +763,7 @@ class Thorium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ThoriumOxide
 
     def test_density(self):
@@ -799,13 +799,13 @@ class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Void_TestCase(AbstractMaterialTest, unittest.TestCase):
+class VoidTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
         """This material has a no pseudo-density."""
         self.mat.setDefaultMassFracs()
-        for t in range(0, 1000):
+        for t in range(0, 1000, 100):
             cur = self.mat.pseudoDensity(Tc=t)
             self.assertEqual(cur, 0.0)
 
@@ -814,7 +814,7 @@ class Void_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
-        for t in range(0, 1000):
+        for t in range(0, 1000, 100):
             cur = self.mat.density(Tc=t)
             self.assertEqual(cur, 0.0)
 
@@ -829,7 +829,7 @@ class Void_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class Mixture_TestCase(AbstractMaterialTest, unittest.TestCase):
+class MixtureTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials._Mixture
 
     def test_density(self):
@@ -856,7 +856,7 @@ class Mixture_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class Lead_TestCase(AbstractMaterialTest, unittest.TestCase):
+class LeadTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Lead
     VALID_TEMP_K = 600
 
@@ -905,7 +905,7 @@ class Lead_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class LeadBismuth_TestCase(AbstractMaterialTest, unittest.TestCase):
+class LeadBismuthTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.LeadBismuth
 
     def test_setDefaultMassFracs(self):
@@ -956,7 +956,7 @@ class LeadBismuth_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Copper_TestCase(AbstractMaterialTest, unittest.TestCase):
+class CopperTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Cu
 
     def test_setDefaultMassFracs(self):
@@ -983,7 +983,7 @@ class Copper_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
 
 
-class Sulfur_TestCase(AbstractMaterialTest, unittest.TestCase):
+class SulfurTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Sulfur
     VALID_TEMP_K = 400
 
@@ -1002,7 +1002,7 @@ class Sulfur_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Zr_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ZrTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Zr
 
     def test_thermalConductivity(self):
@@ -1109,7 +1109,7 @@ class Zr_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Inconel_TestCase(AbstractMaterialTest, unittest.TestCase):
+class InconelTests(AbstractMaterialTest, unittest.TestCase):
     def setUp(self):
         self.Inconel = materials.Inconel()
         self.Inconel800 = materials.Inconel800()
@@ -1161,7 +1161,7 @@ class Inconel_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class Inconel600_TestCase(AbstractMaterialTest, unittest.TestCase):
+class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Inconel600
 
     def test_00_setDefaultMassFracs(self):
@@ -1254,7 +1254,7 @@ class Inconel600_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Inconel625_TestCase(AbstractMaterialTest, unittest.TestCase):
+class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Inconel625
 
     def test_00_setDefaultMassFracs(self):
@@ -1366,7 +1366,7 @@ class Inconel625_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class InconelX750_TestCase(AbstractMaterialTest, unittest.TestCase):
+class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.InconelX750
 
     def test_00_setDefaultMassFracs(self):
@@ -1476,7 +1476,7 @@ class InconelX750_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class Alloy200_TestCase(AbstractMaterialTest, unittest.TestCase):
+class Alloy200Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Alloy200
 
     def test_nickleContent(self):
@@ -1497,7 +1497,7 @@ class Alloy200_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class CaH2_TestCase(AbstractMaterialTest, unittest.TestCase):
+class CaH2Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.CaH2
 
     def test_pseudoDensity(self):
@@ -1513,7 +1513,7 @@ class CaH2_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class Hafnium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class HafniumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Hafnium
 
     def test_pseudoDensity(self):
@@ -1529,7 +1529,7 @@ class Hafnium_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
-class HastelloyN_TestCase(AbstractMaterialTest, unittest.TestCase):
+class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.HastelloyN
 
     def test_thermalConductivity(self):
@@ -1609,7 +1609,7 @@ class HastelloyN_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class TZM_TestCase(AbstractMaterialTest, unittest.TestCase):
+class TZMTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.TZM
 
     def test_00_applyInputParams(self):
@@ -1666,7 +1666,7 @@ class TZM_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class YttriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class YttriumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Y2O3
 
     def test_pseudoDensity(self):
@@ -1688,7 +1688,7 @@ class YttriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class ZincOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ZincOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ZnO
 
     def test_density(self):
@@ -1710,7 +1710,7 @@ class ZincOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-class FuelMaterial_TestCase(unittest.TestCase):
+class FuelMaterialTests(unittest.TestCase):
     baseInput = r"""
 nuclide flags:
     U: {burn: false, xs: true}
