@@ -1,5 +1,4 @@
-file format: 3.0
-# Copyright 2019 TerraPower, LLC
+# Copyright 2026 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,32 +12,22 @@ file format: 3.0
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Void / Vaccuum
+"""
+TODO.
 
-material type: Fluid
-composition:
-  Cu: balance
+TODO.
+"""
 
-density: 
-  function:
-    T:
-      min: -273.15
-      max: 15000000.0
-    type: symbolic
-    equation: 0.0
+import os
 
-specific heat capacity:
-  function:
-    T:
-      min: -273.15
-      max: 15000000.0
-    type: symbolic
-    equation: 0.0
+from armi.materials.material import Fluid
 
-thermal conductivity:
-  function:
-    T:
-      min: -273.15
-      max: 15000000.0
-    type: symbolic
-    equation: 0.0
+THIS_DIR = os.path.dirname(__file__)
+RESOURCES_DIR = os.path.join(THIS_DIR, "resources")  # TODO: COULD got back to armi/resources/materials ???
+
+
+class Void(Fluid):
+    """TODO."""
+
+    def __call__(self):
+        return Fluid(os.path.join(RESOURCES_DIR, "Void.yaml"))

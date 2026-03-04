@@ -57,14 +57,18 @@ Complications:
    custom Python code at: armi/materials/resources/wrapped/*.yaml
 3. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
    respect those "material types" where possible: and map Fluid.
+4. matProps loads *objects* into its global dict, but armi.materials loads *classes* (ARMI wins here)
 """
 
 import importlib
 import inspect
+import os
 import pkgutil
+from pathlib import Path
 from typing import List
 
 from armi.materials.material import Material
+from armi.materials.pureYaml import Void  # noqa: F401
 
 # This will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
 # armi.reactor.reactors.factory).
@@ -94,7 +98,7 @@ def setMaterialNamespaceOrder(order):
     _MATERIAL_NAMESPACE_ORDER = order
 
 
-def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None):
+def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):
     """
     Import all Material subclasses into the top subpackage.
 
@@ -106,27 +110,59 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
 
     Parameters
     ----------
-    path : str
-        Path to package/module being imported
-    name : str
+    path : str or list
+        Path or list of paths to package/module being imported
+    modName : str
         module name
     namespace : dict
         The namespace
     updateSource : str, optional
         Change DATA_SOURCE on import to a different string. Useful for saying where plugin materials are coming from.
     """
-    for _modImporter, modname, _ispkg in pkgutil.walk_packages(path=path, prefix=name + "."):
-        if "test" not in modname:
-            mod = importlib.import_module(modname)
-            for item, obj in mod.__dict__.items():
+    # load materials from pure Python files
+    for _modImporter, modname, _ispkg in pkgutil.walk_packages(path=path, prefix=modName + "."):
+        if "test" in modname:
+            continue
+
+        mod = importlib.import_module(modname)
+        for item, obj in mod.__dict__.items():
+            try:
+                # TODO: I guess it doesn't hurt anything, but this also load "Material" itself into the namespace.
+                if issubclass(obj, Material):
+                    # print(type(obj))
+                    namespace[item] = obj
+                    # print(f"item: {item}")
+                    if updateSource:
+                        obj.DATA_SOURCE = updateSource
+            except TypeError:
+                # some non-class local
+                pass
+
+    return  # TODO: Temporary, while I work.
+    # load materials from matProps YAML files, in a flat directory called "resources" under the provided path
+    paths = [path] if isinstance(path, str) else path
+    # print(f"paths: {paths}")
+    for pth in paths:
+        # print(f"  pth: {pth}")
+        for suffix in ("yaml", "yml"):
+            # print(f"    suffix: {suffix}")
+            for yamlPath in Path(pth).glob(f"resources/*.{suffix}"):
+                # print(f"      yamlPath: {yamlPath}")
+                mat = Material()
                 try:
-                    if issubclass(obj, Material):
-                        namespace[item] = obj
-                        if updateSource:
-                            obj.DATA_SOURCE = updateSource
-                except TypeError:
-                    # some non-class local
-                    pass
+                    mat.loadFile(yamlPath)
+                except Exception:
+                    continue
+
+                # print(type(mat))
+                name = os.path.basename(yamlPath).split(".")[0]
+                namespace[name] = mat
+                # setattr(sys.modules[modName], name, mat)
+                # print(f"name, mat: {name}, {mat}")
+                if updateSource:
+                    obj.DATA_SOURCE = updateSource
+
+    assert False
 
 
 importMaterialsIntoModuleNamespace(__path__, __name__, globals())

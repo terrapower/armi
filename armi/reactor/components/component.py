@@ -26,7 +26,7 @@ import numpy as np
 
 from armi import materials, runLog
 from armi.bookkeeping import report
-from armi.materials import custom, material, void
+from armi.materials import Void, custom, material
 from armi.reactor import composites, flags, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
@@ -427,8 +427,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         try:
             self.getProperties().setLumpedFissionProducts(lfpCollection)
         except AttributeError:
-            # This material doesn't setLumpedFissionProducts because it's a regular
-            # material, not a lumpedFissionProductCompatable material
+            # This material doesn't setLumpedFissionProducts because it is a regular material, not a
+            # lumpedFissionProductCompatable material
             pass
 
     def getArea(self, cold=False, Tc=None):
@@ -470,9 +470,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        ``self.p.volume`` is not set until this method is called, so under most circumstances it is
-        probably not safe to access ``self.p.volume`` directly. This is because not all components
-        (e.g., ``DerivedShape``) can compute their volume during initialization.
+        ``self.p.volume`` is not set until this method is called, so under most circumstances it is probably not safe to
+        access ``self.p.volume`` directly. This is because not all components (e.g., ``DerivedShape``) can compute their
+        volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -484,9 +484,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Invalidate the volume so that it will be recomputed from current dimensions upon next access.
 
-        The updated value will be based on its shape and current dimensions.
-        If there is a parent container and that container contains a DerivedShape, then that must be
-        updated as well since its volume may be changing.
+        The updated value will be based on its shape and current dimensions. If there is a parent container and that
+        container contains a DerivedShape, then that must be updated as well since its volume may be changing.
 
         See Also
         --------
@@ -514,12 +513,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Check for negative area and warn/error when appropriate.
 
-        Negative component area is allowed for Void materials (such as gaps) which may be placed
-        between components that will overlap during thermal expansion (such as liners and cladding
-        and annular fuel).
+        Negative component area is allowed for Void materials (such as gaps) which may be placed between components that
+        will overlap during thermal expansion (such as liners and cladding and annular fuel).
 
-        Overlapping is allowed to maintain conservation of atoms while sticking close to the
-        as-built geometry. Modules that need true geometries will have to handle this themselves.
+        Overlapping is allowed to maintain conservation of atoms while sticking close to the as-built geometry. Modules
+        that need true geometries will have to handle this themselves.
         """
         if np.isnan(area):
             return
@@ -550,8 +548,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             raise ArithmeticError(negVolFailure)
 
     def containsVoidMaterial(self):
-        """Returns True if component material is void."""
-        return isinstance(self.material, void.Void)
+        """Returns True if component material is Void."""
+        return isinstance(self.material, Void)
 
     def containsSolidMaterial(self):
         """Returns True if the component material is a solid."""
@@ -1396,11 +1394,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
-        if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case,
-            # defer to Material. Material.density is wrapped to warn if it's attached
-            # to a parent. Avoid that by calling the inner function directly
-            density = self.material.density.__wrapped__(self.material, Tc=self.temperatureInC)
+        if not density:
+            # It is possible that there are no nuclides in this component yet. In that case, we defer to the Material.
+            density = self.material.density(Tc=self.temperatureInC)
 
         return density
 

@@ -81,14 +81,6 @@ class AbstractMaterialTest:
         val = self.mat._getCached("Emmy")
         self.assertEqual(val, "Noether")
 
-    def test_wrappedDensity(self):
-        """Test that the density decorator is applied to non-fluids."""
-        self.assertEqual(
-            hasattr(self.mat.density, "__wrapped__"),
-            not isinstance(self.mat, materials.Fluid),
-            msg=self.mat,
-        )
-
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
@@ -112,15 +104,11 @@ class MaterialFindingTests(unittest.TestCase):
             materials.Void,
         )
         self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.materials.void"]),
-            materials.Void,
-        )
-        self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.materials.mox", "armi.materials.void"]),
+            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.materials.mox", "armi.materials"]),
             materials.Void,
         )
         with self.assertRaises(ModuleNotFoundError):
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["invalid.namespace", "armi.materials.void"])
+            materials.resolveMaterialClassByName("Void", namespaceOrder=["invalid.namespace", "armi.materials"])
         with self.assertRaises(KeyError):
             materials.resolveMaterialClassByName("Unobtanium", namespaceOrder=["armi.materials"])
 
@@ -817,16 +805,18 @@ class Void_TestCase(AbstractMaterialTest, unittest.TestCase):
     def test_pseudoDensity(self):
         """This material has a no pseudo-density."""
         self.mat.setDefaultMassFracs()
-        cur = self.mat.pseudoDensity()
-        self.assertEqual(cur, 0.0)
+        for t in range(0, 1000):
+            cur = self.mat.pseudoDensity(Tc=t)
+            self.assertEqual(cur, 0.0)
 
     def test_density(self):
         """This material has no density."""
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
-        cur = self.mat.density()
-        self.assertEqual(cur, 0.0)
+        for t in range(0, 1000):
+            cur = self.mat.density(Tc=t)
+            self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
         """This material does not expand linearly."""

@@ -35,7 +35,7 @@ class Material:
 
     validFileFormatVersions = [3.0, "TESTS"]
 
-    def __init__(self):
+    def __init__(self, yamlPath=None):
         """Constructor for Material class."""
         self._saved = False
         """Boolean denoting whether or not Material object is saved in materials dict."""
@@ -51,6 +51,13 @@ class Material:
 
         self._sha1 = None
         """SHA1 value of parsed material file."""
+
+        self.yamlPath = yamlPath
+        """Path to the YAML file that defines this material."""
+
+        # Load the material, if the YAML was provided.
+        if yamlPath:
+            self.loadFile(yamlPath)
 
     def __repr__(self):
         """Provides string representation for Material class."""
@@ -140,21 +147,22 @@ class Material:
                 # Any property not in the input file will be set to None.
                 setattr(self, p.symbol, None)
 
-    def loadFile(self, filePath: str):
+    def loadFile(self, yamlPath: str):
         """
-        Loads yaml file and parses information to fill in Material data members including all relevant Function objects.
+        Loads YAML file and parses information to fill in Material data members including all relevant Function objects.
 
         Parameters
         ----------
-        filePath: str
+        yamlPath: str
             Path containing name of YAML file to parse.
         """
         # load the file path
+        self.yamlPath = yamlPath
         y = YAML(pure=True)
-        node = y.load(Path(filePath))
+        node = y.load(Path(yamlPath))
 
         # grab the material name from the file name
-        n = Path(filePath).name
+        n = Path(yamlPath).name
         if n.lower().endswith(".yaml"):
             n = n[:-5]
         elif n.lower().endswith(".yml"):
@@ -163,9 +171,10 @@ class Material:
 
         # Generate SHA1 value and set data member
         sha1 = hashlib.sha1()
-        with open(filePath, "rb") as materialFile:
+        with open(yamlPath, "rb") as materialFile:
             sha1.update(materialFile.read())
         self._sha1 = sha1.hexdigest()
 
-        self.dataCheckMaterialFile(filePath, node)
+        # build the material, from the file
+        self.dataCheckMaterialFile(yamlPath, node)
         self.loadNode(node)

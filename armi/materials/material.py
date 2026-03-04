@@ -18,9 +18,6 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
-import functools
-import traceback
-
 import numpy as np
 
 from armi import runLog
@@ -30,34 +27,7 @@ from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
 
-# globals
 FAIL_ON_RANGE = True
-
-
-def parentAwareDensityRedirect(f):
-    """Wrap Material.density to warn people about potential problems.
-
-    If a Material is linked to a Component, ``Material.density`` may produce different results from
-    ``Component.density``. The component's density is considered the source of truth because it incorporates changes in
-    volume, composition, and temperature in concert with the state of the reactor.
-    """
-
-    @functools.wraps(f)
-    def inner(self: "Material", *args, **kwargs) -> float:
-        if self.parent is not None:
-            stack = traceback.extract_stack()
-            # last entry is here, second to last is what called this
-            caller = stack[-2]
-            label = f"Found call to Material.density in {caller.filename} at line {caller.lineno}"
-            runLog.warning(
-                f"{label}. Calls to Material.density when attached to a component have the potential to induce subtle "
-                "differences as Component.density and Material.density can diverge.",
-                single=True,
-                label=label,
-            )
-        return f(self, *args, **kwargs)
-
-    return inner
 
 
 class Material(MatPropsMaterial):
@@ -100,11 +70,6 @@ class Material(MatPropsMaterial):
     Specific material classes may have many more attributes specific to the implementation for that material.
     """
 
-    def __init_subclass__(cls) -> None:
-        # Apply the density decorator to every subclass
-        if not hasattr(cls.density, "__wrapped__"):
-            cls.density = parentAwareDensityRedirect(cls.density)
-
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
 
@@ -125,8 +90,8 @@ class Material(MatPropsMaterial):
     """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScatteringLabels` instances with information
     about thermal scattering."""
 
-    def __init__(self):
-        MatPropsMaterial.__init__(self)
+    def __init__(self, yamlPath=None):
+        MatPropsMaterial.__init__(self, yamlPath=yamlPath)
         self.parent = None
         self.massFrac = {}
         self.refDens = 0.0
@@ -458,6 +423,9 @@ class Material(MatPropsMaterial):
 
         Notes
         -----
+        If this material has a parent, Component.density and Material.density can diverge. Thus, careful attention must
+        be paid to which of these you call in your downstream code.
+
         Since refDens is specified at the material-dep reference case, we don't need to specify the reference
         temperature. It is already consistent with linearExpansion Percent.
         - p*(dp/p(T) + 1) =p*( p + dp(T) )/p = p + dp(T) = p(T)
@@ -587,15 +555,9 @@ class Material(MatPropsMaterial):
         self.clearCache()
 
 
-# TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
+# TODO: Figure out what we are doing with these subclasses.
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
-
-    def __init_subclass__(cls):
-        # Undo the parent-aware density wrapping. Fluids do not expand in the same way solids, so Fluid.density(T) is
-        # correct. This does not hold for solids because they thermally expand.
-        if hasattr(cls.density, "__wrapped__"):
-            cls.density = cls.density.__wrapped__
 
     # TODO: This is the only thing we really need this class for.
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
@@ -623,8 +585,12 @@ class Fluid(Material):
         """
         return 0.0
 
+    def linearExpansionPercent(self, Tk=None, Tc=None):
+        """TODO."""
+        return 0.0
 
-# TODO: Not sure this needs to exist, since matProps has "material type". We just use that matProps keyword instead.
+
+# TODO: Figure out what we are doing with these subclasses.
 class SimpleSolid(Material):
     """Base material for a simple material that primarily defines density."""
 
@@ -636,7 +602,7 @@ class SimpleSolid(Material):
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """A 2D density, for materials linearly expanding (in g/cm^3)."""
-        return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()  # TODO: Suspect
+        return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()
 
 
 # TODO: Figure out what we are doing with these subclasses.

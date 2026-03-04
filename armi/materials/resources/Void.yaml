@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Void material.
+# Void / Vacuum
 
-Use this to fill empty spaces while maintaining proper volume fractions.
-"""
+material type: Fluid
+composition:
+  Cu: balance
 
-from armi.materials import material
+density: 
+  function:
+    T:
+      min: -273.15
+      max: 15000000.0
+    type: symbolic
+    equation: 0.0
 
+specific heat capacity:
+  function:
+    T:
+      min: -273.15
+      max: 15000000.0
+    type: symbolic
+    equation: 0.0
 
-class Void(material.Fluid):
-    """A Void material is a bookkeeping material with zero density."""
-
-    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
-        return 0.0
-
-    def density(self, Tk: float = None, Tc: float = None) -> float:
-        return 0.0
+thermal conductivity:
+  function:
+    T:
+      min: -273.15
+      max: 15000000.0
+    type: symbolic
+    equation: 0.0
