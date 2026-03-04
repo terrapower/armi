@@ -35,7 +35,7 @@ TODO: The Plan
 The idea here is that when we load a set of materials through ARMI, we do:
 
 1. The old logic: Look for Python files, find things that subclass "armi.material.Material", and load.
-2. ALSO, the new logic, look for a "armi/materials/resources/" directory in that location and load the YAMLs inside
+2. ALSO, the new logic, look for a "armi/resources/materials/" directory in that location and load the YAMLs inside
 
 All of our materials will be an armi.material.Material(armi.matProps.material.Material). Yeah, the name class is
 unfortunate, but oh well.
@@ -52,12 +52,10 @@ maybe now would be a good time to build a material registry that is better than 
 
 Complications:
 
-1. We will store YAML files to be directly loaded into ARMI materials under: armi/materials/resources/*.yaml
-2. There will also be a secondary directory where we keep ARMI material YAML files that are designed to be wrapped by
-   custom Python code at: armi/materials/resources/wrapped/*.yaml
-3. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
+1. We will store YAML files to be directly loaded into ARMI materials under: armi/resources/materials/*.yaml
+2. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
    respect those "material types" where possible: and map Fluid.
-4. matProps loads *objects* into its global dict, but armi.materials loads *classes* (ARMI wins here)
+3. matProps loads *objects* into its global dict, but armi.materials loads *classes* (ARMI wins here)
 """
 
 import importlib

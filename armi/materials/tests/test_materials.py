@@ -1148,9 +1148,8 @@ class InconelTests(AbstractMaterialTest, unittest.TestCase):
             1.4072700436,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.Inconel800.linearExpansionPercent(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel 800 linearExpansionPercent()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1177,9 +1176,8 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
             0.0025,
         ]
 
-        for name, frac in zip(massFracNameList, massFracRefValList):
+        for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.getMassFrac(name)
-            ref = frac
             self.assertAlmostEqual(cur, ref)
 
     def test_01_linearExpansionPercent(self):
@@ -1195,9 +1193,8 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
             1.251978,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
-            ref = val
             errorMsg = (
                 f"\n\nIncorrect Inconel 600 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             )
@@ -1216,9 +1213,8 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
             1.8985200000000002e-05,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel 600 linearExpansion(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1235,9 +1231,8 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
             8.261832353071625,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.pseudoDensity(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel 600 pseudoDensity(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1307,9 +1302,8 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
             1.207272,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
-            ref = val
             errorMsg = (
                 f"\n\nIncorrect Inconel 625 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             )
@@ -1328,9 +1322,8 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
             1.93828e-05,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel 625 linearExpansion(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1347,9 +1340,8 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
             8.239844370152333,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.pseudoDensity(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel 625 pseudoDensity(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1417,9 +1409,8 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
             1.2692582000000001,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
-            ref = val
             errorMsg = (
                 f"\n\nIncorrect Inconel X750 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             )
@@ -1438,9 +1429,8 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
             2.150048e-05,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel X750 linearExpansion(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 

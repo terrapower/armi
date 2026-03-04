@@ -24,8 +24,8 @@ import os
 
 from armi.materials.material import Fluid
 
-THIS_DIR = os.path.dirname(__file__)
-RESOURCES_DIR = os.path.join(THIS_DIR, "resources")  # TODO: COULD got back to armi/resources/materials ???
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+RESOURCES_DIR = os.path.join(THIS_DIR, "..", "resources", "materials")
 
 
 class Void(Fluid):
