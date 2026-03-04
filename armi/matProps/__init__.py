@@ -84,7 +84,6 @@ truth for what materials are.
 
 import os
 import sysconfig
-import warnings
 from glob import glob
 
 from armi.matProps.material import Material
@@ -287,9 +286,3 @@ def getLoadedRootDirs() -> list:
     """
     global loadedRootDirs
     return loadedRootDirs
-
-
-def get_material(name: str) -> Material:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.getMaterial, not matProps.get_material.", DeprecationWarning)
-    return getMaterial(name)

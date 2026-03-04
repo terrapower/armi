@@ -171,5 +171,4 @@ class TestParsing(unittest.TestCase):
             self.assertEqual(mat, armi.matProps.getMaterial(mat.name))
 
         with self.assertRaisesRegex(KeyError, "No material named `Fahrvergnugen` was loaded"):
-            # test with the pass-through get_material instead of the preferred getMaterial
-            armi.matProps.get_material("Fahrvergnugen")
+            armi.matProps.getMaterial("Fahrvergnugen")
