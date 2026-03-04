@@ -289,12 +289,6 @@ def getLoadedRootDirs() -> list:
     return loadedRootDirs
 
 
-def load_safe(rootDir: str = None) -> None:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadSafe, not matProps.load_safe.", DeprecationWarning)
-    loadSafe(rootDir)
-
-
 def get_material(name: str) -> Material:
     """Pass-through to temporarily support an old API."""
     warnings.warn("Please use matProps.getMaterial, not matProps.get_material.", DeprecationWarning)

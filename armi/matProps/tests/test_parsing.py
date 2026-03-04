@@ -81,8 +81,8 @@ class TestParsing(unittest.TestCase):
         # verify the correct behavior if a bad directory is provided
         badDir = "does_not_exist_2924"
         with self.assertRaisesRegex(FileNotFoundError, f"Directory {badDir} not found"):
-            # test with the pass through "load_safe", instead of the preferred loadSafe
-            armi.matProps.load_safe(badDir)
+            # test with the pass through "loadSafe", instead of the preferred loadSafe
+            armi.matProps.loadSafe(badDir)
 
     def test_dataLoadingPrioSameDir(self):
         armi.matProps.loadAll(self.dummyDataPath)
