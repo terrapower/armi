@@ -1284,9 +1284,8 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
             0.0050,
         ]
 
-        for name, frac in zip(massFracNameList, massFracRefValList):
+        for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.getMassFrac(name)
-            ref = frac
             self.assertAlmostEqual(cur, ref)
 
     def test_01_linearExpansionPercent(self):
@@ -1391,9 +1390,8 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
             0.0050,
         ]
 
-        for name, frac in zip(massFracNameList, massFracRefValList):
+        for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.getMassFrac(name)
-            ref = frac
             self.assertAlmostEqual(cur, ref)
 
     def test_01_linearExpansionPercent(self):
@@ -1447,9 +1445,8 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
             8.073745941486463,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.pseudoDensity(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Inconel X750 pseudoDensity(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1533,9 +1530,8 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
             23.414292,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.thermalConductivity(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Hastelloy N thermalConductivity()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1551,9 +1547,8 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
             573.450902,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.heatCapacity(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Hastelloy N heatCapacity()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1570,9 +1565,8 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
             1.122052776,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Hastelloy N linearExpansionPercent()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1589,9 +1583,8 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
             1.4385292e-05,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.meanCoefficientThermalExpansion(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect Hastelloy N meanCoefficientThermalExpansion()\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1608,9 +1601,8 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
 
         self.mat.applyInputParams()
 
-        for name, frac in zip(massFracNameList, massFracRefValList):
+        for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.massFrac[name]
-            ref = frac
             self.assertEqual(cur, ref)
 
     def test_01_pseudoDensity(self):
@@ -1646,9 +1638,8 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
             5.04e-01,
         ]
 
-        for Tc, val in zip(TcList, refList):
+        for Tc, ref in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
-            ref = val
             errorMsg = f"\n\nIncorrect TZM linearExpansionPercent(Tk=None,Tc=None)\nReceived:{cur}\nExpected:{ref}\n"
             self.assertAlmostEqual(cur, ref, delta=10e-3, msg=errorMsg)
 
@@ -1683,7 +1674,6 @@ class ZincOxideTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_density(self):
         cur = 5.61
-
         ref = self.mat.density(Tk=10.12)
         self.assertAlmostEqual(cur, ref, 2)
 
