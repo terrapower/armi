@@ -24,17 +24,18 @@ import os
 
 from armi.materials.material import Fluid
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-RESOURCES_DIR = os.path.join(THIS_DIR, "..", "resources", "materials")
+# handle pathing to materials files
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+_RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
 
 
 class Air(Fluid):
     """Simple model of air at sea level."""
 
-    YAML_PATH = os.path.join(RESOURCES_DIR, "Air.yaml")
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Air.yaml")
 
 
 class Void(Fluid):
     """Void / Vacuum."""
 
-    YAML_PATH = os.path.join(RESOURCES_DIR, "Void.yaml")
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Void.yaml")

@@ -94,6 +94,8 @@ class Constituent:
             if nodeContent == "balance":
                 balanceName = element
                 numBalance += 1
+            elif nodeContent == "void":
+                return []
             elif type(nodeContent) is str or len(nodeContent) != 2:
                 msg = (
                     f"Composition values must be either a tuple of min/max values, or `balance`, but got: {nodeContent}"

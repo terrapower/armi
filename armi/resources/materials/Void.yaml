@@ -17,7 +17,7 @@ file format: 3.0
 
 material type: Fluid
 composition:
-  H: balance
+  X: void
 
 density: 
   function:

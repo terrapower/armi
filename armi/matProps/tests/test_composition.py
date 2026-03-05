@@ -20,6 +20,7 @@ import unittest
 from ruamel.yaml.constructor import DuplicateKeyError
 
 import armi.matProps
+from armi.matProps.constituent import Constituent
 from armi.matProps.material import Material
 
 
@@ -63,6 +64,13 @@ class TestComposition(unittest.TestCase):
 
         with self.assertRaisesRegex(KeyError, "Missing YAML node `composition`"):
             mat.loadNode(materialMap)
+
+    def test_compositionVoid(self):
+        node = {"file format": "TESTS", "material type": "Metal", "density": "whatever", "composition": {"V": "void"}}
+
+        mat = Material()
+        c = Constituent.parseComposition(mat.getNode(node, "composition"))
+        self.assertEqual(len(c), 0)
 
     def test_compositionInvTuple(self):
         # Invalid doesn't have two elements
