@@ -17,13 +17,13 @@
 import math
 import unittest
 
-from armi.materials.air import Air
+from armi.materials import Air
 from armi.utils import densityTools
 from armi.utils.units import getTc
 
 """
-Reference thermal physical properties from Table A.4 in Incropera, Frank P., et al. Fundamentals of
-heat and mass transfer. Vol. 5. New York: Wiley, 2002.
+Reference thermal physical properties from Table A.4 in Incropera, Frank P., et al. Fundamentals of heat and mass
+transfer. Vol. 5. New York: Wiley, 2002.
 """
 
 REFERENCE_Tk = [
@@ -230,27 +230,27 @@ class TestAir(unittest.TestCase):
         """Reproduce the number ratios results to PNNL-15870 Rev 1."""
         air = Air()
 
+        refAR = 0.004671
         refC = 0.000150
         refN = 0.784431
         refO = 0.210748
-        refAR = 0.004671
 
         nuclides, nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
 
         diff = 1e-4
-        error = abs(nDens[0] / sum(nDens) - refC)
+        error = abs(nDens[0] / sum(nDens) - refAR)
         self.assertLess(error, diff)
-        error = abs(nDens[1] / sum(nDens) - refN)
+        error = abs(nDens[1] / sum(nDens) - refC)
         self.assertLess(error, diff)
-        error = abs(nDens[2] / sum(nDens) - refO)
+        error = abs(nDens[2] / sum(nDens) - refN)
         self.assertLess(error, diff)
-        error = abs(nDens[3] / sum(nDens) - refAR)
+        error = abs(nDens[3] / sum(nDens) - refO)
         self.assertLess(error, diff)
 
-        self.assertEqual(nuclides[0].decode(), "C")
-        self.assertEqual(nuclides[1].decode(), "N")
-        self.assertEqual(nuclides[2].decode(), "O")
-        self.assertEqual(nuclides[3].decode(), "AR")
+        self.assertEqual(nuclides[0].decode(), "AR")
+        self.assertEqual(nuclides[1].decode(), "C")
+        self.assertEqual(nuclides[2].decode(), "N")
+        self.assertEqual(nuclides[3].decode(), "O")
 
     def test_validRanges(self):
         air = Air()

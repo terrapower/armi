@@ -54,11 +54,8 @@ class Material:
         """SHA1 value of parsed material file."""
 
         # Load the material, if the YAML was provided.
-        print("]]]]    BEFORE YAML LOADING    ]]]]]")
         if self.YAML_PATH:
-            print("yamlPath FouND!")
             self.loadFile(self.YAML_PATH)
-            print("YAML LOADED SUCCESSFULLY!")
 
     def __repr__(self):
         """Provides string representation for Material class."""

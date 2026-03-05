@@ -228,7 +228,6 @@ class Material(MatPropsMaterial):
             Tc = getTc(Tc, Tk)
             return self.dl_l(T=Tc)
         else:
-            # TODO: I would prefer if this was unnecessary.
             return 0.0
 
     def linearExpansionFactor(self, Tc: float, T0: float) -> float:
@@ -267,7 +266,24 @@ class Material(MatPropsMaterial):
 
     def setDefaultMassFracs(self):
         """Mass fractions."""
-        pass
+        massFracs = {}
+        balanceNuc = None
+        for constituent in self.composition:
+            nomen = constituent.name.upper()
+            if constituent.isBalance:
+                massFracs[nomen] = "balance"
+                balanceNuc = constituent.name
+            elif constituent.minValue == constituent.maxValue:
+                massFracs[nomen] = constituent.maxValue / 100.0
+            else:
+                # TODO: Explain
+                return
+
+        if balanceNuc:
+            massFracs[balanceNuc] = 1.0 - sum(v for k, v in massFracs.items() if k != balanceNuc)
+
+        for nucName in sorted(massFracs.keys()):
+            self.setMassFrac(nucName, massFracs[nucName])
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
         """
@@ -551,7 +567,11 @@ class Material(MatPropsMaterial):
 
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""
-        raise NotImplementedError(f"Material {type(self).__name__} does not implement heatCapacity")
+        if hasattr(self, "c_p"):
+            Tc = getTc(Tc, Tk)
+            return self.c_p(T=Tc)
+        else:
+            raise NotImplementedError(f"Material {type(self).__name__} does not implement heatCapacity")
 
     def getTD(self):
         """Get the fraction of theoretical density for this material."""
@@ -566,6 +586,10 @@ class Material(MatPropsMaterial):
 # TODO: Figure out what we are doing with these subclasses.
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
+
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
+        """Density and pseudoDensity are the same for Fluids."""
+        return self.density(Tk=Tk, Tc=Tc)
 
     # TODO: This is the only thing we really need this class for.
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):

@@ -28,6 +28,12 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 RESOURCES_DIR = os.path.join(THIS_DIR, "..", "resources", "materials")
 
 
+class Air(Fluid):
+    """Simple model of air at sea level."""
+
+    YAML_PATH = os.path.join(RESOURCES_DIR, "Air.yaml")
+
+
 class Void(Fluid):
     """Void / Vacuum."""
 
