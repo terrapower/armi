@@ -22,10 +22,9 @@ composition:
   Ar: [1.2827, 1.2827]
   O: [23.1781, 23.1781]
   N: balance
-# TODO: We should be able to put a reference on the massFracs / composition
-#references:
-#  - ref: Mass fraction reference McConn, Ronald J., et al. Compendium of material composition data for radiation transport modeling. No. PNNL-15870 Rev. 1. Pacific Northwest National Lab.(PNNL), Richland, WA (United States), 2011. https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
-#    type: open literature
+  references:
+  - ref: Mass fraction reference McConn, Ronald J., et al. Compendium of material composition data for radiation transport modeling. No. PNNL-15870 Rev. 1. Pacific Northwest National Lab.(PNNL), Richland, WA (United States), 2011. https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
+    type: open literature
 
 density: 
   function:
