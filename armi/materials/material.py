@@ -451,7 +451,7 @@ class Material(MatPropsMaterial):
         # try the YAML file first
         if hasattr(self, "rho"):
             Tc = getTc(Tc, Tk)
-            return self.rho(T=Tc)
+            return self.rho(T=Tc) * 1000.0
 
         # no YAML, use linear expansion
         Tk = getTk(Tc, Tk)

@@ -15,14 +15,13 @@
 """
 A collection of materials that are defined in pure matProps YAML files.
 
-This file exists to wrap pure matProps YAML files so they become full-fledged versions of
-``armi.materials.material.Material``. The wrappers below are designed so new matProps material objects can be created on
-the fly, as needed.
+This file exists to wrap pure matProps YAML files so they become full-fledged versions of ``armi.materials.Material``.
+The wrappers below are designed so new matProps material objects can be created on the fly, as needed.
 """
 
 import os
 
-from armi.materials.material import Fluid
+from armi.materials.material import Fluid, SimpleSolid
 
 # handle pathing to materials files
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -33,6 +32,12 @@ class Air(Fluid):
     """Simple model of air at sea level."""
 
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Air.yaml")
+
+
+class CaH2(SimpleSolid):
+    """Calcium Hydride."""
+
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "CaH2.yaml")
 
 
 class Void(Fluid):

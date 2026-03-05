@@ -1431,8 +1431,8 @@ class CaH2Tests(AbstractMaterialTest, unittest.TestCase):
 
     def test_pseudoDensity(self):
         cur = 1.7
-
         ref = self.mat.pseudoDensity(Tc=100)
+        print(f"ref: {ref}")
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
         ref = self.mat.pseudoDensity(Tc=300)

@@ -32,7 +32,7 @@ density:
       min: -173.15
       max: 2126.8
     type: symbolic
-    equation: 1.15675 * (1 / (T+273.15))**2 + 0.343413 * (1 / (T+273.15)) + 2.99731e-6
+    equation: 1.15675e3 * (1 / (T+273.15))**2 + 3.43413e2 * (1 / (T+273.15)) + 2.99731e-3
 
 thermal conductivity:
   function:
