@@ -18,31 +18,55 @@ file format: 3.0
 
 material type: Metal
 composition:
-  C: [0.00, 0.15]
-  Mn: [0.00, 0.35]
-  S: [0.00, 0.01]
-  Si: [0.00, 0.35]
-  Cu: [0.00, 0.25]
-  Fe: [0.00, 0.40]
+  C: [0.00075, 0.00075]
+  Mn: [0.00175, 0.00175]
+  S: [0.00005, 0.00005]
+  Si: [0.00175, 0.00175]
+  Cu: [0.00125, 0.00125]
+  Fe: [0.002, 0.002]
   Ni: balance
+  references:
+  - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
+    type: open literature
+
+density:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [-200, 8899.997303300546]
+    - [-100, 8899.99698290068]
+    - [100, 8899.996448900947]
+    - [200, 8899.996288701033]
+    - [300, 8899.996181901091]
+    - [400, 8899.996048401168]
+    - [500, 8899.995941601237]
+    - [600, 8899.995834801299]
+    - [700, 8899.995781401334]
+    - [800, 8899.995674601398]
+    - [900, 8899.99559450145]
+    - [1000, 8899.995541101487]
+  references:
+  - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
+    type: open literature
 
 instantaneous coefficient of thermal expansion:
   function:
     T: 0
     type: table
   tabulated data:
-    - [-200, 1.010E-05]
-    - [-100, 1.130E-05]
-    - [100, 1.330E-05]
-    - [200, 1.390E-05]
-    - [300, 1.430E-05]
-    - [400, 1.480E-05]
-    - [500, 1.520E-05]
-    - [600, 1.560E-05]
-    - [700, 1.580E-05]
-    - [800, 1.620E-05]
-    - [900, 1.650E-05]
-    - [1000, 1.670E-05]
+    - [-200, 1.01E-5]
+    - [-100, 1.13E-5]
+    - [100, 1.33E-5]
+    - [200, 1.39E-5]
+    - [300, 1.43E-5]
+    - [400, 1.48E-5]
+    - [500, 1.52E-5]
+    - [600, 1.56E-5]
+    - [700, 1.58E-5]
+    - [800, 1.62E-5]
+    - [900, 1.65E-5]
+    - [1000, 1.67E-5]
   references:
   - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
     type: open literature

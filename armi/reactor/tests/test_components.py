@@ -22,7 +22,7 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
-from armi.materials import Air, alloy200
+from armi.materials import Air, Alloy200
 from armi.materials.material import Material
 from armi.reactor import components, flags
 from armi.reactor.blocks import Block
@@ -317,7 +317,7 @@ class TestComponent(TestGeneralComponents):
         self.component.material = Air()
         self.assertFalse(self.component.containsSolidMaterial())
 
-        self.component.material = alloy200.Alloy200()
+        self.component.material = Alloy200()
         self.assertTrue(self.component.containsSolidMaterial())
 
         self.assertTrue(isinstance(self.component.getProperties(), Material))

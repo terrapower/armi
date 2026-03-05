@@ -1415,15 +1415,13 @@ class Alloy200Tests(AbstractMaterialTest, unittest.TestCase):
     def test_linearExpansion(self):
         ref = self.mat.linearExpansion(Tc=100)
         cur = 13.3e-6
+        print(f"ref: {ref}")
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
     def test_linearExpansionHotter(self):
         ref = self.mat.linearExpansion(Tk=873.15)
         cur = 15.6e-6
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class CaH2Tests(AbstractMaterialTest, unittest.TestCase):

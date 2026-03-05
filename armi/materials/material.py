@@ -197,7 +197,11 @@ class Material(MatPropsMaterial):
         --------
         linearExpansionPercent : average linear thermal expansion to affect dimensions and density
         """
-        raise NotImplementedError(f"{self} does not have a linear expansion property defined")
+        if hasattr(self, "alpha_inst"):
+            Tc = getTc(Tc, Tk)
+            return self.alpha_inst(T=Tc)
+        else:
+            raise NotImplementedError(f"{self} does not have a linear expansion property defined")
         # TODO:
         # Tk = getTk(Tc, Tk)
         # deltaStrain = self.linearExpansionPercent(Tk + 1.0) / 100.0 - self.linearExpansionPercent(Tk - 1.0) / 100.0
@@ -451,6 +455,7 @@ class Material(MatPropsMaterial):
         # try the YAML file first
         if hasattr(self, "rho"):
             Tc = getTc(Tc, Tk)
+            # matProps does density is in kg/m3, and this method is in g/cm3
             return self.rho(T=Tc) * 1000.0
 
         # no YAML, use linear expansion

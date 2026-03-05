@@ -34,6 +34,12 @@ class Air(Fluid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Air.yaml")
 
 
+class Alloy200(SimpleSolid):
+    """Simple model of air at sea level."""
+
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Alloy200.yaml")
+
+
 class CaH2(SimpleSolid):
     """Calcium Hydride."""
 
