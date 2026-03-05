@@ -36,7 +36,7 @@ linear expansion:
       min: -232.72
       max: 515.68
     type: symbolic
-    equation: 5.0298e-07 * (T+273.15)**2 + 1.3042e-03 * (T+273.15) - 4.3097e-01
+    equation: 5.0298e-7 * (T+273.15)**2 + 1.3042e-3 * (T+273.15) - 4.3097e-1
   references:
   - ref: Digitized from Figure 21 of Thrust Chamber Life Prediction - Volume I - Mechanical and Physical Properties of High Performance Rocket Nozzle Materials (NASA CR - 134806)
     type: open literature

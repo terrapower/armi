@@ -954,8 +954,8 @@ class CopperTests(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_densityNeverChanges(self):
-        for tk in [200.0, 400.0, 800.0, 1111.1]:
-            cur = self.mat.density(tk)
+        for t in range(-200, 501, 100):
+            cur = self.mat.density(Tc=t)
             self.assertAlmostEqual(cur, 8.913, 4)
 
     def test_linearExpansionPercent(self):
@@ -1430,7 +1430,7 @@ class CaH2Tests(AbstractMaterialTest, unittest.TestCase):
     def test_pseudoDensity(self):
         cur = 1.7
         ref = self.mat.pseudoDensity(Tc=100)
-        print(f"ref: {ref}")
+        print(f"ref: {ref}, cur: {cur}")
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
         ref = self.mat.pseudoDensity(Tc=300)

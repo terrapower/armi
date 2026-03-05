@@ -29,7 +29,7 @@ density:
       min: -100
       max: 816
     type: symbolic
-    equation: 0.0017
+    equation: 1700
   references:
   - ref: http://en.wikipedia.org/wiki/Calcium_hydride
     type: open literature

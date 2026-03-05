@@ -456,7 +456,7 @@ class Material(MatPropsMaterial):
         if hasattr(self, "rho"):
             Tc = getTc(Tc, Tk)
             # matProps does density is in kg/m3, and this method is in g/cm3
-            return self.rho(T=Tc) * 1000.0
+            return self.rho(T=Tc) / 1000.0
 
         # no YAML, use linear expansion
         Tk = getTk(Tc, Tk)

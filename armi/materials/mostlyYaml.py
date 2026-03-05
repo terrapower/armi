@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-A collection of materials that are defined in pure matProps YAML files.
+A collection of materials that are mostly purely defined in matProps YAML files.
 
 This file exists to wrap pure matProps YAML files so they become full-fledged versions of ``armi.materials.Material``.
 The wrappers below are designed so new matProps material objects can be created on the fly, as needed.
@@ -21,32 +21,18 @@ The wrappers below are designed so new matProps material objects can be created 
 
 import os
 
-from armi.materials.material import Fluid, SimpleSolid
+from armi.materials.material import Material
 
 # handle pathing to materials files
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
 
 
-class Air(Fluid):
-    """Simple model of air at sea level."""
+class Cu(Material):
+    """Copper metal."""
 
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "Air.yaml")
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
 
-
-class Alloy200(SimpleSolid):
-    """Alloy-200 are wrought commercially pure nickel."""
-
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "Alloy200.yaml")
-
-
-class CaH2(SimpleSolid):
-    """Calcium Hydride."""
-
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "CaH2.yaml")
-
-
-class Void(Fluid):
-    """Void / Vacuum."""
-
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "Void.yaml")
+    def setDefaultMassFracs(self):
+        self.setMassFrac("CU63", 0.6915)
+        self.setMassFrac("CU65", 0.3085)
