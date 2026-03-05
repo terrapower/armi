@@ -66,24 +66,16 @@ class Sodium(material.Fluid):
         self.checkPropertyTempRange("density", Tc)
 
         if (Tc is not None) and (Tc <= 97.72):
-            runLog.warning(
-                f"Sodium frozen at Tc: {Tc}",
-                label=f"Sodium frozen at Tc={Tc}",
-                single=True,
-            )
+            runLog.warning("Sodium frozen at Tc: {Tc}", label=f"Sodium frozen at Tc={Tc}", single=True)
 
         critDens = 219  # critical density
         f = 275.32  #
         g = 511.58
         h = 0.5
         Tcrit = 2503.7  # critical temperature
-        return (
-            critDens + f * (1 - (Tc + 273.15) / Tcrit) + g * (1 - (Tc + 273.15) / Tcrit) ** h
-        ) / 1000.0  # convert from kg/m^3 to g/cc.
 
-    def specificVolumeLiquid(self, Tk=None, Tc=None):
-        """Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C."""
-        return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
+        # convert from kg/m^3 to g/cc
+        return (critDens + f * (1 - (Tc + 273.15) / Tcrit) + g * (1 - (Tc + 273.15) / Tcrit) ** h) / 1000.0
 
     def enthalpy(self, Tk=None, Tc=None):
         """

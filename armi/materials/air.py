@@ -81,10 +81,6 @@ class Air(material.Fluid):
         rho_kgPerM3 = 1.15675e03 * inv_Tk**2 + 3.43413e02 * inv_Tk + 2.99731e-03
         return rho_kgPerM3 / G_PER_CM3_TO_KG_PER_M3
 
-    def specificVolumeLiquid(self, Tk=None, Tc=None):
-        """Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C."""
-        return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
-
     def thermalConductivity(self, Tk=None, Tc=None):
         """
         Returns thermal conductivity of Air in g/cc.

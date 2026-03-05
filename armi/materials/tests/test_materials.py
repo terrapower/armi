@@ -414,17 +414,6 @@ class SodiumTests(AbstractMaterialTest, unittest.TestCase):
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-    def test_specificVolumeLiquid(self):
-        cur = self.mat.specificVolumeLiquid(372)
-        ref = 0.0010805
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-        cur = self.mat.specificVolumeLiquid(1700)
-        ref = 0.001674
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
     def test_enthalpy(self):
         cur = self.mat.enthalpy(372)
         ref = 208100.1914
