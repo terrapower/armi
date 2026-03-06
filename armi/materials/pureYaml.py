@@ -29,48 +29,36 @@ _RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
 
 
 class Air(Fluid):
-    """Simple model of air at sea level."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Air.yaml")
 
 
 class Alloy200(SimpleSolid):
-    """Alloy-200 are wrought commercially pure nickel."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Alloy200.yaml")
 
 
 class Californium(SimpleSolid):
-    """Californium."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Californium.yaml")
 
 
 class CaH2(SimpleSolid):
-    """Calcium Hydride."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "CaH2.yaml")
 
 
 class Cu(Material):
-    """Copper metal."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
 
 
 class Hafnium(SimpleSolid):
-    """Hafnium."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Hafnium.yaml")
 
 
-class Tantalum(SimpleSolid):
-    """Tantalum."""
+class Molybdenum(SimpleSolid):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Molybdenum.yaml")
 
+
+class Tantalum(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Tantalum.yaml")
 
 
 class Void(Fluid):
-    """Void / Vacuum."""
-
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Void.yaml")
