@@ -56,6 +56,10 @@ class Inconel600(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel600.yaml")
 
 
+class Lead(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Lead.yaml")
+
+
 class Magnesium(Fluid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Magnesium.yaml")
 

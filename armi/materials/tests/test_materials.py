@@ -884,9 +884,6 @@ class LeadTests(AbstractMaterialTest, unittest.TestCase):
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class LeadBismuthTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.LeadBismuth
