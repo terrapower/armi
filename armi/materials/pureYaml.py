@@ -72,5 +72,9 @@ class Tantalum(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Tantalum.yaml")
 
 
+class TZM(SimpleSolid):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "TZM.yaml")
+
+
 class Void(Fluid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Void.yaml")

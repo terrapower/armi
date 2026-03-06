@@ -1,0 +1,65 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# TZM
+
+material type: Metal
+composition:
+  C: [0.00250749, 0.00250749]
+  TI: [0.2502504, 0.2502504]
+  ZR: [0.0761199, 0.0761199]
+  MO: balance
+
+
+density:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [21.11, 10160.0]
+    - [456.11, 10111.387642442935]
+    - [574.44, 10098.375962717311]
+    - [702.22, 10083.274159747478]
+    - [840.56, 10068.202454133654]
+    - [846.11, 10068.202454133654]
+    - [948.89, 10056.467369122327]
+    - [1023.89, 10049.254841749298]
+    - [1146.11, 10032.752127495261]
+    - [1287.78, 10018.678428608178]
+    - [1382.22, 10007.916371936653]
+  references:
+  - ref: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, 1966 Southern Research Institute. Table viii-b, Appendix B, page 181.
+    type: open literature
+
+
+linear expansion:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [21.11, 0.0]
+    - [456.11, 0.160]
+    - [574.44, 0.203]
+    - [702.22, 0.253]
+    - [840.56, 0.303]
+    - [846.11, 0.303]
+    - [948.89, 0.342]
+    - [1023.89, 0.366]
+    - [1146.11, 0.421]
+    - [1287.78, 0.468]
+    - [1382.22, 0.504]
+  references:
+  - ref: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, 1966 Southern Research Institute. Table viii-b, Appendix B, page 181.
+    type: open literature

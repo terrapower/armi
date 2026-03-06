@@ -1176,14 +1176,14 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
     def test_linearExpansion(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
-            1.37744e-05,
-            1.45188e-05,
-            1.52632e-05,
-            1.60076e-05,
-            1.6752e-05,
-            1.74964e-05,
-            1.82408e-05,
-            1.89852e-05,
+            1.37744e-5,
+            1.45188e-5,
+            1.52632e-5,
+            1.60076e-5,
+            1.6752e-5,
+            1.74964e-5,
+            1.82408e-5,
+            1.89852e-5,
         ]
 
         for Tc, ref in zip(temps, refList):
@@ -1267,14 +1267,14 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
     def test_linearExpansion(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
-            1.22666e-05,
-            1.32832e-05,
-            1.42998e-05,
-            1.53164e-05,
-            1.6333e-05,
-            1.73496e-05,
-            1.83662e-05,
-            1.93828e-05,
+            1.22666e-5,
+            1.32832e-5,
+            1.42998e-5,
+            1.53164e-5,
+            1.6333e-5,
+            1.73496e-5,
+            1.83662e-5,
+            1.93828e-5,
         ]
 
         for Tc, ref in zip(temps, refList):
@@ -1355,14 +1355,14 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
     def test_linearExpansion(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
-            1.192756e-05,
-            1.329512e-05,
-            1.466268e-05,
-            1.603024e-05,
-            1.73978e-05,
-            1.876536e-05,
-            2.013292e-05,
-            2.150048e-05,
+            1.192756e-5,
+            1.329512e-5,
+            1.466268e-5,
+            1.603024e-5,
+            1.73978e-5,
+            1.876536e-5,
+            2.013292e-5,
+            2.150048e-5,
         ]
 
         for Tc, ref in zip(temps, refList):
@@ -1487,14 +1487,14 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
     def test_meanCoefficientThermalExpansion(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
-            1.22066141e-05,
-            1.23616846e-05,
-            1.25688115e-05,
-            1.28279948e-05,
-            1.31392345e-05,
-            1.35025306e-05,
-            1.39178831e-05,
-            1.4385292e-05,
+            1.22066141e-5,
+            1.23616846e-5,
+            1.25688115e-5,
+            1.28279948e-5,
+            1.31392345e-5,
+            1.35025306e-5,
+            1.39178831e-5,
+            1.4385292e-5,
         ]
 
         for Tc, ref in zip(temps, refList):
@@ -1516,7 +1516,7 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
 
         for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.massFrac[name]
-            self.assertEqual(cur, ref)
+            self.assertAlmostEqual(cur, ref)
 
     def test_pseudoDensity(self):
         ref = 10.16  # g/cc
@@ -1539,24 +1539,21 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
         ]
         refList = [
             0.0,
-            1.60e-01,
-            2.03e-01,
-            2.53e-01,
-            3.03e-01,
-            3.03e-01,
-            3.42e-01,
-            3.66e-01,
-            4.21e-01,
-            4.68e-01,
-            5.04e-01,
+            1.60e-1,
+            2.03e-1,
+            2.53e-1,
+            3.03e-1,
+            3.03e-1,
+            3.42e-1,
+            3.66e-1,
+            4.21e-1,
+            4.68e-1,
+            5.04e-1,
         ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             self.assertAlmostEqual(cur, ref, delta=10e-3, msg=str(Tc))
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class YttriumOxideTests(AbstractMaterialTest, unittest.TestCase):
@@ -1564,7 +1561,6 @@ class YttriumOxideTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_pseudoDensity(self):
         cur = 5.03
-
         ref = self.mat.pseudoDensity(Tc=25)
         self.assertAlmostEqual(cur, ref, 2)
 

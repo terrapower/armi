@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,6 @@
 # limitations under the License.
 
 # Alloy-200 are wrought commercially pure nickel
-
-file format: 3.0
 
 material type: Metal
 composition:
