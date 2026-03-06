@@ -916,9 +916,7 @@ class TestComponentExpansion(unittest.TestCase):
         self.assertGreater(mass1, mass2)
 
         # they are off by factor of thermal exp
-        self.assertAlmostEqual(
-            mass1 * circle1.getThermalExpansionFactor(), mass2 * circle2.getThermalExpansionFactor(), delta=1e-4
-        )
+        self.assertAlmostEqual(mass1 * circle1.getThermalExpansionFactor(), mass2 * circle2.getThermalExpansionFactor())
 
         # material.pseudoDensity is the 2D density of a material
         # material.density is true density and not equal in this case
@@ -962,13 +960,13 @@ class TestComponentExpansion(unittest.TestCase):
         circle1.setTemperature(self.tHot)
 
         # now its density is same as hot component
-        self.assertAlmostEqual(circle1.density(), circle2.density(), delta=1e-4)
+        self.assertAlmostEqual(circle1.density(), circle2.density())
 
         # show that mass is conserved after expansion
         circle1NewHotHeight = hotHeight * heightFactor
         self.assertAlmostEqual(mass1, circle1.density() * circle1.getArea() * circle1NewHotHeight)
 
-        self.assertAlmostEqual(circle1.density(), circle1.material.density(Tc=circle1.temperatureInC), delta=1e-4)
+        self.assertAlmostEqual(circle1.density(), circle1.material.density(Tc=circle1.temperatureInC))
         # change back to old temp
         circle1.adjustDensityForHeightExpansion(self.tWarm)
         circle1.setTemperature(self.tWarm)
