@@ -56,6 +56,10 @@ class Molybdenum(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Molybdenum.yaml")
 
 
+class NZ(SimpleSolid):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "NZ.yaml")
+
+
 class Tantalum(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Tantalum.yaml")
 
