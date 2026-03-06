@@ -1,5 +1,5 @@
 file format: 3.0
-# Copyright 2026 TerraPower, LLC
+# Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ file format: 3.0
 
 # Tantalum
 
-material type: Metal
+material type: SimpleSolid
 composition:
   TA181: balance
 

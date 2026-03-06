@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hafnium is an element that has high capture cross section across multiple isotopes."""
+# Hafnium
 
-from armi.materials.material import SimpleSolid
-from armi.nucDirectory import nucDir
+material type: SimpleSolid
+composition:
+  HF174: [0.15593126456164943, 0.15593126456164943]
+  HF176: [5.185162625021284, 5.185162625021284]
+  HF177: [18.439544151934703, 18.439544151934703]
+  HF178: [27.197460469281776, 27.197460469281776]
+  HF179: [13.655075588218749, 13.655075588218749]
+  HF180: balance
 
-
-class Hafnium(SimpleSolid):
-    def setDefaultMassFracs(self):
-        for a, abund in nucDir.getNaturalMassIsotopics("HF"):
-            self.setMassFrac(f"HF{a}", abund)
-
-    def density(self, Tk=None, Tc=None):
-        """http://www.lenntech.com/periodic/elements/hf.htm."""
-        return 13.07
+density: 
+  function:
+    T:
+      min: -100.0
+      max: 1000.0
+    type: symbolic
+    equation: 13070
+  references:
+  - ref: http://www.lenntech.com/periodic/elements/hf.htm
+    type: open literature
