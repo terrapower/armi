@@ -1,0 +1,12 @@
+file format: TESTS
+material type: Fluid
+composition:
+  c: balance
+
+thermal conductivity:
+  function:
+    T: 
+      min: 103.0
+      max: 503.0
+    type: symbolic
+    equation: 3.0

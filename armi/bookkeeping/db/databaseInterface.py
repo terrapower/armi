@@ -400,7 +400,7 @@ class DatabaseInterface(interfaces.Interface):
             for c in comps:
                 for param in params or histories[c].keys():
                     if param == "location":
-                        histories[c][param][now] = c.spatialLocator.indices
+                        histories[c][param][now] = tuple(int(i) for i in c.spatialLocator.indices)
                     else:
                         histories[c][param][now] = c.p[param]
 

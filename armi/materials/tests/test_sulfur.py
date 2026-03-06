@@ -16,15 +16,15 @@
 import unittest
 
 from armi.materials.sulfur import Sulfur
-from armi.materials.tests.test_materials import _Material_Test
+from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class Sulfur_TestCase(_Material_Test, unittest.TestCase):
+class Sulfur_TestCase(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = Sulfur
     VALID_TEMP_K = 400
 
     def setUp(self):
-        _Material_Test.setUp(self)
+        AbstractMaterialTest.setUp(self)
         self.mat = Sulfur()
 
         self.Sulfur_sulfur_density_frac = Sulfur()

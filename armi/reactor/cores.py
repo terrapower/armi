@@ -1365,10 +1365,6 @@ class Core(composites.Composite):
 
         return np.array(flux)
 
-    def getAssembliesOfType(self, typeSpec, exactMatch=False):
-        """Return a list of assemblies in the core that are of type assemType."""
-        return self.getChildrenWithFlags(typeSpec, exactMatch=exactMatch)
-
     def getAssembly(self, assemNum=None, locationString=None, assemblyName=None, *args, **kwargs):
         """
         Finds an assembly in the core.

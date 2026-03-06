@@ -1,0 +1,380 @@
+file format: TESTS
+material type: Fluid
+composition:
+  a: balance
+
+density:
+  function:
+    T:
+      min: 101.0
+      max: 501.0
+    type: symbolic
+    equation: 1.0
+
+specific heat capacity:
+  function:
+    T:
+      min: 102.0
+      max: 502.0
+    type: symbolic
+    equation: 2.0
+
+thermal conductivity:
+  function:
+    T:
+      min: 103.0
+      max: 503.0
+    type: symbolic
+    equation: 3.0
+
+thermal diffusivity:
+  function:
+    T:
+      min: 104.0
+      max: 504.0
+    type: symbolic
+    equation: 4.0
+
+dynamic viscosity:
+  function:
+    T:
+      min: 105.0
+      max: 505.0
+    type: symbolic
+    equation: 5.0
+
+kinematic viscosity:
+  function:
+    T:
+      min: 106.0
+      max: 506.0
+    type: symbolic
+    equation: 6.0
+
+melting temperature:
+  function:
+    T:
+      min: 107.0
+      max: 507.0
+    type: symbolic
+    equation: 7.0
+
+boiling temperature:
+  function:
+    T:
+      min: 108.0
+      max: 508.0
+    type: symbolic
+    equation: 8.0
+
+latent heat of vaporization:
+  function:
+    T:
+      min: 109.0
+      max: 509.0
+    type: symbolic
+    equation: 9.0
+
+enthalpy of fusion:
+  function:
+    T:
+      min: 110.0
+      max: 510.0
+    type: symbolic
+    equation: 10.0
+
+surface tension:
+  function:
+    T:
+      min: 111.0
+      max: 511.0
+    type: symbolic
+    equation: 11.0
+
+vapor pressure:
+  function:
+    T:
+      min: 112.0
+      max: 512.0
+    type: symbolic
+    equation: 12.0
+
+isothermal compressibility:
+  function:
+    T:
+      min: 113.0
+      max: 513.0
+    type: symbolic
+    equation: 13.0
+
+mean coefficient of thermal expansion:
+  function:
+    T:
+      min: 114.0
+      max: 514.0
+    type: symbolic
+    equation: 14.0
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T:
+      min: 115.0
+      max: 515.0
+    type: symbolic
+    equation: 15.0
+
+Young's modulus:
+  function:
+    T:
+      min: 116.0
+      max: 516.0
+    type: symbolic
+    equation: 16.0
+
+Poisson's ratio:
+  function:
+    T:
+      min: 117.0
+      max: 517.0
+    type: symbolic
+    equation: 17.0
+
+yield strength:
+  function:
+    T:
+      min: 118.0
+      max: 518.0
+    type: symbolic
+    equation: 18.0
+
+tensile strength:
+  function:
+    T:
+      min: 119.0
+      max: 519.0
+    type: symbolic
+    equation: 19.0
+
+design stress:
+  function:
+    T:
+      min: 120.0
+      max: 520.0
+    type: symbolic
+    equation: 20.0
+
+design reference stress:
+  function:
+    T:
+      min: 121.0
+      max: 521.0
+    type: symbolic
+    equation: 21.0
+
+allowable stress:
+  function:
+    T:
+      min: 122.0
+      max: 522.0
+    type: symbolic
+    equation: 22.0
+
+time dependent design stress:
+  function:
+    T:
+      min: 123.0
+      max: 523.0
+    type: symbolic
+    equation: 23.0
+
+service reference stress:
+  function:
+    T:
+      min: 124.0
+      max: 524.0
+    type: symbolic
+    equation: 24.0
+
+stress to rupture:
+  function:
+    T:
+      min: 125.0
+      max: 525.0
+    type: symbolic
+    equation: 25.0
+
+tensile strength reduction factor:
+  function:
+    T:
+      min: 126.0
+      max: 526.0
+    type: symbolic
+    equation: 26.0
+
+yield strength reduction factor:
+  function:
+    T:
+      min: 127.0
+      max: 527.0
+    type: symbolic
+    equation: 27.0
+
+weld strength reduction factor:
+  function:
+    T:
+      min: 127.0
+      max: 527.0
+    type: symbolic
+    equation: 28.0
+
+allowable time to rupture:
+  function:
+    T:
+      min: 128.0
+      max: 528.0
+    type: symbolic
+    equation: 29.0
+
+allowable time to allowable stress:
+  function:
+    T:
+      min: 129.0
+      max: 529.0
+    type: symbolic
+    equation: 30.0
+
+design fatigue strain range:
+  function:
+    T:
+      min: 130.0
+      max: 530.0
+    type: symbolic
+    equation: 31.0
+
+strain from isochronous stress-strain curve:
+  function:
+    T:
+      min: 130.0
+      max: 530.0
+    type: symbolic
+    equation: 32.0
+
+design fatigue stress:
+  function:
+    T:
+      min: 131.0
+      max: 531.0
+    type: symbolic
+    equation: 33.0
+
+linear expansion:
+  function:
+    T:
+      min: 132.0
+      max: 532.0
+    type: symbolic
+    equation: 34.0
+
+vapor specific volume:
+  function:
+    T:
+      min: 133.0
+      max: 533.0
+    type: symbolic
+    equation: 35.0
+
+speed of sound:
+  function:
+    T:
+      min: 134.0
+      max: 534.0
+    type: symbolic
+    equation: 36.0
+
+solidus temperature:
+  function:
+    T:
+      min: 135.0
+      max: 535.0
+    type: symbolic
+    equation: 37.0
+
+liquidus temperature:
+  function:
+    T:
+      min: 136.0
+      max: 536.0
+    type: symbolic
+    equation: 38.0
+
+volumetric expansion:
+  function:
+    T:
+      min: 137.0
+      max: 537.0
+    type: symbolic
+    equation: 39.0
+
+enthalpy:
+  function:
+    T:
+      min: 138.0
+      max: 538.0
+    type: symbolic
+    equation: 40.0
+
+temperature from enthalpy:
+  function:
+    T:
+      min: 139.0
+      max: 539.0
+    type: symbolic
+    equation: 41.0
+
+fracture toughness:
+  function:
+    T:
+      min: 140.0
+      max: 540.0
+    type: symbolic
+    equation: 42.0
+
+Brinell Hardness:
+  function:
+    T:
+      min: 141.0
+      max: 541.0
+    type: symbolic
+    equation: 43.0
+
+factor f from ASME.III.5 Fig. HBB-T-1432-2:
+  function:
+    T:
+      min: 141.0
+      max: 541.0
+    type: symbolic
+    equation: 44.0
+
+factor Kv' from ASME.III.5 Fig. HBB-T-1432-3:
+  function:
+    T:
+      min: 141.0
+      max: 541.0
+    type: symbolic
+    equation: 45.0
+
+shear modulus:
+  function:
+    T:
+      min: 141.0
+      max: 541.0
+    type: symbolic
+    equation: 46.0
+
+elongation:
+  function:
+    T:
+      min: 141.0
+      max: 541.0
+    type: symbolic
+    equation: 47.0

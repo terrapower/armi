@@ -19,6 +19,7 @@ import os
 import pickle
 import traceback
 import unittest
+from time import sleep
 
 import numpy as np
 
@@ -29,33 +30,33 @@ from armi.tests import mockRunLogs
 from armi.utils import properties
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
+# test input pathing
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
 FIXTURE_DIR = os.path.join(THIS_DIR, "fixtures")
+
+# specific tests files
+GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
+GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
+GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
+GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
+ISOTXS_AA = os.path.join(FIXTURE_DIR, "ISOAA")
+ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
+ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
+ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
+PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
+PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
+PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
+PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
+UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
+
 # CCCC fixtures are less fancy than these merging ones.
 FIXTURE_DIR_CCCC = os.path.join(os.path.dirname(isotxs.__file__), "tests", "fixtures")
-
-ISOTXS_AA = os.path.join(FIXTURE_DIR, "ISOAA")
-ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
-ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
-ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
-
-PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
-PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
-PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
-PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
-
-GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
-GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
-GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
-GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
-
 DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
-UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
 
 
 class TempFileMixin:
-    """Not a test; just helpful test tooling."""
+    """A helpful test tooling; creating temporary directories and nucdata test file path."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -66,10 +67,7 @@ class TempFileMixin:
 
     @property
     def testFileName(self):
-        return os.path.join(
-            self.td.destination,
-            "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
-        )
+        return os.path.join(self.td.destination, f"{self.__class__.__name__}-{self._testMethodName}.nucdata")
 
 
 class TestXSLibrary(TempFileMixin, unittest.TestCase):
@@ -139,10 +137,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
                 with mockRunLogs.BufferLog() as log:
                     lib = xsLibraries.IsotxsLibrary()
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                    self.assertIn(
-                        f"{dummyFileName} in the merging of ISOXX files",
-                        log.getStdout(),
-                    )
+                    self.assertIn(f"{dummyFileName} in the merging of ISOXX files", log.getStdout())
             finally:
                 pass
 
@@ -166,7 +161,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
                 self.assertEqual(listLength, len(getattr(lib, attrName)))
             else:
                 with self.assertRaises(properties.ImmutablePropertyError):
-                    print("Getting the value {}".format(attrName))
+                    print(f"Getting the value {attrName}")
                     print(getattr(lib, attrName))
 
     def test_isotxsLibraryAttributes(self):
@@ -203,7 +198,8 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
             raise Exception("see stdout for stack trace")
-        # check to make sure they labels overlap... or are actually the same
+
+        # check to make sure they labels overlap, or are actually the same
         labels = set(self.xsLib.nuclideLabels)
         self.assertEqual(labels, set(self.isotxsAA.nuclideLabels))
         self.assertEqual(labels, set(self.gamisoAA.nuclideLabels))
@@ -230,7 +226,8 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
             raise Exception("See stdout for stack trace")
-        # check to make sure they labels overlap... or are actually the same
+
+        # check to make sure they labels overlap, or are actually the same
         writer.writeBinary(self.xsLib, self.testFileName)
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
@@ -281,8 +278,7 @@ class TestGetISOTXSFilesWorkDir(unittest.TestCase):
         """
         Utility method for saying what things contain.
 
-        This could just check the contents and the length, but the error produced when you pass
-        shouldNotBeThere is much nicer.
+        This could just check the contents and length, but the error produced from shouldNotBeThere is much nicer.
         """
         container = set(container)
         self.assertEqual(container, set(shouldBeThere))
@@ -295,17 +291,27 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
 
     Notes
     -----
-    This is just a base class, it isn't run directly.
+    This is a base class; it is not run directly.
     """
+
+    def _readFileAttempts(self, path):
+        """Run the file read a few times, because sometimes GitHub CI is flaky with these tests."""
+        maxAttempts = 5
+        for a in range(maxAttempts):
+            try:
+                return self.getReadFunc()(path)
+            except OSError as e:
+                if a >= (maxAttempts - 1):
+                    raise e
+                sleep(1)
 
     def setUp(self):
         TempFileMixin.setUp(self)
-        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
-        # Actinides, structure, and coolant
-        self.libAA = self.getReadFunc()(self.getLibAAPath())
-        self.libAB = self.getReadFunc()(self.getLibABPath())
-        self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
-        self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
+        # Load a library in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and coolant.
+        self.libAA = self._readFileAttempts(self.getLibAAPath())
+        self.libAB = self._readFileAttempts(self.getLibABPath())
+        self.libCombined = self._readFileAttempts(self.getLibAA_ABPath())
+        self.libLumped = self._readFileAttempts(self.getLibLumpedPath())
         self.nuclideBases = NuclideBases()
 
     def getErrorType(self):
@@ -333,10 +339,13 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         """Cannot merge XS libraries with the same nuclide names."""
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
+
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libAA)
+
         with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
+
         with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
@@ -354,6 +363,9 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         emptyXSLib.merge(self.libAA)
         self.libAA = None
         self.getWriteFunc()(emptyXSLib, self.testFileName)
+        sleep(1)
+        self.assertTrue(os.path.exists(self.testFileName))
+        self.assertGreater(os.path.getsize(self.testFileName), 0)
         self.assertTrue(filecmp.cmp(self.getLibAAPath(), self.testFileName))
 
     def test_mergeTwoXSLibFiles(self):
@@ -365,6 +377,9 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.assertEqual(set(self.libCombined.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.assertTrue(xsLibraries.compare(emptyXSLib, self.libCombined))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
+        sleep(1)
+        self.assertTrue(os.path.exists(self.testFileName))
+        self.assertGreater(os.path.getsize(self.testFileName), 0)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
 
 
@@ -442,6 +457,7 @@ class TestIsotxsMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
             nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
+
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
@@ -491,6 +507,7 @@ class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
             nucLabel = self.nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
+
         self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
@@ -498,8 +515,7 @@ class TestGamisoMerge(AbstractTestXSlibraryMerging, unittest.TestCase):
 
 class TestCombinedMerge(unittest.TestCase):
     def setUp(self):
-        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
-        # Actinides, structure, and coolant
+        # Load a library in the ARMI tree. This should be a small library with LFPs, Actinides, structure, and coolant.
         self.isotxsAA = isotxs.readBinary(ISOTXS_AA)
         self.gamisoAA = gamiso.readBinary(GAMISO_AA)
         self.pmatrxAA = pmatrx.readBinary(PMATRX_AA)

@@ -16,14 +16,14 @@
 import unittest
 
 from armi.materials.lithium import Lithium
-from armi.materials.tests.test_materials import _Material_Test
+from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class Lithium_TestCase(_Material_Test, unittest.TestCase):
+class Lithium_TestCase(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = Lithium
 
     def setUp(self):
-        _Material_Test.setUp(self)
+        AbstractMaterialTest.setUp(self)
         self.mat = Lithium()
 
         self.Lithium_LI_wt_frac = Lithium()

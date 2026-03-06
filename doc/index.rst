@@ -8,6 +8,7 @@ ARMI
    :hidden:
    :maxdepth: 2
 
+   readme
    installation
    user/index
    developer/index
@@ -17,8 +18,6 @@ ARMI
    qa_docs/index
    glossary
    API Docs <.apidocs/modules>
-
-.. include:: ../README.rst
 
 *  :doc:`glossary`
 *  :ref:`genindex`

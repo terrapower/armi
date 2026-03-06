@@ -1,0 +1,86 @@
+file format: 1.0
+# This YAML is missing "max degrees C" inside the piecewise function
+material type: Metal
+composition:
+  C: [0.17, 0.24]
+  Mn: [0.40, 0.6]
+  P: [0.0, 0.04]
+  S: [0.0, 0.01]
+  Ni: [0.30, 0.8]
+  Cr: [11.0, 12.5]
+  Mo: [0.80, 1.2]
+  Nb: [0.0, 0.05]
+  W: [0.40, 0.6]
+  Al: [0.0, 0.06]
+  Fe: balance
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+
+instantaneous coefficient of thermal expansion:
+  tabulated data: &ht9_alpha_inst_tabulated_data
+    - [ 25, 1.08E-5]
+    - [ 50, 1.10E-5]
+    - [100, 1.14E-5]
+    - [150, 1.18E-5]
+    - [200, 1.21E-5]
+    - [250, 1.24E-5]
+    - [300, 1.27E-5]
+    - [350, 1.28E-5]
+    - [400, 1.31E-5]
+    - [450, 1.33E-5]
+    - [500, 1.34E-5]
+    - [550, 1.35E-5]
+    - [600, 1.36E-5]
+    - [650, 1.35E-5]
+    - [700, 1.24E-5]
+    - [750, 1.45E-5]
+    - [800, 1.48E-5]
+  function:
+    min degrees C: 20
+    max degrees C: 800
+    function type: piecewise
+    functions:
+      - function:
+          max degrees C: 602
+          function type: polynomial
+          coefficients:
+            0:  1.066E-5
+            1:  8.652E-9
+            2: -6.043E-12
+        tabulated data: *ht9_alpha_inst_tabulated_data
+      - function:
+          min degrees C: 602
+          max degrees C: 697
+          function type: polynomial
+          coefficients:
+            0:  9.323E-3
+            1: -5.739E-5
+            2:  1.324E-7
+            3: -1.355E-10
+            4:  5.188E-14
+        tabulated data: *ht9_alpha_inst_tabulated_data
+      - function:
+          min degrees C: 697
+          max degrees C: 725
+          function type: polynomial
+          coefficients:
+            0:  1.082E-1
+            1: -4.568E-4
+            2:  6.425E-7
+            3: -3.011E-10
+        tabulated data: *ht9_alpha_inst_tabulated_data
+      - function:
+          min degrees C: 725
+          max degrees C: 800
+          function type: polynomial
+          coefficients:
+            0:  1.649E-3
+            1: -6.491E-6
+            2:  8.574E-9
+            3: -3.768E-12
+        tabulated data: *ht9_alpha_inst_tabulated_data
+  references:
+    - ref: ACME II.2017, Table 3 pg 182
+      refType: open literature
+      

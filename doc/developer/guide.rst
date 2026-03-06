@@ -103,8 +103,7 @@ Blueprints
 
 As seen in the User Guide, :py:mod:`~armi.reactor.blueprints` are how reactor models are
 defined. During a run, they can be used to create new instances of reactor model pieces,
-such as when a new assembly is fabricated during a fuel management operation in a later
-cycle.
+such as when a new assembly is fabricated during a fuel management operation in a later cycle.
 
 Operators
 =========
