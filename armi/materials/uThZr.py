@@ -55,11 +55,7 @@ class UThZr(FuelMaterial):
         uFrac = 1 - zrFrac - thFrac
 
         if zrFrac is None:
-            runLog.warning(
-                "Cannot get UZr density without Zr%. Set ZIRC massFrac",
-                single=True,
-                label="no zrfrac",
-            )
+            runLog.warning("Cannot get UZr density without Zr%. Set ZIRC massFrac", single=True, label="no zrfrac")
             return None
 
         Tk = getTk(Tc, Tk)
@@ -71,7 +67,6 @@ class UThZr(FuelMaterial):
         uThZr0 = 1.0 / (zrFrac / zr0 + (uFrac) / u0 + thFrac / th0)
 
         dLL = self.linearExpansionPercent(Tk=Tk)
-
         f = (1 + dLL / 100.0) ** 2
         density = uThZr0 * (1.0 + (1.0 - f) / f)
 

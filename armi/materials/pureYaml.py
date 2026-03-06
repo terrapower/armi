@@ -52,6 +52,12 @@ class Cu(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
 
 
+class Tantalum(SimpleSolid):
+    """Tantalum."""
+
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Tantalum.yaml")
+
+
 class Void(Fluid):
     """Void / Vacuum."""
 
