@@ -433,9 +433,6 @@ class SodiumTests(AbstractMaterialTest, unittest.TestCase):
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class TantalumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Tantalum

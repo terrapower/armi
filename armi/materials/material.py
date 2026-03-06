@@ -471,6 +471,11 @@ class Material(MatPropsMaterial):
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
+    def enthalpy(self, Tk: float = None, Tc: float = None) -> float:
+        """Return enthalpy in J/kg."""
+        Tc = getTc(Tc, Tk)
+        return self.H(T=Tc)
+
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         """Returns yield strength at given T in MPa."""
         Tc = getTc(Tc, Tk)

@@ -340,6 +340,7 @@ armi = [
     "resources/materials/Molybdenum.yaml",
     "resources/materials/NaCl.yaml",
     "resources/materials/NZ.yaml",
+    "resources/materials/Sodium.yaml",
     "resources/materials/Tantalum.yaml",
     "resources/materials/TZM.yaml",
     "resources/materials/Void.yaml",
