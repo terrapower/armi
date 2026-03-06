@@ -197,15 +197,13 @@ class Material(MatPropsMaterial):
         --------
         linearExpansionPercent : average linear thermal expansion to affect dimensions and density
         """
-        if hasattr(self, "alpha_inst"):
+        if hasattr(self, "alpha_inst") and self.alpha_inst is not None:
             Tc = getTc(Tc, Tk)
             return self.alpha_inst(T=Tc)
         else:
-            raise NotImplementedError(f"{self} does not have a linear expansion property defined")
-        # TODO:
-        # Tk = getTk(Tc, Tk)
-        # deltaStrain = self.linearExpansionPercent(Tk + 1.0) / 100.0 - self.linearExpansionPercent(Tk - 1.0) / 100.0
-        # return deltaStrain / 2.0
+            Tk = getTk(Tc, Tk)
+            deltaStrain = self.linearExpansionPercent(Tk + 1.0) / 100.0 - self.linearExpansionPercent(Tk - 1.0) / 100.0
+            return deltaStrain / 2.0
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -228,7 +226,7 @@ class Material(MatPropsMaterial):
         --------
         linearExpansion : handle instantaneous thermal expansion coefficients
         """
-        if hasattr(self, "dl_l"):
+        if hasattr(self, "dl_l") and self.dl_l is not None:
             Tc = getTc(Tc, Tk)
             return self.dl_l(T=Tc)
         else:
@@ -453,7 +451,7 @@ class Material(MatPropsMaterial):
         - dp/p = (1-(1 + dL/L)**3)/(1 + dL/L)**3
         """
         # try the YAML file first
-        if hasattr(self, "rho"):
+        if hasattr(self, "rho") and self.rho is not None:
             Tc = getTc(Tc, Tk)
             # matProps does density is in kg/m3, and this method is in g/cm3
             return self.rho(T=Tc) / 1000.0
@@ -572,7 +570,7 @@ class Material(MatPropsMaterial):
 
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""
-        if hasattr(self, "c_p"):
+        if hasattr(self, "c_p") and self.c_p is not None:
             Tc = getTc(Tc, Tk)
             return self.c_p(T=Tc)
         else:

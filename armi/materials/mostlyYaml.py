@@ -36,3 +36,22 @@ class Cu(Material):
     def setDefaultMassFracs(self):
         self.setMassFrac("CU63", 0.6915)
         self.setMassFrac("CU65", 0.3085)
+
+
+class Inconel600(Material):
+    """Inconel600 - nickle chromium alloy."""
+
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel600.yaml")
+
+    def setDefaultMassFracs(self):
+        self.refDens = 8.47  # g/cc
+
+        # TODO: Is it possible to support nuclides like this? That would really help.
+        self.setMassFrac("NI", 0.7541)
+        self.setMassFrac("CR", 0.1550)
+        self.setMassFrac("FE", 0.0800)
+        self.setMassFrac("C", 0.0008)
+        self.setMassFrac("MN55", 0.0050)
+        self.setMassFrac("S", 0.0001)
+        self.setMassFrac("SI", 0.0025)
+        self.setMassFrac("CU", 0.0025)

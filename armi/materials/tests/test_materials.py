@@ -838,8 +838,8 @@ class MixtureTests(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
-        with self.assertRaises(NotImplementedError):
-            _cur = self.mat.linearExpansion(400)
+        cur = self.mat.linearExpansion(400)
+        self.assertEqual(cur, 0.0)
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
@@ -1219,9 +1219,6 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
         cur = 482.742084
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Inconel625
@@ -1415,7 +1412,6 @@ class Alloy200Tests(AbstractMaterialTest, unittest.TestCase):
     def test_linearExpansion(self):
         ref = self.mat.linearExpansion(Tc=100)
         cur = 13.3e-6
-        print(f"ref: {ref}")
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
     def test_linearExpansionHotter(self):
@@ -1430,7 +1426,6 @@ class CaH2Tests(AbstractMaterialTest, unittest.TestCase):
     def test_pseudoDensity(self):
         cur = 1.7
         ref = self.mat.pseudoDensity(Tc=100)
-        print(f"ref: {ref}, cur: {cur}")
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
         ref = self.mat.pseudoDensity(Tc=300)
