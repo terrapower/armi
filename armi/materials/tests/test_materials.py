@@ -514,7 +514,7 @@ class UraniumTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
-        ref = 28.489312629207500293659904855
+        ref = 28.4893126292075
         self.assertAlmostEqual(cur, ref, delta=10e-10)
 
         cur = self.mat.thermalConductivity(Tc=300)
@@ -1510,7 +1510,7 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_applyInputParams(self):
         massFracNameList = ["C", "TI", "ZR", "MO"]
-        massFracRefValList = [2.50749e-05, 0.002502504, 0.000761199, 0.996711222]
+        massFracRefValList = [2.50749e-5, 0.002502504, 0.000761199, 0.996711222]
 
         self.mat.applyInputParams()
 

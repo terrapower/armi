@@ -22,7 +22,6 @@ composition:
   ZR: [0.0761199, 0.0761199]
   MO: balance
 
-
 density:
   function:
     T: 0
@@ -42,7 +41,6 @@ density:
   references:
   - ref: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, 1966 Southern Research Institute. Table viii-b, Appendix B, page 181.
     type: open literature
-
 
 linear expansion:
   function:

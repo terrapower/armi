@@ -21,20 +21,6 @@ The wrappers below are designed so new matProps material objects can be created 
 
 import os
 
-from armi.materials.material import Material
-
 # handle pathing to materials files
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
-
-
-class Inconel600(Material):
-    """Inconel600 - nickle chromium alloy."""
-
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel600.yaml")
-
-    def __init__(self):
-        Material.__init__(self)
-        self.refDens = 8.47  # g/cc
-        # Only density measurement presented in the reference. Presumed to be performed at 21C since
-        # this was the reference temperature for linear expansion measurements.
