@@ -1437,7 +1437,6 @@ class HafniumTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_pseudoDensity(self):
         cur = 13.07
-
         ref = self.mat.pseudoDensity(Tc=100)
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
@@ -1446,6 +1445,23 @@ class HafniumTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+
+class HT9Tests(AbstractMaterialTest, unittest.TestCase):
+    MAT_CLASS = materials.HT9
+
+    def test_feContent(self):
+        self.assertGreater(self.mat.massFrac["FE"], 0.80)
+        self.assertLess(self.mat.massFrac["FE"], 0.90)
+
+    def test_linearExpansion(self):
+        ref = self.mat.linearExpansion(Tc=200)
+        cur = 1.1398126837389904e-5
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+        ref = self.mat.linearExpansion(Tc=500)
+        cur = 1.3766503292589587e-5
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
 
 class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):

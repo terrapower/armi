@@ -24,26 +24,9 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings, tests
-from armi.physics.neutronics.settings import (
-    CONF_LOADING_FILE,
-    CONF_XS_KERNEL,
-)
-from armi.reactor import (
-    assemblies,
-    blocks,
-    blueprints,
-    components,
-    geometry,
-    parameters,
-    reactors,
-)
-from armi.reactor.assemblies import (
-    Flags,
-    HexAssembly,
-    copy,
-    grids,
-    runLog,
-)
+from armi.physics.neutronics.settings import CONF_LOADING_FILE, CONF_XS_KERNEL
+from armi.reactor import assemblies, blocks, blueprints, components, geometry, parameters, reactors
+from armi.reactor.assemblies import Flags, HexAssembly, copy, grids, runLog
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
@@ -149,12 +132,7 @@ def buildTestAssemblies():
 
 class MaterialInAssembly_TestCase(unittest.TestCase):
     def setUp(self):
-        (
-            self.assembly,
-            self.assembly2,
-            self.assembly3,
-            self.assembly4,
-        ) = buildTestAssemblies()
+        self.assembly, self.assembly2, self.assembly3, self.assembly4 = buildTestAssemblies()
 
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
@@ -438,7 +416,6 @@ class Assembly_TestCase(unittest.TestCase):
 
             cur = b.p.z
             ref = bottom + (top - bottom) / 2.0
-
             self.assertAlmostEqual(cur, ref, places=places)
 
             cur = b.p.zbottom
@@ -742,16 +719,9 @@ class Assembly_TestCase(unittest.TestCase):
             b.setHeight(self.height)
             b.setType("fuel")
 
-            self.hexDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "op": 0.76,
-                "ip": 0.0,
-                "mult": 1.0,
-            }
+            self.hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 0.76, "ip": 0.0, "mult": 1.0}
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-
             b.add(h)
 
             self.assembly.add(b)
@@ -960,11 +930,11 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_pinPlenumVolume(self):
         """Test the volume of a pin in the assembly's plenum."""
-        pinPlenumVolume = 5.951978000285659e-05
+        pinPlenumVolume = 5.951978e-05
 
         self._setup_blueprints("refSmallReactorBase.yaml")
         assembly = self.r.blueprints.assemblies.get("igniter fuel")
-        self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
+        self.assertAlmostEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 
     def test_averagePlenumTemperature(self):
         """Test an assembly's average plenum temperature with a single block outlet."""

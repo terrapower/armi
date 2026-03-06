@@ -1063,9 +1063,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 f"Specified tolerance: {self._TOLERANCE}",
                 single=True,
             )
-            raise RuntimeError(
-                f"Linear expansion percent may not be implemented in the {self.material} material class."
-            )
+            raise RuntimeError(f"Linear expansion factor may not be implemented in the {self.material} material class.")
         return 1.0 + dLL
 
     def printContents(self, includeNuclides=True):

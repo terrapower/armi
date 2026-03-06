@@ -15,9 +15,8 @@
 """
 Tests for the history tracker interface.
 
-These tests actually run a jupyter notebook that's in the documentation to build
-a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
-than usual.
+These tests actually run a jupyter notebook that is in the documentation to build a valid HDF5 file to load from as a
+test fixtures. Thus they take a little longer than usual.
 """
 
 import os
@@ -33,7 +32,7 @@ from armi.tests import ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 CASE_TITLE = "anl-afci-177"
-THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
+THIS_DIR = os.path.dirname(__file__)  # because tests do not run in this folder
 TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 
 

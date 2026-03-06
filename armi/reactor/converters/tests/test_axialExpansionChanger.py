@@ -1095,7 +1095,7 @@ def _buildDummySodium(hotTemp: float, height: float):
     return b
 
 
-class FakeMat(materials.ht9.HT9):
+class FakeMat(materials.HT9):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger.
 
     Notes
@@ -1114,7 +1114,7 @@ class FakeMat(materials.ht9.HT9):
         return 0.02 * Tc
 
 
-class FakeMatException(materials.ht9.HT9):
+class FakeMatException(materials.HT9):
     """Fake material used to verify TestExceptions.
 
     Notes

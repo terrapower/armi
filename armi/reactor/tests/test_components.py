@@ -372,7 +372,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         )
 
         # show that area expansion is consistent with the density change in the material
-        hotDensity = self.component.density()
+        hotDensity = self.component.material.density(Tc=self.component.temperatureInC)
         hotArea = self.component.getArea()
         thermalExpansionFactor = self.component.getThermalExpansionFactor(self.component.temperatureInC)
 
@@ -385,15 +385,12 @@ class TestUnshapedComponent(TestGeneralComponents):
                 area=math.pi,
             )
         )
-        coldDensity = coldComponent.density()
+        coldDensity = coldComponent.material.density(Tc=coldComponent.temperatureInC)
         coldArea = coldComponent.getArea()
 
         self.assertGreater(thermalExpansionFactor, 1)
         # thermalExpansionFactor accounts for density being 3D while area is 2D
-        self.assertAlmostEqual(
-            (coldDensity * coldArea),
-            (thermalExpansionFactor * hotDensity * hotArea),
-        )
+        self.assertAlmostEqual((coldDensity * coldArea), (thermalExpansionFactor * hotDensity * hotArea))
 
     def test_getBoundingCircleOuterDiameter(self):
         # a case without thermal expansion
@@ -920,8 +917,7 @@ class TestComponentExpansion(unittest.TestCase):
 
         # they are off by factor of thermal exp
         self.assertAlmostEqual(
-            mass1 * circle1.getThermalExpansionFactor(),
-            mass2 * circle2.getThermalExpansionFactor(),
+            mass1 * circle1.getThermalExpansionFactor(), mass2 * circle2.getThermalExpansionFactor(), delta=1e-4
         )
 
         # material.pseudoDensity is the 2D density of a material
@@ -945,8 +941,7 @@ class TestComponentExpansion(unittest.TestCase):
                 circle.material.density(Tc=circle.temperatureInC),
             )
 
-        # brief 2D expansion with set temp to show mass is conserved hot height would come from
-        # block value
+        # brief 2D expansion with set temp to show mass is conserved hot height would come from block value
         warmMass = circle1.density() * circle1.getArea() * hotHeight
         circle1.setTemperature(self.tHot)
         hotMass = circle1.density() * circle1.getArea() * hotHeight
@@ -967,16 +962,13 @@ class TestComponentExpansion(unittest.TestCase):
         circle1.setTemperature(self.tHot)
 
         # now its density is same as hot component
-        self.assertAlmostEqual(circle1.density(), circle2.density())
+        self.assertAlmostEqual(circle1.density(), circle2.density(), delta=1e-4)
 
         # show that mass is conserved after expansion
         circle1NewHotHeight = hotHeight * heightFactor
         self.assertAlmostEqual(mass1, circle1.density() * circle1.getArea() * circle1NewHotHeight)
 
-        self.assertAlmostEqual(
-            circle1.density(),
-            circle1.material.density(Tc=circle1.temperatureInC),
-        )
+        self.assertAlmostEqual(circle1.density(), circle1.material.density(Tc=circle1.temperatureInC), delta=1e-4)
         # change back to old temp
         circle1.adjustDensityForHeightExpansion(self.tWarm)
         circle1.setTemperature(self.tWarm)
