@@ -17,7 +17,8 @@ file format: 3.0
 
 material type: Metal
 composition:
-  Cu: balance
+  CU65: [30.85, 30.85]
+  CU63: balance
 
 density: 
   function:

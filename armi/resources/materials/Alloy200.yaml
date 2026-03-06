@@ -19,12 +19,12 @@ file format: 3.0
 material type: Metal
 composition:
   C: [0.00075, 0.00075]
-  Mn: [0.00175, 0.00175]
+  MN: [0.00175, 0.00175]
   S: [0.00005, 0.00005]
-  Si: [0.00175, 0.00175]
-  Cu: [0.00125, 0.00125]
-  Fe: [0.002, 0.002]
-  Ni: balance
+  SI: [0.00175, 0.00175]
+  CU: [0.00125, 0.00125]
+  FE: [0.002, 0.002]
+  NI: balance
   references:
   - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
     type: open literature

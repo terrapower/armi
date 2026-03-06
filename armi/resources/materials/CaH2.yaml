@@ -18,7 +18,7 @@ file format: 3.0
 material type: SimpleSolid
 composition:
   H: [4.7884869, 4.7884869]
-  Ca: balance
+  CA: balance
   references:
   - ref: http://atom.kaeri.re.kr/ton/
     type: open literature

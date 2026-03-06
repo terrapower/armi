@@ -19,7 +19,7 @@ file format: 3.0
 material type: Fluid
 composition:
   C: [0.0124, 0.0124]
-  Ar: [1.2827, 1.2827]
+  AR: [1.2827, 1.2827]
   O: [23.1781, 23.1781]
   N: balance
   references:

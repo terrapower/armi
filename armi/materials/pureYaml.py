@@ -21,7 +21,7 @@ The wrappers below are designed so new matProps material objects can be created 
 
 import os
 
-from armi.materials.material import Fluid, SimpleSolid
+from armi.materials.material import Fluid, Material, SimpleSolid
 
 # handle pathing to materials files
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +44,12 @@ class CaH2(SimpleSolid):
     """Calcium Hydride."""
 
     YAML_PATH = os.path.join(_RESOURCES_DIR, "CaH2.yaml")
+
+
+class Cu(Material):
+    """Copper metal."""
+
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
 
 
 class Void(Fluid):

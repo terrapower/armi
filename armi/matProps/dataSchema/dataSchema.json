@@ -54,7 +54,7 @@
         "composition": {
             "type": "object",
             "patternProperties": {
-                "^[a-zA-Z]{1,2}$": { 
+                "^[A-Z][A-Za-z]?\\d{0,3}$": { 
                     "oneOf": [
                         {
                             "type": "array",

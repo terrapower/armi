@@ -17,14 +17,14 @@ file format: 3.0
 
 material type: Metal
 composition:
-  Cr: [14.0, 17.0]
-  Fe: [6.00, 10.00]
-  C: [0.00, 0.15]
-  Mn: [0.00, 1.00]
-  S: [0.00, 0.015]
-  Si: [0.00, 0.50]
-  Cu: [0.00, 0.50]
-  Ni: balance
+  CR: [15.5, 15.5]
+  FE: [8.0, 8.0]
+  C: [0.08, 0.08]
+  MN55: [0.5, 0.5]
+  S: [0.01, 0.01]
+  SI: [0.25, 0.25]
+  CU: [0.25, 0.25]
+  NI: balance
   references:
   - ref: https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-600.pdf
     type: open literature

@@ -28,30 +28,13 @@ _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
 
 
-class Cu(Material):
-    """Copper metal."""
-
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
-
-    def setDefaultMassFracs(self):
-        self.setMassFrac("CU63", 0.6915)
-        self.setMassFrac("CU65", 0.3085)
-
-
 class Inconel600(Material):
     """Inconel600 - nickle chromium alloy."""
 
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel600.yaml")
 
-    def setDefaultMassFracs(self):
+    def __init__(self):
+        Material.__init__(self)
         self.refDens = 8.47  # g/cc
-
-        # TODO: Is it possible to support nuclides like this? That would really help.
-        self.setMassFrac("NI", 0.7541)
-        self.setMassFrac("CR", 0.1550)
-        self.setMassFrac("FE", 0.0800)
-        self.setMassFrac("C", 0.0008)
-        self.setMassFrac("MN55", 0.0050)
-        self.setMassFrac("S", 0.0001)
-        self.setMassFrac("SI", 0.0025)
-        self.setMassFrac("CU", 0.0025)
+        # Only density measurement presented in the reference. Presumed to be performed at 21C since
+        # this was the reference temperature for linear expansion measurements.

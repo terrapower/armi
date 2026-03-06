@@ -90,11 +90,10 @@ class Constituent:
                 continue
 
             elementSet.add(element)
-
-            if nodeContent == "balance":
+            if str(nodeContent).lower() == "balance":
                 balanceName = element
                 numBalance += 1
-            elif nodeContent == "void":
+            elif str(nodeContent).lower() == "void":
                 return []
             elif type(nodeContent) is str or len(nodeContent) != 2:
                 msg = (

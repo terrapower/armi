@@ -267,7 +267,11 @@ class Material(MatPropsMaterial):
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
-        """Mass fractions."""
+        """
+        Mass fractions.
+
+        TODO: Explain from YAML first, if possible.
+        """
         massFracs = {}
         balanceNuc = None
         for constituent in self.composition:
