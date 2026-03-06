@@ -52,6 +52,10 @@ class Hafnium(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Hafnium.yaml")
 
 
+class Magnesium(Fluid):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Magnesium.yaml")
+
+
 class Molybdenum(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Molybdenum.yaml")
 

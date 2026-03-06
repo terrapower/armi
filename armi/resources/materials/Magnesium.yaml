@@ -13,17 +13,19 @@ file format: 3.0
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Niobium Zirconium Alloy
+# Magnesium
 
-material type: SimpleSolid
+material type: Fluid
 composition:
-  ZR: [1.0, 1.0]
-  NB93: balance
+  MG: balance
 
 density: 
   function:
     T:
-      min: -200.0
-      max: 2000.0
+      min: 649.85
+      max: 1116.85
     type: symbolic
-    equation: 8660
+    equation: 1834.0 - 0.2647 * (T+273.15)
+  references:
+    - ref: The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961.
+      type: open literature
