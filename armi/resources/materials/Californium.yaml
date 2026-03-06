@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Californium is a synthetic element made in nuclear reactors.
+# Californium is a synthetic element made in nuclear reactors.
+#
+# It is interesting in that it has a large spontaneous fission decay mode that produces lots of neutrons. It is often
+# used as a neutron source.
 
-It is interesting in that it has a large spontaneous fission decay mode that produces lots of neutrons. It's often used
-as a neutron source.
-"""
+material type: SimpleSolid
+composition:
+  CF252: balance
 
-from armi.materials.material import SimpleSolid
-
-
-class Californium(SimpleSolid):
-    def setDefaultMassFracs(self):
-        self.setMassFrac("CF252", 1.0)
-
-    def density(self, Tk=None, Tc=None):
-        """https://en.wikipedia.org/wiki/Californium."""
-        return 15.1  # g/cm3
+density: 
+  function:
+    T:
+      min: -100.0
+      max: 2000.0
+    type: symbolic
+    equation: 15100
+  references:
+  - ref: https://en.wikipedia.org/wiki/Californium
+    type: open literature

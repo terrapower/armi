@@ -40,6 +40,12 @@ class Alloy200(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Alloy200.yaml")
 
 
+class Californium(SimpleSolid):
+    """Californium."""
+
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Californium.yaml")
+
+
 class CaH2(SimpleSolid):
     """Calcium Hydride."""
 
