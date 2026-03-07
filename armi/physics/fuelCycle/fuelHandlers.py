@@ -224,21 +224,13 @@ class FuelHandler:
             # This is also essential for repeating shuffles in later restart runs.
             for a in self.moved:
                 try:
-                    ringPosCycle = None
-                    # grab first (ring, pos) at cycle info which can be used to identify this assembly if it goes to SFP
-                    if a.p.ringPosHist:
-                        for cycleNum, rp in enumerate(a.p.ringPosHist):
-                            if isinstance(rp, tuple) and rp[0] not in a.NOT_IN_CORE:
-                                break
-                        ringPosCycle = [rp[0], rp[1], cycleNum]
-
                     self.r.core.setMoveList(
                         self.cycle,
                         a.lastLocationLabel,
                         a.getLocation(),
                         [b.getUraniumMassEnrich() for b in a],
                         a.getType(),
-                        ringPosCycle,
+                        self.readRingPosHist(a),
                     )
                 except:
                     runLog.important("A fuel management error has occurred. ")
@@ -1464,6 +1456,18 @@ class FuelHandler:
         runLog.warning("No chain found starting at {0}".format(startingAt))
         return [], enrich, assemType, loadName, destination
 
+    @staticmethod
+    def readRingPosHist(a):
+        """Read (ring, pos, cycle) history of assembly to find unique identifying location."""
+        if a.p.ringPosHist:
+            for cycleNum, rp in enumerate(a.p.ringPosHist):
+                if isinstance(rp, tuple) and rp[0] not in a.NOT_IN_CORE:
+                    break
+            # integers can be converted into byte strings in database
+            # this happens because some location identifiers are strings, e.g. LOAD_QUEUE or NOT_CREATED_YET
+            return [int(rp[0]), int(rp[1]), cycleNum]
+
+
     def processMoveList(self, moveList) -> ProcessMoveListResult:
         """
         Processes a move list and extracts fuel management loops and charges.
@@ -1480,7 +1484,7 @@ class FuelHandler:
             Structured information describing the move chains, enrichment
             distributions, and other shuffle data. Attributes include:
 
-            loadChains : list[list[str]]
+            loadChains : list[list[str]/
                 Moves that include discharges.
             loopChains : list[list[str]]
                 Moves without discharges.
