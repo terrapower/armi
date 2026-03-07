@@ -1467,7 +1467,6 @@ class FuelHandler:
             # this happens because some location identifiers are strings, e.g. LOAD_QUEUE or NOT_CREATED_YET
             return [int(rp[0]), int(rp[1]), cycleNum]
 
-
     def processMoveList(self, moveList) -> ProcessMoveListResult:
         """
         Processes a move list and extracts fuel management loops and charges.
@@ -1484,7 +1483,7 @@ class FuelHandler:
             Structured information describing the move chains, enrichment
             distributions, and other shuffle data. Attributes include:
 
-            loadChains : list[list[str]/
+            loadChains : list[list[str]]
                 Moves that include discharges.
             loopChains : list[list[str]]
                 Moves without discharges.

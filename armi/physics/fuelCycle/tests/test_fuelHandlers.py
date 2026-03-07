@@ -878,7 +878,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         sfpAssem = self.r.excore["sfp"].getChildren()[0]
         # fake the assembly location history
-        sfpAssem.p.ringPosHist = [(2, 3), (4, 5), (5, 7)]
+        ringPosHistInts = [(2, 3), (4, 5), (5, 7)]
+        sfpAssem.p.ringPosHist = [(str(x).encode(), str(y).encode()) for x, y in ringPosHistInts]
         yaml_text = """
         sequence:
             1:

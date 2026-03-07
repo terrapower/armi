@@ -1445,9 +1445,11 @@ class Core(composites.Composite):
         Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
         """
         nCycles = len(a.p.ringPosHist)
+        getRingPosInts = lambda rp: (int(rp[0]), int(rp[1]))
         if nCycles >= cycleNum:  # requested cycleNum has data populated
-            if a.p.ringPosHist[cycleNum] == (ring, pos):
-                return True
+            if a.p.ringPosHist[cycleNum] not in a.NOT_IN_CORE:
+                if getRingPosInts(a.p.ringPosHist[cycleNum]) == (ring, pos):
+                    return True
         return False
 
     def getAssemblyWithRingPosHist(self, ring, pos, cycleNum):
