@@ -279,11 +279,8 @@ class Material(MatPropsMaterial):
             if constituent.isBalance:
                 massFracs[nomen] = "balance"
                 balanceNuc = nomen
-            elif constituent.minValue == constituent.maxValue:
-                massFracs[nomen] = constituent.maxValue / 100.0
             else:
-                # TODO: Explain
-                return
+                massFracs[nomen] = (constituent.maxValue + constituent.minValue) / 200.0
 
         if balanceNuc:
             massFracs[balanceNuc] = 1.0 - sum(v for k, v in massFracs.items() if k != balanceNuc)
