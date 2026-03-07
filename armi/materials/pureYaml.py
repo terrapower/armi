@@ -60,6 +60,10 @@ class Lead(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Lead.yaml")
 
 
+class LeadBismuth(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "LeadBismuth.yaml")
+
+
 class Magnesium(Fluid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Magnesium.yaml")
 

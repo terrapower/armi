@@ -471,6 +471,11 @@ class Material(MatPropsMaterial):
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
+    def dynamicVisc(self, Tk: float = None, Tc: float = None) -> float:
+        """Dynamic viscosity in Pa-s."""
+        Tc = getTc(Tc, Tk)
+        return self.mu_d(T=Tc)
+
     def enthalpy(self, Tk: float = None, Tc: float = None) -> float:
         """Return enthalpy in J/kg."""
         Tc = getTc(Tc, Tk)

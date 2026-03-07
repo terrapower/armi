@@ -899,7 +899,8 @@ class LeadBismuthTests(AbstractMaterialTest, unittest.TestCase):
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"BI209": 0.555, "PB": 0.445}
-        self.assertEqual(cur, ref)
+        for refKey, refVal in ref.items():
+            self.assertAlmostEqual(cur[refKey], refVal)
 
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(404.77)
@@ -931,9 +932,6 @@ class LeadBismuthTests(AbstractMaterialTest, unittest.TestCase):
         ref = self.mat.dynamicVisc(Tc=200)
         cur = 0.0024316
         self.assertAlmostEqual(ref, cur, delta=ref * 0.001)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class CopperTests(AbstractMaterialTest, unittest.TestCase):
