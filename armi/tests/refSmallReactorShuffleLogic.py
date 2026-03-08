@@ -39,7 +39,7 @@ class EquilibriumShuffler(FuelHandler):
         fresh = self.r.blueprints.constructAssem(self.cs, name="igniter fuel")
         self.dischargeSwap(fresh, cascade[0])
 
-        if self.cycle < 3:
+        if self.cycle > 1:
             # do a swap where the assembly comes from the sfp
             if self.r.excore.get("sfp") is None:
                 raise RuntimeError("No SFP found.")
@@ -47,7 +47,7 @@ class EquilibriumShuffler(FuelHandler):
             incoming = self.r.excore["sfp"].getChildren().pop()
             if not incoming:
                 raise RuntimeError(f"No assembly in SFP {self.r.excore['sfp'].getChildren()}")
-            outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 2 + self.cycle)
+            outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 1 + self.cycle)
             self.dischargeSwap(incoming, self.r.core.childrenByLocator[outLoc])
 
 

@@ -570,10 +570,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # imply that the assembly shuffling definition has changed.
         expPosHist = {}
         # cycle 1 shuffle, (2, 1) moved to SFP then back to (5, 3)
-        expPosHist["A0005"] = [(2, 1), (5, 3), (5, 3), (5, 3)]
+        expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP") , ("SFP", "SFP")]
         # cycle 1 shuffle, (3, 3) moved to (2, 1) in cascade
         # cycle 3 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
-        expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), ("SFP", "SFP")]
+        expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), (5, 4)]
         # cycle 1 shuffle, (4, 2) moved to (3, 3) in cascade
         expPosHist["A0019"] = [(4, 2), (3, 3), (3, 3), (3, 3)]
         # cycle 1 shuffle, (5, 1) moved to (4, 2) in cascade
@@ -584,7 +584,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 3 shuffle, (6, 7) moved to (5, 2) in cascade
         expPosHist["A0077"] = [("NotCreatedYet", "NotCreatedYet"), (6, 7), (6, 7), (5, 2)]
         # cycle 2 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
-        expPosHist["A0009"] = [(2, 2), (2, 2), (5, 4), (5, 4)]
+        expPosHist["A0009"] = [(2, 2), (2, 2), (5, 3), (5, 3)]
         # cycle 2 shuffle, (3, 2) moved to (2, 2) in cascade
         expPosHist["A0014"] = [(3, 2), (3, 2), (2, 2), (2, 2)]
         # cycle 2 shuffle, (4, 1) moved to (3, 2) in cascade
@@ -592,13 +592,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 2 shuffle, (5, 4) moved to (4, 1) in cascade
         expPosHist["A0034"] = [(5, 4), (5, 4), (4, 1), (4, 1)]
         # cycle 1 shuffle, (6, 4) moved to (5, 4) in cascade then discharged to SFp
-        expPosHist["A0040"] = [(6, 4), (6, 4), ("SFP", "SFP"), ("SFP", "SFP")]
+        expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
         # cycle 2 shuffle, fresh to (6, 4)
         expPosHist["A0078"] = [("NotCreatedYet", "NotCreatedYet"), ("NotCreatedYet", "NotCreatedYet"), (6, 4), (6, 4)]
         # cycle 1 shuffle, SFP to (5, 3) then back to SFP
         expPosHist["A0073"] = [("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (5, 3) moved to SFP
-        expPosHist["A0029"] = [(5, 3), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
+        expPosHist["A0029"] = [(5, 3), (5, 3), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 3 shuffle, (3, 1) moved to (2, 1) in cascade
         expPosHist["A0010"] = [(3, 1), (3, 1), (3, 1), (2, 1)]
         # cycle 3 shuffle, (4, 3) moved to (3, 1) in cascade
@@ -707,6 +707,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         os.remove("armiRun2.shuffles_0.png")
         os.remove("armiRun2.shuffles_1.png")
         os.remove("armiRun2.shuffles_2.png")
+        os.remove("armiRun2.shuffles_3.png")
 
     def test_readMoves(self):
         """
@@ -722,15 +723,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(len(moves), 4)
         firstMove = moves[1][0]
         self.assertEqual(firstMove.fromLoc, "002-001")
-        self.assertEqual(firstMove.toLoc, "005-003")
+        self.assertEqual(firstMove.toLoc, "SFP")
         self.assertEqual(len(firstMove.enrichList), numblocks)
         self.assertEqual(firstMove.assemType, "igniter fuel")
         self.assertIsNone(firstMove.ringPosCycle)
 
         # check the move to the SFP
         sfpMove = moves[2][-2]
-        self.assertEqual(sfpMove.fromLoc, "006-004")
-        self.assertEqual(sfpMove.toLoc, "SFP")
+        self.assertEqual(sfpMove.fromLoc, "LoadQueue")
+        self.assertEqual(sfpMove.toLoc, "006-004")
         self.assertIsNone(sfpMove.ringPosCycle)
 
         # make sure we fail hard if the file doesn't exist
@@ -897,7 +898,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
         result = fh.processMoveList(moves[2])
-        self.assertIn([1, 2, 0], result.ringPosCycles)
         self.assertIn(None, result.ringPosCycles)
         self.assertTrue(all("SFP" not in chain for chain in result.loadChains))
         self.assertTrue(all("LoadQueue" not in chain for chain in result.loadChains))
