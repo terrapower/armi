@@ -224,13 +224,21 @@ class FuelHandler:
             # This is also essential for repeating shuffles in later restart runs.
             for a in self.moved:
                 try:
+                    ringPosCycle = None
+                    # grab first (ring, pos) at cycle info which can be used to identify this assembly if it goes to SFP
+                    if a.p.ringPosHist:
+                        for cycleNum, rp in enumerate(a.p.ringPosHist):
+                            if isinstance(rp, tuple) and rp[0] not in a.NOT_IN_CORE:
+                                break
+                        ringPosCycle = [int(rp[0]), int(rp[1]), cycleNum]
+
                     self.r.core.setMoveList(
                         self.cycle,
                         a.lastLocationLabel,
                         a.getLocation(),
                         [b.getUraniumMassEnrich() for b in a],
                         a.getType(),
-                        self.readRingPosHist(a),
+                        ringPosCycle,
                     )
                 except:
                     runLog.important("A fuel management error has occurred. ")
@@ -1455,17 +1463,6 @@ class FuelHandler:
         # if we get here, the startingAt location was not found.
         runLog.warning("No chain found starting at {0}".format(startingAt))
         return [], enrich, assemType, loadName, destination
-
-    @staticmethod
-    def readRingPosHist(a):
-        """Read (ring, pos, cycle) history of assembly to find unique identifying location."""
-        if a.p.ringPosHist:
-            for cycleNum, rp in enumerate(a.p.ringPosHist):
-                if isinstance(rp, tuple) and rp[0] not in a.NOT_IN_CORE:
-                    break
-            # integers can be converted into byte strings in database
-            # this happens because some location identifiers are strings, e.g. LOAD_QUEUE or NOT_CREATED_YET
-            return [int(rp[0]), int(rp[1]), cycleNum]
 
     def processMoveList(self, moveList) -> ProcessMoveListResult:
         """
