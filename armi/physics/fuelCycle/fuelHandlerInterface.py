@@ -152,7 +152,7 @@ class FuelHandlerInterface(interfaces.Interface):
             # do cycle+1 because cycle 0 at t=0 isn't usually interesting
             # remember, we put cycle 0 in so we could do BOL branch searches.
             # This also syncs cycles up with external physics kernel cycles.
-            out.write("Before cycle {0}:\n".format(cycle + 1))
+            out.write("Before cycle {0}:\n".format(cycle))
             movesThisCycle = self.r.core.moves.get(cycle)
             if movesThisCycle is not None:
                 for move in movesThisCycle:

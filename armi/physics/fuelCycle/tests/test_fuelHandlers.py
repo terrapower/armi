@@ -178,7 +178,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         """
         self.o, self.r = test_reactors.loadTestReactor(
             self.directoryChanger.destination,
-            customSettings={"nCycles": 3, "trackAssems": True},
+            customSettings={"nCycles": 4, "trackAssems": True},
         )
 
         allBlocks = self.r.core.getBlocks()
@@ -190,9 +190,6 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
         self.nSfp = len(self.r.excore["sfp"])
-        # add location history data to first two SFP assemblies used in repeatShuffle test
-        for i, a in enumerate(list(self.r.excore["sfp"])[:2]):
-            a.p.ringPosHist = [(i + 1, i + 2)]
 
         # generate a reactor with assemblies
         # generate components with materials
@@ -572,44 +569,43 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # do not blindly rebase these reference values. test failures using this dict
         # imply that the assembly shuffling definition has changed.
         expPosHist = {}
-        # cycle 0 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
-        expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
-        # cycle 0 shuffle, (3, 3) moved to (2, 1) in cascade
-        # cycle 2 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
+        # cycle 1 shuffle, (2, 1) moved to SFP then back to (5, 3)
+        expPosHist["A0005"] = [(2, 1), (5, 3), (5, 3), (5, 3)]
+        # cycle 1 shuffle, (3, 3) moved to (2, 1) in cascade
+        # cycle 3 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
         expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), ("SFP", "SFP")]
-        # cycle 0 shuffle, (4, 2) moved to (3, 3) in cascade
+        # cycle 1 shuffle, (4, 2) moved to (3, 3) in cascade
         expPosHist["A0019"] = [(4, 2), (3, 3), (3, 3), (3, 3)]
-        # cycle 0 shuffle, (5, 1) moved to (4, 2) in cascade
+        # cycle 1 shuffle, (5, 1) moved to (4, 2) in cascade
         expPosHist["A0020"] = [(5, 1), (4, 2), (4, 2), (4, 2)]
-        # cycle 0 shuffle, (6, 7) moved to (5, 1) in cascade
+        # cycle 1 shuffle, (6, 7) moved to (5, 1) in cascade
         expPosHist["A0044"] = [(6, 7), (5, 1), (5, 1), (5, 1)]
-        # cycle 0 shuffle, fresh to (6, 7)
-        # cycle 2 shuffle, (6, 7) moved to (5, 2) in cascade
+        # cycle 1 shuffle, fresh to (6, 7)
+        # cycle 3 shuffle, (6, 7) moved to (5, 2) in cascade
         expPosHist["A0077"] = [("NotCreatedYet", "NotCreatedYet"), (6, 7), (6, 7), (5, 2)]
-        # cycle 1 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
-        expPosHist["A0009"] = [(2, 2), (2, 2), ("SFP", "SFP"), ("SFP", "SFP")]
-        # cycle 1 shuffle, (3, 2) moved to (2, 2) in cascade
+        # cycle 2 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
+        expPosHist["A0009"] = [(2, 2), (2, 2), (5, 4), (5, 4)]
+        # cycle 2 shuffle, (3, 2) moved to (2, 2) in cascade
         expPosHist["A0014"] = [(3, 2), (3, 2), (2, 2), (2, 2)]
-        # cycle 1 shuffle, (4, 1) moved to (3, 2) in cascade
+        # cycle 2 shuffle, (4, 1) moved to (3, 2) in cascade
         expPosHist["A0015"] = [(4, 1), (4, 1), (3, 2), (3, 2)]
-        # cycle 1 shuffle, (5, 4) moved to (4, 1) in cascade
+        # cycle 2 shuffle, (5, 4) moved to (4, 1) in cascade
         expPosHist["A0034"] = [(5, 4), (5, 4), (4, 1), (4, 1)]
-        # cycle 1 shuffle, (6, 4) moved to (5, 4) in cascade
-        # cycle 2 shuffle, (5, 4) moved to SFP
-        expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
-        # cycle 1 shuffle, fresh to (6, 4)
+        # cycle 1 shuffle, (6, 4) moved to (5, 4) in cascade then discharged to SFp
+        expPosHist["A0040"] = [(6, 4), (6, 4), ("SFP", "SFP"), ("SFP", "SFP")]
+        # cycle 2 shuffle, fresh to (6, 4)
         expPosHist["A0078"] = [("NotCreatedYet", "NotCreatedYet"), ("NotCreatedYet", "NotCreatedYet"), (6, 4), (6, 4)]
-        # cycle 1 shuffle, SFP to (5, 3)
-        expPosHist["A0073"] = [(1, 2), ("SFP", "SFP"), (5, 3), (5, 3)]
+        # cycle 1 shuffle, SFP to (5, 3) then back to SFP
+        expPosHist["A0073"] = [("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (5, 3) moved to SFP
-        expPosHist["A0029"] = [(5, 3), (5, 3), ("SFP", "SFP"), ("SFP", "SFP")]
-        # cycle 2 shuffle, (3, 1) moved to (2, 1) in cascade
+        expPosHist["A0029"] = [(5, 3), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
+        # cycle 3 shuffle, (3, 1) moved to (2, 1) in cascade
         expPosHist["A0010"] = [(3, 1), (3, 1), (3, 1), (2, 1)]
-        # cycle 2 shuffle, (4, 3) moved to (3, 1) in cascade
+        # cycle 3 shuffle, (4, 3) moved to (3, 1) in cascade
         expPosHist["A0024"] = [(4, 3), (4, 3), (4, 3), (3, 1)]
-        # cycle 2 shuffle, (5, 2) moved to (4, 3) in cascade
+        # cycle 3 shuffle, (5, 2) moved to (4, 3) in cascade
         expPosHist["A0025"] = [(5, 2), (5, 2), (5, 2), (4, 3)]
-        # cycle 2 shuffle, fresh to (6, 7)
+        # cycle 3 shuffle, fresh to (6, 7)
         expPosHist["A0079"] = [
             ("NotCreatedYet", "NotCreatedYet"),
             ("NotCreatedYet", "NotCreatedYet"),
@@ -617,9 +613,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
             (6, 7),
         ]
         # cycle 2 shuffle, SFP to (5, 4)
-        expPosHist["A0074"] = [(2, 3), ("SFP", "SFP"), ("SFP", "SFP"), (5, 4)]
+        expPosHist["A0074"] = [("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
 
-        for cycle in range(3):
+        for cycle in range(4):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
@@ -723,19 +719,19 @@ class TestFuelHandler(FuelHandlerTestHelper):
         numblocks = len(self.r.core.getFirstAssembly())
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
-        self.assertEqual(len(moves), 3)
+        self.assertEqual(len(moves), 4)
         firstMove = moves[1][0]
         self.assertEqual(firstMove.fromLoc, "002-001")
-        self.assertEqual(firstMove.toLoc, "SFP")
+        self.assertEqual(firstMove.toLoc, "005-003")
         self.assertEqual(len(firstMove.enrichList), numblocks)
         self.assertEqual(firstMove.assemType, "igniter fuel")
         self.assertIsNone(firstMove.ringPosCycle)
 
-        # check the move that came back out of the SFP
+        # check the move to the SFP
         sfpMove = moves[2][-2]
-        self.assertEqual(sfpMove.fromLoc, "SFP")
-        self.assertEqual(sfpMove.toLoc, "005-003")
-        self.assertListEqual(sfpMove.ringPosCycle, [1, 2, 0])  # ring, pos, cycle history for assem in SFP
+        self.assertEqual(sfpMove.fromLoc, "006-004")
+        self.assertEqual(sfpMove.toLoc, "SFP")
+        self.assertIsNone(sfpMove.ringPosCycle)
 
         # make sure we fail hard if the file doesn't exist
         with self.assertRaises(RuntimeError):

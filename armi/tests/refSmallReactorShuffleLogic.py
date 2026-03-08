@@ -19,13 +19,17 @@ class EquilibriumShuffler(FuelHandler):
     """Convergent divergent equilibrium shuffler."""
 
     def chooseSwaps(self, factorList):
+        if self.cycle == 0:
+            # no fuel shuffling at cycle 0
+            return
+
         cycleMoves = [
             [(2, 1), (3, 3), (4, 2), (5, 1), (6, 7)],
             [(2, 2), (3, 2), (4, 1), (5, 4), (6, 4)],
             [(2, 1), (3, 1), (4, 3), (5, 2), (6, 7)],
         ]
         cascade = []
-        for ring, pos in cycleMoves[self.cycle]:
+        for ring, pos in cycleMoves[self.cycle - 1]:
             loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(ring, pos)
             a = self.r.core.childrenByLocator[loc]
             if not a:
@@ -34,12 +38,13 @@ class EquilibriumShuffler(FuelHandler):
         self.swapCascade(cascade)
         fresh = self.r.blueprints.constructAssem(self.cs, name="igniter fuel")
         self.dischargeSwap(fresh, cascade[0])
-        if self.cycle > 0:
+
+        if self.cycle < 3:
             # do a swap where the assembly comes from the sfp
             if self.r.excore.get("sfp") is None:
                 raise RuntimeError("No SFP found.")
 
-            incoming = self.r.excore["sfp"].getChildren().pop(0)
+            incoming = self.r.excore["sfp"].getChildren().pop()
             if not incoming:
                 raise RuntimeError(f"No assembly in SFP {self.r.excore['sfp'].getChildren()}")
             outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 2 + self.cycle)
