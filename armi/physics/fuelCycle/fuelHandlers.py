@@ -188,7 +188,7 @@ class FuelHandler:
         else:
             # Normal shuffle from user-provided shuffle logic input
             self.chooseSwaps(factor)
-            self.updateAllLocationHistParams(self.cycle + 1)
+            self.updateAllLocationHistParams(self.cycle)
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
         if self.cs["fluxRecon"] and self.cs[CONF_ASSEMBLY_ROTATION_ALG]:
@@ -1012,7 +1012,6 @@ class FuelHandler:
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
-        self.updateAllLocationHistParams(self.cycle + 1)
 
     def swapCascade(self, assemList):
         """
@@ -1118,7 +1117,7 @@ class FuelHandler:
             moved.extend([a1, a2])
         self.pendingRotations = moveData.rotations
 
-        self.updateAllLocationHistParams(self.cycle + 1)
+        self.updateAllLocationHistParams(self.cycle)
 
         return moved
 
