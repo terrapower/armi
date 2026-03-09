@@ -348,6 +348,7 @@ armi = [
     "resources/materials/NaCl.yaml",
     "resources/materials/NZ.yaml",
     "resources/materials/Potassium.yaml",
+    "resources/materials/Sc2O3.yaml",
     "resources/materials/Sodium.yaml",
     "resources/materials/Tantalum.yaml",
     "resources/materials/TZM.yaml",

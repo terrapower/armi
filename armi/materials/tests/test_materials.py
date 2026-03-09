@@ -393,9 +393,6 @@ class ScandiumOxideTests(AbstractMaterialTest, unittest.TestCase):
         ref = 0.28322
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class SodiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Sodium
