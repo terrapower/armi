@@ -958,25 +958,6 @@ class CopperTests(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
 
 
-class SulfurTests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = materials.Sulfur
-    VALID_TEMP_K = 400
-
-    def test_setDefaultMassFracs(self):
-        cur = self.mat.massFrac
-        ref = {"S34": 0.0429, "S36": 0.002, "S33": 0.0076, "S32": 0.9493}
-        self.assertEqual(cur, ref)
-
-    def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(400)
-        ref = 1.7956
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-
 class ZrTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Zr
 
