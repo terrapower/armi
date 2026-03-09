@@ -36,6 +36,14 @@ class Be9(Material):
         self.refDens = 1.85
 
 
+class Graphite(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Graphite.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 1.8888
+
+
 class HT9(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "HT9.yaml")
 
