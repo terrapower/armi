@@ -192,7 +192,7 @@ class TestArmiCase(unittest.TestCase):
             newSettings = {
                 "branchVerbosity": "important",
                 "coverage": False,
-                "nCycles": 1,
+                "nCycles": 2,
                 "profile": False,
                 "trace": False,
                 "verbosity": "important",
