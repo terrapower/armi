@@ -60,8 +60,16 @@ class Hafnium(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Hafnium.yaml")
 
 
+class Inconel(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel.yaml")
+
+
 class Inconel600(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel600.yaml")
+
+
+class Inconel617(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel617.yaml")
 
 
 class InconelPE16(Material):
