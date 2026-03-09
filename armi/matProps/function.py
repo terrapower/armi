@@ -254,6 +254,8 @@ class Function:
         var: str
             name of the variable
         """
+        print(node)
+        print(type(node))
         if "min" not in node or "max" not in node:
             raise KeyError(
                 f"The independent variable node, {var}, is not formatted correctly: {node}. If this node is not "

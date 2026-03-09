@@ -333,6 +333,7 @@ armi = [
     "resources/materials/CaH2.yaml",
     "resources/materials/Californium.yaml",
     "resources/materials/Concrete.yaml",
+    "resources/materials/Cs.yaml",
     "resources/materials/Cu.yaml",
     "resources/materials/Hafnium.yaml",
     "resources/materials/HT9.yaml",

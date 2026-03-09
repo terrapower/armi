@@ -48,6 +48,10 @@ class Concrete(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Concrete.yaml")
 
 
+class Cs(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Cs.yaml")
+
+
 class Cu(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
 
