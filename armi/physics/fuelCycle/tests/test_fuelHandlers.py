@@ -570,7 +570,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # imply that the assembly shuffling definition has changed.
         expPosHist = {}
         # cycle 1 shuffle, (2, 1) moved to SFP then back to (5, 3)
-        expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP") , ("SFP", "SFP")]
+        expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (3, 3) moved to (2, 1) in cascade
         # cycle 3 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
         expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), (5, 4)]
