@@ -140,6 +140,11 @@ class Material:
         self._name = self.__class__.__name__
 
         # call subclass implementations
+        # here a material set default mass fracs but doesn't yet have a parent
+        # maybe we can delay the setting till hte parent is assigned or re-calculate  when its assigned through a setter
+        
+
+        
         self.setDefaultMassFracs()
 
     def __repr__(self):

@@ -363,6 +363,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         coldMatAxialExpansionFactor = 1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
+        self.material.zeroOutMatMods()
+
     def adjustDensityForHeightExpansion(self, newHot):
         """
         Change the densities in cases where height of the block/component is changing with expansion.

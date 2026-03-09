@@ -313,7 +313,7 @@ class ComponentBlueprint(yamlize.Object):
                 continue
             elif attr.name == "material":
                 # value is a material instance
-                value = self._constructMaterial(blueprint, matMods)
+                value = mat = self._constructMaterial(blueprint, matMods )
             elif attr.name == "latticeIDs":
                 # Don't pass latticeIDs on to the component constructor.
                 # They're applied during block construction.
@@ -331,6 +331,7 @@ class ComponentBlueprint(yamlize.Object):
                 value = value.value
 
             kwargs[attr.name] = value
+            # kwargs["mat_mod"] = matMods
 
         return kwargs
 
@@ -351,6 +352,10 @@ class ComponentBlueprint(yamlize.Object):
             # don't apply if only customIsotopics is in there
             try:
                 # update material with updated input params from blueprints file.
+
+                # mad mods are applied without mat having a parent and  mats are preferred not to store state...
+                # this is not great
+                
                 mat.applyInputParams(**matMods)
             except TypeError as ee:
                 errorMessage = ee.args[0]
