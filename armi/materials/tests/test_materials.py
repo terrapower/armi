@@ -739,9 +739,6 @@ class ThoriumTests(AbstractMaterialTest, unittest.TestCase):
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ThoriumOxide

@@ -70,6 +70,14 @@ class Sc2O3(Material):
         self.refDens = 3.86
 
 
+class Thorium(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Thorium.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 11.68
+
+
 class Y2O3(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Y2O3.yaml")
 

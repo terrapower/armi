@@ -353,6 +353,7 @@ armi = [
     "resources/materials/Sc2O3.yaml",
     "resources/materials/Sodium.yaml",
     "resources/materials/Tantalum.yaml",
+    "resources/materials/Thorium.yaml",
     "resources/materials/TZM.yaml",
     "resources/materials/Void.yaml",
     "resources/materials/Y2O3.yaml",
