@@ -94,3 +94,7 @@ class TZM(SimpleSolid):
 
 class Void(Fluid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Void.yaml")
+
+
+class ZnO(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "ZnO.yaml")
