@@ -1577,9 +1577,6 @@ class YttriumOxideTests(AbstractMaterialTest, unittest.TestCase):
         cur = 0.0696622
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class ZincOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ZnO

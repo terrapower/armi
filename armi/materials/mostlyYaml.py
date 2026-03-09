@@ -52,3 +52,11 @@ class Inconel800(Material):
     def __init__(self):
         Material.__init__(self)
         self.refDens = 7.94
+
+
+class Y2O3(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Y2O3.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 5.03

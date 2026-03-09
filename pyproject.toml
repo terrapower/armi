@@ -351,6 +351,7 @@ armi = [
     "resources/materials/Tantalum.yaml",
     "resources/materials/TZM.yaml",
     "resources/materials/Void.yaml",
+    "resources/materials/Y2O3.yaml",
     "resources/materials/ZnO.yaml",
     "resources/mcc-nuclides.yaml",
     "resources/nuclides.dat",
