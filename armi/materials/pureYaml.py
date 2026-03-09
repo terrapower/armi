@@ -44,6 +44,10 @@ class CaH2(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "CaH2.yaml")
 
 
+class Concrete(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Concrete.yaml")
+
+
 class Cu(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Cu.yaml")
 
