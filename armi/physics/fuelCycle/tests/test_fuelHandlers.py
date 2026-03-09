@@ -569,10 +569,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # do not blindly rebase these reference values. test failures using this dict
         # imply that the assembly shuffling definition has changed.
         expPosHist = {}
-        # cycle 1 shuffle, (2, 1) moved to SFP then back to (5, 3)
+        # cycle 1 shuffle, (2, 1) moved to SFP
         expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (3, 3) moved to (2, 1) in cascade
-        # cycle 3 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
+        # cycle 3 shuffle, (2, 1) moved to (5, 4)
         expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), (5, 4)]
         # cycle 1 shuffle, (4, 2) moved to (3, 3) in cascade
         expPosHist["A0019"] = [(4, 2), (3, 3), (3, 3), (3, 3)]
@@ -583,7 +583,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # cycle 1 shuffle, fresh to (6, 7)
         # cycle 3 shuffle, (6, 7) moved to (5, 2) in cascade
         expPosHist["A0077"] = [("NotCreatedYet", "NotCreatedYet"), (6, 7), (6, 7), (5, 2)]
-        # cycle 2 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
+        # cycle 2 shuffle, (2, 2) moved to (5, 3)
         expPosHist["A0009"] = [(2, 2), (2, 2), (5, 3), (5, 3)]
         # cycle 2 shuffle, (3, 2) moved to (2, 2) in cascade
         expPosHist["A0014"] = [(3, 2), (3, 2), (2, 2), (2, 2)]
@@ -591,12 +591,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         expPosHist["A0015"] = [(4, 1), (4, 1), (3, 2), (3, 2)]
         # cycle 2 shuffle, (5, 4) moved to (4, 1) in cascade
         expPosHist["A0034"] = [(5, 4), (5, 4), (4, 1), (4, 1)]
-        # cycle 1 shuffle, (6, 4) moved to (5, 4) in cascade then discharged to SFp
+        # cycle 2 shuffle, (6, 4) moved to (5, 4) in cascade then discharged to SFP
         expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
         # cycle 2 shuffle, fresh to (6, 4)
         expPosHist["A0078"] = [("NotCreatedYet", "NotCreatedYet"), ("NotCreatedYet", "NotCreatedYet"), (6, 4), (6, 4)]
-        # cycle 1 shuffle, SFP to (5, 3) then back to SFP
-        expPosHist["A0073"] = [("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 1 shuffle, (5, 3) moved to SFP
         expPosHist["A0029"] = [(5, 3), (5, 3), ("SFP", "SFP"), ("SFP", "SFP")]
         # cycle 3 shuffle, (3, 1) moved to (2, 1) in cascade
@@ -612,8 +610,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
             ("NotCreatedYet", "NotCreatedYet"),
             (6, 7),
         ]
-        # cycle 2 shuffle, SFP to (5, 4)
-        expPosHist["A0074"] = [("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
 
         for cycle in range(4):
             self.r.p.cycle = cycle
