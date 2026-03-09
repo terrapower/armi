@@ -233,9 +233,6 @@ class MagnesiumOxideTests(AbstractMaterialTest, unittest.TestCase):
         ref = 0.0049909
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class MolybdenumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Molybdenum

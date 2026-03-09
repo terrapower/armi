@@ -347,6 +347,7 @@ armi = [
     "resources/materials/Lead.yaml",
     "resources/materials/LeadBismuth.yaml",
     "resources/materials/Magnesium.yaml",
+    "resources/materials/MgO.yaml",
     "resources/materials/Molybdenum.yaml",
     "resources/materials/NaCl.yaml",
     "resources/materials/NZ.yaml",
