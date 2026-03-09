@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,19 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit test for Beryllium."""
 
-import unittest
+# Yttrium Oxide
 
-from armi.materials import Be9
-from armi.materials.tests.test_materials import AbstractMaterialTest
+material type: Composite
+composition:
+  O16: [21.25, 21.25]
+  Y89: balance
 
-
-class Be9Tests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = Be9
-
-    def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(Tc=25)
-        ref = 1.85
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
+linear expansion:
+  function:
+    T:
+      min: 0
+      max: 1300.0
+    type: symbolic
+    equation: 1.4922e-7 * (T+273.15)**2 + 6.2448e-4 * (T+273.15) - 1.8414e-1

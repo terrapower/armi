@@ -330,6 +330,7 @@ armi = [
     "resources/elements.dat",
     "resources/materials/Air.yaml",
     "resources/materials/Alloy200.yaml",
+    "resources/materials/Be9.yaml",
     "resources/materials/CaH2.yaml",
     "resources/materials/Californium.yaml",
     "resources/materials/Concrete.yaml",

@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,19 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit test for Beryllium."""
 
-import unittest
+# Beryllium
+#
+# Beryllium is a lightweight metal with lots of interesting nuclear use-cases.
+# It has a nice (n,2n) reaction and is an inhalation hazard.
 
-from armi.materials import Be9
-from armi.materials.tests.test_materials import AbstractMaterialTest
+material type: Metal
+composition:
+  BE9: balance
 
-
-class Be9Tests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = Be9
-
-    def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(Tc=25)
-        ref = 1.85
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
+linear expansion:
+  function:
+    T:
+      min: -223.15
+      max: 1286.85
+    type: symbolic
+    equation: 1e-4 * (8.4305 + 1.1464e-2 * (T+273.15) - 2.9752e-6 * (T+273.15)**2)

@@ -28,6 +28,14 @@ _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
 
 
+class Be9(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Be9.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 1.85
+
+
 class HT9(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "HT9.yaml")
 
