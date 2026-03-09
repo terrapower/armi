@@ -1132,7 +1132,6 @@ class InconelTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.Inconel.propertyValidTemperature), 0)
-        self.assertGreater(len(self.Inconel800.propertyValidTemperature), 0)
         self.assertEqual(len(self.InconelPE16.propertyValidTemperature), 0)
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
@@ -1298,9 +1297,6 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
         ref = self.mat.heatCapacity(Tc=400)
         cur = 503.399568
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):

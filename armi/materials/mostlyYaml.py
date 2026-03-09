@@ -34,3 +34,21 @@ class HT9(Material):
     def __init__(self):
         Material.__init__(self)
         self.refDens = 7.778
+
+
+class Inconel625(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel625.yaml")
+    refTempK = 294.15
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 8.44
+
+
+class Inconel800(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel800.yaml")
+    refTempK = 294.15
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 7.94
