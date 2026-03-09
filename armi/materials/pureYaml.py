@@ -64,6 +64,10 @@ class Inconel600(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel600.yaml")
 
 
+class InconelPE16(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "InconelPE16.yaml")
+
+
 class Lead(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Lead.yaml")
 
