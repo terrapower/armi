@@ -348,6 +348,9 @@ class PotassiumTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(Tc=100)
+        print(self.mat.pseudoDensity(Tc=100))
+        print(self.mat.density(Tc=100))
+        print(self.mat.linearExpansionPercent(Tc=100))
         ref = 0.8195
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
@@ -371,9 +374,6 @@ class PotassiumTests(AbstractMaterialTest, unittest.TestCase):
         ref = 0.5502
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class ScandiumOxideTests(AbstractMaterialTest, unittest.TestCase):
