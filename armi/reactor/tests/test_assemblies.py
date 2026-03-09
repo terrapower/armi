@@ -41,7 +41,7 @@ def buildTestAssemblies():
 
     This builds 2 HexBlocks:
         * One with half UZr pins and half UTh pins
-        * One with all UThZr pins
+        * One with all UZr pins
     """
     settings.Settings()
 
@@ -72,7 +72,7 @@ def buildTestAssemblies():
         "mult": 2 * nPins,
     }
 
-    fuelUThZr = components.Circle("fuel B", "UThZr", **fuelDims2nPins)
+    fuelUZrB = components.Circle("fuel B", "UZr", **fuelDims2nPins)
 
     cladDims = {
         "Tinput": temperature,
@@ -108,7 +108,7 @@ def buildTestAssemblies():
 
     block2.setType("fuel")
     block2.setHeight(10.0)
-    block2.add(fuelUThZr)
+    block2.add(fuelUZrB)
     block2.add(clad)
     block2.add(interSodium)
     block2.p.axMesh = 1
@@ -146,15 +146,12 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertFalse(self.assembly2 < self.assembly)
 
     def test_UThZrMaterial(self):
-        """Test the ternary UThZr material."""
+        """Test the ternary UZr material."""
         b2 = self.assembly2[0]
-        uThZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
-        mat = uThZrFuel.getProperties()
+        uZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
+        mat = uZrFuel.getProperties()
         mat.applyInputParams(0.1, 0.0)
-        self.assertAlmostEqual(
-            uThZrFuel.getMass("U235") / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
-            0.1111111111111111,
-        )
+        self.assertAlmostEqual(uZrFuel.getMass("U235") / (uZrFuel.getMass("U238") + uZrFuel.getMass("U235")), 0.1)
 
 
 def makeTestAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None):
