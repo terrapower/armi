@@ -1355,9 +1355,6 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
         cur = 484.93968
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
 
 class Alloy200Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Alloy200

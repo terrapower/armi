@@ -70,6 +70,14 @@ class Inconel800(Material):
         self.refDens = 7.94
 
 
+class InconelX750(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "InconelX750.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 8.28
+
+
 class MgO(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "MgO.yaml")
 
