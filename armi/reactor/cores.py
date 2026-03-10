@@ -1445,7 +1445,7 @@ class Core(composites.Composite):
         Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
         """
         nCycles = len(a.p.ringPosHist)
-        if nCycles >= cycleNum:  # requested cycleNum has data populated
+        if nCycles > cycleNum:  # requested cycleNum has data populated
             rp = a.p.ringPosHist[cycleNum]
             if rp[0] not in a.NOT_IN_CORE:
                 if (int(rp[0]), int(rp[1])) == (ring, pos):
