@@ -740,35 +740,33 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.maxDiff = None
         expected = {
             1: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "igniter fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
-                AssemblyMove("010-046", "011-046"),
-                AssemblyMove("011-046", "012-046"),
-                AssemblyMove("012-046", "Delete"),
-                AssemblyMove("SFP", "005-003", ringPosCycle=[3, 5, 4]),
-                AssemblyMove("005-003", "SFP"),
+                AssemblyMove("LoadQueue", "004-004", [0.0, 0.12, 0.14, 0.15, 0.0], "middle fuel"),
+                AssemblyMove("004-004", "005-005"),
+                AssemblyMove("005-005", "006-006"),
+                AssemblyMove("006-006", "Delete"),
             ],
             2: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "igniter fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
-                AssemblyMove("010-046", "011-046"),
-                AssemblyMove("011-046", "012-046"),
-                AssemblyMove("012-046", "Delete"),
-                AssemblyMove("SFP", "005-003", ringPosCycle=[3, 5, 4]),
+                AssemblyMove("LoadQueue", "004-004", [0.0, 0.12, 0.14, 0.15, 0.0], "middle fuel"),
+                AssemblyMove("004-004", "005-005"),
+                AssemblyMove("005-005", "006-006"),
+                AssemblyMove("006-006", "Delete"),
+                AssemblyMove("SFP", "005-003", ringPosCycle=[6, 5, 0]),
                 AssemblyMove("005-003", "SFP"),
             ],
             3: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "igniter fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
@@ -956,7 +954,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         moves, _ = fh.readMovesYaml(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml"))
         result = fh.processMoveList(moves[1])
-        self.assertEqual(len(result.loadChains), 3)
+        self.assertEqual(len(result.loadChains), 2)
         self.assertTrue(any(result.enriches))
         self.assertTrue(result.rotations)
 
