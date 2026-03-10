@@ -892,7 +892,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             cycle0Loc = ("2".encode(), "3".encode())
             self.assertEqual(assem.p.ringPosHist[0], cycle0Loc)
             self.assertEqual(assem.p.ringPosHist[1], (9, 45))
-            self.assertEqual(len(assem.p.ringPosHist), 2) # truncated by logic in fuelHandlers
+            self.assertEqual(len(assem.p.ringPosHist), 2)  # truncated by logic in fuelHandlers
             newSfpAssem = self.r.excore["sfp"].getAssembly(before)
             self.assertIsNotNone(newSfpAssem)
             self.assertEqual(newSfpAssem.p.ringPosHist[0], (9, 45))
