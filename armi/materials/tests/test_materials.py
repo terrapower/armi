@@ -1457,7 +1457,7 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=str(Tc))
 
-    def test_meanCoefficientThermalExpansion(self):
+    def test_alpha_mean(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             1.22066141e-5,
@@ -1471,11 +1471,8 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
         ]
 
         for Tc, ref in zip(temps, refList):
-            cur = self.mat.meanCoefficientThermalExpansion(Tc=Tc)
+            cur = self.mat.alpha_mean(T=Tc)
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=str(Tc))
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class TZMTests(AbstractMaterialTest, unittest.TestCase):

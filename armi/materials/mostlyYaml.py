@@ -44,6 +44,15 @@ class Graphite(Material):
         self.refDens = 1.8888
 
 
+class HastelloyN(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "HastelloyN.yaml")
+    refTempK = 293.15
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 8.86
+
+
 class HT9(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "HT9.yaml")
 

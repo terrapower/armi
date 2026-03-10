@@ -338,6 +338,7 @@ armi = [
     "resources/materials/Cu.yaml",
     "resources/materials/Graphite.yaml",
     "resources/materials/Hafnium.yaml",
+    "resources/materials/HastelloyN.yaml",
     "resources/materials/HT9.yaml",
     "resources/materials/Inconel.yaml",
     "resources/materials/Inconel600.yaml",

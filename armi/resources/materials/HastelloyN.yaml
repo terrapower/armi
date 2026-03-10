@@ -1,0 +1,83 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# HastelloyN
+#
+# Hastelloy N alloy is a nickel-base alloy that was invented at Oak RIdge National Laboratories as a container material
+# for molten fluoride salts. It has good oxidation resistance to hot fluoride salts in the temperature range of 704 to
+# 871C (1300 to 1600F).
+
+material type: Metal
+composition:
+  AL: [0.25, 0.25]
+  C: [0.06, 0.06]
+  CO: [0.2, 0.2]
+  CR: [7.0, 7.0]
+  CU: [0.35, 0.35]
+  FE: [4.0, 4.0]
+  MN: [0.8, 0.8]
+  MO: [16.0, 16.0]
+  SI: [1.0, 1.0]
+  TI: [0.25, 0.25]
+  V: [0.05, 0.05]
+  W: [0.5, 0.5]
+  NI: balance
+  references:
+  - ref: http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: 200
+      max: 700
+    type: symbolic
+    equation: 1.92857e-5 * T**2 + 3.12857e-3 * T + 1.17743e1
+  references:
+  - ref: http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf
+    type: open literature
+
+specific heat capacity:
+  function:
+    T:
+      min: 100
+      max: 700
+    type: symbolic
+    equation: 3.19981e2 + 2.47421 * T - 2.49306e-2 * T**2 + 1.32517e-4 * T**3 - 3.58872e-7 * T**4 + 4.69003e-10 * T**5 - 2.32692e-13 * T**6
+  references:
+  - ref: Feasibility Study of Secondary Heat Exchanger Concepts for the Advanced High Temperature Reactor, INL/EXT-11-23076, 2011
+    type: open literature
+
+linear expansion:
+  function:
+    T:
+      min: 20
+      max: 900
+    type: symbolic
+    equation: (2.60282e-10 * T**2 + 7.69859e-8 * T + 1.21036e-3) * (T - 20)
+  references:
+  - ref: http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf
+    type: open literature
+
+mean coefficient of thermal expansion:
+  function:
+    T:
+      min: 20
+      max: 900
+    type: symbolic
+    equation: 2.60282e-12 * T**2 + 7.69859e-10 * T + 1.21036e-5
+  references:
+  - ref: http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf
+    type: open literature

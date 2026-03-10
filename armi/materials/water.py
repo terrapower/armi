@@ -211,8 +211,7 @@ class Water(Fluid):
 
         Notes
         -----
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
 
         alpha is used in the relations for enthalpy
@@ -250,8 +249,7 @@ class Water(Fluid):
 
         Notes
         -----
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         alpha = self.auxiliaryQuantitySpecificEnthalpy(Tc=Tc, Tk=Tk)
@@ -279,8 +277,7 @@ class Water(Fluid):
 
         Notes
         -----
-        IAPWS-IF97
-        http://www.iapws.org/relguide/supsat.pdf
+        IAPWS-IF97 http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
         phi = self.auxiliaryQuantitySpecificEntropy(Tc=Tc, Tk=Tk)
