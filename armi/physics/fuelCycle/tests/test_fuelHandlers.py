@@ -897,6 +897,51 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertIsNotNone(newSfpAssem)
             self.assertEqual(newSfpAssem.p.ringPosHist[0], (9, 45))
 
+    def test_performShuffleYaml_loadFromSfp2(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        fname = os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml")
+        self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+        # fake the assembly location history
+        with directoryChangers.TemporaryDirectoryChanger():
+            # _moves, _ = fh.readMovesYaml()
+
+            before1 = self.r.core.getAssemblyWithStringLocation("005-003")
+            before2 = self.r.core.getAssemblyWithStringLocation("006-005")
+            for cycle in range(4):
+                self.r.p.cycle = cycle
+                fh.outage()
+
+            # check that the following ringPosHist exist in the SFP
+            inSfp = [
+                [6, 6, 0],
+                [6, 6, 1],
+                [6, 5, 1],
+                [6, 5, 2],
+                [2, 2, 2],
+            ]
+            for a in self.r.excore["sfp"].getChildren():
+                print(a, a.p.ringPosHist)
+            for ring, pos, cycle in inSfp:
+                found = False
+                for a in self.r.excore["sfp"].getChildren():
+                    if a.p.ringPosHist[cycle] == (ring, pos):
+                        found = True
+                        break
+                self.assertTrue(found, f"ringPosHist == ({ring}, {pos}, {cycle}) not found in SFP!")
+
+            # check that SFP is in the ringPosHist of (2, 2) and (5, 3)
+            # check that the assembly that ended up in 002-002 is the same that started in 005-003
+            # check that the assembly that ended up in 005-003 is the same that started in 006-005
+            for loc, refA in [
+                ("002-002", before1),
+                ("005-003", before2),
+            ]:
+                a = self.r.core.getAssemblyWithStringLocation(loc)
+                self.assertIn(("SFP", "SFP"), a.p.ringPosHist)
+                self.assertEqual(
+                    refA.getName(), a.getName(), "Expected {a} to be the same assembly as {refA} based on shuffling!"
+                )
+
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
