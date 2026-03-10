@@ -188,7 +188,7 @@ class FuelHandler:
         else:
             # Normal shuffle from user-provided shuffle logic input
             self.chooseSwaps(factor)
-            self.updateAllLocationHistParams(self.cycle)
+        self.updateAllLocationHistParams(self.cycle)
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
         if self.cs["fluxRecon"] and self.cs[CONF_ASSEMBLY_ROTATION_ALG]:
@@ -1116,8 +1116,6 @@ class FuelHandler:
             self.swapAssemblies(a1, a2)
             moved.extend([a1, a2])
         self.pendingRotations = moveData.rotations
-
-        self.updateAllLocationHistParams(self.cycle)
 
         return moved
 

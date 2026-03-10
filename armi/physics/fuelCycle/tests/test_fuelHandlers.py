@@ -725,9 +725,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertIsNone(firstMove.ringPosCycle)
 
         # check the move to the SFP
-        sfpMove = moves[2][-2]
-        self.assertEqual(sfpMove.fromLoc, "LoadQueue")
-        self.assertEqual(sfpMove.toLoc, "006-004")
+        sfpMove = moves[2][-1]
+        self.assertEqual(sfpMove.fromLoc, "005-003")
+        self.assertEqual(sfpMove.toLoc, "SFP")
         self.assertIsNone(sfpMove.ringPosCycle)
 
         # make sure we fail hard if the file doesn't exist
@@ -773,7 +773,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
-                AssemblyMove("SFP", "002-002", ringPosCycle=[7, 1, 3]),
+                AssemblyMove("SFP", "002-002", ringPosCycle=[5, 3, 1]),
                 AssemblyMove("002-002", "SFP"),
             ],
         }
@@ -887,8 +887,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = 1
             self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
             fh.outage()
-            self.assertEqual(self.r.core.getAssemblyWithStringLocation("009-045").getName(), sfpAssem.getName())
-            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
+            assem = self.r.core.getAssemblyWithStringLocation("009-045")
+            self.assertEqual(assem.getName(), sfpAssem.getName())
+            cycle0Loc = ("2".encode(), "3".encode())
+            self.assertEqual(assem.p.ringPosHist[0], cycle0Loc)
+            self.assertEqual(assem.p.ringPosHist[1], (9, 45))
+            self.assertEqual(len(assem.p.ringPosHist), 2) # truncated by logic in fuelHandlers
+            newSfpAssem = self.r.excore["sfp"].getAssembly(before)
+            self.assertIsNotNone(newSfpAssem)
+            self.assertEqual(newSfpAssem.p.ringPosHist[0], (9, 45))
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
