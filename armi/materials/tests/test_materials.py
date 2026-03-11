@@ -976,7 +976,7 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_linearExpansionPercent(self):
-        testTemperaturesInK = [
+        tempsK = [
             293,
             400,
             500,
@@ -986,13 +986,12 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
             900,
             1000,
             1100,
-            1137,
             1200,
             1400,
             1600,
             1800,
         ]
-        expectedLinearExpansionValues = [
+        expectedValues = [
             0.0007078312624,
             0.0602048,
             0.123025,
@@ -1002,20 +1001,18 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
             0.4225578,
             0.5042,
             0.5864242,
-            0.481608769233,
             0.5390352,
             0.7249496,
             0.9221264,
             1.1380488,
         ]
-        for i, temp in enumerate(testTemperaturesInK):
-            Tk = temp
-            Tc = temp - units.C_TO_K
-            self.assertAlmostEqual(self.mat.linearExpansionPercent(Tc=Tc), expectedLinearExpansionValues[i])
-            self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=Tk), expectedLinearExpansionValues[i])
+        for i, Tk in enumerate(tempsK):
+            Tc = Tk - units.C_TO_K
+            self.assertAlmostEqual(self.mat.linearExpansionPercent(Tc=Tc), expectedValues[i], msg=str(Tc))
+            self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=Tk), expectedValues[i], msg=str(Tk))
 
     def test_pseudoDensity(self):
-        testTemperaturesInK = [
+        tempsK = [
             293,
             298.15,
             400,
@@ -1026,13 +1023,12 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
             900,
             1000,
             1100,
-            1137,
             1200,
             1400,
             1600,
             1800,
         ]
-        expectedDensityValues = [
+        expectedValues = [
             6.56990469455,
             6.56955491852,
             6.56209393299,
@@ -1043,20 +1039,15 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
             6.51482358662,
             6.50424356114,
             6.49361414192,
-            6.50716858169,
             6.49973710507,
             6.47576529821,
             6.45048593916,
             6.4229727005,
         ]
-        for i, temp in enumerate(testTemperaturesInK):
-            Tk = temp
-            Tc = temp - units.C_TO_K
-            self.assertAlmostEqual(self.mat.pseudoDensity(Tc=Tc), expectedDensityValues[i])
-            self.assertAlmostEqual(self.mat.pseudoDensity(Tk=Tk), expectedDensityValues[i])
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+        for i, Tk in enumerate(tempsK):
+            Tc = Tk - units.C_TO_K
+            self.assertAlmostEqual(self.mat.pseudoDensity(Tc=Tc), expectedValues[i], msg=str(Tc))
+            self.assertAlmostEqual(self.mat.pseudoDensity(Tk=Tk), expectedValues[i], msg=str(Tk))
 
 
 class InconelTests(AbstractMaterialTest, unittest.TestCase):

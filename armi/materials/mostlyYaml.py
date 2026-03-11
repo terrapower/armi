@@ -117,3 +117,13 @@ class Y2O3(Material):
     def __init__(self):
         Material.__init__(self)
         self.refDens = 5.03
+
+
+class Zr(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Zr.yaml")
+    refTempK = 298.15
+
+    def __init__(self):
+        Material.__init__(self)
+        # AAA Materials Handbook 45803
+        self.refDens = 6.569997702553134

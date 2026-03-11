@@ -362,6 +362,7 @@ armi = [
     "resources/materials/Void.yaml",
     "resources/materials/Y2O3.yaml",
     "resources/materials/ZnO.yaml",
+    "resources/materials/Zr.yaml",
     "resources/mcc-nuclides.yaml",
     "resources/nuclides.dat",
     "resources/referenceFissionProducts.dat",
