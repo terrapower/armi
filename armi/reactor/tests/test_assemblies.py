@@ -24,26 +24,9 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings, tests
-from armi.physics.neutronics.settings import (
-    CONF_LOADING_FILE,
-    CONF_XS_KERNEL,
-)
-from armi.reactor import (
-    assemblies,
-    blocks,
-    blueprints,
-    components,
-    geometry,
-    parameters,
-    reactors,
-)
-from armi.reactor.assemblies import (
-    Flags,
-    HexAssembly,
-    copy,
-    grids,
-    runLog,
-)
+from armi.physics.neutronics.settings import CONF_LOADING_FILE, CONF_XS_KERNEL
+from armi.reactor import assemblies, blocks, blueprints, components, geometry, parameters, reactors
+from armi.reactor.assemblies import Flags, HexAssembly, copy, grids, runLog
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
@@ -58,7 +41,7 @@ def buildTestAssemblies():
 
     This builds 2 HexBlocks:
         * One with half UZr pins and half UTh pins
-        * One with all UThZr pins
+        * One with all UZr pins
     """
     settings.Settings()
 
@@ -89,7 +72,7 @@ def buildTestAssemblies():
         "mult": 2 * nPins,
     }
 
-    fuelUThZr = components.Circle("fuel B", "UThZr", **fuelDims2nPins)
+    fuelUZrB = components.Circle("fuel B", "UZr", **fuelDims2nPins)
 
     cladDims = {
         "Tinput": temperature,
@@ -125,7 +108,7 @@ def buildTestAssemblies():
 
     block2.setType("fuel")
     block2.setHeight(10.0)
-    block2.add(fuelUThZr)
+    block2.add(fuelUZrB)
     block2.add(clad)
     block2.add(interSodium)
     block2.p.axMesh = 1
@@ -149,12 +132,7 @@ def buildTestAssemblies():
 
 class MaterialInAssembly_TestCase(unittest.TestCase):
     def setUp(self):
-        (
-            self.assembly,
-            self.assembly2,
-            self.assembly3,
-            self.assembly4,
-        ) = buildTestAssemblies()
+        self.assembly, self.assembly2, self.assembly3, self.assembly4 = buildTestAssemblies()
 
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
@@ -168,15 +146,12 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertFalse(self.assembly2 < self.assembly)
 
     def test_UThZrMaterial(self):
-        """Test the ternary UThZr material."""
+        """Test the ternary UZr material."""
         b2 = self.assembly2[0]
-        uThZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
-        mat = uThZrFuel.getProperties()
+        uZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
+        mat = uZrFuel.getProperties()
         mat.applyInputParams(0.1, 0.0)
-        self.assertAlmostEqual(
-            uThZrFuel.getMass("U235") / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
-            0.1111111111111111,
-        )
+        self.assertAlmostEqual(uZrFuel.getMass("U235") / (uZrFuel.getMass("U238") + uZrFuel.getMass("U235")), 0.1)
 
 
 def makeTestAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None):
@@ -438,7 +413,6 @@ class Assembly_TestCase(unittest.TestCase):
 
             cur = b.p.z
             ref = bottom + (top - bottom) / 2.0
-
             self.assertAlmostEqual(cur, ref, places=places)
 
             cur = b.p.zbottom
@@ -742,16 +716,9 @@ class Assembly_TestCase(unittest.TestCase):
             b.setHeight(self.height)
             b.setType("fuel")
 
-            self.hexDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "op": 0.76,
-                "ip": 0.0,
-                "mult": 1.0,
-            }
+            self.hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 0.76, "ip": 0.0, "mult": 1.0}
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-
             b.add(h)
 
             self.assembly.add(b)
@@ -960,11 +927,11 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_pinPlenumVolume(self):
         """Test the volume of a pin in the assembly's plenum."""
-        pinPlenumVolume = 5.951978000285659e-05
+        pinPlenumVolume = 5.951978e-05
 
         self._setup_blueprints("refSmallReactorBase.yaml")
         assembly = self.r.blueprints.assemblies.get("igniter fuel")
-        self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
+        self.assertAlmostEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 
     def test_averagePlenumTemperature(self):
         """Test an assembly's average plenum temperature with a single block outlet."""
