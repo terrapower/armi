@@ -92,6 +92,10 @@ class Molybdenum(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Molybdenum.yaml")
 
 
+class MOX(SimpleSolid):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "MOX.yaml")
+
+
 class NaCl(SimpleSolid):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "NaCl.yaml")
 

@@ -266,17 +266,6 @@ class Material(MatPropsMaterial):
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
         return 1.0 / (1 + dLL) ** 2
 
-    def meltingPoint(self, Tk: float = None, Tc: float = None) -> float:
-        """Returning the melting point of the material in Kelvin."""
-        if hasattr(self, "T_melt") and self.T_melt is not None:
-            try:
-                Tc = getTc(Tc, Tk)
-            except ValueError:
-                Tc = 26.0
-            return self.T_melt(T=Tc) + 273.15
-        else:
-            return 0.0
-
     def setDefaultMassFracs(self):
         """
         Mass fractions.

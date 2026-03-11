@@ -104,7 +104,7 @@ class MaterialFindingTests(unittest.TestCase):
             materials.Void,
         )
         self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.materials.mox", "armi.materials"]),
+            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.cli", "armi.materials"]),
             materials.Void,
         )
         with self.assertRaises(ModuleNotFoundError):
@@ -261,18 +261,6 @@ class MOXTests(AbstractMaterialTest, unittest.TestCase):
         delta = ref * 0.0001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-    def test_getMassFracPuO2(self):
-        ref = 0.176067
-        self.assertAlmostEqual(self.mat.getMassFracPuO2(), ref, delta=ref * 0.001)
-
-    def test_getMolFracPuO2(self):
-        ref = 0.209
-        self.assertAlmostEqual(self.mat.getMolFracPuO2(), ref, delta=ref * 0.001)
-
-    def test_getMeltingPoint(self):
-        ref = 2996.788765
-        self.assertAlmostEqual(self.mat.meltingPoint(), ref, delta=ref * 0.001)
-
     def test_applyInputParams(self):
         massFracNameList = [
             "AM241",
@@ -287,7 +275,7 @@ class MOXTests(AbstractMaterialTest, unittest.TestCase):
         ]
         massFracRefValList = [
             0.000998,
-            0.118643,
+            0.118644,
             0.000156,
             0.119839,
             0.029999,
@@ -301,7 +289,7 @@ class MOXTests(AbstractMaterialTest, unittest.TestCase):
 
         for name, frac in zip(massFracNameList, massFracRefValList):
             cur = self.mat.massFrac[name]
-            self.assertEqual(cur, frac)
+            self.assertAlmostEqual(cur, frac)
 
         # bonus code coverage for clearMassFrac()
         self.mat.clearMassFrac()
@@ -456,11 +444,6 @@ class ThoriumUraniumMetalTests(AbstractMaterialTest, unittest.TestCase):
         ref = 11.68
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
-    def test_meltingPoint(self):
-        cur = self.mat.meltingPoint()
-        ref = 2025.0
-        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
         ref = 43.1
@@ -587,10 +570,6 @@ class UraniumOxideTests(AbstractMaterialTest, unittest.TestCase):
         testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
         testing.assert_allclose(massFracs["U235"], 0.2 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4)
         testing.assert_allclose(massFracs["U238"], 0.8 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4)
-
-    def test_meltingPoint(self):
-        cur = self.mat.meltingPoint()
-        self.assertEqual(cur, 3123.0)
 
     def test_density(self):
         # Reference data taken from ORNL/TM-2000/351. "Thermophysical Properties of MOX and UO2 Fuels Including the
@@ -727,12 +706,6 @@ class ThoriumTests(AbstractMaterialTest, unittest.TestCase):
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 
-    def test_meltingPoint(self):
-        cur = self.mat.meltingPoint()
-        ref = 2025.0
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
 
 class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ThoriumOxide
@@ -757,12 +730,6 @@ class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(400)
         ref = 6.20
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
-    def test_meltingPoint(self):
-        cur = self.mat.meltingPoint()
-        ref = 3643.0
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 

@@ -38,11 +38,6 @@ class LithiumTests(AbstractMaterialTest, unittest.TestCase):
         ref = self.mat.pseudoDensity(Tc=500)
         self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
 
-    def test_meltingPoint(self):
-        ref = self.mat.meltingPoint()  # Kelvin
-        cur = 453.69
-        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
-
     def test_boilingPoint(self):
         ref = self.mat.T_boil(T=300)  # Celcius
         cur = 1341.85
