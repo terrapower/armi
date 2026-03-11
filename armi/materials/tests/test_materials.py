@@ -1471,7 +1471,7 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_applyInputParams(self):
         massFracNameList = ["C", "TI", "ZR", "MO"]
-        massFracRefValList = [2.50749e-5, 0.002502504, 0.000761199, 0.996711222]
+        massFracRefValList = [0.0002, 0.00475, 0.0009, 0.994]
 
         self.mat.applyInputParams()
 
@@ -1485,32 +1485,8 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_linearExpansionPercent(self):
-        temps = [
-            21.11,
-            456.11,
-            574.44,
-            702.22,
-            840.56,
-            846.11,
-            948.89,
-            1023.89,
-            1146.11,
-            1287.78,
-            1382.22,
-        ]
-        refList = [
-            0.0,
-            1.60e-1,
-            2.03e-1,
-            2.53e-1,
-            3.03e-1,
-            3.03e-1,
-            3.42e-1,
-            3.66e-1,
-            4.21e-1,
-            4.68e-1,
-            5.04e-1,
-        ]
+        temps = [21.11, 456.11, 574.44, 702.22, 840.56, 846.11, 948.89, 1023.89, 1146.11, 1287.78, 1382.22]
+        refList = [0.0, 0.160, 0.203, 0.253, 0.303, 0.303, 0.342, 0.366, 0.421, 0.468, 0.504]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)

@@ -17,10 +17,18 @@ file format: 3.0
 
 material type: Metal
 composition:
-  C: [0.00250749, 0.00250749]
-  TI: [0.2502504, 0.2502504]
-  ZR: [0.0761199, 0.0761199]
-  MO: balance
+  C: [0.010, 0.030]
+  O: [0.0000, 0.0030]
+  N: [0.000, 0.005]
+  Fe: [0.000, 0.010]
+  Ni: [0.000, 0.002]
+  Si: [0.000, 0.010]
+  Ti: [0.40, 0.55]
+  Zr: [0.06, 0.12]
+  Mo: balance
+  references:
+  - ref: ASTM B386 Standard Specification for Molybdenum and Molybdenum Alloy Plate, Sheet, Strip, Foil, and Ribbon, Alloy 363
+    type: open literature
 
 density:
   function:
