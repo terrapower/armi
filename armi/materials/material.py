@@ -267,12 +267,13 @@ class Material(MatPropsMaterial):
         return 1.0 / (1 + dLL) ** 2
 
     def meltingPoint(self, Tk: float = None, Tc: float = None) -> float:
-        if hasattr(self, "T_liq") and self.T_liq is not None:
+        """Returning the melting point of the material in Kelvin."""
+        if hasattr(self, "T_melt") and self.T_melt is not None:
             try:
                 Tc = getTc(Tc, Tk)
             except ValueError:
                 Tc = 26.0
-            return self.T_liq(T=Tc)
+            return self.T_melt(T=Tc) + 273.15
         else:
             return 0.0
 

@@ -45,7 +45,7 @@ density:
   - ref: https://en.wikipedia.org/wiki/Caesium
     type: open literature
 
-liquidus temperature:
+melting temperature:
   function:
     T:
       min: -273.15

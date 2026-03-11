@@ -348,6 +348,7 @@ armi = [
     "resources/materials/InconelX750.yaml",
     "resources/materials/Lead.yaml",
     "resources/materials/LeadBismuth.yaml",
+    "resources/materials/Lithium.yaml",
     "resources/materials/Magnesium.yaml",
     "resources/materials/MgO.yaml",
     "resources/materials/Molybdenum.yaml",

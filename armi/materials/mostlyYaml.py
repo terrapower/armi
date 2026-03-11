@@ -36,6 +36,7 @@ class Be9(Material):
         self.refDens = 1.85
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class Graphite(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Graphite.yaml")
 
@@ -44,6 +45,7 @@ class Graphite(Material):
         self.refDens = 1.8888
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class HastelloyN(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "HastelloyN.yaml")
 
@@ -60,6 +62,7 @@ class HT9(Material):
         self.refDens = 7.778
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class Inconel625(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel625.yaml")
 
@@ -68,6 +71,7 @@ class Inconel625(Material):
         self.refDens = 8.44
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class Inconel800(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel800.yaml")
 
@@ -76,6 +80,7 @@ class Inconel800(Material):
         self.refDens = 7.94
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class InconelX750(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "InconelX750.yaml")
 
@@ -84,6 +89,7 @@ class InconelX750(Material):
         self.refDens = 8.28
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class MgO(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "MgO.yaml")
 
@@ -92,6 +98,7 @@ class MgO(Material):
         self.refDens = 3.58
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class Sc2O3(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Sc2O3.yaml")
 
@@ -108,6 +115,7 @@ class Thorium(Material):
         self.refDens = 11.68
 
 
+# TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class Y2O3(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Y2O3.yaml")
 
@@ -123,3 +131,5 @@ class Zr(Material):
         Material.__init__(self)
         # AAA Materials Handbook 45803
         self.refDens = 6.569997702553134
+        # TODO: https://en.wikipedia.org/wiki/Zirconium
+        #       density of metal: 6.505 g/cm, of liquid: 5.8 g/cm3

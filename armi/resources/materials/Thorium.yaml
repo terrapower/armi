@@ -41,13 +41,13 @@ thermal conductivity:
     - ref: IAEA TECDOC 1450
       type: open literature
 
-liquidus temperature:
+melting temperature:
   function:
     T:
       min: -273.15
       max: 10000
     type: symbolic
-    equation: 2025.0
+    equation: 1751.85
   references:
     - ref: IAEA TECDOC 1450
       type: open literature
