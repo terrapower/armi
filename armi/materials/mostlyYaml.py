@@ -46,7 +46,6 @@ class Graphite(Material):
 
 class HastelloyN(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "HastelloyN.yaml")
-    refTempK = 293.15
 
     def __init__(self):
         Material.__init__(self)
@@ -63,7 +62,6 @@ class HT9(Material):
 
 class Inconel625(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel625.yaml")
-    refTempK = 294.15
 
     def __init__(self):
         Material.__init__(self)
@@ -72,7 +70,6 @@ class Inconel625(Material):
 
 class Inconel800(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Inconel800.yaml")
-    refTempK = 294.15
 
     def __init__(self):
         Material.__init__(self)
@@ -121,7 +118,6 @@ class Y2O3(Material):
 
 class Zr(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "Zr.yaml")
-    refTempK = 298.15
 
     def __init__(self):
         Material.__init__(self)
