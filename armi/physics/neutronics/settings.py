@@ -90,6 +90,7 @@ def defineSettings():
                 "ANL2082",
                 "ARMI33",
                 "ARMI45",
+                "CINDER63",
                 "348",
             ],
         ),
