@@ -321,9 +321,22 @@ class Material(MatPropsMaterial):
 
         self.massFrac[nucName] = massFrac
 
-    def applyInputParams(self):
+    def applyInputParams(self, **kwargs) -> None:
         """Apply material-specific material input parameters."""
-        pass
+        # handle a common use-case where people set the theoretical density fraction
+        if "TD_frac" in kwargs:
+            td = kwargs["TD_frac"]
+            if td is not None:
+                if td > 1.0 or td <= 0.0:
+                    runLog.warning(f"Theoretical density frac for {self} is out of range: {td}", single=True)
+                self.adjustTD(td)
+
+        # If this material declares an enrichment nuclide, see if we need to enrich this material
+        if self.enrichedNuclide:
+            enrichFrac = f"{self.enrichedNuclide}_wt_frac"
+            if enrichFrac in kwargs:
+                if kwargs[enrichFrac] is not None:
+                    self.adjustMassEnrichment(kwargs[enrichFrac])
 
     def adjustMassEnrichment(self, massEnrichment: float) -> None:
         """
@@ -358,7 +371,7 @@ class Material(MatPropsMaterial):
 
         nucsNames = list(self.massFrac)
 
-        # refDens could be zero, but cannot normalize to zero.
+        # refDens could be zero, but cannot normalize to zero
         density = self.refDens or 1.0
         massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
         atomicMasses = np.array([nuclideBases.byName[nuc].weight for nuc in nucsNames])  # in AMU
@@ -466,7 +479,7 @@ class Material(MatPropsMaterial):
         if hasattr(self, "rho") and self.rho is not None:
             Tc = getTc(Tc, Tk)
             # matProps does density is in kg/m3, and this method is in g/cm3
-            return self.rho(T=Tc) / 1000.0
+            return self.rho(T=Tc, TD=self.getTD()) / 1000.0
 
         # no YAML, use linear expansion
         Tk = getTk(Tc, Tk)
@@ -680,6 +693,8 @@ class FuelMaterial(Material):
         class2_custom_isotopics=None,
         class1_wt_frac=None,
         customIsotopics=None,
+        *args,
+        **kwargs,
     ):
         """Apply optional class 1/class 2 custom enrichment input.
 
@@ -714,6 +729,8 @@ class FuelMaterial(Material):
             self.class2_custom_isotopics = class2_custom_isotopics
 
             self._applyIsotopicsMixFromCustomIsotopicsInput(customIsotopics)
+
+        Material.applyInputParams(self, *args, **kwargs)
 
     def _applyIsotopicsMixFromCustomIsotopicsInput(self, customIsotopics):
         """

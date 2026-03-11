@@ -169,14 +169,14 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         search goes through the ordered list of Python namespaces provided. The first time an instance of that material
         is found, it is returned. In this way, the first items in the material namespace list take precedence.
 
-        When a material name is passed to this function, it may be either a simple name like the string ``"UO2"`` or it
-        may be much more specific, like ``armi.materials.uraniumOxide:UO2``.
+        When a material name is passed to this function, it may be either a simple name like the string ``"Water"`` or
+        it may be much more specific, like ``armi.materials.water:Water``.
 
     Parameters
     ----------
     name : str
-        The material class name to find, e.g. ``"UO2"``. Optionally, a module path and class name can be provided with a
-        colon separator as ``module:className``, e.g. ``armi.materials.uraniumOxide:UO2`` for direct specification.
+        The material class name to find, e.g. ``"Water"``. Optionally, a module path and class name can be provided with
+        a colon separator as ``module:className``, e.g. ``armi.materials.water:Water`` for direct specification.
     namespaceOrder : list of str, optional
         A list of namespaces in order of preference in which to search for the material. If not passed, the value in the
         global ``MATERIAL_NAMESPACE_ORDER`` will be used, which is often set by the ``CONF_MATERIAL_NAMESPACE_ORDER``

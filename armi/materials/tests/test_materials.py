@@ -677,9 +677,6 @@ class UraniumOxideTests(AbstractMaterialTest, unittest.TestCase):
         for key in self.mat.massFrac.keys():
             self.assertEqual(duplicateMassFrac[key], self.mat.massFrac[key])
 
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
     def test_applyInputParams(self):
         uo2 = materials.UraniumOxide()
         original = uo2.density(500)
@@ -693,7 +690,7 @@ class UraniumOxideTests(AbstractMaterialTest, unittest.TestCase):
         uo2.applyInputParams(TD_frac=0.1)
         new = uo2.pseudoDensity(500)
         ratio = new / original
-        self.assertAlmostEqual(ratio, 0.01)
+        self.assertAlmostEqual(ratio, 0.1)
 
 
 class ThoriumTests(AbstractMaterialTest, unittest.TestCase):

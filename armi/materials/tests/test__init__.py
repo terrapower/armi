@@ -32,4 +32,4 @@ class Materials__init__Tests(unittest.TestCase):
         self.assertGreater(len(klasses), 10)
 
     def test_packageClassesEqualModuleClasses(self):
-        self.assertEqual(materials.UraniumOxide, materials.uraniumOxide.UraniumOxide)
+        self.assertEqual(materials.Water, materials.water.Water)

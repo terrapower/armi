@@ -21,7 +21,7 @@ The wrappers below are designed so new matProps material objects can be created 
 
 import os
 
-from armi.materials.material import Material
+from armi.materials.material import Fluid, FuelMaterial, Material
 
 # handle pathing to materials files
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -89,6 +89,11 @@ class InconelX750(Material):
         self.refDens = 8.28
 
 
+class Lithium(Fluid):
+    enrichedNuclide = "LI6"
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Lithium.yaml")
+
+
 # TODO: Find a better reference for the density of this material, and use that instead of "refDens".
 class MgO(Material):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "MgO.yaml")
@@ -113,6 +118,19 @@ class Thorium(Material):
     def __init__(self):
         Material.__init__(self)
         self.refDens = 11.68
+
+
+class UraniumOxide(FuelMaterial):
+    enrichedNuclide = "U235"
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "UraniumOxide.yaml")
+
+
+class UO2(UraniumOxide):
+    """Just another name for UraniumOxide."""
+
+    def __init__(self):
+        UraniumOxide.__init__(self)
+        self._name = "UraniumOxide"
 
 
 # TODO: Find a better reference for the density of this material, and use that instead of "refDens".
