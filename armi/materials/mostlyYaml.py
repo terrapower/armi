@@ -146,6 +146,19 @@ class ThU(FuelMaterial):
         self.refDens = 11.68
 
 
+class Uranium(FuelMaterial):
+    enrichedNuclide = "U235"
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "Uranium.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 19.07
+
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
+        """2D-expanded density in g/cc."""
+        return super().pseudoDensity(Tk=Tk, Tc=Tc) * self.getTD()
+
+
 class UraniumOxide(FuelMaterial):
     enrichedNuclide = "U235"
     YAML_PATH = os.path.join(_RESOURCES_DIR, "UraniumOxide.yaml")

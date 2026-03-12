@@ -1,3 +1,4 @@
+file format: 3.0
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +14,11 @@
 # limitations under the License.
 
 # Uranium Oxide
-
+#
 # UO2 is a common ceramic nuclear fuel form. It's properties are well known. This mostly uses data from [#ornltm2000]_.
 # 
 # [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
 #    et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
-
-file format: 3.0
 
 material type: Fuel
 composition:

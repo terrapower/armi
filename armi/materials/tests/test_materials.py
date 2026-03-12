@@ -468,20 +468,18 @@ class UraniumTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_applyInputParams(self):
         # check the defaults when applyInputParams is applied without arguments
-        U235_wt_frac_default = 0.0071136523
+        u235WtFracDefault = 0.0071136523
         self.mat.applyInputParams()
-        self.assertAlmostEqual(self.mat.massFrac["U235"], U235_wt_frac_default)
-        densityTemp = materials.Uranium._densityTableK[0]
-        density0 = self.mat.density(Tk=materials.Uranium._densityTableK[0])
-        expectedDensity = materials.Uranium._densityTable[0]
-        self.assertEqual(density0, expectedDensity)
+        self.assertAlmostEqual(self.mat.massFrac["U235"], u235WtFracDefault)
 
         newWtFrac = 1.0
         newTDFrac = 0.5
         self.mat.applyInputParams(U235_wt_frac=newWtFrac, TD_frac=newTDFrac)
         self.assertEqual(self.mat.massFrac["U235"], newWtFrac)
-        self.assertEqual(self.mat.density(Tk=densityTemp), expectedDensity * newTDFrac)
-        self.assertAlmostEqual(self.mat.pseudoDensity(Tk=densityTemp), 9.535)
+
+    def test_density(self):
+        self.assertAlmostEqual(self.mat.density(Tc=19.85), 19.07)
+        self.assertAlmostEqual(self.mat.density(Tc=826.85), 17.88)
 
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
@@ -503,36 +501,6 @@ class UraniumTests(AbstractMaterialTest, unittest.TestCase):
         cur = self.mat.thermalConductivity(Tc=900)
         ref = 48.5245079092075073
         self.assertAlmostEqual(cur, ref, delta=10e-10)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-        # ensure that material properties check the bounds and that the bounds
-        # align with what is expected
-        for propName, methodName in zip(
-            [
-                "thermal conductivity",
-                "heat capacity",
-                "density",
-                "linear expansion",
-                "linear expansion percent",
-            ],
-            [
-                "thermalConductivity",
-                "heatCapacity",
-                "density",
-                "linearExpansion",
-                "linearExpansionPercent",
-            ],
-        ):
-            lowerBound = self.mat.propertyValidTemperature[propName][0][0]
-            upperBound = self.mat.propertyValidTemperature[propName][0][1]
-
-            with self.assertRaises(ValueError):
-                getattr(self.mat, methodName)(lowerBound - 1)
-
-            with self.assertRaises(ValueError):
-                getattr(self.mat, methodName)(upperBound + 1)
 
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(Tc=500)

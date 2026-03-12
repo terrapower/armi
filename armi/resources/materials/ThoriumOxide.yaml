@@ -66,14 +66,3 @@ melting temperature:
   references:
   - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
     type: open literature
-
-#density:
-#  function:
-#    T:
-#      min: 20
-#      max: 3369.85
-#    type: symbolic
-#    equation: TODO
-#  references:
-#  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
-#    type: open literature

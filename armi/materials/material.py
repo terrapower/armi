@@ -323,9 +323,8 @@ class Material(MatPropsMaterial):
         # If this material declares an enrichment nuclide, see if we need to enrich this material
         if self.enrichedNuclide:
             enrichFrac = f"{self.enrichedNuclide}_wt_frac"
-            if enrichFrac in kwargs:
-                if kwargs[enrichFrac] is not None:
-                    self.adjustMassEnrichment(kwargs[enrichFrac])
+            if enrichFrac in kwargs and kwargs[enrichFrac] is not None:
+                self.adjustMassEnrichment(kwargs[enrichFrac])
 
     def adjustMassEnrichment(self, massEnrichment: float) -> None:
         """
