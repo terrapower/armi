@@ -120,6 +120,15 @@ class Thorium(Material):
         self.refDens = 11.68
 
 
+class ThU(Material):
+    enrichedNuclide = "U233"
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "ThU.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 11.68
+
+
 class UraniumOxide(FuelMaterial):
     enrichedNuclide = "U235"
     YAML_PATH = os.path.join(_RESOURCES_DIR, "UraniumOxide.yaml")
