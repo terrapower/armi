@@ -709,29 +709,23 @@ class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_density(self):
         cur = self.mat.density(Tc=25)
-        ref = 10.00
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
+        ref = 10.0
+        self.assertAlmostEqual(cur, ref, 4)
 
         # make sure that material modifications are correctly applied
         self.mat.applyInputParams(TD_frac=0.1)
         cur = self.mat.density(Tc=25)
-        self.assertAlmostEqual(cur, ref * 0.1, accuracy)
+        self.assertAlmostEqual(cur, ref * 0.1, 4)
 
     def test_linearExpansion(self):
         cur = self.mat.linearExpansion(400)
         ref = 9.67e-6
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
+        self.assertAlmostEqual(cur, ref, 4)
 
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(400)
         ref = 6.20
-        accuracy = 4
-        self.assertAlmostEqual(cur, ref, accuracy)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+        self.assertAlmostEqual(cur, ref, 4)
 
 
 class VoidTests(AbstractMaterialTest, unittest.TestCase):

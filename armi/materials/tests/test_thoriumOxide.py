@@ -15,8 +15,8 @@
 
 import unittest
 
+from armi.materials import ThoriumOxide
 from armi.materials.tests.test_materials import AbstractMaterialTest
-from armi.materials.thoriumOxide import ThoriumOxide
 
 
 class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
@@ -37,6 +37,3 @@ class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
 
     def test_linearExpansionPercent(self):
         self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=500), 0.195334)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)

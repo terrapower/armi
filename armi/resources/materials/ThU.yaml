@@ -15,7 +15,7 @@ file format: 3.0
 
 # Thorium-Uranium metal
 
-material type: Metal
+material type: Fuel
 composition:
   TH232: [1.0, 1.0]
   U233: balance
