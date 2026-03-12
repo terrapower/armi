@@ -29,3 +29,6 @@ linear expansion:
       max: 1286.85
     type: symbolic
     equation: 1e-4 * (8.4305 + 1.1464e-2 * (T+273.15) - 2.9752e-6 * (T+273.15)**2)
+  references:
+  - ref: http://www-ferp.ucsd.edu/LIB/PROPS/PANOS/be.html
+    type: open literature

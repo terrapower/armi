@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Basic water material."""
+"""
+Basic water materials: SaturatedSteam and SaturatedWater.
+
+This is an example of a material implement purely in Python, without any matProps YAML inputs.
+"""
 
 import math
 

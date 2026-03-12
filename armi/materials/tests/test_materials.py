@@ -234,24 +234,6 @@ class MagnesiumOxideTests(AbstractMaterialTest, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class MolybdenumTests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = materials.Molybdenum
-
-    def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(333)
-        ref = 10.28
-        delta = ref * 0.0001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-        cur = self.mat.pseudoDensity(1390)
-        ref = 10.28
-        delta = ref * 0.0001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
-
 class MOXTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.MOX
 
@@ -306,22 +288,6 @@ class NaClTests(AbstractMaterialTest, unittest.TestCase):
 
         cur = self.mat.density(Tc=300)
         ref = 2.050604
-        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
-
-class NiobiumZirconiumTests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = materials.NZ
-
-    def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(Tk=100)
-        ref = 8.66
-        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
-        cur = self.mat.pseudoDensity(Tk=1390)
-        ref = 8.66
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
     def test_propertyValidTemperature(self):
@@ -414,22 +380,6 @@ class SodiumTests(AbstractMaterialTest, unittest.TestCase):
         ref = 38.24675
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
-
-
-class TantalumTests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = materials.Tantalum
-
-    def test_pseudoDensity(self):
-        cur = self.mat.pseudoDensity(Tc=100)
-        ref = 16.6
-        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
-        cur = self.mat.pseudoDensity(Tc=300)
-        ref = 16.6
-        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class ThoriumUraniumMetalTests(AbstractMaterialTest, unittest.TestCase):

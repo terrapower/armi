@@ -13,49 +13,25 @@
 # limitations under the License.
 
 """
-The material package defines compositions and material-specific properties.
+The material package defines macroscopic material compositions and their properties.
 
 Properties in scope include temperature dependent thermo/mechanical properties (like heat capacity, linear expansion
-coefficients, viscosity, density), and material-specific nuclear properties that can't exist at the nuclide level alone
-(like :py:mod:`thermal scattering laws <armi.nucDirectory.thermalScattering>`).
+coefficients, viscosity, density), and material-specific nuclear properties that can not exist at the nuclide level
+alone (like :py:mod:`thermal scattering laws <armi.nucDirectory.thermalScattering>`).
 
-As the fundamental macroscopic building blocks of any physical object, these are highly important to reactor analysis.
+Material definitions are crucial to any nuclear analysis. This module handles the dynamic importing of all the materials
+defined here and in attached plugins. It is expected that most teams will have special material definitions that they
+will want to define.
 
-This module handles the dynamic importing of all the materials defined here at the framework level as well as in all the
-attached plugins. It is expected that most teams will have special material definitions that they will want to define.
+In ARMI, materials can be defined purely in the ``armi.matProps`` YAML format. Or materials can be defined purely in
+Python code. To support this, the material class :py:mod:`armi.materials.material` subclasses the ``matProp`` material
+class.
 
-It may also make sense in the future to support user-input materials that are not hard-coded into the app.
-
-The base class for all materials is in :py:mod:`armi.materials.material`.
-
-
-TODO: The Plan
-==============
-
-The idea here is that when we load a set of materials through ARMI, we do:
-
-1. The old logic: Look for Python files, find things that subclass "armi.material.Material", and load.
-2. ALSO, the new logic, look for a "armi/resources/materials/" directory in that location and load the YAMLs inside
-
-All of our materials will be an armi.material.Material(armi.matProps.material.Material). Yeah, the name class is
-unfortunate, but oh well.
-
-The old logic in this file only did two things:
-
-1. Mock up a meh material registry.
-2. Handle retrieving materials from this registry, based on our namespace ordering.
-
-What we would like to add is the ability to automatically load a YAML file as a matProps material. So, we could use the
-global "materials" dict in matProps/__init__.py. But those are not ARMI subclasses, those are pure matProps. We could
-certainly stomp all over that, and MAKE them ARMI subclasses. And then we just handle the look up logic here. Though
-maybe now would be a good time to build a material registry that is better than all this complicated look-up logic.
-
-Complications:
-
-1. We will store YAML files to be directly loaded into ARMI materials under: armi/resources/materials/*.yaml
-2. The matProps materials have "material types" and when those are read and we wrap with an ARMI wrapper... we should
-   respect those "material types" where possible: and map Fluid.
-3. matProps loads *objects* into its global dict, but armi.materials loads *classes* (ARMI wins here)
+You will find that ARMI comes provided with a set of material YAML files at ``armi/resources/materials``. These
+materials are well-attributed from open-source references. They also serve as great examples of a variety of features
+that the ``armi.matProps`` YAML files support. ARMI also maintains a few examples of complicated material definitions in
+``armi/materials/``. You will find examples like :py:class:`armi.materials.water.SaturatedWater` and
+:py:class:`armi.materials.uranium.Uranium`.
 """
 
 import importlib

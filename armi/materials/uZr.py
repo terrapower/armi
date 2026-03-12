@@ -16,6 +16,8 @@
 Simplified UZr alloy.
 
 This is a notional U-10Zr material based on [Chandrabhanu]_.
+
+This is an example of a material implement purely in Python, without any matProps YAML inputs.
 """
 
 from armi.materials import material

@@ -19,6 +19,9 @@ material type: Composite
 composition:
   O16: [21.25, 21.25]
   Y89: balance
+  references:
+  - ref: From Table 5 of "Thermal Expansion and Phase Inversion of Rare-Earth Oxides.
+    type: open literature
 
 linear expansion:
   function:
@@ -27,3 +30,6 @@ linear expansion:
       max: 1300.0
     type: symbolic
     equation: 1.4922e-7 * (T+273.15)**2 + 6.2448e-4 * (T+273.15) - 1.8414e-1
+  references:
+  - ref: From Table 5 of "Thermal Expansion and Phase Inversion of Rare-Earth Oxides.
+    type: open literature

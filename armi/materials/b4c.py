@@ -18,6 +18,8 @@ Boron carbide; a very typical reactor control material.
 Note that this material defaults to a theoretical density fraction of 0.9, reflecting the difficulty of producing B4C at
 100% theoretical density in real life. To get different fraction, use the `TD_frac` material modification in your
 assembly definition.
+
+This is an example of a material implement purely in Python, without any matProps YAML inputs.
 """
 
 from armi import runLog

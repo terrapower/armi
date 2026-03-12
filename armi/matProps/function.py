@@ -229,7 +229,6 @@ class Function:
         from armi.matProps.tableFunction1D import TableFunction1D
         from armi.matProps.tableFunction2D import TableFunction2D
 
-        # TODO: It would be GREAT to add the option for just a single "float" value here.
         funTypes = {
             "symbolic": SymbolicFunction,
             "table": TableFunction1D,
