@@ -80,9 +80,6 @@ class Material(MatPropsMaterial):
     enrichedNuclide = None
     """Name of enriched nuclide to be interpreted by enrichment modification methods"""
 
-    modelConst = {}
-    """Constants that may be used in interpolation functions for property lookups"""
-
     propertyValidTemperature = {}
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
