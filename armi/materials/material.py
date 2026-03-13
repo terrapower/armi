@@ -33,11 +33,10 @@ from armi.utils.units import getTc, getTk
 # works for material properties defined purely in Python.
 FAIL_ON_RANGE = True
 
-# TODO: Testing
+# Need for an memoization optimization to cache YAML-mased materials
 PICKLED_YAML_MATS = {}
 
 
-# TODO: This is now too slow; doubles the time ARMI unit tests take. Stupid sympy. NEED TO FIX.
 class Material(MatPropsMaterial):
     r"""
     A material is made up of elements or isotopes. It has bulk properties like density.
@@ -96,8 +95,7 @@ class Material(MatPropsMaterial):
         if cls.YAML_PATH is not None:
             # handle matProps / YAML materials
             if cls.YAML_PATH not in PICKLED_YAML_MATS:
-                mat = object.__new__(cls)  # TODO: MatPropsMaterial.__new__(cls)  ???
-                mat.__init__()  # TODO: Duplicate?
+                mat = MatPropsMaterial.__new__(cls)
                 PICKLED_YAML_MATS[cls.YAML_PATH] = pickle.dumps(mat)
                 return mat
             else:
@@ -105,7 +103,6 @@ class Material(MatPropsMaterial):
         else:
             # pure Python materials
             mat = super().__new__(cls)
-            mat.__init__()
             return mat
 
     def __init__(self):
@@ -128,9 +125,9 @@ class Material(MatPropsMaterial):
         return f"<Material: {self.name}>"
 
     def __reduce__(self):
-        """TODO :Wording
-        Override __reduce__ to tell pickle how to reconstruct this class. By specifying object.__new__ as the
-        constructor, we bypass the custom __new__ during unpickling, thus avoiding recursion.
+        """Tell pickle how to reconstruct this class.
+
+        Since we are unpickling in the __new__ constructor, we need this helper to avoid recursion.
         """
         return (object.__new__, (self.__class__,), self.__dict__)
 

@@ -53,8 +53,10 @@ class Material:
         self._sha1 = None
         """SHA1 value of parsed material file."""
 
+        self._loaded = False
+
         # Load the material, if the YAML was provided.
-        if self.YAML_PATH:
+        if self.YAML_PATH and not self._loaded:
             self.loadFile(self.YAML_PATH)
 
     def __repr__(self):
@@ -176,3 +178,4 @@ class Material:
         # build the material, from the file
         self.dataCheckMaterialFile(yamlPath, node)
         self.loadNode(node)
+        self._loaded = True
