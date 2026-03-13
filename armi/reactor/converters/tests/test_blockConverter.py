@@ -27,6 +27,7 @@ from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
+from armi.reactor.converters.tests.test_axialExpansionChanger_MultiPin import buildMixedPinAssembly
 from armi.testing import TEST_ROOT, loadTestReactor
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -190,6 +191,22 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
         self._test_dissolve_multi(loadTestBlock(), ["inner liner", "outer liner"], "clad")
 
+    def test_dissolveMixedAssembly(self):
+        """Test dissolving multiple components into another in a mixed assembly."""
+        mixedAssem = buildMixedPinAssembly()
+        b = mixedAssem.getBlocks(Flags.FUEL)[1]
+        testPin = b.getComponents(Flags.TEST)
+        hostPin = []
+        for c in b:
+            if c in testPin:
+                continue
+            if c.hasFlags([Flags.COOLANT, Flags.INTERCOOLANT, Flags.DUCT]):
+                continue
+            hostPin.append(c)
+        convertedBlock = self._test_dissolve_mixedAssembly(b, ["wire", "clad"], "coolant", hostPin)
+        convertedBlock = self._test_dissolve_mixedAssembly(convertedBlock, ["clad test"], "coolant", testPin)
+        self._checkAreaAndComposition(b, convertedBlock)
+
     def test_dissolveZeroArea(self):
         """Test dissolving a zero-area component into another."""
         self._test_dissolve(loadTestBlock(), "gap2", "outer liner")
@@ -219,6 +236,14 @@ class TestBlockConverter(unittest.TestCase):
         for soluteName in soluteNames:
             self.assertNotIn(soluteName, convertedBlock.getComponentNames())
         self._checkAreaAndComposition(block, convertedBlock)
+
+    def _test_dissolve_mixedAssembly(self, block, soluteNames, solventName, pin):
+        converter = blockConverters.MixedAssemblyMerger(block, soluteNames, solventName, pin)
+        convertedBlock = converter.convert()
+        for soluteName in soluteNames:
+            self.assertNotIn(soluteName, convertedBlock.getComponentNames())
+        self._checkAreaAndComposition(block, convertedBlock)
+        return convertedBlock
 
     def test_build_NthRing(self):
         """Test building of one ring."""
