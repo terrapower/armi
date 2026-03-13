@@ -30,6 +30,7 @@ from armi.utils.units import getTc, getTk
 FAIL_ON_RANGE = True
 
 
+# TODO: This is now too slow; doubles the time ARMI unit tests take. Stupid sympy. NEED TO FIX.
 class Material(MatPropsMaterial):
     r"""
     A material is made up of elements or isotopes. It has bulk properties like density.
@@ -85,11 +86,6 @@ class Material(MatPropsMaterial):
     propertyValidTemperature = {}
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
-
-    # TODO: Can we remove this?
-    thermalScatteringLaws = ()
-    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScatteringLabels` instances with information
-    about thermal scattering."""
 
     def __init__(self):
         MatPropsMaterial.__init__(self)

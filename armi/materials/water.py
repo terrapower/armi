@@ -21,7 +21,6 @@ import math
 
 from armi.materials.material import Fluid
 from armi.nucDirectory import elements
-from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
 
@@ -42,7 +41,6 @@ class Water(Fluid):
     IAPWS-IF97 is now the international standard for calculations in the steam power industry
     """
 
-    thermalScatteringLaws = (tsl.fromNameAndCompound("H", tsl.H2O),)
     references = {
         "vapor pressure": _REF_SR1_86,
         "enthalpy (saturated water)": _REF_SR1_86,
