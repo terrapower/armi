@@ -178,7 +178,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         """
         self.o, self.r = test_reactors.loadTestReactor(
             self.directoryChanger.destination,
-            customSettings={"nCycles": 3, "trackAssems": True},
+            customSettings={"nCycles": 4, "trackAssems": True},
         )
 
         allBlocks = self.r.core.getBlocks()
@@ -190,9 +190,6 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
         self.nSfp = len(self.r.excore["sfp"])
-        # add location history data to first two SFP assemblies used in repeatShuffle test
-        for i, a in enumerate(list(self.r.excore["sfp"])[:2]):
-            a.p.ringPosHist = [(i + 1, i + 2)]
 
         # generate a reactor with assemblies
         # generate components with materials
@@ -572,54 +569,49 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # do not blindly rebase these reference values. test failures using this dict
         # imply that the assembly shuffling definition has changed.
         expPosHist = {}
-        # cycle 0 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
+        # cycle 1 shuffle, (2, 1) moved to SFP
         expPosHist["A0005"] = [(2, 1), ("SFP", "SFP"), ("SFP", "SFP"), ("SFP", "SFP")]
-        # cycle 0 shuffle, (3, 3) moved to (2, 1) in cascade
-        # cycle 2 shuffle, (2, 1) moved to (6, 7) in cascade then discharged to SFP
-        expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), ("SFP", "SFP")]
-        # cycle 0 shuffle, (4, 2) moved to (3, 3) in cascade
+        # cycle 1 shuffle, (3, 3) moved to (2, 1) in cascade
+        # cycle 3 shuffle, (2, 1) moved to (5, 4)
+        expPosHist["A0018"] = [(3, 3), (2, 1), (2, 1), (5, 4)]
+        # cycle 1 shuffle, (4, 2) moved to (3, 3) in cascade
         expPosHist["A0019"] = [(4, 2), (3, 3), (3, 3), (3, 3)]
-        # cycle 0 shuffle, (5, 1) moved to (4, 2) in cascade
+        # cycle 1 shuffle, (5, 1) moved to (4, 2) in cascade
         expPosHist["A0020"] = [(5, 1), (4, 2), (4, 2), (4, 2)]
-        # cycle 0 shuffle, (6, 7) moved to (5, 1) in cascade
+        # cycle 1 shuffle, (6, 7) moved to (5, 1) in cascade
         expPosHist["A0044"] = [(6, 7), (5, 1), (5, 1), (5, 1)]
-        # cycle 0 shuffle, fresh to (6, 7)
-        # cycle 2 shuffle, (6, 7) moved to (5, 2) in cascade
+        # cycle 1 shuffle, fresh to (6, 7)
+        # cycle 3 shuffle, (6, 7) moved to (5, 2) in cascade
         expPosHist["A0077"] = [("NotCreatedYet", "NotCreatedYet"), (6, 7), (6, 7), (5, 2)]
-        # cycle 1 shuffle, (2, 2) moved to (6, 4) in cascade then discharged to SFP
-        expPosHist["A0009"] = [(2, 2), (2, 2), ("SFP", "SFP"), ("SFP", "SFP")]
-        # cycle 1 shuffle, (3, 2) moved to (2, 2) in cascade
+        # cycle 2 shuffle, (2, 2) moved to (5, 3)
+        expPosHist["A0009"] = [(2, 2), (2, 2), (5, 3), (5, 3)]
+        # cycle 2 shuffle, (3, 2) moved to (2, 2) in cascade
         expPosHist["A0014"] = [(3, 2), (3, 2), (2, 2), (2, 2)]
-        # cycle 1 shuffle, (4, 1) moved to (3, 2) in cascade
+        # cycle 2 shuffle, (4, 1) moved to (3, 2) in cascade
         expPosHist["A0015"] = [(4, 1), (4, 1), (3, 2), (3, 2)]
-        # cycle 1 shuffle, (5, 4) moved to (4, 1) in cascade
+        # cycle 2 shuffle, (5, 4) moved to (4, 1) in cascade
         expPosHist["A0034"] = [(5, 4), (5, 4), (4, 1), (4, 1)]
-        # cycle 1 shuffle, (6, 4) moved to (5, 4) in cascade
-        # cycle 2 shuffle, (5, 4) moved to SFP
+        # cycle 2 shuffle, (6, 4) moved to (5, 4) in cascade then discharged to SFP
         expPosHist["A0040"] = [(6, 4), (6, 4), (5, 4), ("SFP", "SFP")]
-        # cycle 1 shuffle, fresh to (6, 4)
+        # cycle 2 shuffle, fresh to (6, 4)
         expPosHist["A0078"] = [("NotCreatedYet", "NotCreatedYet"), ("NotCreatedYet", "NotCreatedYet"), (6, 4), (6, 4)]
-        # cycle 1 shuffle, SFP to (5, 3)
-        expPosHist["A0073"] = [(1, 2), ("SFP", "SFP"), (5, 3), (5, 3)]
         # cycle 1 shuffle, (5, 3) moved to SFP
         expPosHist["A0029"] = [(5, 3), (5, 3), ("SFP", "SFP"), ("SFP", "SFP")]
-        # cycle 2 shuffle, (3, 1) moved to (2, 1) in cascade
+        # cycle 3 shuffle, (3, 1) moved to (2, 1) in cascade
         expPosHist["A0010"] = [(3, 1), (3, 1), (3, 1), (2, 1)]
-        # cycle 2 shuffle, (4, 3) moved to (3, 1) in cascade
+        # cycle 3 shuffle, (4, 3) moved to (3, 1) in cascade
         expPosHist["A0024"] = [(4, 3), (4, 3), (4, 3), (3, 1)]
-        # cycle 2 shuffle, (5, 2) moved to (4, 3) in cascade
+        # cycle 3 shuffle, (5, 2) moved to (4, 3) in cascade
         expPosHist["A0025"] = [(5, 2), (5, 2), (5, 2), (4, 3)]
-        # cycle 2 shuffle, fresh to (6, 7)
+        # cycle 3 shuffle, fresh to (6, 7)
         expPosHist["A0079"] = [
             ("NotCreatedYet", "NotCreatedYet"),
             ("NotCreatedYet", "NotCreatedYet"),
             ("NotCreatedYet", "NotCreatedYet"),
             (6, 7),
         ]
-        # cycle 2 shuffle, SFP to (5, 4)
-        expPosHist["A0074"] = [(2, 3), ("SFP", "SFP"), ("SFP", "SFP"), (5, 4)]
 
-        for cycle in range(3):
+        for cycle in range(4):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
@@ -711,6 +703,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         os.remove("armiRun2.shuffles_0.png")
         os.remove("armiRun2.shuffles_1.png")
         os.remove("armiRun2.shuffles_2.png")
+        os.remove("armiRun2.shuffles_3.png")
 
     def test_readMoves(self):
         """
@@ -723,7 +716,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         numblocks = len(self.r.core.getFirstAssembly())
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
-        self.assertEqual(len(moves), 3)
+        self.assertEqual(len(moves), 4)
         firstMove = moves[1][0]
         self.assertEqual(firstMove.fromLoc, "002-001")
         self.assertEqual(firstMove.toLoc, "SFP")
@@ -731,11 +724,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(firstMove.assemType, "igniter fuel")
         self.assertIsNone(firstMove.ringPosCycle)
 
-        # check the move that came back out of the SFP
-        sfpMove = moves[2][-2]
-        self.assertEqual(sfpMove.fromLoc, "SFP")
-        self.assertEqual(sfpMove.toLoc, "005-003")
-        self.assertListEqual(sfpMove.ringPosCycle, [1, 2, 0])  # ring, pos, cycle history for assem in SFP
+        # check the move to the SFP
+        sfpMove = moves[2][-1]
+        self.assertEqual(sfpMove.fromLoc, "005-003")
+        self.assertEqual(sfpMove.toLoc, "SFP")
+        self.assertIsNone(sfpMove.ringPosCycle)
 
         # make sure we fail hard if the file doesn't exist
         with self.assertRaises(RuntimeError):
@@ -747,40 +740,38 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.maxDiff = None
         expected = {
             1: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "igniter fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
-                AssemblyMove("010-046", "011-046"),
-                AssemblyMove("011-046", "012-046"),
-                AssemblyMove("012-046", "Delete"),
-                AssemblyMove("SFP", "005-003", ringPosCycle=[3, 5, 4]),
-                AssemblyMove("005-003", "SFP"),
+                AssemblyMove("LoadQueue", "004-004", [0.0, 0.12, 0.14, 0.15, 0.0], "middle fuel"),
+                AssemblyMove("004-004", "005-005"),
+                AssemblyMove("005-005", "006-006"),
+                AssemblyMove("006-006", "Delete"),
             ],
             2: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "igniter fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
+                AssemblyMove("LoadQueue", "004-004", [0.0, 0.12, 0.14, 0.15, 0.0], "middle fuel"),
+                AssemblyMove("004-004", "005-005"),
+                AssemblyMove("005-005", "006-006"),
+                AssemblyMove("006-006", "Delete"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
-                AssemblyMove("010-046", "011-046"),
-                AssemblyMove("011-046", "012-046"),
-                AssemblyMove("012-046", "Delete"),
-                AssemblyMove("SFP", "005-003", ringPosCycle=[3, 5, 4]),
+                AssemblyMove("SFP", "005-003", ringPosCycle=[6, 5, 0]),
                 AssemblyMove("005-003", "SFP"),
             ],
             3: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "igniter fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "Delete"),
-                AssemblyMove("SFP", "002-002", ringPosCycle=[7, 1, 3]),
+                AssemblyMove("SFP", "002-002", ringPosCycle=[5, 3, 1]),
                 AssemblyMove("002-002", "SFP"),
             ],
         }
@@ -878,7 +869,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         sfpAssem = self.r.excore["sfp"].getChildren()[0]
         # fake the assembly location history
-        sfpAssem.p.ringPosHist = [(2, 3), (4, 5), (5, 7)]
+        ringPosHistInts = [(2, 3), (4, 5), (5, 7)]
+        sfpAssem.p.ringPosHist = [(str(x).encode(), str(y).encode()) for x, y in ringPosHistInts]
         yaml_text = """
         sequence:
             1:
@@ -893,14 +885,65 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = 1
             self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
             fh.outage()
-            self.assertEqual(self.r.core.getAssemblyWithStringLocation("009-045").getName(), sfpAssem.getName())
-            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
+            assem = self.r.core.getAssemblyWithStringLocation("009-045")
+            self.assertEqual(assem.getName(), sfpAssem.getName())
+            cycle0Loc = ("2".encode(), "3".encode())
+            self.assertEqual(assem.p.ringPosHist[0], cycle0Loc)
+            self.assertEqual(assem.p.ringPosHist[1], (9, 45))
+            self.assertEqual(len(assem.p.ringPosHist), 2)  # truncated by logic in fuelHandlers
+            newSfpAssem = self.r.excore["sfp"].getAssembly(before)
+            self.assertIsNotNone(newSfpAssem)
+            self.assertEqual(newSfpAssem.p.ringPosHist[0], (9, 45))
+
+    def test_performShuffleYaml_loadFromSfp2(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        fname = os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml")
+        self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+        # fake the assembly location history
+        with directoryChangers.TemporaryDirectoryChanger():
+            # _moves, _ = fh.readMovesYaml()
+
+            before1 = self.r.core.getAssemblyWithStringLocation("005-003")
+            before2 = self.r.core.getAssemblyWithStringLocation("006-005")
+            for cycle in range(4):
+                self.r.p.cycle = cycle
+                fh.outage()
+
+            # check that the following ringPosHist exist in the SFP
+            inSfp = [
+                [6, 6, 0],
+                [6, 6, 1],
+                [6, 5, 1],
+                [6, 5, 2],
+                [2, 2, 2],
+            ]
+            for a in self.r.excore["sfp"].getChildren():
+                print(a, a.p.ringPosHist)
+            for ring, pos, cycle in inSfp:
+                found = False
+                for a in self.r.excore["sfp"].getChildren():
+                    if a.p.ringPosHist[cycle] == (ring, pos):
+                        found = True
+                        break
+                self.assertTrue(found, f"ringPosHist == ({ring}, {pos}, {cycle}) not found in SFP!")
+
+            # check that SFP is in the ringPosHist of (2, 2) and (5, 3)
+            # check that the assembly that ended up in 002-002 is the same that started in 005-003
+            # check that the assembly that ended up in 005-003 is the same that started in 006-005
+            for loc, refA in [
+                ("002-002", before1),
+                ("005-003", before2),
+            ]:
+                a = self.r.core.getAssemblyWithStringLocation(loc)
+                self.assertIn(("SFP", "SFP"), a.p.ringPosHist)
+                self.assertEqual(
+                    refA.getName(), a.getName(), "Expected {a} to be the same assembly as {refA} based on shuffling!"
+                )
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.txt"))
         result = fh.processMoveList(moves[2])
-        self.assertIn([1, 2, 0], result.ringPosCycles)
         self.assertIn(None, result.ringPosCycles)
         self.assertTrue(all("SFP" not in chain for chain in result.loadChains))
         self.assertTrue(all("LoadQueue" not in chain for chain in result.loadChains))
@@ -911,7 +954,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         moves, _ = fh.readMovesYaml(os.path.join(TESTING_ROOT, "resources", "armiRun-SHUFFLES.yaml"))
         result = fh.processMoveList(moves[1])
-        self.assertEqual(len(result.loadChains), 3)
+        self.assertEqual(len(result.loadChains), 2)
         self.assertTrue(any(result.enriches))
         self.assertTrue(result.rotations)
 
