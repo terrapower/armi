@@ -86,6 +86,7 @@ class Material(MatPropsMaterial):
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
+    # TODO: Can we remove this?
     thermalScatteringLaws = ()
     """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScatteringLabels` instances with information
     about thermal scattering."""
@@ -98,37 +99,20 @@ class Material(MatPropsMaterial):
         self.theoreticalDensityFrac = 1.0
         self.cached = {}
         self._backupCache = None
-        self._name = self.__class__.__name__
+
+        if self.name is None:
+            # This material does not have a YAML file, to pull the name from.
+            self.name = self.__class__.__name__
 
         # call subclass implementations
         self.setDefaultMassFracs()
 
     def __repr__(self):
-        return f"<Material: {self._name}>"
-
-    @property
-    def name(self):
-        """Getter for the private name attribute of this Material."""
-        return self._name
-
-    # TODO: Conflicts with the matProps Material ".name"
-    @name.setter
-    def name(self, nomen):
-        """Setter for the private name attribute of this Material.
-
-        Notes
-        -----
-        Some code in ARMI expects the "name" of a material matches its class name. So leave this method alone.
-
-        See Also
-        --------
-        armi.materials.resolveMaterialClassByName
-        """
-        self._name = nomen
+        return f"<Material: {self.name}>"
 
     def getName(self):
         """Duplicate of name property, kept for backwards compatibility."""
-        return self._name
+        return self.name
 
     def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
         """Return empty list, representing that materials have no children."""

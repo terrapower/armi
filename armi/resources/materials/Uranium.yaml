@@ -17,7 +17,7 @@ file format: 3.0
 
 material type: Fuel
 composition:
-  U238: [99.2886347609115, 99.2886347609115]  # TODO: Too many decimals?
+  U238: [99.2886347609115, 99.2886347609115]
   U235: balance
   references:
   - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
