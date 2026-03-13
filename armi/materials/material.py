@@ -254,8 +254,10 @@ class Material(MatPropsMaterial):
         """
         Mass fractions.
 
-        TODO: Explain from YAML first, if possible.
+        This method pulls the material composition from the material YAML definition file. Alternatively, this method
+        can be over-riden by in Python to declare the default mass fractions using some custom logic.
         """
+        # If there is a YAML file, try to pull the material composition from there.
         massFracs = {}
         balanceNuc = None
         for constituent in self.composition:
@@ -264,6 +266,7 @@ class Material(MatPropsMaterial):
                 massFracs[nomen] = "balance"
                 balanceNuc = nomen
             else:
+                # If the YAML defines a range of possible fractions, take the average.
                 massFracs[nomen] = (constituent.maxValue + constituent.minValue) / 200.0
 
         if balanceNuc:
@@ -484,9 +487,14 @@ class Material(MatPropsMaterial):
         Tc = getTc(Tc, Tk)
         return self.k(T=Tc)
 
-    # TODO: Used to get density from cache in a VERY small number of cases.
     def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:
-        """Gets properties in a way that caches them."""
+        """
+        Gets properties in a way that caches them.
+
+        Notes
+        -----
+        Try not to use this method. This exists for backwards compatibility only. Use methods like density instead.
+        """
         Tk = getTk(Tc, Tk)
 
         cached = self._getCached(propName)
@@ -593,7 +601,6 @@ class Material(MatPropsMaterial):
         self.clearCache()
 
 
-# TODO: Figure out what we are doing with these subclasses.
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
@@ -601,7 +608,6 @@ class Fluid(Material):
         """Density and pseudoDensity are the same for Fluids."""
         return self.density(Tk=Tk, Tc=Tc)
 
-    # TODO: This is the only thing we really need this class for.
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from one temperature (in C) to a another."""
         rho0 = self.density(Tc=prevTempInC)
@@ -630,7 +636,6 @@ class Fluid(Material):
         return 0.0
 
 
-# TODO: Figure out what we are doing with these subclasses.
 class SimpleSolid(Material):
     """Base material for a simple material that primarily defines density."""
 
@@ -645,7 +650,6 @@ class SimpleSolid(Material):
         return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()
 
 
-# TODO: Figure out what we are doing with these subclasses.
 class FuelMaterial(Material):
     """
     Material that is considered a nuclear fuel.
