@@ -25,7 +25,6 @@ from armi.matProps.function import Function
 from armi.matProps.materialType import MaterialType
 
 
-# TODO: I would love to rename this MatPropsMaterial
 class Material:
     """
     The Material class is a generic container for all Material types, whether they contain ASME properties, fluid

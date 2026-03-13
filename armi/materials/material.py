@@ -92,8 +92,9 @@ class Material(MatPropsMaterial):
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
     def __new__(cls):
-        # TODO
+        # split the creation of new Material objects between YAML/cached and pure Python
         if cls.YAML_PATH is not None:
+            # handle matProps / YAML materials
             if cls.YAML_PATH not in PICKLED_YAML_MATS:
                 mat = object.__new__(cls)  # TODO: MatPropsMaterial.__new__(cls)  ???
                 mat.__init__()  # TODO: Duplicate?
@@ -102,6 +103,7 @@ class Material(MatPropsMaterial):
             else:
                 return pickle.loads(PICKLED_YAML_MATS[cls.YAML_PATH])
         else:
+            # pure Python materials
             mat = super().__new__(cls)
             mat.__init__()
             return mat
@@ -116,10 +118,8 @@ class Material(MatPropsMaterial):
         self._backupCache = None
 
         if self.name is None:
-            print(self.name)
             # This material does not have a YAML file, to pull the name from.
             self.name = self.__class__.__name__
-            print(self.name)
 
         # call subclass implementations
         self.setDefaultMassFracs()
