@@ -312,72 +312,76 @@ class MultipleComponentMerger(BlockConverter):
         return self._sourceBlock
 
 
-class MixedAssemblyMerger(MultipleComponentMerger):
-    def __init__(self, sourceBlock, soluteNames, solventName, pin, specifiedMinID=0.0):
-        """
-        This BlockConverter handles mixed assemblies with multiple pin types.
-        A pin is a list of circular components that share a common spatial locator and thus
-        make up a "pin", which is a physical construct but not a formal ARMI construct.
-
-        This class can merge multiple components at a time within a single pin. To perform
-        conversions on multiple pins within a mixed assembly, a new instance of this class
-        must be constructed for each pin, and then the :py:meth:`convert` method must be called in a
-        waterfall fashion -- that is, the block returned from :py:meth:`convert` should be passed
-        into the constructor of the next instance to perform a chain of component merges.
-
-        Parameters
-        ----------
-        sourceBlock : :py:class:`armi.reactor.blocks.Block`
-            An ARMI Block object to convert.
-        soluteNames : list
-            List of str names of the solute components in _sourceBlock
-        solventName : str
-            The name of the solvent component in _sourceBlock
-        pin : List[Component]
-            List of the components that make up the pin being converted.
-        minID : float
-            The minimum hot temperature diameter allowed for the solvent.
-            This is useful for forcing components to not overlap.
-        quite : boolean, optional
-            If True, less information is output in the runLog.
-        """
-        super().__init__(sourceBlock, soluteNames, solventName, specifiedMinID=specifiedMinID)
-        self.pin = pin
-
-    def convert(self):
-        """
-        Return a block with the solute merged into the solvent.
-
-        Run _verifyPinExpansion so that verification is limited to a single pin.
-        """
-        for soluteName in self.soluteNames:
-            self.dissolveComponentIntoComponent(soluteName, self.solventName, minID=self.specifiedMinID)
-        solvent = self._sourceBlock.getComponentByName(self.solventName)
-        if solvent.__class__ is not components.DerivedShape:
-            self._verifyPinExpansion(self.soluteNames, solvent)
-        return self._sourceBlock
-
-    def _verifyPinExpansion(self, solute, solvent):
-        """Verify the conversion of a single pin construct."""
-        validComponents = (c for c in self.pin if not isinstance(c, components.DerivedShape))
-        for c in sorted(validComponents):
-            if c not in self._sourceBlock:
-                # c was merged
-                continue
-            if not isinstance(c, components.Circle) or c is solvent or c.containsVoidMaterial():
-                continue
-            if c.isEncapsulatedBy(solvent):
-                raise ValueError(
-                    "There is a non void component {} in the location where component {} was expanded "
-                    "to absorb component solute {}. solvent dims {}, {} comp dims {} {}.".format(
-                        c, solvent, solute, solvent.p.id, solvent.p.od, c.p.id, c.p.od
-                    )
-                )
-            if c.getArea() < 0.0:
-                runLog.warning(
-                    "Component {} still has negative area after {} was dissolved into {}".format(c, solute, solvent),
-                    single=True,
-                )
+# class MixedAssemblyMerger(MultipleComponentMerger):
+#    def __init__(self, sourceBlock, soluteNames, solventName, pin, specifiedMinID=0.0):
+#        """
+#        This BlockConverter handles mixed assemblies with multiple pin types.
+#        A pin is a list of circular components that share a common spatial locator and thus
+#        make up a "pin", which is a physical construct but not a formal ARMI construct.
+#
+#        This class can merge multiple components at a time within a single pin. To perform
+#        conversions on multiple pins within a mixed assembly, a new instance of this class
+#        must be constructed for each pin, and then the :py:meth:`convert` method must be called in a
+#        waterfall fashion -- that is, the block returned from :py:meth:`convert` should be passed
+#        into the constructor of the next instance to perform a chain of component merges.
+#
+#        .. impl:: Homogenize multiple components into one in a single pin within a mixed pin assembly.
+#            :id: I_ARMI_BLOCKCONV2
+#            :implements: R_ARMI_BLOCKCONV
+#
+#        Parameters
+#        ----------
+#        sourceBlock : :py:class:`armi.reactor.blocks.Block`
+#            An ARMI Block object to convert.
+#        soluteNames : list
+#            List of str names of the solute components in _sourceBlock
+#        solventName : str
+#            The name of the solvent component in _sourceBlock
+#        pin : List[Component]
+#            List of the components that make up the pin being converted.
+#        minID : float
+#            The minimum hot temperature diameter allowed for the solvent.
+#            This is useful for forcing components to not overlap.
+#        quite : boolean, optional
+#            If True, less information is output in the runLog.
+#        """
+#        super().__init__(sourceBlock, soluteNames, solventName, specifiedMinID=specifiedMinID)
+#        self.pin = pin
+#
+#    def convert(self):
+#        """
+#        Return a block with the solute merged into the solvent.
+#
+#        Run _verifyPinExpansion so that verification is limited to a single pin.
+#        """
+#        for soluteName in self.soluteNames:
+#            self.dissolveComponentIntoComponent(soluteName, self.solventName, minID=self.specifiedMinID)
+#        solvent = self._sourceBlock.getComponentByName(self.solventName)
+#        if solvent.__class__ is not components.DerivedShape:
+#            self._verifyPinExpansion(self.soluteNames, solvent)
+#        return self._sourceBlock
+#
+#    def _verifyPinExpansion(self, solute, solvent):
+#        """Verify the conversion of a single pin construct."""
+#        validComponents = (c for c in self.pin if not isinstance(c, components.DerivedShape))
+#        for c in sorted(validComponents):
+#            if c not in self._sourceBlock:
+#                # c was merged
+#                continue
+#            if not isinstance(c, components.Circle) or c is solvent or c.containsVoidMaterial():
+#                continue
+#            if c.isEncapsulatedBy(solvent):
+#                raise ValueError(
+#                    "There is a non void component {} in the location where component {} was expanded "
+#                    "to absorb component solute {}. solvent dims {}, {} comp dims {} {}.".format(
+#                        c, solvent, solute, solvent.p.id, solvent.p.od, c.p.id, c.p.od
+#                    )
+#                )
+#            if c.getArea() < 0.0:
+#                runLog.warning(
+#                    "Component {} still has negative area after {} was dissolved into {}".format(c, solute, solvent),
+#                    single=True,
+#                )
 
 
 class BlockAvgToCylConverter(BlockConverter):
