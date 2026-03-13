@@ -96,6 +96,7 @@ class Material(MatPropsMaterial):
             # handle matProps / YAML materials
             if cls.YAML_PATH not in PICKLED_YAML_MATS:
                 mat = MatPropsMaterial.__new__(cls)
+                mat.__init__()
                 PICKLED_YAML_MATS[cls.YAML_PATH] = pickle.dumps(mat)
                 return mat
             else:
