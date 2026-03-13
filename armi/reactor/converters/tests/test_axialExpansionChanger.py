@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test axialExpansionChanger."""
+"""Test AxialExpansionChanger."""
 
 import collections
 import copy
@@ -176,7 +176,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase):
             self.obj.performThermalAxialExpansion(self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True)
             self._getConservationMetrics(self.a)
 
-    def test_AssemblyAxialExpansionHeight(self):
+    def test_assemblyAxialExpansionHeight(self):
         """Test the axial expansion gives correct heights for component-based expansion."""
         for idt in range(self.temp.tempSteps):
             for ib, b in enumerate(self.a):
@@ -685,7 +685,7 @@ class TestExceptions(AxialExpansionTestBase):
         with self.assertRaisesRegex(RuntimeError, "tempGrid and tempField must have the same length."):
             self.obj.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
 
-    def test_AssemblyAxialExpansionException(self):
+    def test_assemblyAxialExpansionException(self):
         """Test that negative height exception is caught."""
         # manually set axial exp target component for code coverage
         self.a[0].p.axialExpTargetComponent = self.a[0][0].name
@@ -1121,7 +1121,7 @@ class FakeMatException(materials.HT9):
     -----
     - the only difference between this and `class Fake(HT9)` above is that the thermal expansion
       factor is higher to ensure that a negative block height is caught in
-      TestExceptions:test_AssemblyAxialExpansionException.
+      TestExceptions:test_assemblyAxialExpansionException.
     """
 
     name = "FakeMatException"
