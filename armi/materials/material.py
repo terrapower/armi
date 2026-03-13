@@ -533,7 +533,6 @@ class Material(MatPropsMaterial):
         """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
-    # TODO: The logic here will have to be re-written to wrap the related matProps logic
     def checkPropertyTempRange(self, label, val):
         """Checks if the given property / value combination fall between the min and max valid temperatures provided in
         the propertyValidTemperature object.
@@ -547,17 +546,19 @@ class Material(MatPropsMaterial):
 
         Notes
         -----
-        This was designed as a wrapper method around ``checkTempRange``.
+        - This is a wrapper method around ``checkTempRange``.
+        - This method is used to aid defining pure Python materials outside of a matProps YAML file.
         """
         (minT, maxT) = self.propertyValidTemperature[label][0]
         self.checkTempRange(minT, maxT, val, label)
 
-    # TODO: The logic here will have to be re-written to wrap the related matProps logic
     def checkTempRange(self, minT, maxT, val, label=""):
         """
         Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
 
         Label identifies what material type or element is being evaluated in the check.
+
+        This method is used to aid defining pure Python materials outside of a matProps YAML file.
 
         Parameters
         ----------
@@ -567,6 +568,10 @@ class Material(MatPropsMaterial):
             The value to check whether it is between minT and maxT.
         label : str
             The name of the function or property that is being checked.
+
+        Notes
+        -----
+        - This method is used to aid defining pure Python materials outside of a matProps YAML file.
         """
         if not minT <= val <= maxT:
             msg = f"Temperature {val} out of range ({minT} to {maxT}) for {self.name} {label}"
@@ -625,7 +630,7 @@ class Fluid(Material):
         return 0.0
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        """TODO."""
+        """By default, fluids are considered incompresible."""
         return 0.0
 
 
