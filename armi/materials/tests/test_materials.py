@@ -1334,6 +1334,9 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
             1.4385292e-5,
         ]
 
+        print(f"TODO: mat: {self.mat}")
+        print(f"TODO: dir(mat): {dir(self.mat)}")
+
         for Tc, ref in zip(temps, refList):
             cur = self.mat.alpha_mean(T=Tc)
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=str(Tc))

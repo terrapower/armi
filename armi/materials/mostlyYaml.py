@@ -44,12 +44,12 @@ class Graphite(Material):
         self.refDens = 1.8888
 
 
-class HastelloyN(Material):
-    YAML_PATH = os.path.join(_RESOURCES_DIR, "HastelloyN.yaml")
-
-    def __init__(self):
-        Material.__init__(self)
-        self.refDens = 8.86
+#class HastelloyN(Material):
+#    YAML_PATH = os.path.join(_RESOURCES_DIR, "HastelloyN.yaml")
+#
+#    def __init__(self):
+#        Material.__init__(self)
+#        self.refDens = 8.86
 
 
 class HT9(Material):
@@ -162,7 +162,7 @@ class UO2(UraniumOxide):
 
     def __init__(self):
         UraniumOxide.__init__(self)
-        self._name = "UraniumOxide"
+        self.name = "UraniumOxide"
 
 
 class Y2O3(Material):

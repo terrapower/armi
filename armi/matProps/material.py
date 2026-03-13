@@ -25,6 +25,7 @@ from armi.matProps.function import Function
 from armi.matProps.materialType import MaterialType
 
 
+# TODO: I would love to rename this MatPropsMaterial
 class Material:
     """
     The Material class is a generic container for all Material types, whether they contain ASME properties, fluid
@@ -36,7 +37,7 @@ class Material:
     validFileFormatVersions = [3.0, "TESTS"]
     YAML_PATH = None
 
-    def __init__(self, yamlPath=None):
+    def __init__(self, yamlPath=None):  # TODO: remove yamlPath!
         """Constructor for Material class."""
         self._saved = False
         """Boolean denoting whether or not Material object is saved in materials dict."""
@@ -60,6 +61,15 @@ class Material:
     def __repr__(self):
         """Provides string representation for Material class."""
         return f"<MatProps Material {self.name} {str(self.materialType)}>"
+
+    def TODO__getstate__(self):
+        attributes = self.__dict__.copy()
+        print("TODO: GET STATE!!!!!!!!!!!!!!!")
+        return attributes
+
+    def TODO__setstate__(self, state):
+        print("TODO: SET STATE!!!!!!!!!!!!!!!")
+        self.__dict__ = state
 
     def hash(self) -> str:
         """Returns the SHA1 hash value of a Material instance."""

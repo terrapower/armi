@@ -17,6 +17,7 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
+import pickle
 
 import numpy as np
 
@@ -27,7 +28,12 @@ from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
 
+# Setting this to False will globally allow you to access material properties outside their defined bounds. This only
+# works for material properties defined purely in Python.
 FAIL_ON_RANGE = True
+
+# TODO: Testing
+PICKLED_YAML_MATS = {}
 
 
 # TODO: This is now too slow; doubles the time ARMI unit tests take. Stupid sympy. NEED TO FIX.
@@ -84,7 +90,39 @@ class Material(MatPropsMaterial):
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
+    def __new__(cls):
+        # TODO
+        if cls.YAML_PATH is not None:
+            if cls.YAML_PATH not in PICKLED_YAML_MATS:
+                print("TODO: pickling")
+                mat = object.__new__(cls)  # TODO: MatPropsMaterial.__new__(cls)  ???
+                mat.__init__() # TODO: Duplicate?
+                PICKLED_YAML_MATS[cls.YAML_PATH] = pickle.dumps(mat)
+                return mat
+            else:
+                ####print("TODO: unpickling")
+                return pickle.loads(PICKLED_YAML_MATS[cls.YAML_PATH])
+        else:
+            print("TODO: non-YAML load")
+            mat = super().__new__(cls)
+            mat.__init__()
+            return mat
+
+    def TODO__new__(cls):
+        if cls.YAML_PATH and cls.YAML_PATH in PICKLED_YAML_MATS:
+            mat = pickle.loads(PICKLED_YAML_MATS[cls.YAML_PATH])
+            mat.fromPickle = True
+            return mat
+
+        return super().__new__(cls)
+
     def __init__(self):
+        # TODO
+        #if hasattr(self, "fromPickle"):
+        #    print("TODO: SKIP!")
+        #    return
+
+        print("TODO: init 0")
         MatPropsMaterial.__init__(self)
         self.parent = None
         self.massFrac = {}
@@ -94,14 +132,33 @@ class Material(MatPropsMaterial):
         self._backupCache = None
 
         if self.name is None:
+            print(self.name)
             # This material does not have a YAML file, to pull the name from.
             self.name = self.__class__.__name__
+            print(self.name)
 
         # call subclass implementations
         self.setDefaultMassFracs()
 
     def __repr__(self):
         return f"<Material: {self.name}>"
+
+    def __reduce__(self):
+        """ TODO :Wording
+        Override __reduce__ to tell pickle how to reconstruct this class.
+        By specifying object.__new__ as the constructor, we bypass the custom __new__
+        during unpickling, thus avoiding recursion.
+        """
+        return (object.__new__, (self.__class__,), self.__dict__)
+
+    def TODO__getstate__(self):
+        attributes = self.__dict__.copy()
+        print("TODO: GET STATE!!!!!!!!!!!!!!!")
+        return attributes
+
+    def TODO__setstate__(self, state):
+        print("TODO: SET STATE!!!!!!!!!!!!!!!")
+        self.__dict__ = state
 
     def getName(self):
         """Duplicate of name property, kept for backwards compatibility."""
@@ -571,7 +628,7 @@ class Material(MatPropsMaterial):
 
         Notes
         -----
-        - This method is used to aid defining pure Python materials outside of a matProps YAML file.
+        This method is used to aid defining pure Python materials outside of a matProps YAML file.
         """
         if not minT <= val <= maxT:
             msg = f"Temperature {val} out of range ({minT} to {maxT}) for {self.name} {label}"
@@ -718,3 +775,17 @@ class FuelMaterial(Material):
         class1Isotopics = customIsotopics[self.class1_custom_isotopics]
         class2Isotopics = customIsotopics[self.class2_custom_isotopics]
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
+
+
+
+
+# TODO
+import os
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+_RESOURCES_DIR = os.path.join(_THIS_DIR, "..", "resources", "materials")
+class HastelloyN(Material):
+    YAML_PATH = os.path.join(_RESOURCES_DIR, "HastelloyN.yaml")
+
+    def __init__(self):
+        Material.__init__(self)
+        self.refDens = 8.86
