@@ -25,7 +25,7 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
 )
 from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
-from armi.reactor.converters.tests.test_axialExpansionChanger_MultiPin import buildMixedPinAssembly
+from armi.reactor.converters.tests.test_axialExpansionChanger_MultiPin import buildMixedThreePinAssembly
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
 from armi.testing import TEST_ROOT, loadTestReactor
@@ -193,7 +193,7 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_dissolveMixedAssembly(self):
         """Test dissolving multiple components into another in a mixed assembly."""
-        mixedAssem = buildMixedPinAssembly()
+        mixedAssem = buildMixedThreePinAssembly()
         b = mixedAssem.getBlocks(Flags.FUEL)[1]
         annularPin = b.getComponents([Flags.ANNULAR, Flags.LINER, Flags.GAP])
         testPin = []
