@@ -109,7 +109,7 @@ class Material(MatPropsMaterial):
     def __init__(self):
         MatPropsMaterial.__init__(self)
         if hasattr(self, "cached"):
-            print(f"TODO: OKAY, skipping Material init: {self.name}")
+            #print(f"TODO: OKAY, skipping Material init: {self.name}")
             return
 
         self.parent = None
@@ -120,8 +120,10 @@ class Material(MatPropsMaterial):
         self._backupCache = None
 
         if self.name is None:
+            #print(self.name)
             # This material does not have a YAML file to pull the name from.
             self.name = self.__class__.__name__
+            #print(self.name)
 
         # call subclass implementations
         self.setDefaultMassFracs()

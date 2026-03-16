@@ -40,7 +40,7 @@ class Material:
         """Constructor for Material class."""
         # during unpickling, we do not want to reload the YAML file
         if hasattr(self, "materialType") and self.materialType is not None:
-            print(f"TODO: Skipping MatPropsMaterialInit: {self.name}")
+            #print(f"TODO: Skipping MatPropsMaterialInit: {self.name}")
             return
 
         self._saved = False
