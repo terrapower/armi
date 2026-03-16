@@ -27,7 +27,7 @@ composition:
   CR: [11.75, 11.75]
   FE: balance
   references:
-  - ref: From E.2-1 of https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
+  - ref: E.2-1 of https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
     type: open literature
 
 thermal conductivity:
