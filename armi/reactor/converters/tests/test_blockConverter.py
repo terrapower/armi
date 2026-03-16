@@ -212,7 +212,7 @@ class TestBlockConverter(unittest.TestCase):
             convertedBlock2, ["annular void"], "annular fuel test", testPin
         )
         convertedBlock4 = self._test_dissolve_mixedAssembly(
-            convertedBlock3, ["gap1", "liner", "gap2"], "annular clad test", testPin
+            convertedBlock3, ["gap2", "liner", "gap1"], "annular clad test", testPin
         )
         self._checkAreaAndComposition(b, convertedBlock4)
 
