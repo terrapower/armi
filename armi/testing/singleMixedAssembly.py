@@ -61,8 +61,8 @@ blocks:
             mult: 1.0
             op: 19.0
 
-    axial shield twoPin: &block_fuel_multiPin_axial_shield
-        grid name: twoPin
+    axial shield threePin: &block_fuel_multiPin_axial_shield
+        grid name: threePin
         shield: &component_shield_shield1
             shape: Circle
             material: HT9
@@ -108,13 +108,61 @@ blocks:
         clad test:
             <<: *component_shield_clad1
             latticeIDs: [2]
+        annular void: &shield_annular_void
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: annular shield test.id
+            latticeIDs: [3]
+        annular shield test:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.600
+            od: 0.950
+            latticeIDs: [3]
+        gap1:
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 600.0
+            id: annular shield test.od
+            od: liner.id
+            latticeIDs: [3]
+        liner:
+            shape: Circle
+            material: Zr
+            Tinput: 20.0
+            Thot: 600.0
+            id: 0.950
+            od: 1.000
+            latticeIDs: [3]
+        gap2:
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 600.0
+            id: liner.od
+            od: annular clad test.id
+            latticeIDs: [3]
+        annular clad test:
+            shape: Circle
+            material: HT9
+            Tinput: 20.0
+            Thot: 600.0
+            id: 1.000
+            od: 1.090
+            latticeIDs: [3]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
         axial expansion target component: shield
 
-    fuel twoPin: &block_fuel_multiPin
-        grid name: twoPin
+    fuel threePin: &block_fuel_multiPin
+        grid name: threePin
         fuel: &component_fuelmultiPin
             shape: Circle
             material: UZr
@@ -160,13 +208,56 @@ blocks:
         clad test: &component_fuelmultiPin_clad2
             <<: *component_fuelmultiPin_clad1
             latticeIDs: [2]
+        annular void: &fuel_annular_void
+            <<: *shield_annular_void
+            od: annular fuel test.id
+        annular fuel test: &fuel_annular_test
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.600
+            od: 0.950
+            latticeIDs: [3]
+        gap1: &annular_test_gap1
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 600.0
+            id: annular fuel test.od
+            od: liner.id
+            latticeIDs: [3]
+        liner: &liner
+            shape: Circle
+            material: Zr
+            Tinput: 20.0
+            Thot: 600.0
+            id: 0.950
+            od: 1.000
+            latticeIDs: [3]
+        gap2: &annular_test_gap2
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 600.0
+            id: liner.od
+            od: annular clad test.id
+            latticeIDs: [3]
+        annular clad test: &annular_clad_test
+            shape: Circle
+            material: HT9
+            Tinput: 20.0
+            Thot: 600.0
+            id: 1.000
+            od: 1.090
+            latticeIDs: [3]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
         axial expansion target component: fuel
 
-    plenum 2pin: &block_plenum_multiPin
-        grid name: twoPin
+    plenum 3pin: &block_plenum_multiPin
+        grid name: threePin
         gap: &component_plenummultiPin_gap1
             shape: Circle
             material: Void
@@ -182,25 +273,36 @@ blocks:
             od: clad test.id
             latticeIDs: [2]
         clad test: *component_fuelmultiPin_clad2
+        annular void: 
+            <<: *fuel_annular_void
+            od: annular clad test.id
+            latticeIDs: [3]
+        annular clad test: *annular_clad_test
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
         axial expansion target component: clad test
 
-    mixed fuel plenum 2pin: &block_mixed_multiPin
-        grid name: twoPin
+    mixed fuel plenum 3pin: &block_mixed_multiPin
+        grid name: threePin
         gap: *component_plenummultiPin_gap1
         clad: *component_fuelmultiPin_clad1
         wire: *component_fuelmultiPin_wire1
         fuel test: *component_fuelmultiPin_fuel2
         bond test: *component_fuelmultiPin_bond2
         clad test: *component_fuelmultiPin_clad2
+        annular void: *fuel_annular_void
+        annular fuel test: *fuel_annular_test
+        gap1: *annular_test_gap1
+        liner: *liner
+        gap2: *annular_test_gap2
+        annular clad test: *annular_clad_test
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
         axial expansion target component: fuel test
 
-    aclp plenum 2pin: &block_aclp_multiPin
+    aclp plenum 3pin: &block_aclp_multiPin
         <<: *block_plenum_multiPin
 
     SodiumBlock: &block_dummy
@@ -234,12 +336,12 @@ grids:
         geom: hex
         symmetry: third periodic
         lattice map: LA
-    twoPin:
+    threePin:
         geom: hex_corners_up
         symmetry: full
         lattice map: |
             -  2 1
-              2 1 2
+              3 1 3
                1 2
 """
 
