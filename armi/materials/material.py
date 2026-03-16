@@ -96,7 +96,7 @@ class Material(MatPropsMaterial):
             # handle matProps / YAML materials
             if cls.YAML_PATH not in PICKLED_YAML_MATS:
                 mat = MatPropsMaterial.__new__(cls)
-                MatPropsMaterial.__init__(mat)
+                mat.__init__()
                 PICKLED_YAML_MATS[cls.YAML_PATH] = pickle.dumps(mat)
                 return mat
             else:
@@ -108,6 +108,10 @@ class Material(MatPropsMaterial):
 
     def __init__(self):
         MatPropsMaterial.__init__(self)
+        if hasattr(self, "cached") and self.cached:
+            print(f"TODO: OKAY, skipping Material init: {self.name}")
+            return
+
         self.parent = None
         self.massFrac = {}
         self.refDens = 0.0
@@ -116,7 +120,7 @@ class Material(MatPropsMaterial):
         self._backupCache = None
 
         if self.name is None:
-            # This material does not have a YAML file, to pull the name from.
+            # This material does not have a YAML file to pull the name from.
             self.name = self.__class__.__name__
 
         # call subclass implementations
