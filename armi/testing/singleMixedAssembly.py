@@ -569,6 +569,7 @@ def buildMixedPinAssembly(
 
     return list(blueprints.assemblies.values())[0]
 
+
 def buildMixedThreePinAssembly(
     blockDefs: str = BLOCK_DEFINITIONS_3PIN,
     assemDef: str = REGULAR_ASSEMBLY_DEF,
