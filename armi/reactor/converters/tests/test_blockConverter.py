@@ -25,9 +25,9 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
 )
 from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
+from armi.reactor.converters.tests.test_axialExpansionChanger_MultiPin import buildMixedPinAssembly
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
-from armi.reactor.converters.tests.test_axialExpansionChanger_MultiPin import buildMixedPinAssembly
 from armi.testing import TEST_ROOT, loadTestReactor
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -208,8 +208,12 @@ class TestBlockConverter(unittest.TestCase):
             hostPin.append(c)
         convertedBlock1 = self._test_dissolve_mixedAssembly(b, ["wire", "clad"], "coolant", hostPin)
         convertedBlock2 = self._test_dissolve_mixedAssembly(convertedBlock1, ["clad test"], "coolant", testPin)
-        convertedBlock3 = self._test_dissolve_mixedAssembly(convertedBlock2, ["annular void"], "annular fuel test", testPin)
-        convertedBlock4 = self._test_dissolve_mixedAssembly(convertedBlock3, ["gap1", "liner", "gap2"], "annular clad test", testPin)
+        convertedBlock3 = self._test_dissolve_mixedAssembly(
+            convertedBlock2, ["annular void"], "annular fuel test", testPin
+        )
+        convertedBlock4 = self._test_dissolve_mixedAssembly(
+            convertedBlock3, ["gap1", "liner", "gap2"], "annular clad test", testPin
+        )
         self._checkAreaAndComposition(b, convertedBlock4)
 
     def test_dissolveZeroArea(self):
