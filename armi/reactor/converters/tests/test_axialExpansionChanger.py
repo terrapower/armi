@@ -690,8 +690,12 @@ class TestExceptions(AxialExpansionTestBase):
         # manually set axial exp target component for code coverage
         self.a[0].p.axialExpTargetComponent = self.a[0][0].name
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
+        print(f"temp: {temp}")
+        print(f"temp.tempGrid: {temp.tempGrid}")
+        print(f"temp.tempField: {temp.tempField}")
         with self.assertRaisesRegex(ArithmeticError, "has a negative height"):
             for idt in range(temp.tempSteps):
+                print(f"idt: {idt}")
                 self.obj.expansionData.updateComponentTempsBy1DTempField(temp.tempGrid, 2 * temp.tempField[idt, :])
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
