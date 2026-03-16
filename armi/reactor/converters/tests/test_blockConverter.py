@@ -195,17 +195,22 @@ class TestBlockConverter(unittest.TestCase):
         """Test dissolving multiple components into another in a mixed assembly."""
         mixedAssem = buildMixedPinAssembly()
         b = mixedAssem.getBlocks(Flags.FUEL)[1]
-        testPin = b.getComponents(Flags.TEST)
+        annularPin = b.getComponents([Flags.ANNULAR, Flags.LINER, Flags.GAP])
+        testPin = []
         hostPin = []
         for c in b:
-            if c in testPin:
+            if c in annularPin:
                 continue
             if c.hasFlags([Flags.COOLANT, Flags.INTERCOOLANT, Flags.DUCT]):
                 continue
+            if c.hasFlags(Flags.TEST):
+                testPin.append(c)
             hostPin.append(c)
-        convertedBlock = self._test_dissolve_mixedAssembly(b, ["wire", "clad"], "coolant", hostPin)
-        convertedBlock = self._test_dissolve_mixedAssembly(convertedBlock, ["clad test"], "coolant", testPin)
-        self._checkAreaAndComposition(b, convertedBlock)
+        convertedBlock1 = self._test_dissolve_mixedAssembly(b, ["wire", "clad"], "coolant", hostPin)
+        convertedBlock2 = self._test_dissolve_mixedAssembly(convertedBlock1, ["clad test"], "coolant", testPin)
+        convertedBlock3 = self._test_dissolve_mixedAssembly(convertedBlock2, ["annular void"], "annular fuel test", testPin)
+        convertedBlock4 = self._test_dissolve_mixedAssembly(convertedBlock3, ["gap1", "liner", "gap2"], "annular clad test", testPin)
+        self._checkAreaAndComposition(b, convertedBlock4)
 
     def test_dissolveZeroArea(self):
         """Test dissolving a zero-area component into another."""
@@ -238,7 +243,7 @@ class TestBlockConverter(unittest.TestCase):
         self._checkAreaAndComposition(block, convertedBlock)
 
     def _test_dissolve_mixedAssembly(self, block, soluteNames, solventName, pin):
-        converter = blockConverters.MixedAssemblyMerger(block, soluteNames, solventName, pin)
+        converter = blockConverters.MultipleComponentMerger(block, soluteNames, solventName)
         convertedBlock = converter.convert()
         for soluteName in soluteNames:
             self.assertNotIn(soluteName, convertedBlock.getComponentNames())
