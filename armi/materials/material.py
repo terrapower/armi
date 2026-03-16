@@ -108,7 +108,7 @@ class Material(MatPropsMaterial):
 
     def __init__(self):
         MatPropsMaterial.__init__(self)
-        if hasattr(self, "cached") and self.cached:
+        if hasattr(self, "cached"):
             print(f"TODO: OKAY, skipping Material init: {self.name}")
             return
 
