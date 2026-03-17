@@ -83,7 +83,7 @@ class AbstractMaterialTest:
 
 
 class MaterialConstructionTests(unittest.TestCase):
-    def test_material_initialization(self):
+    def test_matInit(self):
         """Make sure all materials can be instantiated without error."""
         for matClass in materials.iterAllMaterialClassesInNamespace(materials):
             matClass()
@@ -299,9 +299,6 @@ class PotassiumTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_pseudoDensity(self):
         cur = self.mat.pseudoDensity(Tc=100)
-        print(self.mat.pseudoDensity(Tc=100))
-        print(self.mat.density(Tc=100))
-        print(self.mat.linearExpansionPercent(Tc=100))
         ref = 0.8195
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
@@ -1483,3 +1480,97 @@ assemblies:
             class2_custom_isotopics: [fakeIsotopic]
         """
             )
+
+
+class PickledMaterialsTests(unittest.TestCase):
+    def test_simpleReload(self):
+        """Prove that the material pickling works, creating reasonable copies of the matProps material."""
+        refDens = 7.709686132722035
+
+        m1 = materials.HT9()
+        self.assertEqual(m1.massFrac["MO"], 0.01)
+        self.assertAlmostEqual(m1.density(Tc=300), refDens)
+
+        m2 = materials.HT9()
+        self.assertEqual(m2.massFrac["MO"], 0.01)
+        self.assertAlmostEqual(m2.density(Tc=300), refDens)
+
+        m3 = materials.HT9()
+        self.assertEqual(m3.massFrac["MO"], 0.01)
+        self.assertAlmostEqual(m3.density(Tc=300), refDens)
+
+    def test_massFrac(self):
+        """Ensure that setting the mass fractions on one pickled material does not affect another copy."""
+        refDens = 7.709686132722035
+
+        # zero out the Mo element in HT9
+        m1 = materials.HT9()
+        self.assertEqual(m1.massFrac["MO"], 0.01)
+        m1.adjustMassFrac("MO", 0.0)
+        self.assertEqual(m1.massFrac["MO"], 0.0)
+        self.assertNotAlmostEqual(m1.density(Tc=300), refDens)
+
+        # create a fresh material, and show that it works
+        m2 = materials.HT9()
+        self.assertEqual(m2.massFrac["MO"], 0.01)
+        self.assertAlmostEqual(m2.density(Tc=300), refDens)
+
+        # set the mass frac of HT9 to some other, arbitrary value
+        m3 = materials.HT9()
+        self.assertEqual(m3.massFrac["MO"], 0.01)
+        m3.adjustMassFrac("MO", 0.03)
+        self.assertAlmostEqual(m3.massFrac["MO"], 0.03)
+        self.assertNotAlmostEqual(m3.density(Tc=300), refDens)
+
+    def test_applyInputParams(self):
+        """Ensure that using applyInputParams on one pickled material does not affect another copy."""
+        refDens = 7.709686132722035
+
+        # Set the theoretical density using applyInputParams
+        m1 = materials.HT9()
+        self.assertEqual(m1.massFrac["MO"], 0.01)
+        self.assertEqual(m1.massFrac["C"], 0.002)
+        self.assertAlmostEqual(m1.density(Tc=300), refDens)
+        m1.applyInputParams(TD_frac=0.5)
+        self.assertAlmostEqual(m1.theoreticalDensityFrac, 0.5)
+        self.assertAlmostEqual(m1.density(Tc=300), refDens)
+
+        # show that a newly unpickled copy of the material has the original values
+        m2 = materials.HT9()
+        self.assertEqual(m2.massFrac["MO"], 0.01)
+        self.assertAlmostEqual(m2.density(Tc=300), refDens)
+        self.assertNotAlmostEqual(m2.theoreticalDensityFrac, 0.5)
+
+    def test_classVariables(self):
+        """Ensure that directly modifying the Material class variables of one material does not affect another copy."""
+        # create a fresh material, and show that it works
+        m0 = materials.HT9()
+        self.assertIsNone(m0.parent)
+        self.assertEqual(len(m0.massFrac), 9)
+        self.assertEqual(m0.refDens, 7.778)
+        self.assertEqual(m0.theoreticalDensityFrac, 1.0)
+        self.assertEqual(len(m0.cached), 0)
+        self.assertIsNone(m0._backupCache)
+        self.assertFalse(m0._saved)
+        self.assertEqual(len(m0.composition), 9)
+        self.assertEqual(m0.name, "HT9")
+
+        # modify the above values
+        m0.parent = {"this": "isFake"}
+        del m0.massFrac["C"]
+        m0.refDens = 1.234
+        m0.theoreticalDensityFrac = 0.5
+        m0.cached["faux"] = "notReal"
+        m0._backupCache = {"mock": "data"}
+
+        # verify a new material is independent of the above modifications
+        m1 = materials.HT9()
+        self.assertIsNone(m1.parent)
+        self.assertEqual(len(m1.massFrac), 9)
+        self.assertEqual(m1.refDens, 7.778)
+        self.assertEqual(m1.theoreticalDensityFrac, 1.0)
+        self.assertEqual(len(m1.cached), 0)
+        self.assertIsNone(m1._backupCache)
+        self.assertFalse(m1._saved)
+        self.assertEqual(len(m1.composition), 9)
+        self.assertEqual(m1.name, "HT9")

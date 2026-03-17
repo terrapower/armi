@@ -690,12 +690,8 @@ class TestExceptions(AxialExpansionTestBase):
         # manually set axial exp target component for code coverage
         self.a[0].p.axialExpTargetComponent = self.a[0][0].name
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
-        print(f"temp: {temp}")
-        print(f"temp.tempGrid: {temp.tempGrid}")
-        print(f"temp.tempField: {temp.tempField}")
         with self.assertRaisesRegex(ArithmeticError, "has a negative height"):
             for idt in range(temp.tempSteps):
-                print(f"idt: {idt}")
                 self.obj.expansionData.updateComponentTempsBy1DTempField(temp.tempGrid, 2 * temp.tempField[idt, :])
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
@@ -1099,7 +1095,7 @@ def _buildDummySodium(hotTemp: float, height: float):
     return b
 
 
-class FakeMat(materials.HT9):
+class FakeMat(materials.Material):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger.
 
     Notes
@@ -1110,7 +1106,29 @@ class FakeMat(materials.HT9):
       contraction. See TestConservation.
     """
 
-    name = "FakeMat"
+    propertyValidTemperature = {"linear expansion": ((293, 1050), "K")}
+
+    def __init__(self):
+        materials.Material.__init__(self)
+        self.name = "FakeMat"
+
+    def setDefaultMassFracs(self):
+        self.setMassFrac("C", 0.002)
+        self.setMassFrac("MN", 0.005)
+        self.setMassFrac("SI", 0.0025)
+        self.setMassFrac("NI", 0.0055)
+        self.setMassFrac("CR", 0.1175)
+        self.setMassFrac("MO", 0.01)
+        self.setMassFrac("W", 0.0055)
+        self.setMassFrac("V", 0.0030)
+        self.setMassFrac("FE", 1.0 - sum(self.massFrac.values()))
+
+        self.refDens = 7.778
+
+    def thermalConductivity(self, Tk=None, Tc=None):
+        """Thermal conductivity in W/m-K)."""
+        Tk = units.getTk(Tc, Tk)
+        return 29.65 - 6.668e-2 * Tk + 2.184e-4 * Tk**2 - 2.527e-7 * Tk**3 + 9.621e-11 * Tk**4
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""
@@ -1118,17 +1136,19 @@ class FakeMat(materials.HT9):
         return 0.02 * Tc
 
 
-class FakeMatException(materials.HT9):
+class FakeMatException(FakeMat):
     """Fake material used to verify TestExceptions.
 
     Notes
     -----
-    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion
+    - the only difference between this and `class FakeMat(HT9)` above is that the thermal expansion
       factor is higher to ensure that a negative block height is caught in
       TestExceptions:test_assemblyAxialExpansionException.
     """
 
-    name = "FakeMatException"
+    def __init__(self):
+        FakeMat.__init__(self)
+        self.name = "FakeMatException"
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""

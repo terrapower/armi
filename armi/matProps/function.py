@@ -98,7 +98,6 @@ class Function:
                 f"Specified point {data} does contain the correct independent variables: {self.independentVars}"
             )
         elif not self.inRange(data):
-            print(f"TODO: {self.material}")
             raise ValueError(f"Requested calculation point, {data} is not in the valid range of the function")
 
         return self._calcSpecific(data)

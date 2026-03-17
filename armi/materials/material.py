@@ -96,16 +96,11 @@ class Material(MatPropsMaterial):
             # handle matProps / YAML materials
             if cls.YAML_PATH not in PICKLED_YAML_MATS:
                 mat = super().__new__(cls)
-                #MatPropsMaterial.__init__(mat)
                 Material.__init__(mat)
                 PICKLED_YAML_MATS[cls.YAML_PATH] = pickle.dumps(mat)
                 return mat
             else:
-                mat = pickle.loads(PICKLED_YAML_MATS[cls.YAML_PATH])
-                #mat.__init__()
-                #Material.__init__(mat)
-                print(f"mat: {mat.name},  mat.massFrac:  {mat.massFrac}")
-                return mat
+                return pickle.loads(PICKLED_YAML_MATS[cls.YAML_PATH])
         else:
             # pure Python materials
             return super().__new__(cls)
@@ -113,7 +108,6 @@ class Material(MatPropsMaterial):
     def __init__(self):
         MatPropsMaterial.__init__(self)
         if hasattr(self, "cached"):
-            #print(f"TODO: OKAY, skipping Material init: {self.name}")
             self.setDefaultMassFracs()
             return
 
@@ -125,10 +119,8 @@ class Material(MatPropsMaterial):
         self._backupCache = None
 
         if self.name is None:
-            #print(self.name)
             # This material does not have a YAML file to pull the name from.
             self.name = self.__class__.__name__
-            #print(self.name)
 
         # call subclass implementations
         self.setDefaultMassFracs()
@@ -332,7 +324,6 @@ class Material(MatPropsMaterial):
 
     def applyInputParams(self, **kwargs) -> None:
         """Apply material-specific material input parameters."""
-        #print(f"mat: {self.name},   mat.applyInputParams: {kwargs}")
         # handle a common use-case where people set the theoretical density fraction
         if "TD_frac" in kwargs:
             td = kwargs["TD_frac"]
