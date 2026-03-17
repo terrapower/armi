@@ -1095,7 +1095,7 @@ def _buildDummySodium(hotTemp: float, height: float):
     return b
 
 
-class FakeMat(materials.Material):
+class FakeMat(materials.HT9):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger.
 
     Notes
@@ -1106,29 +1106,9 @@ class FakeMat(materials.Material):
       contraction. See TestConservation.
     """
 
-    propertyValidTemperature = {"linear expansion": ((293, 1050), "K")}
-
     def __init__(self):
-        materials.Material.__init__(self)
+        materials.HT9.__init__(self)
         self.name = "FakeMat"
-
-    def setDefaultMassFracs(self):
-        self.setMassFrac("C", 0.002)
-        self.setMassFrac("MN", 0.005)
-        self.setMassFrac("SI", 0.0025)
-        self.setMassFrac("NI", 0.0055)
-        self.setMassFrac("CR", 0.1175)
-        self.setMassFrac("MO", 0.01)
-        self.setMassFrac("W", 0.0055)
-        self.setMassFrac("V", 0.0030)
-        self.setMassFrac("FE", 1.0 - sum(self.massFrac.values()))
-
-        self.refDens = 7.778
-
-    def thermalConductivity(self, Tk=None, Tc=None):
-        """Thermal conductivity in W/m-K)."""
-        Tk = units.getTk(Tc, Tk)
-        return 29.65 - 6.668e-2 * Tk + 2.184e-4 * Tk**2 - 2.527e-7 * Tk**3 + 9.621e-11 * Tk**4
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""

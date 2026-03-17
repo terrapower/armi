@@ -93,14 +93,15 @@ class Material(MatPropsMaterial):
     def __new__(cls):
         # split the creation of new Material objects between YAML/cached and pure Python
         if cls.YAML_PATH is not None:
+            nameStub = f"{cls.YAML_PATH}:{cls.__name__}"
             # handle matProps / YAML materials
-            if cls.YAML_PATH not in PICKLED_YAML_MATS:
+            if nameStub not in PICKLED_YAML_MATS:
                 mat = super().__new__(cls)
                 Material.__init__(mat)
-                PICKLED_YAML_MATS[cls.YAML_PATH] = pickle.dumps(mat)
+                PICKLED_YAML_MATS[nameStub] = pickle.dumps(mat)
                 return mat
             else:
-                return pickle.loads(PICKLED_YAML_MATS[cls.YAML_PATH])
+                return pickle.loads(PICKLED_YAML_MATS[nameStub])
         else:
             # pure Python materials
             return super().__new__(cls)
