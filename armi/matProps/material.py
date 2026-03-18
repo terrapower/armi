@@ -57,6 +57,9 @@ class Material:
         self._sha1 = None
         """SHA1 value of parsed material file."""
 
+        self.yamlPath = None
+        """Path to the YAML file that was loaded to build this instance."""
+
         # Load the material, if the YAML was provided.
         if self.YAML_PATH:
             self.loadFile(self.YAML_PATH)

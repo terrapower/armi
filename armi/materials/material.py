@@ -86,6 +86,9 @@ class Material(MatPropsMaterial):
     enrichedNuclide = None
     """Name of enriched nuclide to be interpreted by enrichment modification methods"""
 
+    modelConst = {}
+    """Constants that may be used in interpolation functions for property lookups. Recommendation: don't use this."""
+
     propertyValidTemperature = {}
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
@@ -219,7 +222,7 @@ class Material(MatPropsMaterial):
         """
         Average thermal expansion dL/L. Used for computing hot dimensions and density.
 
-        Defaults to 0.0 for materials that don't expand.
+        Defaults to 0.0 for materials that do not expand, or we lack expansion information for.
 
         Parameters
         ----------
@@ -239,6 +242,14 @@ class Material(MatPropsMaterial):
         if hasattr(self, "dl_l") and self.dl_l is not None:
             Tc = getTc(Tc, Tk)
             return self.dl_l(T=Tc)
+        elif hasattr(self, "alpha_mean") and self.alpha_mean is not None:
+            Tc = getTc(Tc, Tk)
+            try:
+                # TODO: test this
+                refTempC = self.alpha_mean.getReferenceTemperature()
+            except Exception:
+                return 0.0
+            return 100.0 * self.alpha_mean(T=Tc) * (Tc - refTempC)
         else:
             return 0.0
 
