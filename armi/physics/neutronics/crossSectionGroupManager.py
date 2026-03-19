@@ -1232,14 +1232,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                 reprBlock = collection.createRepresentativeBlock()
                 representativeBlocks[xsID] = reprBlock
                 self.avgNucTemperatures[xsID] = collection.avgNucTemperatures
-            else:
-                runLog.debug(
-                    "No candidate blocks in group for {} (with a valid representative block flag). "
-                    "Will apply different environment group".format(xsID)
-                )
-                self._unrepresentedXSIDs.append(xsID)
 
         self.representativeBlocks = collections.OrderedDict(sorted(representativeBlocks.items()))
+        self._checkForUnrepresentedXSIDs(blockCollectionsByXsGroup)
         self._modifyUnrepresentedXSIDs(blockCollectionsByXsGroup)
         self._summarizeGroups(blockCollectionsByXsGroup)
 
@@ -1309,6 +1304,10 @@ class CrossSectionGroupManager(interfaces.Interface):
                 averageByComponent=oldBlockCollection.averageByComponent,
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
+
+        # clean up any unrepresented XS IDs
+        self._checkForUnrepresentedXSIDs(blockCollectionByXsGroup)
+        self._modifyUnrepresentedXSIDs(blockCollectionByXsGroup)
         return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
@@ -1366,6 +1365,82 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.cs[CONF_CROSS_SECTION][newXSID].xsID = newXSID
 
         return modifiedReprBlocks, origXSIDsFromNew
+
+    def _checkForUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
+        """
+        Check for unrepresented XS IDs after self._updateEnvironmentGroups() has been called.
+
+        Parameters
+        ----------
+        blockCollectionsByXsGroup: dict[str, BlockCollection]
+            Dict of BlockCollection keyed by the XS group they belong to.
+
+        Notes
+        -----
+        This should be run after `CrossSectionGroupManager._updateEnvironmentGroups()`, which resets
+        `b.p.envGroup` and can result in unrepresented cross section IDs. This is usually invoked
+        as a result of a call to `CrossSectionGroupManager.makeCrossSectionGroups()`
+        """
+        for xsID, collection in blockCollectionsByXsGroup.items():
+            if self.xsTypeIsPregenerated(xsID) or len(collection.getCandidateBlocks()) > 0:
+                continue
+            else:
+                runLog.debug(
+                    "No candidate blocks in group for {} (with a valid representative block flag). "
+                    "Will apply different environment group".format(xsID)
+                )
+                self._unrepresentedXSIDs.append(xsID)
+
+    def getUnmodifiedRepresentativeBlocks(self):
+        """
+        Return the representative blocks of the core prior to applying core state modifiers.
+
+        Notes
+        -----
+        This is called prior to perturbing representative blocks for cross section generation. For example,
+        this would be used before performing a temperature perturbation or density perturbation for a reactivity
+        coefficient calculation.
+        """
+        blockCollectionsByXsGroup = self.makeCrossSectionGroups()
+        # modify XS ID for blocks that aren't represented
+        self._checkForUnrepresentedXSIDs(blockCollectionsByXsGroup)
+        self._modifyUnrepresentedXSIDs(blockCollectionsByXsGroup)
+
+        representativeBlocks = collections.OrderedDict()
+        pregeneratedXsIds = []
+        for b in self.r.core.getBlocks():
+            xsID = b.getMicroSuffix()
+            blockCollection = blockCollectionsByXsGroup[xsID]
+
+            # Skip trying to create a representative block for a pre-generated XS ID
+            # because we can't generate new XS at updated conditions
+            if self.xsTypeIsPregenerated(xsID):
+                if xsID not in pregeneratedXsIds:
+                    # don't just use single=True in the runLog print because we want
+                    # this message to be printed for every separate reactivity coefficient
+                    # calc. but we still want it to print only once for a given coefficient
+                    runLog.extra(f"Skipping XS ID {xsID} because it is pregenerated.")
+                    pregeneratedXsIds.append(xsID)
+                continue
+
+            # Check that the block collection contains candidate blocks, otherwise skip it. 
+            # This can occur in voided cases, where the blocks in the core are all represented 
+            # by voided representative blocks.
+            if not any(blockCollection.getCandidateBlocks()):
+                continue
+
+            # Skip making a new representative block for an XS ID that was already processed.
+            if xsID in representativeBlocks.keys():
+                continue
+
+            runLog.extra("Creating an unmodified representative block for XS ID {}".format(xsID))
+            blockCollection.calcAvgNuclideTemperatures()
+            reprBlock = copy.deepcopy(blockCollection.createRepresentativeBlock())
+            representativeBlocks[xsID] = reprBlock
+            self.representativeBlocks[xsID] = reprBlock
+            self.avgNucTemperatures[xsID] = blockCollection.avgNucTemperatures
+
+        return representativeBlocks
 
     def getNextAvailableXsTypes(self, howMany=1, excludedXSTypes=None):
         """Return the next however many available xs types.
