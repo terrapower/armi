@@ -628,11 +628,8 @@ class Material(MatPropsMaterial):
 
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""
-        if hasattr(self, "c_p") and self.c_p is not None:
-            Tc = getTc(Tc, Tk)
-            return self.c_p(T=Tc)
-        else:
-            raise NotImplementedError(f"Material {type(self).__name__} does not implement heatCapacity")
+        Tc = getTc(Tc, Tk)
+        return self.c_p(T=Tc)
 
     def getTD(self):
         """Get the fraction of theoretical density for this material."""
