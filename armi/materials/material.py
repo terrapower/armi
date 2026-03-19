@@ -33,6 +33,7 @@ from armi.utils.units import getTc, getTk
 # works for material properties defined purely in Python.
 FAIL_ON_RANGE = True
 
+# TODO: Compare speed pickle vs deepcopy.
 # Need for an memoization optimization to cache YAML-mased materials
 PICKLED_YAML_MATS = {}
 
