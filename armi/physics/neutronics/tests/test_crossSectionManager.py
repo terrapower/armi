@@ -900,6 +900,29 @@ class TestXSGM(unittest.TestCase):
         self.assertIsNone(blocks[0].p.detailedNDens)
         self.assertIsNone(blocks[1].p.detailedNDens)
 
+    def test_checkForUnrepresentedXSIDs(self):
+        blockCollectionsByXsGroup = self.csm.makeCrossSectionGroups()
+        self.csm.createRepresentativeBlocks()
+
+        # set valid flags to something the fuel block would not have to trigger unrepresented block
+        fuelXStype = "AD"
+        blocksWithType = [b for b in self.csm.r.core.getBlocks(Flags.FUEL) if b.getMicroSuffix() == fuelXStype]
+        print(blockCollectionsByXsGroup)
+        fuelCollection = blockCollectionsByXsGroup[fuelXStype]
+        print(fuelCollection)
+        fuelCollection._validRepresentativeBlockTypes = Flags.CLAD
+
+        # check for unrepresented XS ID, assert that it is found
+        self.csm._checkForUnrepresentedXSIDs(blockCollectionsByXsGroup)
+        self.assertListEqual(self.csm._unrepresentedXSIDs, [fuelXStype])
+
+        # modify unrepresented XS ID, assert that first character is the same
+        self.csm._modifyUnrepresentedXSIDs(blockCollectionsByXsGroup)
+        for b in blocksWithType:
+            modifiedType = b.getMicroSuffix()
+            self.assertEqual(modifiedType[0], fuelXStype[0])
+            self.assertNotEqual(modifiedType[1], fuelXStype[1])
+
     def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
         """Reusable code used in multiple unit tests."""
         o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")

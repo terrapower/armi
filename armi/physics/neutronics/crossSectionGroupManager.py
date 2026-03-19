@@ -1423,8 +1423,8 @@ class CrossSectionGroupManager(interfaces.Interface):
                     pregeneratedXsIds.append(xsID)
                 continue
 
-            # Check that the block collection contains candidate blocks, otherwise skip it. 
-            # This can occur in voided cases, where the blocks in the core are all represented 
+            # Check that the block collection contains candidate blocks, otherwise skip it.
+            # This can occur in voided cases, where the blocks in the core are all represented
             # by voided representative blocks.
             if not any(blockCollection.getCandidateBlocks()):
                 continue
