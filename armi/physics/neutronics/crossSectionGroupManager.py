@@ -1217,7 +1217,6 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         representativeBlocks = {}
         self.avgNucTemperatures = {}
-        self._unrepresentedXSIDs = []
         runLog.extra("Generating representative blocks for XS")
         blockCollectionsByXsGroup = self.makeCrossSectionGroups()
         for xsID, collection in blockCollectionsByXsGroup.items():
