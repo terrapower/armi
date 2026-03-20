@@ -1376,9 +1376,9 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         Notes
         -----
-        This should be run after `CrossSectionGroupManager._updateEnvironmentGroups()`, which resets
-        `b.p.envGroup` and can result in unrepresented cross section IDs. This is usually invoked
-        as a result of a call to `CrossSectionGroupManager.makeCrossSectionGroups()`
+        This should be run after :meth:`CrossSectionGroupManager._updateEnvironmentGroups`, which resets
+        ``b.p.envGroup`` and can result in unrepresented cross section IDs. This is usually invoked
+        as a result of a call to :meth:`CrossSectionGroupManager.makeCrossSectionGroups`
         """
         self._unrepresentedXSIDs = []
         for xsID, collection in blockCollectionsByXsGroup.items():

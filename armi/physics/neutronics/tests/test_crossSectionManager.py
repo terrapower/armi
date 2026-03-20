@@ -906,10 +906,8 @@ class TestXSGM(unittest.TestCase):
 
         # set valid flags to something the fuel block would not have to trigger unrepresented block
         fuelXStype = "AD"
-        blocksWithType = [b for b in self.csm.r.core.getBlocks(Flags.FUEL) if b.getMicroSuffix() == fuelXStype]
-        print(blockCollectionsByXsGroup)
+        blocksWithType = [b for b in self.csm.r.core.iterBlocks(Flags.FUEL) if b.getMicroSuffix() == fuelXStype]
         fuelCollection = blockCollectionsByXsGroup[fuelXStype]
-        print(fuelCollection)
         fuelCollection._validRepresentativeBlockTypes = Flags.CLAD
 
         # check for unrepresented XS ID, assert that it is found
