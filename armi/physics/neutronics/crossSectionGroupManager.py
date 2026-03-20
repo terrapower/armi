@@ -1381,6 +1381,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         `b.p.envGroup` and can result in unrepresented cross section IDs. This is usually invoked
         as a result of a call to `CrossSectionGroupManager.makeCrossSectionGroups()`
         """
+        self._unrepresentedXSIDs = []
         for xsID, collection in blockCollectionsByXsGroup.items():
             if self.xsTypeIsPregenerated(xsID) or len(collection.getCandidateBlocks()) > 0:
                 continue
