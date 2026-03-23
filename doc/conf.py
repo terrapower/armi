@@ -322,7 +322,6 @@ version = meta.__version__
 
 # List of patterns, relative to doc directory, that match files and directories to ignore when looking for source files.
 exclude_patterns = [
-    "**.ipynb",
     "**.ipynb_checkpoints",
     "**_reqs.rst",  # needed so included reqs files render
     ".DS_Store",
