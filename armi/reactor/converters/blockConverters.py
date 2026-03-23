@@ -312,15 +312,15 @@ class MultipleComponentMerger(BlockConverter):
         return self._sourceBlock
 
 
-class MixedAssemblyMerger(MultipleComponentMerger):
+class MixedPinComponentMerger(MultipleComponentMerger):
     def __init__(self, sourceBlock, soluteNames, solventName, pin, specifiedMinID=0.0):
         """
-        This BlockConverter handles mixed assemblies with multiple pin types.
+        This BlockConverter handles mixed blocks with multiple pin types.
         A pin is a list of circular components that share a common spatial locator and thus
         make up a "pin", which is a physical construct but not a formal ARMI construct.
 
         This class can merge multiple components at a time within a single pin. To perform
-        conversions on multiple pins within a mixed assembly, a new instance of this class
+        conversions on multiple pins within a mixed block, a new instance of this class
         must be constructed for each pin, and then the :py:meth:`convert` method must be called in a
         waterfall fashion -- that is, the block returned from :py:meth:`convert` should be passed
         into the constructor of the next instance to perform a chain of component merges.

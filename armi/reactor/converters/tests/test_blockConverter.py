@@ -247,7 +247,7 @@ class TestBlockConverter(unittest.TestCase):
         self._checkAreaAndComposition(block, convertedBlock)
 
     def _test_dissolve_mixedAssembly(self, block, soluteNames, solventName, pin):
-        converter = blockConverters.MixedAssemblyMerger(block, soluteNames, solventName, pin)
+        converter = blockConverters.MixedPinComponentMerger(block, soluteNames, solventName, pin)
         convertedBlock = converter.convert()
         for soluteName in soluteNames:
             self.assertNotIn(soluteName, convertedBlock.getComponentNames())
