@@ -1217,7 +1217,6 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         representativeBlocks = {}
         self.avgNucTemperatures = {}
-        self._unrepresentedXSIDs = []
         runLog.extra("Generating representative blocks for XS")
         blockCollectionsByXsGroup = self.makeCrossSectionGroups()
         for xsID, collection in blockCollectionsByXsGroup.items():
@@ -1232,14 +1231,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                 reprBlock = collection.createRepresentativeBlock()
                 representativeBlocks[xsID] = reprBlock
                 self.avgNucTemperatures[xsID] = collection.avgNucTemperatures
-            else:
-                runLog.debug(
-                    "No candidate blocks in group for {} (with a valid representative block flag). "
-                    "Will apply different environment group".format(xsID)
-                )
-                self._unrepresentedXSIDs.append(xsID)
 
         self.representativeBlocks = collections.OrderedDict(sorted(representativeBlocks.items()))
+        self._checkForUnrepresentedXSIDs(blockCollectionsByXsGroup)
         self._modifyUnrepresentedXSIDs(blockCollectionsByXsGroup)
         self._summarizeGroups(blockCollectionsByXsGroup)
 
@@ -1309,6 +1303,10 @@ class CrossSectionGroupManager(interfaces.Interface):
                 averageByComponent=oldBlockCollection.averageByComponent,
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
+
+        # clean up any unrepresented XS IDs
+        self._checkForUnrepresentedXSIDs(blockCollectionByXsGroup)
+        self._modifyUnrepresentedXSIDs(blockCollectionByXsGroup)
         return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
@@ -1366,6 +1364,32 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.cs[CONF_CROSS_SECTION][newXSID].xsID = newXSID
 
         return modifiedReprBlocks, origXSIDsFromNew
+
+    def _checkForUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
+        """
+        Check for unrepresented XS IDs after self._updateEnvironmentGroups() has been called.
+
+        Parameters
+        ----------
+        blockCollectionsByXsGroup: dict[str, BlockCollection]
+            Dict of BlockCollection keyed by the XS group they belong to.
+
+        Notes
+        -----
+        This should be run after :meth:`CrossSectionGroupManager._updateEnvironmentGroups`, which resets
+        ``b.p.envGroup`` and can result in unrepresented cross section IDs. This is usually invoked
+        as a result of a call to :meth:`CrossSectionGroupManager.makeCrossSectionGroups`
+        """
+        self._unrepresentedXSIDs = []
+        for xsID, collection in blockCollectionsByXsGroup.items():
+            if self.xsTypeIsPregenerated(xsID) or len(collection.getCandidateBlocks()) > 0:
+                continue
+            else:
+                runLog.debug(
+                    "No candidate blocks in group for {} (with a valid representative block flag). "
+                    "Will apply different environment group".format(xsID)
+                )
+                self._unrepresentedXSIDs.append(xsID)
 
     def getNextAvailableXsTypes(self, howMany=1, excludedXSTypes=None):
         """Return the next however many available xs types.
