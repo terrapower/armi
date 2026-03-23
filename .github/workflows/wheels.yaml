@@ -5,8 +5,8 @@ permissions:
 
 on:
   push:
-    branches:
-      - main
+    #branches:
+    #  - main
 
 jobs:
   build:
@@ -29,6 +29,7 @@ jobs:
         run: |
           mkdir dist
           pip wheel . -w dist/
+          chmod 664 dist/armi*.whl
       - name: Archive PIP wheel artifacts
         uses: actions/upload-artifact@v4
         with:
