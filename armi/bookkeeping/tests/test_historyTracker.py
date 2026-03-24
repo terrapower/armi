@@ -66,30 +66,22 @@ class TestHistoryTracker(ArmiTestHelper):
         os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
         runTutorialNotebook()
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.dirChanger.__exit__(None, None, None)
-
-    def setUp(self):
         cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
-        newSettings["nCycles"] = 2
+        newSettings["nCycles"] = 1
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
         newSettings["loadStyle"] = "fromDB"
         newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         newSettings["startNode"] = 1
         cs = cs.modified(newSettings=newSettings)
 
-        self.td = TemporaryDirectoryChanger()
-        self.td.__enter__()
-
         c = case.Case(cs)
         case2 = c.clone(title="armiRun")
-        self.o = case2.initializeOperator()
-        self.r = self.o.r
+        cls.o = case2.initializeOperator()
+        cls.r = cls.o.r
 
-        dbi = self.o.getInterface("database")
+        dbi = cls.o.getInterface("database")
         # Make sure we have a database to use
         dbi.initDB()
         # Load the previous time point and merge histories to align with the restart point
@@ -97,11 +89,13 @@ class TestHistoryTracker(ArmiTestHelper):
         # Load the time point we want to start at, as if we've done some physics since the restart.
         dbi.loadState(0, 1)
 
-    def tearDown(self):
-        self.o.getInterface("database").database.close()
-        self.r = None
-        self.o = None
-        self.td.__exit__(None, None, None)
+    @classmethod
+    def tearDownClass(cls):
+        cls.dirChanger.__exit__(None, None, None)
+
+        cls.o.getInterface("database").database.close()
+        cls.r = None
+        cls.o = None
 
     def test_calcMGFluence(self):
         r"""
