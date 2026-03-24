@@ -1365,10 +1365,6 @@ class Core(composites.Composite):
 
         return np.array(flux)
 
-    def getAssembliesOfType(self, typeSpec, exactMatch=False):
-        """Return a list of assemblies in the core that are of type assemType."""
-        return self.getChildrenWithFlags(typeSpec, exactMatch=exactMatch)
-
     def getAssembly(self, assemNum=None, locationString=None, assemblyName=None, *args, **kwargs):
         """
         Finds an assembly in the core.
@@ -1449,9 +1445,11 @@ class Core(composites.Composite):
         Return True if assembly was at specified (ring, pos) at specified cycleNum BOC.
         """
         nCycles = len(a.p.ringPosHist)
-        if nCycles >= cycleNum:  # requested cycleNum has data populated
-            if a.p.ringPosHist[cycleNum] == (ring, pos):
-                return True
+        if nCycles > cycleNum:  # requested cycleNum has data populated
+            rp = a.p.ringPosHist[cycleNum]
+            if rp[0] not in a.NOT_IN_CORE:
+                if (int(rp[0]), int(rp[1])) == (ring, pos):
+                    return True
         return False
 
     def getAssemblyWithRingPosHist(self, ring, pos, cycleNum):

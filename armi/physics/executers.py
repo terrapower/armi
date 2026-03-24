@@ -245,6 +245,7 @@ class DefaultExecuter(Executer):
             if self.options.applyResultsToReactor:
                 output.apply(self.r)
         self._undoGeometryTransformations()
+        self._updateAdditionalParameters()
         return output
 
     def _updateRunDir(self, directory):
@@ -306,4 +307,7 @@ class DefaultExecuter(Executer):
         pass
 
     def _undoGeometryTransformations(self):
+        pass
+
+    def _updateAdditionalParameters(self):
         pass

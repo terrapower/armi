@@ -188,7 +188,7 @@ class FuelHandler:
         else:
             # Normal shuffle from user-provided shuffle logic input
             self.chooseSwaps(factor)
-            self.updateAllLocationHistParams(self.cycle + 1)
+        self.updateAllLocationHistParams(self.cycle)
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
         if self.cs["fluxRecon"] and self.cs[CONF_ASSEMBLY_ROTATION_ALG]:
@@ -229,8 +229,10 @@ class FuelHandler:
                     if a.p.ringPosHist:
                         for cycleNum, rp in enumerate(a.p.ringPosHist):
                             if isinstance(rp, tuple) and rp[0] not in a.NOT_IN_CORE:
+                                ringPosCycle = [int(rp[0]), int(rp[1]), cycleNum]
                                 break
-                        ringPosCycle = [rp[0], rp[1], cycleNum]
+                        else:
+                            ringPosCycle = None
 
                     self.r.core.setMoveList(
                         self.cycle,
@@ -1012,7 +1014,6 @@ class FuelHandler:
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
-        self.updateAllLocationHistParams(self.cycle + 1)
 
     def swapCascade(self, assemList):
         """
@@ -1077,20 +1078,18 @@ class FuelHandler:
         makeShuffleReport : Creates the file that is processed here
         """
         # read moves file
+        cycle = self.r.p.cycle
+        if cycle == 0:
+            # if cycle is 0, we are at the beginning of the first cycle
+            # this is a special case where we don't have any moves
+            # so we return an empty list
+            return []
+
         if yaml:
             moves, swaps = self.readMovesYaml(shuffleFile)
-            cycle = self.r.p.cycle
-            if cycle == 0:
-                # if cycle is 0, we are at the beginning of the first cycle
-                # this is a special case where we don't have any moves
-                # so we return an empty list
-                return []
         else:
             moves = self.readMoves(shuffleFile)
             swaps = {}
-            # get the correct cycle number
-            # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
-            cycle = self.r.p.cycle + 1
 
         # setup the load and loop chains to be run per cycle
         moveList = moves[cycle]
@@ -1117,8 +1116,6 @@ class FuelHandler:
             self.swapAssemblies(a1, a2)
             moved.extend([a1, a2])
         self.pendingRotations = moveData.rotations
-
-        self.updateAllLocationHistParams(self.cycle + 1)
 
         return moved
 
@@ -1388,8 +1385,10 @@ class FuelHandler:
             The chain as a location list in order
         enrich : list
             The axial enrichment distribution of the load assembly.
-        loadName : str
-            The assembly name of the load assembly
+        assemType : str
+            The type of the assembly
+        loadName or ringPosCycle : [str, tuple[int, int, int]]
+            The assembly name of the load assembly, or the ringPosHist identifier
         destination : str
             Location where the first assembly in the chain is discharged
 
@@ -1422,6 +1421,7 @@ class FuelHandler:
                 chain = [fromLoc]
                 destination = toLoc
                 safeCount = 0  # to break out of crazy loops.
+                ringPosCycle = None
                 complete = False
                 while (
                     chain[-1] not in ({"LoadQueue"} | FuelHandler.DISCHARGE_LOCS) and not complete and safeCount < 100

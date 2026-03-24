@@ -1,0 +1,39 @@
+name: Build Wheel
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    if: github.repository == 'terrapower/armi'
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install PIP Packages
+        run: |
+          pip install -U pip
+          pip install -e .
+          pip install -U wheel
+      - name: Build Wheels
+        run: |
+          mkdir dist
+          pip wheel . -w dist/
+          chmod 664 dist/armi*.whl
+      - name: Archive PIP wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: armi-wheels
+          path: |
+            dist/armi*.whl
+          retention-days: 7
