@@ -29,8 +29,8 @@ density:
     T:
       min: -100.0
       max: 1000.0
-    type: symbolic
-    equation: 13070
+    type: constant
+    value: 13070
   references:
   - ref: http://www.lenntech.com/periodic/elements/hf.htm
     type: open literature

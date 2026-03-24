@@ -46,8 +46,8 @@ density:
     T:
       min: -273.15
       max: 5000
-    type: symbolic
-    equation: 8000.0
+    type: constant
+    value: 8000.0
   references:
   - ref: http://www.specialmetals.com/assets/documents/alloys/nimonic/nimonic-alloy-pe16.pdf
     type: open literature

@@ -40,8 +40,8 @@ density:
     T:
       min: -273.15
       max: 5000
-    type: symbolic
-    equation: 8360.0
+    type: constant
+    value: 8360.0
   references:
   - ref: https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf
     type: open literature

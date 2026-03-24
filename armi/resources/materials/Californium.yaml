@@ -27,8 +27,8 @@ density:
     T:
       min: -100.0
       max: 2000.0
-    type: symbolic
-    equation: 15100
+    type: constant
+    value: 15100
   references:
   - ref: https://en.wikipedia.org/wiki/Californium
     type: open literature

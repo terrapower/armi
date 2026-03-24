@@ -28,8 +28,8 @@ instantaneous coefficient of thermal expansion:
     T:
       min: -243.15
       max: 326.85
-    type: symbolic
-    equation: 11.9e-6
+    type: constant
+    value: 11.9e-6
   references:
   - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
     type: open literature
@@ -39,8 +39,8 @@ thermal conductivity:
     T:
       min: -243.15
       max: 326.85
-    type: symbolic
-    equation: 43.1
+    type: constant
+    value: 43.1
   references:
   - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
     type: open literature
@@ -50,8 +50,8 @@ melting temperature:
     T:
       min: -273.15
       max: 1e7
-    type: symbolic
-    equation: 2025.0
+    type: constant
+    value: 2025.0
   references:
   - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
     type: open literature

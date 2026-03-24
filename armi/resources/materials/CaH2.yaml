@@ -28,8 +28,8 @@ density:
     T:
       min: -100
       max: 816
-    type: symbolic
-    equation: 1700
+    type: constant
+    value: 1700
   references:
   - ref: http://en.wikipedia.org/wiki/Calcium_hydride
     type: open literature
@@ -39,8 +39,8 @@ linear expansion:
     T:
       min: -100
       max: 816
-    type: symbolic
-    equation: 0.0
+    type: constant
+    value: 0.0
   references:
   - ref: http://en.wikipedia.org/wiki/Calcium_hydride
     type: open literature

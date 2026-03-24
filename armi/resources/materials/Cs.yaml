@@ -50,8 +50,8 @@ melting temperature:
     T:
       min: -273.15
       max: 10000
-    type: symbolic
-    equation: 28.55
+    type: constant
+    value: 28.55
   references:
   - ref: https://en.wikipedia.org/wiki/Caesium
     type: open literature

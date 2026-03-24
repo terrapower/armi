@@ -28,8 +28,8 @@ density:
     T:
       min: 180.54
       max: 1341.85
-    type: symbolic
-    equation: 512.0
+    type: constant
+    value: 512.0
   references:
   - ref: https://en.wikipedia.org/wiki/Lithium
     type: open literature
@@ -39,8 +39,8 @@ melting temperature:
     T:
       min: -273.15
       max: 1e7
-    type: symbolic
-    equation: 180.54
+    type: constant
+    value: 180.54
   references:
   - ref: https://en.wikipedia.org/wiki/Lithium
     type: open literature
@@ -50,8 +50,8 @@ boiling temperature:
     T:
       min: -273.15
       max: 1e7
-    type: symbolic
-    equation: 1341.85
+    type: constant
+    value: 1341.85
   references:
   - ref: https://en.wikipedia.org/wiki/Lithium
     type: open literature
@@ -61,8 +61,8 @@ thermal conductivity:
     T:
       min: 180.54
       max: 1341.85
-    type: symbolic
-    equation: 84.8
+    type: constant
+    value: 84.8
   references:
   - ref: https://en.wikipedia.org/wiki/Lithium
     type: open literature
@@ -72,8 +72,8 @@ specific heat capacity:
     T:
       min: 180.54
       max: 1341.85
-    type: symbolic
-    equation: 3570.0
+    type: constant
+    value: 3570.0
   references:
   - ref: https://en.wikipedia.org/wiki/Lithium
     type: open literature

@@ -31,6 +31,7 @@ class Function:
         "equation",  # Used by SymbolicFunction for the equation definition
         "functions",  # Used by PiecewiseFunction to define the child functions
         "reference temperature",  # Optional for all equations
+        "value",  # Used by ConstantFunction
     }
 
     def __init__(self, mat, prop):
@@ -224,16 +225,18 @@ class Function:
         Function
             Function pointer parsed from the specified property.
         """
+        from armi.matProps.constantFunction import ConstantFunction
         from armi.matProps.piecewiseFunction import PiecewiseFunction
         from armi.matProps.symbolicFunction import SymbolicFunction
         from armi.matProps.tableFunction1D import TableFunction1D
         from armi.matProps.tableFunction2D import TableFunction2D
 
         funTypes = {
+            "constant": ConstantFunction,
+            "piecewise": PiecewiseFunction,
             "symbolic": SymbolicFunction,
             "table": TableFunction1D,
             "two dimensional table": TableFunction2D,
-            "piecewise": PiecewiseFunction,
         }
 
         funcNode = node["function"]

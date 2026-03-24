@@ -66,8 +66,8 @@ melting temperature:
     T:
       min: -273.15
       max: 1e7
-    type: symbolic
-    equation: 1134.85
+    type: constant
+    value: 1134.85
   references:
   - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
     type: open literature

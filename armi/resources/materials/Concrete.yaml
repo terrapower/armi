@@ -36,8 +36,8 @@ density:
     T:
       min: -273.15
       max: 2000.0
-    type: symbolic
-    equation: 2300.0
+    type: constant
+    value: 2300.0
   references:
   - ref: https://web.archive.org/web/20221103120449/https://physics.nist.gov/cgi-bin/Star/compos.pl?matno=144
     type: open literature

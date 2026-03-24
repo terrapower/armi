@@ -24,8 +24,8 @@ instantaneous coefficient of thermal expansion:
     T:
       min: -243.15
       max: 326.85
-    type: symbolic
-    equation: 11.9e-6
+    type: constant
+    value: 11.9e-6
   references:
     - ref: IAEA TECDOC 1450
       type: open literature
@@ -35,8 +35,8 @@ thermal conductivity:
     T:
       min: -273.15
       max: 10000
-    type: symbolic
-    equation: 43.1
+    type: constant
+    value: 43.1
   references:
     - ref: IAEA TECDOC 1450
       type: open literature
@@ -46,8 +46,8 @@ melting temperature:
     T:
       min: -273.15
       max: 10000
-    type: symbolic
-    equation: 1751.85
+    type: constant
+    value: 1751.85
   references:
     - ref: IAEA TECDOC 1450
       type: open literature
