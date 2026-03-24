@@ -30,7 +30,7 @@ from armi.reactor.converters.axialExpansionChanger.redistributeMass import Redis
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
 from armi.settings.caseSettings import Settings
-from armi.testing.singleMixedAssembly import BLOCK_DEFINITIONS, GRID_DEFINITION, buildMixedPinAssembly
+from armi.testing.singleMixedAssembly import BLOCK_DEFINITIONS_2PIN, GRID_DEFINITION, buildMixedPinAssembly
 
 if TYPE_CHECKING:
     from armi.reactor.assemblies import HexAssembly
@@ -668,7 +668,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 class TestExceptionForMultiPin(TestMultiPinConservationBase):
     def setUp(self):
         cs = Settings()
-        with io.StringIO(BLOCK_DEFINITIONS + FINE_ASSEMBLY_DEF + GRID_DEFINITION) as stream:
+        with io.StringIO(BLOCK_DEFINITIONS_2PIN + FINE_ASSEMBLY_DEF + GRID_DEFINITION) as stream:
             blueprints = Blueprints.load(stream)
             blueprints._prepConstruction(cs)
         self.a = list(blueprints.assemblies.values())[0]
