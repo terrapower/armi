@@ -191,11 +191,6 @@ class TestHistoryTracker(ArmiTestHelper):
         expectedFileName = os.path.join(THIS_DIR, fileName.replace(".txt", "-ref.txt"))
         # copy from fast path so the file is retrievable.
         shutil.move(fileName, os.path.join(THIS_DIR, fileName))
-
-        with open(actualFilePath, "r") as fin:
-            with open(expectedFileName, "w") as fout:
-                fout.write(fin.read())
-
         self.compareFilesLineByLine(expectedFileName, actualFilePath)
 
         # test that detailAssemblyNames() is working
