@@ -1,4 +1,4 @@
-SCR for ARMI 0.6.4
+SCR for ARMI 0.7.0
 ==================
 
 This is a listing of all the Software Change Request (SCR) changes in the ARMI repository, as part of the current release.
@@ -17,4 +17,4 @@ The following lists display all the SCRs in this release of the ARMI framework.
    from automateScr import buildScrListing
 
    thisPrNum = int(os.environ.get('PR_NUMBER', -1) or -1)
-   return buildScrListing("bf0be44", thisPrNum)
+   return buildScrListing("7b741a19", thisPrNum)
