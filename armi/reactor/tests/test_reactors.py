@@ -534,7 +534,7 @@ class HexReactorSoloTests(ReactorTests):
         self.assertTrue(all(b.p.topIndex == 0 for b in a))
         originalHeights = [b.p.height for b in a]
         differntMesh = [val + 2 for val in r.core.p.referenceBlockAxialMesh]
-        # won't change because nonUnfiform assem doesn't conform to reference mesh
+        # won't change because nonUniform assem doesn't conform to reference mesh
         a.setBlockMesh(differntMesh)
         heights = [b.p.height for b in a]
         self.assertEqual(originalHeights, heights)
