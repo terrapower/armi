@@ -1,0 +1,27 @@
+      (0,0)        (0,1)
+0.00000E+00  0.00000E+00
+
+
+key: residence
+0.00000E+00  0.00000E+00
+
+
+key: zbottom
+0.00000E+00  0.00000E+00
+
+
+key: ztop
+2.50000E+01  2.50000E+01
+
+
+key: location
+(0,0,0)  (0,0,0)
+
+
+EOL        bottom         top      center
+            0.000      25.000      12.500
+
+
+Assembly info
+A0000 igniter fuel
+"fuel" A A
