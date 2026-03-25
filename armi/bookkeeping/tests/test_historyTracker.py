@@ -43,13 +43,15 @@ class TestHistoryTracker(ArmiTestHelper):
         cls.dirChanger.__enter__()
 
         # modify the input settings for our tests
+        dbPath = os.path.join(cls.dirChanger.destination, "armiRunSmallest.h5")
+        reloadPath = os.path.join(cls.dirChanger.destination, "armiRunSmallestReload.h5")
         cs = settings.Settings(TEST_FILE)
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 1
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
         newSettings["loadStyle"] = "fromDB"
-        newSettings["reloadDBName"] = os.path.join(cls.dirChanger.destination, "armiRunSmallest.h5")
+        newSettings["reloadDBName"] = reloadPath
         newSettings["startNode"] = 1
         newSettings["verbosity"] = "error"
         cs = cs.modified(newSettings=newSettings)
@@ -73,7 +75,7 @@ class TestHistoryTracker(ArmiTestHelper):
 
         # write some data to the DB
         dbi = o.getInterface("database")
-        dbi.initDB()
+        dbi.initDB(fName=dbPath)
         dbi.database.writeToDB(o.r)
         o.r.p.timeNode += 1
         dbi.database.writeToDB(o.r)
