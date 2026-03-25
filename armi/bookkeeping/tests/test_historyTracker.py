@@ -20,7 +20,6 @@ test fixtures. Thus they take a little longer than usual.
 """
 
 import os
-import pathlib
 import shutil
 
 import numpy as np
@@ -50,7 +49,7 @@ class TestHistoryTracker(ArmiTestHelper):
         newSettings["nCycles"] = 1
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
         newSettings["loadStyle"] = "fromDB"
-        newSettings["reloadDBName"] = pathlib.Path("armiRunSmallest.h5").absolute()
+        newSettings["reloadDBName"] = os.path.join(cls.dirChanger.destination, "armiRunSmallest.h5")
         newSettings["startNode"] = 1
         newSettings["verbosity"] = "error"
         cs = cs.modified(newSettings=newSettings)
