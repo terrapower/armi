@@ -105,7 +105,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     Notes
     -----
-    This pre-dates the ARMI database system, and we would like to stop supporting this. Please don't find new uses for
+    This pre-dates the ARMI database system, and we would like to stop supporting this. Please do not find new uses for
     this; use the databases.
 
     Attributes
@@ -302,9 +302,9 @@ class HistoryTrackerInterface(interfaces.Interface):
                 out.write(tabulate.tabulate(data, headers=headers, tableFmt="plain", floatFmt="10.3f"))
 
                 out.write("\n\n\nAssembly info\n")
-                out.write("{0} {1}\n".format(a.getName(), a.getType()))
+                out.write(f"{a.getName()} {a.getType()}\n")
                 for b in self.nonStationaryBlocks(a):
-                    out.write('"{}" {} {}\n'.format(b.getType(), b.p.xsType, b.p.envGroup))
+                    out.write(f'"{b.getType()}" {b.p.xsType} {b.p.envGroup}\n')
 
     def preloadBlockHistoryVals(self, names, keys, timesteps):
         """

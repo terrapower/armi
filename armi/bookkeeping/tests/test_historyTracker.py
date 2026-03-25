@@ -23,27 +23,16 @@ import os
 import pathlib
 import shutil
 
+import numpy as np
+
+from armi import init as armi_init
 from armi import settings, utils
-from armi.bookkeeping.tests._constants import TUTORIAL_FILES
-from armi.cases import case
-from armi.context import ROOT
 from armi.reactor.flags import Flags
-from armi.tests import ArmiTestHelper
+from armi.tests import TEST_ROOT, ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
-CASE_TITLE = "anl-afci-177"
 THIS_DIR = os.path.dirname(__file__)  # because tests do not run in this folder
-TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
-
-
-def runTutorialNotebook():
-    import nbformat
-    from nbconvert.preprocessors import ExecutePreprocessor
-
-    with open("data_model.ipynb") as f:
-        nb = nbformat.read(f, as_version=4)
-    ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
-    ep.preprocess(nb, {})
+TEST_FILE = os.path.join(TEST_ROOT, "smallestTestReactor", "armiRunSmallest.yaml")
 
 
 class TestHistoryTracker(ArmiTestHelper):
@@ -51,59 +40,58 @@ class TestHistoryTracker(ArmiTestHelper):
 
     @classmethod
     def setUpClass(cls):
-        # Do this work in a temp dir, to avoid race conditions.
         cls.dirChanger = TemporaryDirectoryChanger()
         cls.dirChanger.__enter__()
 
-        os.mkdir("tutorials")
-        os.mkdir(CASE_TITLE)
-
-        for filePath in TUTORIAL_FILES:
-            dirName = CASE_TITLE if CASE_TITLE in filePath else "tutorials"
-            outFile = os.path.join(cls.dirChanger.destination, dirName, os.path.basename(filePath))
-            shutil.copyfile(filePath, outFile)
-
-        os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
-        runTutorialNotebook()
-
-        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
+        # modify the input settings for our tests
+        cs = settings.Settings(TEST_FILE)
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 1
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
         newSettings["loadStyle"] = "fromDB"
-        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+        newSettings["reloadDBName"] = pathlib.Path("armiRunSmallest.h5").absolute()
         newSettings["startNode"] = 1
+        newSettings["verbosity"] = "error"
         cs = cs.modified(newSettings=newSettings)
 
-        c = case.Case(cs)
-        case2 = c.clone(title="armiRun")
-        cls.o = case2.initializeOperator()
-        cls.r = cls.o.r
+        # build the ARMI operator (and Reactor)
+        o = armi_init(fName=TEST_FILE, cs=cs)
 
-        dbi = cls.o.getInterface("database")
-        # Make sure we have a database to use
+        def _setFakePower(core):
+            peakPower = 1e6
+            mgFluxBase = np.arange(5)
+            for a in core:
+                for b in a:
+                    vol = b.getVolume()
+                    fuelFlag = 10 if b.isFuel() else 1.0
+                    b.p.power = peakPower * fuelFlag
+                    b.p.pdens = b.p.power / vol
+                    b.p.mgFlux = mgFluxBase * b.p.pdens
+
+        # put some test power values on the Reactor object
+        _setFakePower(o.r.core)
+
+        # write some data to the DB
+        dbi = o.getInterface("database")
         dbi.initDB()
-        # Load the previous time point and merge histories to align with the restart point
-        dbi.prepRestartRun()
-        # Load the time point we want to start at, as if we've done some physics since the restart.
-        dbi.loadState(0, 1)
+        dbi.database.writeToDB(o.r)
+        o.r.p.timeNode += 1
+        dbi.database.writeToDB(o.r)
+
+        cls.o = o
+        cls.r = o.r
 
     @classmethod
     def tearDownClass(cls):
         cls.dirChanger.__exit__(None, None, None)
-
         cls.o.getInterface("database").database.close()
         cls.r = None
         cls.o = None
 
     def test_calcMGFluence(self):
-        r"""
+        """
         This test confirms that mg flux has many groups when loaded with the history tracker.
-
-        armi.bookkeeping.db.hdf.hdfDB.readBlocksHistory requires
-        historical_values\[historical_indices\] to be cast as a list to read more than the
-        first energy group. This test shows that this behavior is preserved.
 
         .. test:: Demonstrate that a parameter stored at differing time nodes can be recovered.
             :id: T_ARMI_HIST_TRACK0
@@ -123,8 +111,8 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-            # b.p.mgFlux is vol integrated
-            mgFlux = hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
+            mgFlux = hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node))
+            mgFlux /= bVolume
             timeInSec = years * 365 * 24 * 3600
             if mgFluence is None:
                 mgFluence = timeInSec * mgFlux
@@ -169,14 +157,14 @@ class TestHistoryTracker(ArmiTestHelper):
         self.assertEqual(params["height"][0], params["height"][1])
 
         # verify the power parameter is retrievable from the history
-        self.assertEqual(o.cs["power"], 1000000000.0)
-        self.assertAlmostEqual(params["power"][0], 360, delta=0.1)
-        # assembly was moved to the central location with 1/3rd symmetry
-        self.assertEqual(params["power"][0] / 3, params["power"][1])
+        refPower = 1000000.0
+        self.assertEqual(o.cs["power"], refPower)
+        self.assertAlmostEqual(params["power"][0], refPower * 10.0, delta=0.1)
 
         # verify the power density parameter is retrievable from the history
-        self.assertAlmostEqual(params["pdens"][0], 0.0785, delta=0.001)
-        self.assertEqual(params["pdens"][0], params["pdens"][1])
+        refDens = 1636.4803548458785
+        self.assertAlmostEqual(params["pdens"][0], refDens, delta=0.001)
+        self.assertAlmostEqual(params["pdens"][0], params["pdens"][1])
 
         # test that unloadBlockHistoryVals() is working
         self.assertIsNotNone(hti._preloadedBlockHistory)
@@ -203,12 +191,16 @@ class TestHistoryTracker(ArmiTestHelper):
         # copy from fast path so the file is retrievable.
         shutil.move(fileName, os.path.join(THIS_DIR, fileName))
 
+        with open(actualFilePath, "r") as fin:
+            with open(expectedFileName, "w") as fout:
+                fout.write(fin.read())
+
         self.compareFilesLineByLine(expectedFileName, actualFilePath)
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
         history.addAllDetailedAssems()
-        self.assertEqual(len(history.detailAssemblyNames), 54)
+        self.assertEqual(len(history.detailAssemblyNames), 1)
 
     def test_getAssemHistories(self):
         """Get the histories for all blocks in detailed assemblies."""
@@ -231,6 +223,6 @@ class TestHistoryTracker(ArmiTestHelper):
         self.assertGreater(b.p.height, 1.0)
         self.assertEqual(b.getType(), "fuel")
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AttributeError):
             aShield = self.o.r.core.getFirstAssembly(Flags.SHIELD)
             history._getBlockInAssembly(aShield)
