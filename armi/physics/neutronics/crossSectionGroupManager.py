@@ -596,22 +596,25 @@ class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
         if len(b) != len(repBlock):
             raise ValueError(f"Blocks {b} and {repBlock} have differing number of components and cannot be homogenized")
 
-        # NOTE: We are using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is
-        # undesirably SFR-centric. This should be generalized in the future, if possible.
+        # NOTE: We are using Fe-56 as a proxy for structure and Na-23 as proxy for coolant, which
+        # is undesirably SFR-centric. This should be generalized in the future, if possible.
         consistentNucs = {"PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"}
         for c, repC in zip(sorted(b), sorted(repBlock)):
-            compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
             if c.p.mult != repC.p.mult:
+                compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
                 raise ValueError(
                     f"{compString} must have the same multiplicity, but they have. {repC.p.mult} "
                     f"and {c.p.mult}, respectively."
                 )
 
-            theseNucs = set(c.getNuclides())
-            thoseNucs = set(repC.getNuclides())
+            # ignore anything with zero number density
+            theseNucs = set(nuc for nuc, ndens in c.getNumberDensities().items() if ndens > 0.0)
+            thoseNucs = set(nuc for nuc, ndens in repC.getNumberDensities().items() if ndens > 0.0)
+
             # check for any differences between which `consistentNucs` the components have
             diffNucs = theseNucs.symmetric_difference(thoseNucs).intersection(consistentNucs)
             if diffNucs:
+                compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
                 raise ValueError(
                     f"{compString} are in the same location, but nuclides "
                     f"differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
