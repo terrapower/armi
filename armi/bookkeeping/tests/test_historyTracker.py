@@ -86,7 +86,10 @@ class TestHistoryTracker(ArmiTestHelper):
     @classmethod
     def tearDownClass(cls):
         cls.dirChanger.__exit__(None, None, None)
-        cls.o.getInterface("database").database.close()
+        try:
+            cls.o.getInterface("database").database.close()
+        except FileNotFoundError:
+            pass
         cls.r = None
         cls.o = None
 
