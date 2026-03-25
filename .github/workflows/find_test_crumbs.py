@@ -27,6 +27,7 @@ IGNORED_OBJECTS = [
     "armi/tests/tutorials/case-suite/",
     "armi/tests/tutorials/logs/",
     "armiRun.h5",
+    "armiRunSmallest.h5",
     "logs/",
 ]
 
