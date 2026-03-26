@@ -529,16 +529,17 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
 
     def test_ComponentAverageDuctHet1DCylinder(self):
         """
-        Tests that the cross-section group manager calculates the expected component atom density, component area, and
-        average nuclide temperature correctly for a duct heterogeneous cylindrical block collection.
+        Tests that the cross-section group manager calculates the expected component atom density,
+        component area, and average nuclide temperature correctly for a duct heterogeneous cylindrical
+        block collection.
         """
         self.o.cs[CONF_CROSS_SECTION]["ZA"].ductHeterogeneous = True
         xsgm = self.o.getInterface("xsGroups")
 
         xsgm.interactBOL()
 
-        # Check that the correct defaults are propagated after the interactBOL from the cross section group manager is
-        # called.
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
         xsOpt = self.o.cs[CONF_CROSS_SECTION]["ZA"]
         self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
 

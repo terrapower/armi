@@ -22,7 +22,11 @@ import yamlize
 
 from armi import runLog, settings
 from armi.materials import Fluid, Sodium
-from armi.physics.neutronics.settings import CONF_MCNP_LIB_BASE, CONF_NEUTRONICS_KERNEL, CONF_XS_KERNEL
+from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
@@ -417,12 +421,12 @@ assemblies:
         self.assertEqual(sodium1.p.customIsotopicsName, "")
         self.assertEqual(sodium2.p.customIsotopicsName, "sodium custom isotopics")
 
-        # Show that, even though the two components have the same material class and the same temperatures, their
-        # densities are different.
+        # show that, even though the two components have the same material class
+        # and the same temperatures, their densities are different
         self.assertNotEqual(sodium1.density(), sodium2.density())
 
-        # Show that sodium1 has a density from the material class, while sodium2 has a density from the blueprint and
-        # adjusted from Tinput -> Thot
+        # show that sodium1 has a density from the material class, while sodium2
+        # has a density from the blueprint and adjusted from Tinput -> Thot
         s = Sodium()
         self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
         self.assertAlmostEqual(sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=100)))
