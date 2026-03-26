@@ -29,7 +29,8 @@ from armi.tests import TEST_ROOT
 
 
 class TestOperatorSnapshots(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         newSettings = {}
         newSettings["db"] = True
         newSettings["runType"] = "Standard"
@@ -37,18 +38,18 @@ class TestOperatorSnapshots(unittest.TestCase):
         newSettings["branchVerbosity"] = "important"
         newSettings["nCycles"] = 1
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
-        o1, self.r = loadTestReactor(
+        o1, cls.r = loadTestReactor(
             customSettings=newSettings,
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
-        self.o = OperatorSnapshots(o1.cs)
-        self.o.r = self.r
+        cls.o = OperatorSnapshots(o1.cs)
+        cls.o.r = cls.r
 
         # mock a Database Interface
-        self.dbi = DatabaseInterface(self.r, o1.cs)
-        self.dbi.loadState = lambda c, n: None
-        self.dbi.writeDBEveryNode = lambda: None
-        self.dbi.closeDB = lambda: None
+        cls.dbi = DatabaseInterface(cls.r, o1.cs)
+        cls.dbi.loadState = lambda c, n: None
+        cls.dbi.writeDBEveryNode = lambda: None
+        cls.dbi.closeDB = lambda: None
 
     def test_atEOL(self):
         self.assertFalse(self.o.atEOL)
