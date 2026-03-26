@@ -58,7 +58,7 @@ class TestDatabase(unittest.TestCase):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
         self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"})
-        reduceTestReactorRings(self.r, self.o.cs, maxNumRings=3)
+        reduceTestReactorRings(self.r, self.o.cs, maxNumRings=2)
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
