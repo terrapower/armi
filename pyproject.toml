@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.6.4"
+version = "0.7.0"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
 requires-python = ">3.8"
@@ -277,7 +277,7 @@ ignore_errors = true
 #######################################################################
 [tool.setuptools.package-data]
 armi = [
-    "bookkeeping/tests/armiRun-A0032-aHist-ref.txt",
+    "bookkeeping/tests/armiRunSmallest-A0000-aHist-ref.txt",
     "matProps/dataSchema/dataSchema.json",
     "matProps/dataSchema/tests/inputs/*.yaml",
     "matProps/tests/invalidTestFiles/*",

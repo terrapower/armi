@@ -164,21 +164,84 @@ GROUP_STRUCTURE["CASMO12"] = [
 ]
 
 
-# fmt: off
+# For typically for use with MCNP will need conversion to MeV, and ordering from low to high.
+# reference: https://www.sciencedirect.com/science/article/pii/S0149197022003778
+# reference: https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981_WernerArmstrongEtAl.pdf
+GROUP_STRUCTURE["CINDER63"] = [
+    2.5000e7,
+    2.0000e7,
+    1.6905e7,
+    1.4918e7,
+    1.0000e7,
+    6.0650e6,
+    4.9658e6,
+    3.6788e6,
+    2.8651e6,
+    2.2313e6,
+    1.7377e6,
+    1.3534e6,
+    1.1080e6,
+    8.2085e5,
+    6.3928e5,
+    4.9790e5,
+    3.8870e5,
+    3.0200e5,
+    1.8320e5,
+    1.1110e5,
+    6.7380e4,
+    4.0870e4,
+    2.5540e4,
+    1.9890e4,
+    1.5030e4,
+    9.1190e3,
+    5.5310e3,
+    3.3550e3,
+    2.8400e3,
+    2.4040e3,
+    2.0350e3,
+    1.2340e3,
+    7.4850e2,
+    4.5400e2,
+    2.7540e2,
+    1.6700e2,
+    1.0130e2,
+    6.1440e1,
+    3.7270e1,
+    2.2600e1,
+    1.3710e1,
+    8.3150,
+    5.0430,
+    3.0590,
+    1.8550,
+    1.1250,
+    6.8300e-1,
+    4.1400e-1,
+    2.5100e-1,
+    1.5200e-1,
+    1.0000e-1,
+    8.0000e-2,
+    6.7000e-2,
+    5.8000e-2,
+    5.0000e-2,
+    4.2000e-2,
+    3.5000e-2,
+    3.0000e-2,
+    2.5000e-2,
+    2.0000e-2,
+    1.5000e-2,
+    1.0000e-2,
+    5.0000e-3,
+]
+
 # Group structures below here are derived from Appendix E in
 # https://www.osti.gov/biblio/1483949-mc2-multigroup-cross-section-generation-code-fast-reactor-analysis-nuclear
-GROUP_STRUCTURE["ANL9"] = _create_anl_energies_with_group_lethargies(
-    222, 120, itertools.repeat(180, 5), 540, 300
-)
+GROUP_STRUCTURE["ANL9"] = _create_anl_energies_with_group_lethargies(222, 120, itertools.repeat(180, 5), 540, 300)
 
-GROUP_STRUCTURE["ANL33"] = _create_anl_energies_with_group_lethargies(
-    42, itertools.repeat(60, 28), 90, 240, 29, 1
-)
+GROUP_STRUCTURE["ANL33"] = _create_anl_energies_with_group_lethargies(42, itertools.repeat(60, 28), 90, 240, 29, 1)
 
-GROUP_STRUCTURE["ANL70"] = _create_anl_energies_with_group_lethargies(
-    42, itertools.repeat(30, 67), 29, 1
-)
+GROUP_STRUCTURE["ANL70"] = _create_anl_energies_with_group_lethargies(42, itertools.repeat(30, 67), 29, 1)
 
+# fmt: off
 GROUP_STRUCTURE["ANL116"] = _create_anl_energies_with_group_lethargies(
     15*[6] + [3] + 2*[6] + [3] + [12] + 3*[6] + 3*[12] + 2*[6] + 2*[12] + [4] + [6] + [2] +
     [12] + 2*[6] + [12] + 2*[6] +2*[12] + [6] + [12] + 2*[6] + 6*[12] + [6] + 4*[12] + 4*[6] +
@@ -206,9 +269,7 @@ GROUP_STRUCTURE["ANL230"] = _create_anl_energies_with_group_lethargies(
 
 # Reactor agnostic. Similar to ANL1041 but with 6 UFGs grouped together.
 # More likely to not error out on memory than 703
-GROUP_STRUCTURE["348"] = _create_anl_energies_with_group_lethargies(
-    itertools.repeat(6, 346), 5, 1
-)
+GROUP_STRUCTURE["348"] = _create_anl_energies_with_group_lethargies(itertools.repeat(6, 346), 5, 1)
 
 # Note that at one point the MC2 manual was inconsistent with the code itself
 GROUP_STRUCTURE["ANL703"] = _create_anl_energies_with_group_lethargies(
@@ -243,17 +304,13 @@ GROUP_STRUCTURE["ANL703"] = _create_anl_energies_with_group_lethargies(
         1,
     ]
 )
-
-GROUP_STRUCTURE["ANL1041"] = _create_anl_energies_with_group_lethargies(
-    itertools.repeat(2, 1041)
-)
-
-GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
-    itertools.repeat(1, 2082)
-)
-
-
 # fmt: on
+
+GROUP_STRUCTURE["ANL1041"] = _create_anl_energies_with_group_lethargies(itertools.repeat(2, 1041))
+
+GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(itertools.repeat(1, 2082))
+
+
 def _create_multigroup_structures_on_finegroup_energies(multigroup_energy_bounds, finegroup_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     modifiedEnergyBounds = set()

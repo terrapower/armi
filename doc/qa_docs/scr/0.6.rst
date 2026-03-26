@@ -3,6 +3,60 @@ Release Notes for ARMI 0.6
 
 Here you will find the release notes for previous ARMI releases.
 
+ARMI v0.6.4
+-----------
+Release Date: 2026-03-25
+
+This was a very short-burn release. The biggest new feature is the addition of matProps, the materials library. This
+tool allows developers to flexibly define materials with properties in several flexible ways. This release also included
+a lot of clean up work, such as moving several parameters and settings out of ARMI. The HistoryTracker EOL interaction
+was optimized. And a block converter was added for mixed-pin assemblies.
+
+
+Code Changes, Features
+^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2453 <https://github.com/terrapower/armi/pull/2453>`_) Adding matProps: a material library
+#. (`PR#2405 <https://github.com/terrapower/armi/pull/2405>`_) Remove ruamel.yaml dependency pin maximum
+#. (`PR#2436 <https://github.com/terrapower/armi/pull/2436>`_) Optimizing the HistoryTracker EOL interaction
+#. (`PR#2442 <https://github.com/terrapower/armi/pull/2442>`_) Defaulting the Database to read mode
+#. (`PR#2477 <https://github.com/terrapower/armi/pull/2477>`_) Adding a block converter for mixed pin assemblies
+#. (`PR#2478 <https://github.com/terrapower/armi/pull/2478>`_) Checking for unrepresented XS IDs
+#. (`PR#2479 <https://github.com/terrapower/armi/pull/2479>`_) Adding method to DefaultExecuter for final parameter updates
+
+
+Code Changes, Bugs and Fixes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2468 <https://github.com/terrapower/armi/pull/2468>`_) Fixing shuffle file reading in reload runs
+#. (`PR#2470 <https://github.com/terrapower/armi/pull/2470>`_) Removing unused and broken material UThZr
+
+
+Code Changes, Maintenance, or Trivial
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2422 <https://github.com/terrapower/armi/pull/2422>`_) Removing unused parameter fluxAdjPeak
+#. (`PR#2430 <https://github.com/terrapower/armi/pull/2430>`_) Moving 27 TH parameters out of ARMI
+#. (`PR#2451 <https://github.com/terrapower/armi/pull/2451>`_) Moving 7 Neutronics Settings out of ARMI
+#. (`PR#2456 <https://github.com/terrapower/armi/pull/2456>`_) Anonymizing example user names in IPYNBs
+#. (`PR#2457 <https://github.com/terrapower/armi/pull/2457>`_) Doing misc cleanup and temporary pyDOE issue
+#. (`PR#2458 <https://github.com/terrapower/armi/pull/2458>`_) Removing broken pyDOE dep and LatinHyperCubeSuiteBuilder
+#. (`PR#2459 <https://github.com/terrapower/armi/pull/2459>`_) Removing Core.getAssembliesOfType in favor of iterChildrenWithFlags
+#. (`PR#2460 <https://github.com/terrapower/armi/pull/2460>`_) Stopping intermittent CI failures
+#. (`PR#2461 <https://github.com/terrapower/armi/pull/2461>`_) Renaming _Material_Test to AbstractMaterialTest
+#. (`PR#2462 <https://github.com/terrapower/armi/pull/2462>`_) Switching from coveralls.io to codecov.io
+#. (`PR#2482 <https://github.com/terrapower/armi/pull/2482>`_) Ensuring codecov.io does not fail if coverage drops a tiny amount
+#. (`PR#2483 <https://github.com/terrapower/armi/pull/2483>`_) Producing an ARMI wheel with every merge to main
+
+
+Documentation-Only Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2441 <https://github.com/terrapower/armi/pull/2441>`_) Moving the README text up in the PDF ToC
+#. (`PR#2481 <https://github.com/terrapower/armi/pull/2481>`_) Getting nuclide_demo tutorial working again
+#. (`PR#2443 <https://github.com/terrapower/armi/pull/2443>`_) Starting release cycle for ARMI 0.6.4
+
+
 ARMI v0.6.3
 -----------
 Release Date: 2026-02-02

@@ -17,7 +17,7 @@ import io
 from armi.reactor.blueprints import Blueprints
 from armi.settings import Settings
 
-BLOCK_DEFINITIONS = """
+BLOCK_DEFINITIONS_2PIN = """
 blocks:
     grid plate: &block_grid_plate
         grid:
@@ -215,6 +215,308 @@ blocks:
             op: 19.0
 """
 
+BLOCK_DEFINITIONS_3PIN = """
+blocks:
+    grid plate: &block_grid_plate
+        grid:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 15.277
+            mult: 1.0
+            op: 16.577
+        coolant: &component_coolant
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 25.0
+            Thot: 450.0
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 25.0
+            Thot: 450.0
+            ip: grid.op
+            mult: 1.0
+            op: 19.0
+
+    duct: &block_duct
+        coolant: *component_coolant
+        duct: &component_duct
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 18.0
+            mult: 1.0
+            op: 18.5
+        intercoolant: &component_intercoolant
+            shape: Hexagon
+            material: Sodium
+            Tinput: 25.0
+            Thot: 450.0
+            ip: duct.op
+            mult: 1.0
+            op: 19.0
+
+    axial shield threePin: &block_fuel_multiPin_axial_shield
+        grid name: threePin
+        shield: &component_shield_shield1
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.86602
+            latticeIDs: [1]
+        bond: &component_shield_bond1
+            shape: Circle
+            material: Sodium
+            Tinput: 25.0
+            Thot: 470.0
+            id: shield.od
+            od: clad.id
+            latticeIDs: [1]
+        clad: &component_shield_clad1
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            latticeIDs: [1]
+        wire: &component_shield_wire1
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            od: 0.10056
+            latticeIDs: [1]
+        shield test:
+            <<: *component_shield_shield1
+            latticeIDs: [2]
+        bond test:
+            <<: *component_shield_bond1
+            id: shield test.od
+            od: clad test.id
+            latticeIDs: [2]
+        clad test:
+            <<: *component_shield_clad1
+            latticeIDs: [2]
+        annular void: &shield_annular_void
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: annular shield test.id
+            latticeIDs: [3]
+        annular shield test:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.600
+            od: 0.950
+            latticeIDs: [3]
+        gap1:
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: annular shield test.od
+            od: liner.id
+            latticeIDs: [3]
+        liner:
+            shape: Circle
+            material: Zr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.950
+            od: 1.000
+            latticeIDs: [3]
+        gap2:
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: liner.od
+            od: annular clad test.id
+            latticeIDs: [3]
+        annular clad test:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 1.000
+            od: 1.090
+            latticeIDs: [3]
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: shield
+
+    fuel threePin: &block_fuel_multiPin
+        grid name: threePin
+        fuel: &component_fuelmultiPin
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.86602
+            latticeIDs: [1]
+        bond: &component_fuelmultiPin_bond
+            shape: Circle
+            material: Sodium
+            Tinput: 25.0
+            Thot: 470.0
+            id: fuel.od
+            od: clad.id
+            latticeIDs: [1]
+        clad: &component_fuelmultiPin_clad1
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            latticeIDs: [1]
+        wire: &component_fuelmultiPin_wire1
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            od: 0.10056
+            latticeIDs: [1]
+        fuel test: &component_fuelmultiPin_fuel2
+            <<: *component_fuelmultiPin
+            latticeIDs: [2]
+        bond test: &component_fuelmultiPin_bond2
+            <<: *component_fuelmultiPin_bond
+            id: fuel test.od
+            od: clad test.id
+            latticeIDs: [2]
+        clad test: &component_fuelmultiPin_clad2
+            <<: *component_fuelmultiPin_clad1
+            latticeIDs: [2]
+        annular void: &fuel_annular_void
+            <<: *shield_annular_void
+            od: annular fuel test.id
+        annular fuel test: &fuel_annular_test
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.600
+            od: 0.950
+            latticeIDs: [3]
+        gap1: &annular_test_gap1
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: annular fuel test.od
+            od: liner.id
+            latticeIDs: [3]
+        liner: &liner
+            shape: Circle
+            material: Zr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.950
+            od: 1.000
+            latticeIDs: [3]
+        gap2: &annular_test_gap2
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: liner.od
+            od: annular clad test.id
+            latticeIDs: [3]
+        annular clad test: &annular_clad_test
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 1.000
+            od: 1.090
+            latticeIDs: [3]
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: fuel
+
+    plenum 3pin: &block_plenum_multiPin
+        grid name: threePin
+        gap: &component_plenummultiPin_gap1
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: clad.id
+            latticeIDs: [1]
+        clad: *component_fuelmultiPin_clad1
+        wire: *component_fuelmultiPin_wire1
+        gap test:
+            <<: *component_plenummultiPin_gap1
+            od: clad test.id
+            latticeIDs: [2]
+        clad test: *component_fuelmultiPin_clad2
+        annular void: 
+            <<: *fuel_annular_void
+            od: liner.id
+            latticeIDs: [3]
+        liner: *liner
+        gap2: *annular_test_gap2
+        annular clad test: *annular_clad_test
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: clad test
+
+    mixed fuel plenum 3pin: &block_mixed_multiPin
+        grid name: threePin
+        gap: *component_plenummultiPin_gap1
+        clad: *component_fuelmultiPin_clad1
+        wire: *component_fuelmultiPin_wire1
+        fuel test: *component_fuelmultiPin_fuel2
+        bond test: *component_fuelmultiPin_bond2
+        clad test: *component_fuelmultiPin_clad2
+        annular void: *fuel_annular_void
+        annular fuel test: *fuel_annular_test
+        gap1: *annular_test_gap1
+        liner: *liner
+        gap2: *annular_test_gap2
+        annular clad test: *annular_clad_test
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: fuel test
+
+    aclp plenum 3pin: &block_aclp_multiPin
+        <<: *block_plenum_multiPin
+
+    SodiumBlock: &block_dummy
+        flags: dummy
+        coolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 0.0
+            mult: 1.0
+            op: 19.0
+"""
+
 REGULAR_ASSEMBLY_DEF = """
 assemblies:
     multi pin fuel:
@@ -241,15 +543,39 @@ grids:
             -  2 1
               2 1 2
                1 2
+    threePin:
+        geom: hex_corners_up
+        symmetry: full
+        lattice map: |
+            -  2 1
+              3 1 3
+               1 2
 """
 
 
 def buildMixedPinAssembly(
-    blockDefs: str = BLOCK_DEFINITIONS,
+    blockDefs: str = BLOCK_DEFINITIONS_2PIN,
     assemDef: str = REGULAR_ASSEMBLY_DEF,
     gridDef: str = GRID_DEFINITION,
 ):
     """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 2 pin types
+    arranged as specified in the lattice map.
+    """
+    completeBlueprints = blockDefs + assemDef + gridDef
+    cs = Settings()
+    with io.StringIO(completeBlueprints) as stream:
+        blueprints = Blueprints.load(stream)
+        blueprints._prepConstruction(cs)
+
+    return list(blueprints.assemblies.values())[0]
+
+
+def buildMixedThreePinAssembly(
+    blockDefs: str = BLOCK_DEFINITIONS_3PIN,
+    assemDef: str = REGULAR_ASSEMBLY_DEF,
+    gridDef: str = GRID_DEFINITION,
+):
+    """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 3 pin types
     arranged as specified in the lattice map.
     """
     completeBlueprints = blockDefs + assemDef + gridDef

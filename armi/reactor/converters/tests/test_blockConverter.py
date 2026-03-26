@@ -28,6 +28,7 @@ from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
 from armi.testing import TEST_ROOT, loadTestReactor
+from armi.testing.singleMixedAssembly import buildMixedThreePinAssembly
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -190,6 +191,31 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
         self._test_dissolve_multi(loadTestBlock(), ["inner liner", "outer liner"], "clad")
 
+    def test_dissolveMixedAssembly(self):
+        """Test dissolving multiple components into another in a mixed assembly."""
+        mixedAssem = buildMixedThreePinAssembly()
+        b = mixedAssem.getBlocks(Flags.FUEL)[1]
+        annularPin = b.getComponents([Flags.ANNULAR, Flags.LINER, Flags.GAP])
+        testPin = []
+        hostPin = []
+        for c in b:
+            if c in annularPin:
+                continue
+            if c.hasFlags([Flags.COOLANT, Flags.INTERCOOLANT, Flags.DUCT]):
+                continue
+            if c.hasFlags(Flags.TEST):
+                testPin.append(c)
+            hostPin.append(c)
+        convertedBlock1 = self._test_dissolve_mixedAssembly(b, ["wire", "clad"], "coolant", hostPin)
+        convertedBlock2 = self._test_dissolve_mixedAssembly(convertedBlock1, ["clad test"], "coolant", testPin)
+        convertedBlock3 = self._test_dissolve_mixedAssembly(
+            convertedBlock2, ["annular void"], "annular fuel test", testPin
+        )
+        convertedBlock4 = self._test_dissolve_mixedAssembly(
+            convertedBlock3, ["gap2", "liner", "gap1"], "annular clad test", testPin
+        )
+        self._checkAreaAndComposition(b, convertedBlock4)
+
     def test_dissolveZeroArea(self):
         """Test dissolving a zero-area component into another."""
         self._test_dissolve(loadTestBlock(), "gap2", "outer liner")
@@ -219,6 +245,14 @@ class TestBlockConverter(unittest.TestCase):
         for soluteName in soluteNames:
             self.assertNotIn(soluteName, convertedBlock.getComponentNames())
         self._checkAreaAndComposition(block, convertedBlock)
+
+    def _test_dissolve_mixedAssembly(self, block, soluteNames, solventName, pin):
+        converter = blockConverters.MixedPinComponentMerger(block, soluteNames, solventName, pin)
+        convertedBlock = converter.convert()
+        for soluteName in soluteNames:
+            self.assertNotIn(soluteName, convertedBlock.getComponentNames())
+        self._checkAreaAndComposition(block, convertedBlock)
+        return convertedBlock
 
     def test_build_NthRing(self):
         """Test building of one ring."""
