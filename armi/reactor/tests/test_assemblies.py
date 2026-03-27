@@ -131,8 +131,9 @@ def buildTestAssemblies():
 
 
 class MaterialInAssembly_TestCase(unittest.TestCase):
-    def setUp(self):
-        self.assembly, self.assembly2, self.assembly3, self.assembly4 = buildTestAssemblies()
+    @classmethod
+    def setUpClass(cls):
+        cls.assembly, cls.assembly2, cls.assembly3, cls.assembly4 = buildTestAssemblies()
 
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
