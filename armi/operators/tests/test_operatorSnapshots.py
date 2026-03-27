@@ -24,8 +24,7 @@ from armi.operators import getOperatorClassFromSettings
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.settings.fwSettings.globalSettings import CONF_GROW_TO_FULL_CORE_AFTER_LOAD
-from armi.testing import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -110,18 +109,16 @@ class TestSnapshotFullCoreExpan(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        o, cls.symmetricReactor = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(cls.symmetricReactor, o.cs, maxNumRings=2)
+        o, cls.symmetricReactor = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )
         dbi: DatabaseInterface = next(filter(lambda i: isinstance(i, DatabaseInterface), o.interfaces))
         dbi.initDB(cls.DB_PATH)
         dbi.writeDBEveryNode()
         dbi.closeDB()
 
         cls.snapshotSettings: settings.Settings = o.cs.modified(
-            newSettings={
-                "runType": RunTypes.SNAPSHOTS,
-                "reloadDBName": str(cls.DB_PATH),
-            }
+            newSettings={"runType": RunTypes.SNAPSHOTS, "reloadDBName": str(cls.DB_PATH)}
         )
 
     @classmethod
