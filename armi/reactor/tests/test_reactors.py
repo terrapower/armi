@@ -37,7 +37,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
     CONF_SORT_REACTOR,
 )
-from armi.testing import loadTestReactor, reduceTestReactorRings  # noqa: F401
+from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings  # noqa: F401
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
@@ -131,7 +131,7 @@ class ReactorTests(unittest.TestCase):
     def setUpClass(cls):
         # prepare the input files. This is important so the unit tests run from wherever
         # they need to run from.
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
+        cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.directoryChanger.open()
 
     @classmethod
@@ -148,13 +148,17 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
-        cls.directoryChanger.open()
-        cls.o, cls.r = loadTestReactor(cls.directoryChanger.destination, customSettings={"trackAssems": True})
+        cls.td = directoryChangers.DirectoryChanger(TEST_ROOT)
+        cls.td.__enter__()
+        cls.o, cls.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={"trackAssems": True},
+        )
 
     @classmethod
     def tearDownClass(cls):
-        cls.directoryChanger.close()
+        cls.td.__exit__(None, None, None)
 
     def test_coreSfp(self):
         """The reactor object includes a core and an SFP.
@@ -183,28 +187,28 @@ class HexReactorReadOnlyTests(unittest.TestCase):
         self.assertEqual(self.r.core.geomType, geometry.GeomType.HEX)
 
     def test_getBlocksByIndices(self):
-        indices = [(1, 1, 1), (3, 2, 2)]
+        indices = [(1, 1, 1)]
         actualBlocks = self.r.core.getBlocksByIndices(indices)
         actualNames = [b.getName() for b in actualBlocks]
-        expectedNames = ["B0014-001", "B0035-002"]
+        expectedNames = ["B0005-001"]
         self.assertListEqual(expectedNames, actualNames)
 
     def test_getAllXsSuffixes(self):
         actualSuffixes = self.r.core.getAllXsSuffixes()
-        expectedSuffixes = ["AA"]
+        expectedSuffixes = ["AA", "BA"]
         self.assertListEqual(expectedSuffixes, actualSuffixes)
 
     def test_countBlocksOfType(self):
         numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL])
-        self.assertEqual(numControlBlocks, 3)
+        self.assertEqual(numControlBlocks, 0)
 
         numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL)
-        self.assertEqual(numControlBlocks, 3)
+        self.assertEqual(numControlBlocks, 0)
 
     def test_countFuelAxialBlocks(self):
         """Tests that the users definition of fuel blocks is preserved."""
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
-        self.assertEqual(numFuelBlocks, 3)
+        self.assertEqual(numFuelBlocks, 1)
 
     def test_getFirstFuelBlockAxialNode(self):
         firstFuelBlock = self.r.core.getFirstFuelBlockAxialNode()
@@ -216,7 +220,7 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     def test_getMaxNumPins(self):
         numPins = self.r.core.getMaxNumPins()
-        self.assertEqual(169, numPins)
+        self.assertEqual(271, numPins)
 
     def test_findAxialMeshIndexOf(self):
         numMeshPoints = len(self.r.core.p.axialMesh) - 2  # -1 for typical reason, -1 more because mesh includes 0
@@ -240,63 +244,41 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     def test_findAxialMeshsSubmesh(self):
         """Find all axial mesh points with a provided sub-mesh."""
-        referenceMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
+        referenceMesh = [
+            0.0,
+            15.0,
+            25.16,
+            35.32,
+            59.2125,
+            83.105,
+            106.9975,
+            130.89,
+            154.7825,
+            178.675,
+            202.5675,
+            226.46,
+        ]
         mesh = self.r.core.findAllAxialMeshPoints(assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True)
         self.assertListEqual(referenceMesh, mesh)
 
     def test_findAllAziMeshPoints(self):
         aziPoints = self.r.core.findAllAziMeshPoints()
-        expectedPoints = [
-            -50.7707392969,
-            -36.2648137835,
-            -21.7588882701,
-            -7.2529627567,
-            7.2529627567,
-            21.7588882701,
-            36.2648137835,
-            50.7707392969,
-            65.2766648103,
-            79.7825903236,
-            94.288515837,
-            108.7944413504,
-            123.3003668638,
-        ]
+        expectedPoints = [-16.142, -8.071, 0.0, 8.071, 16.142, 24.213]
         assert_allclose(expectedPoints, aziPoints)
 
     def test_findAllRadMeshPoints(self):
         radPoints = self.r.core.findAllRadMeshPoints()
-        expectedPoints = [
-            -12.5625,
-            -4.1875,
-            4.1875,
-            12.5625,
-            20.9375,
-            29.3125,
-            37.6875,
-            46.0625,
-            54.4375,
-            62.8125,
-            71.1875,
-            79.5625,
-            87.9375,
-            96.3125,
-            104.6875,
-            113.0625,
-            121.4375,
-            129.8125,
-            138.1875,
-            146.5625,
-        ]
+        expectedPoints = [-13.979382, 0.0, 13.979382, 27.958764, 41.938146]
         assert_allclose(expectedPoints, radPoints)
 
     def test_getAssemblyPitch(self):
-        self.assertEqual(self.r.core.getAssemblyPitch(), 16.75)
+        self.assertEqual(self.r.core.getAssemblyPitch(), 16.142)
 
     def test_getNumAssemsAllRingsFilled(self):
         """Basic test of getNumAssembliesWithAllRingsFilledOut."""
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
-        self.assertEqual(77, nAssmWithBlanks)
+        self.assertEqual(8, nAssmWithBlanks)
 
     @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
     def test_getNumAssemsWithAllRingsBipass(self):
@@ -322,13 +304,13 @@ class HexReactorReadOnlyTests(unittest.TestCase):
             :id: T_ARMI_R_GET_ASSEM0
             :tests: R_ARMI_R_GET_ASSEM
         """
-        a0 = self.r.core.getAssemblyWithStringLocation("003-001")
-        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(locationString="003-001")
+        a0 = self.r.core.getAssemblyWithStringLocation("003-012")
+        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=1)
+        a2 = self.r.core.getAssembly(locationString="003-012")
 
         self.assertEqual(a0, a2)
         self.assertEqual(a1, a2)
-        self.assertEqual(a1.getLocation(), "003-001")
+        self.assertEqual(a1.getLocation(), "003-012")
 
     def test_getAssemblyWithName(self):
         """Test getting an assembly by name.
@@ -337,11 +319,11 @@ class HexReactorReadOnlyTests(unittest.TestCase):
             :id: T_ARMI_R_GET_ASSEM1
             :tests: R_ARMI_R_GET_ASSEM
         """
-        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(assemblyName="A0010")
+        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=1)
+        a2 = self.r.core.getAssembly(assemblyName="A0001")
 
         self.assertEqual(a1, a2)
-        self.assertEqual(a1.name, "A0010")
+        self.assertEqual(a1.name, "A0001")
 
     def test_getDominantMaterial(self):
         dominantDuct = self.r.core.getDominantMaterial(Flags.DUCT)
@@ -349,7 +331,7 @@ class HexReactorReadOnlyTests(unittest.TestCase):
         dominantCool = self.r.core.getDominantMaterial(Flags.COOLANT)
 
         self.assertEqual(dominantDuct.getName(), "HT9")
-        self.assertEqual(dominantFuel.getName(), "UZr")
+        self.assertEqual(dominantFuel.getName(), "UraniumOxide")
         self.assertEqual(dominantCool.getName(), "Sodium")
 
     def test_getSymmetryFactor(self):
@@ -374,7 +356,7 @@ class HexReactorReadOnlyTests(unittest.TestCase):
         upper = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
         self.assertEqual(len(upper), 0)
         lower = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)
-        self.assertGreater(len(lower), 1)
+        self.assertEqual(len(lower), 1)
 
     def test_getGridBounds(self):
         """Test getGridBounds() works on different scales.
@@ -384,13 +366,13 @@ class HexReactorReadOnlyTests(unittest.TestCase):
             :tests: R_ARMI_GRID_NEST
         """
         (minI, maxI), (minJ, maxJ), (_minK, _maxK) = self.r.core.getBoundingIndices()
-        self.assertEqual((minI, maxI), (-3, 8))
-        self.assertEqual((minJ, maxJ), (-4, 8))
+        self.assertEqual((minI, maxI), (0, 2))
+        self.assertEqual((minJ, maxJ), (-1, 2))
 
         randomBlock = self.r.core.getFirstAssembly()
         (minI, maxI), (minJ, maxJ), (_minK, _maxK) = randomBlock.getBoundingIndices()
-        self.assertEqual((minI, maxI), (8, 8))
-        self.assertEqual((minJ, maxJ), (-4, -4))
+        self.assertEqual((minI, maxI), (2, 2))
+        self.assertEqual((minJ, maxJ), (-1, -1))
 
     def test_locations(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 2)
@@ -409,12 +391,12 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     def test_getNumRings(self):
         self.assertEqual(len(self.r.core.circularRingList), 0)
-        self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
-        self.assertEqual(self.r.core.getNumRings(indexBased=False), 9)
+        self.assertEqual(self.r.core.getNumRings(indexBased=True), 3)
+        self.assertEqual(self.r.core.getNumRings(indexBased=False), 3)
 
         self.r.core.circularRingList = {1, 2, 3}
         self.assertEqual(len(self.r.core.circularRingList), 3)
-        self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
+        self.assertEqual(self.r.core.getNumRings(indexBased=True), 3)
         self.assertEqual(self.r.core.getNumRings(indexBased=False), 3)
 
     @patch("armi.reactor.reactors.Core.getAssemblies")
@@ -433,19 +415,19 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     def test_getNozzleTypes(self):
         nozzleTypes = self.r.core.getNozzleTypes()
-        expectedTypes = ["Inner", "Outer", "lta", "Default"]
+        expectedTypes = ["Default"]
         for nozzle in expectedTypes:
             self.assertIn(nozzle, nozzleTypes)
 
     def test_getAvgTemp(self):
         t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
-        self.assertAlmostEqual(t0, 459.267, delta=0.01)
+        self.assertAlmostEqual(t0, 450.0, delta=0.01)
 
         t1 = self.r.core.getAvgTemp([Flags.CLAD, Flags.FUEL])
-        self.assertAlmostEqual(t1, 545.043, delta=0.01)
+        self.assertAlmostEqual(t1, 450.04232366477936, delta=0.01)
 
         t2 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT, Flags.FUEL])
-        self.assertAlmostEqual(t2, 521.95269, delta=0.01)
+        self.assertAlmostEqual(t2, 450.02442095419906, delta=0.01)
 
     def test_getNuclideCategories(self):
         """Test that nuclides are categorized correctly."""
@@ -459,7 +441,11 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     def test_differentNuclideModels(self):
         self.assertEqual(self.o.cs[CONF_XS_KERNEL], "MC2v3")
-        _o2, r2 = loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
+        _o2, r2 = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={CONF_XS_KERNEL: "MC2v2"},
+        )
 
         self.assertNotEqual(set(self.r.blueprints.elementsToExpand), set(r2.blueprints.elementsToExpand))
 
@@ -490,7 +476,8 @@ class HexReactorReadOnlyTests(unittest.TestCase):
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
         o, coldHeightR = loadTestReactor(
-            self.directoryChanger.destination,
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
             customSettings={
                 "inputHeightsConsideredHot": False,
                 "assemFlagsToSkipAxialExpansion": ["feed fuel"],
@@ -1132,7 +1119,7 @@ class HexReactorTests(ReactorTests):
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
         _o, coldHeightR = loadTestReactor(
-            self.directoryChanger.destination,
+            self.td.destination,
             customSettings={"inputHeightsConsideredHot": False},
         )
         coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
