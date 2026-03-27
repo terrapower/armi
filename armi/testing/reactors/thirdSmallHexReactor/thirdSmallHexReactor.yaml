@@ -19,9 +19,12 @@ settings:
   nCycles: 1
   nTasks: 1
   power: 1000000000.0
-  verbosity: warning
+  startCycle: 1
+  startNode: 2
+  verbosity: error
   versions:
     armi: uncontrolled
+
 # neutronics
   genXS: Neutron
   genReports: false
