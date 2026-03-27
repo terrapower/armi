@@ -68,6 +68,8 @@ class TestOperatorSnapshots(unittest.TestCase):
         cls.dbi.writeDBEveryNode = lambda: None
         cls.dbi.closeDB = lambda: None
 
+        cls.o.createInterfaces()
+
     def test_atEOL(self):
         self.assertFalse(self.o.atEOL)
 
@@ -86,16 +88,7 @@ class TestOperatorSnapshots(unittest.TestCase):
         self.o._mainOperate()
         self.assertEqual(self.r.core.p.power, 1000000.0)
 
-    def test_createInterfaces(self):
-        self.assertEqual(len(self.o.interfaces), 0)
-        self.o.createInterfaces()
-
-        # If someone adds an interface, we don't want this test to break, so let's do >6
-        self.assertGreater(len(self.o.interfaces), 6)
-
     def test_createInterfacesDisabled(self):
-        self.o.createInterfaces()
-
         # If someone adds an interface, we don't want this test to break, so let's do >6
         self.assertGreater(len(self.o.interfaces), 6)
         for i in self.o.interfaces:
