@@ -24,3 +24,5 @@ settings:
     armi: uncontrolled
 # neutronics
   genXS: Neutron
+  genReports: false
+  summarizeAssemDesign: false

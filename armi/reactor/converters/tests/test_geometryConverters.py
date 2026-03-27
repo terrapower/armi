@@ -24,7 +24,7 @@ from armi import runLog
 from armi.reactor import blocks, geometry, grids
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers, plotting
 
@@ -302,11 +302,11 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, self.o.cs, 3)
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )
 
-        # initialize the block powers to a uniform power profile, accounting for
-        # the loaded reactor being 1/3 core
+        # initialize the block powers to a uniform power profile, accounting for the loaded reactor being 1/3 core
         numBlocksInFullCore = 0
         for a in self.r.core:
             if a.getLocation() == "001-001":
