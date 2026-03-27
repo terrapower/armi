@@ -132,11 +132,11 @@ class ReactorTests(unittest.TestCase):
         # prepare the input files. This is important so the unit tests run from wherever
         # they need to run from.
         cls.td = directoryChangers.TemporaryDirectoryChanger()
-        cls.directoryChanger.open()
+        cls.td.__enter__()
 
     @classmethod
     def tearDownClass(cls):
-        cls.directoryChanger.close()
+        cls.td.__exit__(None, None, None)
 
 
 class HexReactorReadOnlyTests(unittest.TestCase):
@@ -148,7 +148,7 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.td = directoryChangers.DirectoryChanger(TEST_ROOT)
+        cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
         cls.o, cls.r = loadTestReactor(
             inputFilePath=TESTING_ROOT,
@@ -535,7 +535,7 @@ class HexReactorTests(ReactorTests):
     """
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(self.directoryChanger.destination, customSettings={"trackAssems": True})
+        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={"trackAssems": True})
 
     def test_getAssembliesInCircularRing(self):
         expectedAssemsInRing = [5, 6, 8, 10, 12, 16, 14, 2]
@@ -554,7 +554,7 @@ class HexReactorTests(ReactorTests):
     def test_factorySortSetting(self):
         """Create a core object from an input yaml."""
         # get a sorted Reactor (the default)
-        cs = settings.Settings(fName="armiRun.yaml")
+        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "armiRun.yaml"))
         r0 = reactors.loadFromCs(cs)
 
         # get an unsorted Reactor (for whatever reason)
@@ -1108,18 +1108,13 @@ class HexReactorTests(ReactorTests):
             self.assertGreater(len(coords), -1)
 
     def test_updateBlockBOLHeights_DBLoad(self):
-        r"""Test that blueprints assemblies are expanded in DB load.
-
-        Notes
-        -----
-        All assertions skip the first block as it has no $\Delta T$ and does not expand.
-        """
+        """Test that blueprints assemblies are expanded in DB load."""
         originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
         _o, coldHeightR = loadTestReactor(
-            self.td.destination,
+            TEST_ROOT,
             customSettings={"inputHeightsConsideredHot": False},
         )
         coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
