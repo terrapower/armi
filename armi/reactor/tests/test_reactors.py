@@ -129,8 +129,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
 class ReactorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # prepare the input files. This is important so the unit tests run from wherever
-        # they need to run from.
+        # Prepare the input files. This is important so the unit tests run from wherever they need to run from.
         cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
 
@@ -147,11 +146,16 @@ class HexReactorTests(ReactorTests):
     """
 
     def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
         self.o, self.r = loadTestReactor(
             inputFilePath=TESTING_ROOT,
             inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
             customSettings={"trackAssems": True},
         )
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
 
     def test_getAssembliesInCircularRing(self):
         expectedAssemsInRing = [5, 2]
