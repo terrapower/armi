@@ -139,6 +139,550 @@ class ReactorTests(unittest.TestCase):
         cls.td.__exit__(None, None, None)
 
 
+class HexReactorTests(ReactorTests):
+    """
+    This is meant to pair with the ``HexReactorReadOnlyTests`` unit test class.
+
+    The tests in this class all modify the Reactor object, so we need to create a new test reactor for each test.
+    """
+
+    def setUp(self):
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={"trackAssems": True},
+        )
+
+    def test_getAssembliesInCircularRing(self):
+        expectedAssemsInRing = [5, 2]
+        actualAssemsInRing = []
+        for ring in range(1, self.r.core.getNumRings()):
+            actualAssemsInRing.append(len(self.r.core.getAssembliesInCircularRing(ring)))
+        self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
+
+    def test_getAssembliesInHexRing(self):
+        expectedAssemsInRing = [1, 2, 4]
+        actualAssemsInRing = []
+        for ring in range(1, self.r.core.getNumRings() + 1):
+            actualAssemsInRing.append(len(self.r.core.getAssembliesInSquareOrHexRing(ring)))
+        self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
+
+    def test_factorySortSetting(self):
+        """Create a core object from an input yaml."""
+        # get a sorted Reactor (the default)
+        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "armiRun.yaml"))
+        r0 = reactors.loadFromCs(cs)
+
+        # get an unsorted Reactor (for whatever reason)
+        customSettings = {CONF_SORT_REACTOR: False}
+        cs = cs.modified(newSettings=customSettings)
+        r1 = reactors.loadFromCs(cs)
+
+        # the reactor / core should be the same size
+        self.assertEqual(len(r0), len(r1))
+        self.assertEqual(len(r0.core), len(r1.core))
+
+        # the reactor / core should be in a different order
+        a0 = [a.name for a in r0.core]
+        a1 = [a.name for a in r1.core]
+        self.assertNotEqual(a0, a1)
+
+        # The reactor object is a Composite
+        self.assertTrue(isinstance(r0.core, Composite))
+
+    def test_getSetParameters(self):
+        """
+        This test works through multiple levels of the data model hierarchy to test ability to modify parameters.
+
+        .. test:: Parameters are accessible throughout the armi tree.
+            :id: T_ARMI_PARAM1
+            :tests: R_ARMI_PARAM
+
+        .. test:: Ensure there is a setting for total core power.
+            :id: T_ARMI_SETTINGS_POWER0
+            :tests: R_ARMI_SETTINGS_POWER
+        """
+        # Test at reactor level
+        self.assertEqual(self.r.p.cycle, 0)
+        self.assertEqual(self.r.p.availabilityFactor, 1.0)
+
+        # Test at core level
+        core = self.r.core
+        self.assertGreater(core.p.power, -1)
+
+        core.p.power = 123
+        self.assertEqual(core.p.power, 123)
+
+        # Test at assembly level
+        assembly = core.getFirstAssembly()
+        self.assertGreater(assembly.p.crRodLength, -1)
+
+        assembly.p.crRodLength = 234
+        self.assertEqual(assembly.p.crRodLength, 234)
+
+        # Test at block level
+        block = core.getFirstBlock()
+        self.assertIsNone(block.p.mgFlux)
+
+        block.p.mgFlux = 57
+        self.assertEqual(block.p.mgFlux, 57)
+
+        # Test at component level
+        component = block[0]
+        self.assertEqual(component.p.temperatureInC, 450.0)
+
+    def test_sortChildren(self):
+        self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
+        self.assertEqual(self.r.core._children, sorted(self.r.core._children))
+
+    def test_sortAssemByRing(self):
+        """Demonstrate ring/pos sorting."""
+        self.r.core.sortAssemsByRing()
+        self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
+        currentRing = -1
+        currentPos = -1
+        for a in self.r.core:
+            ring, pos = a.spatialLocator.getRingPos()
+            self.assertGreaterEqual(ring, currentRing)
+            if ring > currentRing:
+                ring = currentRing
+                currentPos = -1
+            self.assertGreater(pos, currentPos)
+            currentPos = pos
+
+    def test_growToFullCore(self):
+        nAssemThird = len(self.r.core)
+        self.assertEqual(self.r.core.powerMultiplier, 3.0)
+        self.assertFalse(self.r.core.isFullCore)
+        self.r.core.growToFullCore(self.o.cs)
+        aNums = []
+        for a in self.r.core:
+            self.assertNotIn(a.getNum(), aNums)
+            aNums.append(a.getNum())
+
+        bNames = [b.getName() for b in self.r.core.iterBlocks()]
+        for bName in bNames:
+            self.assertEqual(bNames.count(bName), 1)
+        self.assertEqual(self.r.core.powerMultiplier, 1.0)
+        self.assertTrue(self.r.core.isFullCore)
+        nAssemFull = len(self.r.core)
+        self.assertEqual(nAssemFull, (nAssemThird - 1) * 3 + 1)
+
+    def test_genBlocksByLocName(self):
+        self.r.core.genBlocksByLocName()
+        self.assertGreater(len(self.r.core.blocksByLocName), 20)
+        self.assertIn("003-002-002", self.r.core.blocksByLocName)
+
+    def test_setPitchUniform(self):
+        self.r.core.setPitchUniform(0.0)
+        for b in self.r.core.iterBlocks():
+            self.assertEqual(b.getPitch(), 0.0)
+
+    def test_normalizeNames(self):
+        # these are the correct, normalized names
+        numAssems = 7
+        a = self.r.core.getFirstAssembly()
+        correctNames = [a.makeNameFromAssemNum(n) for n in range(numAssems)]
+
+        # validate the reactor is what we think now
+        self.assertEqual(len(self.r.core), numAssems)
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertNotEqual(correctNames, currentNames)
+
+        # validate that we can normalize the names correctly once
+        self.r.normalizeNames()
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertEqual(correctNames, currentNames)
+
+        # validate that repeated applications of this method are stable
+        for _ in range(3):
+            self.r.normalizeNames()
+            currentNames = [a.getName() for a in self.r.core]
+            self.assertEqual(correctNames, currentNames)
+
+    def test_setB10VolOnCreation(self):
+        """Test the setting of b.p.initialB10ComponentVol."""
+        for controlBlock in self.r.core.iterBlocks(Flags.CONTROL):
+            controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
+            self.assertEqual(len(controlComps), 1)
+            controlComp = controlComps[0]
+
+            startingVol = controlBlock.p.initialB10ComponentVol
+            self.assertGreater(startingVol, 0)
+            self.assertAlmostEqual(controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol)
+
+            # input temp is same as hot temp, so change input temp to test that behavior
+            controlComp.inputTemperatureInC = 30
+
+            # somewhat non-sensical since its hot, not cold but we just want to check the ratio
+            controlBlock.setB10VolParam(True)
+
+            self.assertGreater(startingVol, controlBlock.p.initialB10ComponentVol)
+
+            self.assertAlmostEqual(
+                startingVol / controlComp.getThermalExpansionFactor(),
+                controlBlock.p.initialB10ComponentVol,
+            )
+
+    def test_getReactor(self):
+        """The Core object can return its Reactor parent; test that getter."""
+        self.assertTrue(isinstance(self.r.core.r, reactors.Reactor))
+
+        self.r.core.parent = None
+        self.assertIsNone(self.r.core.r)
+
+    def test_addMoreNodes(self):
+        originalMesh = self.r.core.p.axialMesh
+        bigMesh = list(originalMesh)
+        bigMesh[2] = 30.0
+        smallMesh = originalMesh[0:2] + [40.0, 47.0] + originalMesh[2:]
+        newMesh1, originalMeshGood = self.r.core.addMoreNodes(originalMesh)
+        newMesh2, bigMeshGood = self.r.core.addMoreNodes(bigMesh)
+        newMesh3, smallMeshGood = self.r.core.addMoreNodes(smallMesh)
+        expectedMesh = [0.0, 15.0, 25.16, 35.32, 59.2125, 83.105, 106.9975, 130.89, 154.7825, 178.675, 202.5675, 226.46]
+        expectedBigMesh = [
+            0.0,
+            15.0,
+            30.0,
+            35.32,
+            59.2125,
+            83.105,
+            106.9975,
+            130.89,
+            154.7825,
+            178.675,
+            202.5675,
+            226.46,
+        ]
+        expectedSmallMesh = [
+            0.0,
+            15.0,
+            25.16,
+            35.32,
+            40.0,
+            43.724,
+            47.0,
+            59.2125,
+            83.105,
+            106.9975,
+            130.89,
+            154.7825,
+            178.675,
+            202.5675,
+            226.46,
+        ]
+        self.assertListEqual(expectedMesh, newMesh1)
+        self.assertListEqual(expectedBigMesh, newMesh2)
+        for i in range(len(expectedSmallMesh)):
+            self.assertAlmostEqual(expectedSmallMesh[i], newMesh3[i], delta=1e-8)
+        self.assertTrue(originalMeshGood)
+        self.assertTrue(bigMeshGood)
+        self.assertFalse(smallMeshGood)
+
+    def test_restoreReactor(self):
+        """Restore a reactor after growing it from third to full core.
+
+        .. test:: Convert a third-core to a full-core geometry and then restore it.
+            :id: T_ARMI_THIRD_TO_FULL_CORE1
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+        """
+        numOfAssembliesOneThird = len(self.r.core)
+        self.assertFalse(self.r.core.isFullCore)
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
+        )
+        # grow to full core
+        converter = self.r.core.growToFullCore(self.o.cs)
+        self.assertTrue(self.r.core.isFullCore)
+        self.assertGreater(len(self.r.core), numOfAssembliesOneThird)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+        # restore back to 1/3 core
+        converter.restorePreviousGeometry(self.r)
+        self.assertEqual(numOfAssembliesOneThird, len(self.r.core))
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
+        )
+        self.assertFalse(self.r.core.isFullCore)
+        self.assertEqual(numOfAssembliesOneThird, len(self.r.core))
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
+        )
+
+    def test_saveAllFlux(self):
+        # need a lightweight library to indicate number of groups.
+        class MockLib:
+            numGroups = 5
+
+        self.r.core.lib = MockLib()
+        for b in self.r.core.iterBlocks():
+            b.p.mgFlux = range(5)
+            b.p.adjMgFlux = range(5)
+
+        with directoryChangers.TemporaryDirectoryChanger(root=_THIS_DIR):
+            self.r.core.saveAllFlux()
+
+    def test_getFluxVector(self):
+        class MockLib:
+            numGroups = 5
+
+        self.r.core.lib = MockLib()
+        for b in self.r.core.iterBlocks():
+            b.p.mgFlux = range(5)
+            b.p.adjMgFlux = [i + 0.1 for i in range(5)]
+            b.p.extSrc = [i + 0.2 for i in range(5)]
+        mgFlux = self.r.core.getFluxVector(energyOrder=1)
+        adjFlux = self.r.core.getFluxVector(adjoint=True)
+        srcVec = self.r.core.getFluxVector(extSrc=True)
+        fluxVol = self.r.core.getFluxVector(volumeIntegrated=True)
+        blocks = self.r.core.getBlocks()
+        expFlux = [i for i in range(5) for _ in blocks]
+        expAdjFlux = [i + 0.1 for _ in blocks for i in range(5)]
+        expSrcVec = [i + 0.2 for _ in blocks for i in range(5)]
+        expFluxVol = list(range(5)) * len(blocks)
+        assert_allclose(expFlux, mgFlux)
+        assert_allclose(expAdjFlux, adjFlux)
+        assert_allclose(expSrcVec, srcVec)
+        assert_allclose(expFluxVol, fluxVol)
+
+    def test_getFuelBottomHeight(self):
+        for a in self.r.core.getAssemblies(Flags.FUEL):
+            if a[0].hasFlags(Flags.FUEL):
+                a[0].setType("mud")
+            a[1].setType("fuel")
+        fuelBottomHeightRef = self.r.core.getFirstAssembly(Flags.FUEL)[0].getHeight()
+        fuelBottomHeightInCm = self.r.core.getFuelBottomHeight()
+
+        self.assertEqual(fuelBottomHeightInCm, fuelBottomHeightRef)
+
+    def test_isPickleable(self):
+        loaded = pickle.loads(pickle.dumps(self.r))
+
+        # ensure we didn't break the current reactor
+        self.assertIs(self.r.core.spatialGrid.armiObject, self.r.core)
+
+        # make sure that the loaded reactor and grid are aligned
+        self.assertIs(loaded.core.spatialGrid.armiObject, loaded.core)
+        self.assertTrue(all(isinstance(key, grids.LocationBase) for key in loaded.core.childrenByLocator.keys()))
+        loc = loaded.core.spatialGrid[0, 0, 0]
+        loaded.core.sortAssemsByRing()
+        self.r.core.sortAssemsByRing()
+        self.assertIs(loc.grid, loaded.core.spatialGrid)
+        self.assertEqual(loaded.core.childrenByLocator[loc], loaded.core[0])
+
+        allIDs = set()
+
+        def checkAdd(comp):
+            self.assertNotIn(id(comp), allIDs)
+            self.assertNotIn(id(comp.p), allIDs)
+            allIDs.add(id(comp))
+            allIDs.add(id(comp.p))
+
+        # check a few locations to be equivalent
+        for a0, a1 in zip(self.r.core, loaded.core):
+            self.assertEqual(str(a0.getLocation()), str(a1.getLocation()))
+            self.assertIs(a0.spatialLocator.grid, self.r.core.spatialGrid)
+            self.assertIs(a1.spatialLocator.grid, loaded.core.spatialGrid)
+            checkAdd(a0)
+            checkAdd(a1)
+            for b0, b1 in zip(a0, a1):
+                self.assertIs(b0.spatialLocator.grid, a0.spatialGrid)
+                self.assertIs(b1.spatialLocator.grid, a1.spatialGrid)
+                self.assertEqual(str(b0.getLocation()), str(b1.getLocation()))
+                self.assertEqual(b0.getSymmetryFactor(), b1.getSymmetryFactor())
+                self.assertEqual(b0.getHMMoles(), b1.getHMMoles())
+                checkAdd(b0)
+                checkAdd(b1)
+
+    def test_removeAssemblyNoSfp(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_removeAssemblyNoSfp")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            a = self.r.core[-1]  # last assembly
+            aLoc = a.spatialLocator
+            self.assertIsNotNone(aLoc.grid)
+            self.r.excore["sfp"] = None
+            del self.r.excore["sfp"]
+            self.r.core.removeAssembly(a)
+
+            self.assertIn("No Spent Fuel Pool", mock.getStdout())
+
+    def test_createAssemblyOfType(self):
+        """Test creation of new assemblies."""
+        # basic creation
+        aOld = self.r.core.getFirstAssembly(Flags.FUEL)
+        aNew = self.r.core.createAssemblyOfType(aOld.getType(), cs=self.o.cs)
+        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
+
+        # test axial mesh alignment
+        aNewMesh = aNew.getAxialMesh()
+        for i, meshValue in enumerate(aNewMesh):
+            self.assertAlmostEqual(meshValue, self.r.core.p.referenceBlockAxialMesh[i + 1])  # use i+1 to skip 0.0
+
+        # creation with modified enrichment
+        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
+        fuelBlock = aNew2.getFirstBlock(Flags.FUEL)
+        self.assertAlmostEqual(fuelBlock.getUraniumMassEnrich(), 0.195)
+
+        # creation with modified enrichment on an expanded BOL assem.
+        fuelComp = fuelBlock.getComponent(Flags.FUEL)
+        bol = self.r.blueprints.assemblies[aOld.getType()]
+        changer = AxialExpansionChanger()
+        changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
+        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
+        self.assertAlmostEqual(aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195)
+        self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
+
+    def test_createAssemOfTypeExpandCore(self):
+        """Test creation of new assemblies in an expanded core."""
+        # change the mesh of inner blocks
+        mesh = self.r.core.p.referenceBlockAxialMesh[1:]
+        lastIndex = len(mesh) - 1
+        mesh = [val + 5 for val in mesh]
+        mesh[0] -= 5
+        mesh[lastIndex] -= 5
+
+        # expand the core
+        self.r.core.p.referenceBlockAxialMesh = [0] + mesh
+        for a in self.r.core:
+            a.setBlockMesh(mesh)
+        aType = self.r.core.getFirstAssembly(Flags.FUEL).getType()
+
+        # demonstrate we can still create assemblies
+        self.assertTrue(self.r.core.createAssemblyOfType(aType, cs=self.o.cs))
+
+    def test_getScalarEvolution(self):
+        self.r.core.scalarVals["fake"] = 123
+        x = self.r.core.getScalarEvolution("fake")
+        self.assertEqual(x, 123)
+
+    def test_ifMissingSpatialGrid(self):
+        self.r.core.spatialGrid = None
+
+        with self.assertRaises(ValueError):
+            self.r.core.symmetry
+
+        with self.assertRaises(ValueError):
+            self.r.core.geomType
+
+    def test_pinCoordsAllBlocks(self):
+        """Make sure all blocks can get pin coords."""
+        for b in self.r.core.iterBlocks():
+            coords = b.getPinCoordinates()
+            self.assertGreater(len(coords), -1)
+
+    def test_updateBlockBOLHeights_DBLoad(self):
+        """Test that blueprints assemblies are expanded in DB load."""
+        originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
+        nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
+        equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
+
+        _o, coldHeightR = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={"inputHeightsConsideredHot": False},
+        )
+        coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
+        for a, coldHeightA in zip(originalAssems, coldHeightAssems):
+            if not a.hasFlags(Flags.CONTROL):
+                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
+                    for param in nonEqualParameters:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        if p and coldHeightP:
+                            self.assertNotEqual(p, coldHeightP)
+                        else:
+                            self.assertAlmostEqual(p, coldHeightP)
+                    for param in equalParameters:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        self.assertAlmostEqual(p, coldHeightP)
+
+    def test_buildManualZones(self):
+        # define some manual zones in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+            "ring-3: 003-001, 003-002, 003-003",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.r.core.buildManualZones(cs)
+
+        zonez = self.r.core.zones
+        self.assertEqual(len(list(zonez)), 3)
+        self.assertIn("002-001", zonez["ring-2"])
+        self.assertIn("003-002", zonez["ring-3"])
+
+    def test_buildManualZonesEmpty(self):
+        # ensure there are no zone definitions in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = []
+        cs = self.o.cs.modified(newSettings=newSettings)
+
+        # verify that buildZones behaves well when no zones are defined
+        self.r.core.buildManualZones(cs)
+        self.assertEqual(len(list(self.r.core.zones)), 0)
+
+    def test_setPowerIfNecessary(self):
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+        self.assertAlmostEqual(self.r.core.p.powerDensity, 0)
+
+        # to start, this method shouldn't do anything
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+
+        # take the powerDensity when needed
+        self.r.core.p.power = 0
+        self.r.core.p.powerDensity = 1e9
+        mass = self.r.core.getHMMass()
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 1e9 * mass)
+
+        # don't take the powerDensity when not needed
+        self.r.core.p.power = 3e9
+        self.r.core.p.powerDensity = 2e9
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 3e9)
+
+    def test_findAllMeshPoints(self):
+        """Test findAllMeshPoints().
+
+        .. test:: Test that the reactor can calculate its core block mesh.
+            :id: T_ARMI_R_MESH
+            :tests: R_ARMI_R_MESH
+        """
+        # lets do some basic sanity checking of the meshpoints
+        x, y, z = self.r.core.findAllMeshPoints()
+
+        # no two meshpoints should be the same, and they should all be monotonically increasing
+        for xx in range(1, len(x)):
+            self.assertGreater(x[xx], x[xx - 1], msg=f"x={xx}")
+
+        for yy in range(1, len(y)):
+            self.assertGreater(y[yy], y[yy - 1], msg=f"y={yy}")
+
+        for zz in range(1, len(z)):
+            self.assertGreater(z[zz], z[zz - 1], msg=f"z={zz}")
+
+        # the z-index should start at zero (the bottom)
+        self.assertEqual(z[0], 0)
+
+        # ensure the X and Y mesh spacing is correct (for a hex core)
+        pitch = self.r.core.spatialGrid.pitch
+
+        xPitch = pitch / 2
+        for xx in range(1, len(x)):
+            self.assertAlmostEqual(x[xx] - x[xx - 1], xPitch, delta=0.0001)
+
+        yPitch = sqrt(3) * pitch / 2
+        for yy in range(1, len(y)):
+            self.assertAlmostEqual(y[yy] - y[yy - 1], yPitch, delta=0.001)
+
+
 class HexReactorReadOnlyTests(unittest.TestCase):
     """
     This is meant to pair with the ``HexReactorTests`` unit test class.
@@ -510,7 +1054,7 @@ class HexReactorSoloTests(ReactorTests):
     """
     This is meant to pair with the ``HexReactorTests`` unit test class.
 
-    Each test here creates its own, slightly different, test reactor.
+    Each test here creates its own, slightly unique, test reactor.
     """
 
     def test_nonUniformAssems(self):
@@ -527,236 +1071,92 @@ class HexReactorSoloTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
 
-class HexReactorTests(ReactorTests):
+class BigHexReactorTests(ReactorTests):
     """
-    This is meant to pair with the ``HexReactorReadOnlyTests`` unit test class.
+    This is meant to pair with the ``HexReactorTests`` unit test class.
 
-    The tests in this class all modify the Reactor object, so we need to create a new test reactor for each test.
+    These tests all need a larger test reactor. Ideally, we will migrate these to smaller test reactors one day.
     """
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={"trackAssems": True})
+        self.o, self.r = loadTestReactor(inputFilePath=TEST_ROOT, customSettings={"trackAssems": True})
 
-    def test_getAssembliesInCircularRing(self):
-        expectedAssemsInRing = [5, 6, 8, 10, 12, 16, 14, 2]
-        actualAssemsInRing = []
-        for ring in range(1, self.r.core.getNumRings()):
-            actualAssemsInRing.append(len(self.r.core.getAssembliesInCircularRing(ring)))
-        self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
-
-    def test_getAssembliesInHexRing(self):
-        expectedAssemsInRing = [1, 2, 4, 6, 8, 10, 12, 14, 16]
-        actualAssemsInRing = []
-        for ring in range(1, self.r.core.getNumRings() + 1):
-            actualAssemsInRing.append(len(self.r.core.getAssembliesInSquareOrHexRing(ring)))
-        self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
-
-    def test_factorySortSetting(self):
-        """Create a core object from an input yaml."""
-        # get a sorted Reactor (the default)
-        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "armiRun.yaml"))
-        r0 = reactors.loadFromCs(cs)
-
-        # get an unsorted Reactor (for whatever reason)
-        customSettings = {CONF_SORT_REACTOR: False}
-        cs = cs.modified(newSettings=customSettings)
-        r1 = reactors.loadFromCs(cs)
-
-        # the reactor / core should be the same size
-        self.assertEqual(len(r0), len(r1))
-        self.assertEqual(len(r0.core), len(r1.core))
-
-        # the reactor / core should be in a different order
-        a0 = [a.name for a in r0.core]
-        a1 = [a.name for a in r1.core]
-        self.assertNotEqual(a0, a1)
-
-        # The reactor object is a Composite
-        self.assertTrue(isinstance(r0.core, Composite))
-
-    def test_getSetParameters(self):
-        """
-        This test works through multiple levels of the hierarchy to test ability to
-        modify parameters at different levels.
-
-        .. test:: Parameters are accessible throughout the armi tree.
-            :id: T_ARMI_PARAM1
-            :tests: R_ARMI_PARAM
-
-        .. test:: Ensure there is a setting for total core power.
-            :id: T_ARMI_SETTINGS_POWER0
-            :tests: R_ARMI_SETTINGS_POWER
-        """
-        # Test at reactor level
-        self.assertEqual(self.r.p.cycle, 0)
-        self.assertEqual(self.r.p.availabilityFactor, 1.0)
-
-        # Test at core level
-        core = self.r.core
-        self.assertGreater(core.p.power, -1)
-
-        core.p.power = 123
-        self.assertEqual(core.p.power, 123)
-
-        # Test at assembly level
-        assembly = core.getFirstAssembly()
-        self.assertGreater(assembly.p.crRodLength, -1)
-
-        assembly.p.crRodLength = 234
-        self.assertEqual(assembly.p.crRodLength, 234)
-
-        # Test at block level
-        block = core.getFirstBlock()
-        self.assertIsNone(block.p.mgFlux)
-
-        block.p.mgFlux = 57
-        self.assertEqual(block.p.mgFlux, 57)
-
-        # Test at component level
-        component = block[0]
-        self.assertEqual(component.p.temperatureInC, 450.0)
-
-    def test_sortChildren(self):
-        self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
-        self.assertEqual(self.r.core._children, sorted(self.r.core._children))
-
-    def test_sortAssemByRing(self):
-        """Demonstrate ring/pos sorting."""
-        self.r.core.sortAssemsByRing()
-        self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
-        currentRing = -1
-        currentPos = -1
-        for a in self.r.core:
-            ring, pos = a.spatialLocator.getRingPos()
-            self.assertGreaterEqual(ring, currentRing)
-            if ring > currentRing:
-                ring = currentRing
-                currentPos = -1
-            self.assertGreater(pos, currentPos)
-            currentPos = pos
-
-    def test_growToFullCore(self):
-        nAssemThird = len(self.r.core)
-        self.assertEqual(self.r.core.powerMultiplier, 3.0)
-        self.assertFalse(self.r.core.isFullCore)
-        self.r.core.growToFullCore(self.o.cs)
-        aNums = []
-        for a in self.r.core:
-            self.assertNotIn(a.getNum(), aNums)
-            aNums.append(a.getNum())
-
-        bNames = [b.getName() for b in self.r.core.iterBlocks()]
-        for bName in bNames:
-            self.assertEqual(bNames.count(bName), 1)
-        self.assertEqual(self.r.core.powerMultiplier, 1.0)
-        self.assertTrue(self.r.core.isFullCore)
-        nAssemFull = len(self.r.core)
-        self.assertEqual(nAssemFull, (nAssemThird - 1) * 3 + 1)
-
-    def test_genBlocksByLocName(self):
-        self.r.core.genBlocksByLocName()
-        self.assertGreater(len(self.r.core.blocksByLocName), 300)
-        self.assertIn("009-009-004", self.r.core.blocksByLocName)
-
-    def test_setPitchUniform(self):
-        self.r.core.setPitchUniform(0.0)
-        for b in self.r.core.iterBlocks():
-            self.assertEqual(b.getPitch(), 0.0)
-
-    def test_normalizeNames(self):
-        # these are the correct, normalized names
-        numAssems = 73
+    def test_genAssembliesAddedThisCycle(self):
+        allAssems = self.r.core.getAssemblies()
+        self.assertTrue(all(a1 is a2 for a1, a2 in zip(allAssems, self.r.core.genAssembliesAddedThisCycle())))
         a = self.r.core.getFirstAssembly()
-        correctNames = [a.makeNameFromAssemNum(n) for n in range(numAssems)]
+        newA = copy.deepcopy(a)
+        newA.name = None
+        self.r.p.cycle = 1
+        self.assertEqual(len(list(self.r.core.genAssembliesAddedThisCycle())), 0)
+        self.r.core.removeAssembly(a)
+        self.r.core.add(newA)
+        self.assertEqual(next(self.r.core.genAssembliesAddedThisCycle()), newA)
 
-        # validate the reactor is what we think now
-        self.assertEqual(len(self.r.core), numAssems)
-        currentNames = [a.getName() for a in self.r.core]
-        self.assertNotEqual(correctNames, currentNames)
+    def test_removeAssembly(self):
+        """Test the removeAssembly method.
 
-        # validate that we can normalize the names correctly once
-        self.r.normalizeNames()
-        currentNames = [a.getName() for a in self.r.core]
-        self.assertEqual(correctNames, currentNames)
+        In particular, the Settings here set trackAssems to True, so when an Assembly is removed
+        from the Core, it shows up in the SFP.
+        """
+        a = self.r.core[-1]  # last assembly
+        b = a[-1]  # use the last block in case we ever figure out stationary blocks
+        aLoc = a.spatialLocator
+        self.assertIsNotNone(aLoc.grid)
+        bLoc = b.spatialLocator
+        self.r.core.removeAssembly(a)
+        self.assertNotEqual(aLoc, a.spatialLocator)
 
-        # validate that repeated applications of this method are stable
-        for _ in range(3):
-            self.r.normalizeNames()
-            currentNames = [a.getName() for a in self.r.core]
-            self.assertEqual(correctNames, currentNames)
+        # confirm the Assembly is now in the SFP
+        self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
-    def test_setB10VolOnCreation(self):
-        """Test the setting of b.p.initialB10ComponentVol."""
-        for controlBlock in self.r.core.iterBlocks(Flags.CONTROL):
-            controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
-            self.assertEqual(len(controlComps), 1)
-            controlComp = controlComps[0]
+        # confirm only attached to removed assem
+        self.assertIs(bLoc, b.spatialLocator)  # block location does not change
+        self.assertIs(a, b.parent)
+        self.assertIs(a, b.spatialLocator.grid.armiObject)
 
-            startingVol = controlBlock.p.initialB10ComponentVol
-            self.assertGreater(startingVol, 0)
-            self.assertAlmostEqual(controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol)
+    def test_removeAssembliesInRing(self):
+        aLoc = [self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1) for i in range(12)]
+        assems = {
+            i: self.r.core.childrenByLocator[loc] for i, loc in enumerate(aLoc) if loc in self.r.core.childrenByLocator
+        }
+        self.r.core.removeAssembliesInRing(3, self.o.cs)
+        for i, a in assems.items():
+            self.assertNotEqual(aLoc[i], a.spatialLocator)
+            self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
-            # input temp is same as hot temp, so change input temp to test that behavior
-            controlComp.inputTemperatureInC = 30
+    def test_removeAssembliesInRingHex(self):
+        """
+        Since the test reactor is hex, we need to use the overrideCircularRingMode option
+        to remove assemblies from it.
+        """
+        self.assertEqual(self.r.core.getNumRings(), 9)
+        for ringNum in range(6, 10):
+            self.r.core.removeAssembliesInRing(ringNum, self.o.cs, overrideCircularRingMode=True)
+        self.assertEqual(self.r.core.getNumRings(), 5)
 
-            # somewhat non-sensical since its hot, not cold but we just want to check the ratio
-            controlBlock.setB10VolParam(True)
+    def test_createFreshFeed(self):
+        # basic creation
+        aOld = self.r.core.getFirstAssembly(Flags.FEED)
+        aNew = self.r.core.createFreshFeed(cs=self.o.cs)
+        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
-            self.assertGreater(startingVol, controlBlock.p.initialB10ComponentVol)
+    def test_getAssemblies(self):
+        """Basic test of getAssemblies, with and without including the SFP.
 
-            self.assertAlmostEqual(
-                startingVol / controlComp.getThermalExpansionFactor(),
-                controlBlock.p.initialB10ComponentVol,
-            )
+        .. test:: The spent fuel pool is a Composite structure.
+            :id: T_ARMI_SFP2
+            :tests: R_ARMI_SFP
+        """
+        # where are we starting
+        numCoreStart = len(self.r.core)
+        numTotalStart = len(self.r.core.getAssemblies(includeSFP=True))
 
-    def test_getReactor(self):
-        """The Core object can return its Reactor parent; test that getter."""
-        self.assertTrue(isinstance(self.r.core.r, reactors.Reactor))
-
-        self.r.core.parent = None
-        self.assertIsNone(self.r.core.r)
-
-    def test_addMoreNodes(self):
-        originalMesh = self.r.core.p.axialMesh
-        bigMesh = list(originalMesh)
-        bigMesh[2] = 30.0
-        smallMesh = originalMesh[0:2] + [40.0, 47.0] + originalMesh[2:]
-        newMesh1, originalMeshGood = self.r.core.addMoreNodes(originalMesh)
-        newMesh2, bigMeshGood = self.r.core.addMoreNodes(bigMesh)
-        newMesh3, smallMeshGood = self.r.core.addMoreNodes(smallMesh)
-        expectedMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
-        expectedBigMesh = [
-            0.0,
-            25.0,
-            30.0,
-            36.75,
-            75.0,
-            100.0,
-            118.75,
-            137.5,
-            156.25,
-            175.0,
-        ]
-        expectedSmallMesh = [
-            0.0,
-            25.0,
-            40.0,
-            47.0,
-            50.0,
-            53.75,
-            75.0,
-            100.0,
-            118.75,
-            137.5,
-            156.25,
-            175.0,
-        ]
-        self.assertListEqual(expectedMesh, newMesh1)
-        self.assertListEqual(expectedBigMesh, newMesh2)
-        self.assertListEqual(expectedSmallMesh, newMesh3)
-        self.assertTrue(originalMeshGood)
-        self.assertFalse(bigMeshGood)
-        self.assertFalse(smallMeshGood)
+        # remove one assembly and confirm behavior
+        for i in range(1, 5):
+            self.r.core.removeAssembly(self.r.core.getFirstAssembly())
+            self.assertEqual(len(self.r.core), numCoreStart - i)
+            self.assertEqual(len(self.r.core.getAssemblies(includeSFP=True)), numTotalStart)
 
     def test_findNeighbors(self):
         """
@@ -826,391 +1226,6 @@ class HexReactorTests(ReactorTests):
         locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
         self.assertEqual(locs, [(3, 2), (3, 3), (3, 4), (2, 3), (1, 1), (2, 1)])
-
-    def test_genAssembliesAddedThisCycle(self):
-        allAssems = self.r.core.getAssemblies()
-        self.assertTrue(all(a1 is a2 for a1, a2 in zip(allAssems, self.r.core.genAssembliesAddedThisCycle())))
-        a = self.r.core.getFirstAssembly()
-        newA = copy.deepcopy(a)
-        newA.name = None
-        self.r.p.cycle = 1
-        self.assertEqual(len(list(self.r.core.genAssembliesAddedThisCycle())), 0)
-        self.r.core.removeAssembly(a)
-        self.r.core.add(newA)
-        self.assertEqual(next(self.r.core.genAssembliesAddedThisCycle()), newA)
-
-    def test_getAssemblies(self):
-        """Basic test of getAssemblies, with and without including the SFP.
-
-        .. test:: The spent fuel pool is a Composite structure.
-            :id: T_ARMI_SFP2
-            :tests: R_ARMI_SFP
-        """
-        # where are we starting
-        numCoreStart = len(self.r.core)
-        numTotalStart = len(self.r.core.getAssemblies(includeSFP=True))
-
-        # remove one assembly and confirm behavior
-        for i in range(1, 5):
-            self.r.core.removeAssembly(self.r.core.getFirstAssembly())
-            self.assertEqual(len(self.r.core), numCoreStart - i)
-            self.assertEqual(len(self.r.core.getAssemblies(includeSFP=True)), numTotalStart)
-
-    def test_restoreReactor(self):
-        """Restore a reactor after growing it from third to full core.
-
-        .. test:: Convert a third-core to a full-core geometry and then restore it.
-            :id: T_ARMI_THIRD_TO_FULL_CORE1
-            :tests: R_ARMI_THIRD_TO_FULL_CORE
-        """
-        numOfAssembliesOneThird = len(self.r.core)
-        self.assertFalse(self.r.core.isFullCore)
-        self.assertEqual(
-            self.r.core.symmetry,
-            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
-        )
-        # grow to full core
-        converter = self.r.core.growToFullCore(self.o.cs)
-        self.assertTrue(self.r.core.isFullCore)
-        self.assertGreater(len(self.r.core), numOfAssembliesOneThird)
-        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
-        # restore back to 1/3 core
-        converter.restorePreviousGeometry(self.r)
-        self.assertEqual(numOfAssembliesOneThird, len(self.r.core))
-        self.assertEqual(
-            self.r.core.symmetry,
-            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
-        )
-        self.assertFalse(self.r.core.isFullCore)
-        self.assertEqual(numOfAssembliesOneThird, len(self.r.core))
-        self.assertEqual(
-            self.r.core.symmetry,
-            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
-        )
-
-    def test_saveAllFlux(self):
-        # need a lightweight library to indicate number of groups.
-        class MockLib:
-            numGroups = 5
-
-        self.r.core.lib = MockLib()
-        for b in self.r.core.iterBlocks():
-            b.p.mgFlux = range(5)
-            b.p.adjMgFlux = range(5)
-
-        with directoryChangers.TemporaryDirectoryChanger(root=_THIS_DIR):
-            self.r.core.saveAllFlux()
-
-    def test_getFluxVector(self):
-        class MockLib:
-            numGroups = 5
-
-        self.r.core.lib = MockLib()
-        for b in self.r.core.iterBlocks():
-            b.p.mgFlux = range(5)
-            b.p.adjMgFlux = [i + 0.1 for i in range(5)]
-            b.p.extSrc = [i + 0.2 for i in range(5)]
-        mgFlux = self.r.core.getFluxVector(energyOrder=1)
-        adjFlux = self.r.core.getFluxVector(adjoint=True)
-        srcVec = self.r.core.getFluxVector(extSrc=True)
-        fluxVol = self.r.core.getFluxVector(volumeIntegrated=True)
-        blocks = self.r.core.getBlocks()
-        expFlux = [i for i in range(5) for _ in blocks]
-        expAdjFlux = [i + 0.1 for _ in blocks for i in range(5)]
-        expSrcVec = [i + 0.2 for _ in blocks for i in range(5)]
-        expFluxVol = list(range(5)) * len(blocks)
-        assert_allclose(expFlux, mgFlux)
-        assert_allclose(expAdjFlux, adjFlux)
-        assert_allclose(expSrcVec, srcVec)
-        assert_allclose(expFluxVol, fluxVol)
-
-    def test_getFuelBottomHeight(self):
-        for a in self.r.core.getAssemblies(Flags.FUEL):
-            if a[0].hasFlags(Flags.FUEL):
-                a[0].setType("mud")
-            a[1].setType("fuel")
-        fuelBottomHeightRef = self.r.core.getFirstAssembly(Flags.FUEL)[0].getHeight()
-        fuelBottomHeightInCm = self.r.core.getFuelBottomHeight()
-
-        self.assertEqual(fuelBottomHeightInCm, fuelBottomHeightRef)
-
-    def test_isPickleable(self):
-        loaded = pickle.loads(pickle.dumps(self.r))
-
-        # ensure we didn't break the current reactor
-        self.assertIs(self.r.core.spatialGrid.armiObject, self.r.core)
-
-        # make sure that the loaded reactor and grid are aligned
-        self.assertIs(loaded.core.spatialGrid.armiObject, loaded.core)
-        self.assertTrue(all(isinstance(key, grids.LocationBase) for key in loaded.core.childrenByLocator.keys()))
-        loc = loaded.core.spatialGrid[0, 0, 0]
-        loaded.core.sortAssemsByRing()
-        self.r.core.sortAssemsByRing()
-        self.assertIs(loc.grid, loaded.core.spatialGrid)
-        self.assertEqual(loaded.core.childrenByLocator[loc], loaded.core[0])
-
-        allIDs = set()
-
-        def checkAdd(comp):
-            self.assertNotIn(id(comp), allIDs)
-            self.assertNotIn(id(comp.p), allIDs)
-            allIDs.add(id(comp))
-            allIDs.add(id(comp.p))
-
-        # check a few locations to be equivalent
-        for a0, a1 in zip(self.r.core, loaded.core):
-            self.assertEqual(str(a0.getLocation()), str(a1.getLocation()))
-            self.assertIs(a0.spatialLocator.grid, self.r.core.spatialGrid)
-            self.assertIs(a1.spatialLocator.grid, loaded.core.spatialGrid)
-            checkAdd(a0)
-            checkAdd(a1)
-            for b0, b1 in zip(a0, a1):
-                self.assertIs(b0.spatialLocator.grid, a0.spatialGrid)
-                self.assertIs(b1.spatialLocator.grid, a1.spatialGrid)
-                self.assertEqual(str(b0.getLocation()), str(b1.getLocation()))
-                self.assertEqual(b0.getSymmetryFactor(), b1.getSymmetryFactor())
-                self.assertEqual(b0.getHMMoles(), b1.getHMMoles())
-                checkAdd(b0)
-                checkAdd(b1)
-
-    def test_removeAssembly(self):
-        """Test the removeAssembly method.
-
-        In particular, the Settings here set trackAssems to True, so when an Assembly is removed
-        from the Core, it shows up in the SFP.
-        """
-        a = self.r.core[-1]  # last assembly
-        b = a[-1]  # use the last block in case we ever figure out stationary blocks
-        aLoc = a.spatialLocator
-        self.assertIsNotNone(aLoc.grid)
-        bLoc = b.spatialLocator
-        self.r.core.removeAssembly(a)
-        self.assertNotEqual(aLoc, a.spatialLocator)
-
-        # confirm the Assembly is now in the SFP
-        self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
-
-        # confirm only attached to removed assem
-        self.assertIs(bLoc, b.spatialLocator)  # block location does not change
-        self.assertIs(a, b.parent)
-        self.assertIs(a, b.spatialLocator.grid.armiObject)
-
-    def test_removeAssemblyNoSfp(self):
-        with mockRunLogs.BufferLog() as mock:
-            # we should start with a clean slate
-            self.assertEqual("", mock.getStdout())
-            runLog.LOG.startLog("test_removeAssemblyNoSfp")
-            runLog.LOG.setVerbosity(logging.INFO)
-
-            a = self.r.core[-1]  # last assembly
-            aLoc = a.spatialLocator
-            self.assertIsNotNone(aLoc.grid)
-            self.r.excore["sfp"] = None
-            del self.r.excore["sfp"]
-            self.r.core.removeAssembly(a)
-
-            self.assertIn("No Spent Fuel Pool", mock.getStdout())
-
-    def test_removeAssembliesInRing(self):
-        aLoc = [self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1) for i in range(12)]
-        assems = {
-            i: self.r.core.childrenByLocator[loc] for i, loc in enumerate(aLoc) if loc in self.r.core.childrenByLocator
-        }
-        self.r.core.removeAssembliesInRing(3, self.o.cs)
-        for i, a in assems.items():
-            self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
-
-    def test_removeAssembliesInRingByCount(self):
-        """Tests retrieving ring numbers and removing a ring."""
-        self.assertEqual(self.r.core.getNumRings(), 9)
-        self.r.core.removeAssembliesInRing(9, self.o.cs)
-        self.assertEqual(self.r.core.getNumRings(), 8)
-
-    def test_removeAssembliesInRingHex(self):
-        """
-        Since the test reactor is hex, we need to use the overrideCircularRingMode option
-        to remove assemblies from it.
-        """
-        self.assertEqual(self.r.core.getNumRings(), 9)
-        for ringNum in range(6, 10):
-            self.r.core.removeAssembliesInRing(ringNum, self.o.cs, overrideCircularRingMode=True)
-        self.assertEqual(self.r.core.getNumRings(), 5)
-
-    def test_createAssemblyOfType(self):
-        """Test creation of new assemblies."""
-        # basic creation
-        aOld = self.r.core.getFirstAssembly(Flags.FUEL)
-        aNew = self.r.core.createAssemblyOfType(aOld.getType(), cs=self.o.cs)
-        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
-
-        # test axial mesh alignment
-        aNewMesh = aNew.getAxialMesh()
-        for i, meshValue in enumerate(aNewMesh):
-            self.assertAlmostEqual(meshValue, self.r.core.p.referenceBlockAxialMesh[i + 1])  # use i+1 to skip 0.0
-
-        # creation with modified enrichment
-        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
-        fuelBlock = aNew2.getFirstBlock(Flags.FUEL)
-        self.assertAlmostEqual(fuelBlock.getUraniumMassEnrich(), 0.195)
-
-        # creation with modified enrichment on an expanded BOL assem.
-        fuelComp = fuelBlock.getComponent(Flags.FUEL)
-        bol = self.r.blueprints.assemblies[aOld.getType()]
-        changer = AxialExpansionChanger()
-        changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
-        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
-        self.assertAlmostEqual(aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195)
-        self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
-
-    def test_createFreshFeed(self):
-        # basic creation
-        aOld = self.r.core.getFirstAssembly(Flags.FEED)
-        aNew = self.r.core.createFreshFeed(cs=self.o.cs)
-        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
-
-    def test_createAssemOfTypeExpandCore(self):
-        """Test creation of new assemblies in an expanded core."""
-        # change the mesh of inner blocks
-        mesh = self.r.core.p.referenceBlockAxialMesh[1:]
-        lastIndex = len(mesh) - 1
-        mesh = [val + 5 for val in mesh]
-        mesh[0] -= 5
-        mesh[lastIndex] -= 5
-
-        # expand the core
-        self.r.core.p.referenceBlockAxialMesh = [0] + mesh
-        for a in self.r.core:
-            a.setBlockMesh(mesh)
-        aType = self.r.core.getFirstAssembly(Flags.FUEL).getType()
-
-        # demonstrate we can still create assemblies
-        self.assertTrue(self.r.core.createAssemblyOfType(aType, cs=self.o.cs))
-
-    def test_getScalarEvolution(self):
-        self.r.core.scalarVals["fake"] = 123
-        x = self.r.core.getScalarEvolution("fake")
-        self.assertEqual(x, 123)
-
-    def test_ifMissingSpatialGrid(self):
-        self.r.core.spatialGrid = None
-
-        with self.assertRaises(ValueError):
-            self.r.core.symmetry
-
-        with self.assertRaises(ValueError):
-            self.r.core.geomType
-
-    def test_pinCoordsAllBlocks(self):
-        """Make sure all blocks can get pin coords."""
-        for b in self.r.core.iterBlocks():
-            coords = b.getPinCoordinates()
-            self.assertGreater(len(coords), -1)
-
-    def test_updateBlockBOLHeights_DBLoad(self):
-        """Test that blueprints assemblies are expanded in DB load."""
-        originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
-        nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
-        equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
-
-        _o, coldHeightR = loadTestReactor(
-            TEST_ROOT,
-            customSettings={"inputHeightsConsideredHot": False},
-        )
-        coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
-        for a, coldHeightA in zip(originalAssems, coldHeightAssems):
-            if not a.hasFlags(Flags.CONTROL):
-                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
-                    for param in nonEqualParameters:
-                        p, coldHeightP = b.p[param], coldHeightB.p[param]
-                        if p and coldHeightP:
-                            self.assertNotEqual(p, coldHeightP)
-                        else:
-                            self.assertAlmostEqual(p, coldHeightP)
-                    for param in equalParameters:
-                        p, coldHeightP = b.p[param], coldHeightB.p[param]
-                        self.assertAlmostEqual(p, coldHeightP)
-
-    def test_buildManualZones(self):
-        # define some manual zones in the settings
-        newSettings = {}
-        newSettings["zoneDefinitions"] = [
-            "ring-1: 001-001",
-            "ring-2: 002-001, 002-002",
-            "ring-3: 003-001, 003-002, 003-003",
-        ]
-        cs = self.o.cs.modified(newSettings=newSettings)
-        self.r.core.buildManualZones(cs)
-
-        zonez = self.r.core.zones
-        self.assertEqual(len(list(zonez)), 3)
-        self.assertIn("002-001", zonez["ring-2"])
-        self.assertIn("003-002", zonez["ring-3"])
-
-    def test_buildManualZonesEmpty(self):
-        # ensure there are no zone definitions in the settings
-        newSettings = {}
-        newSettings["zoneDefinitions"] = []
-        cs = self.o.cs.modified(newSettings=newSettings)
-
-        # verify that buildZones behaves well when no zones are defined
-        self.r.core.buildManualZones(cs)
-        self.assertEqual(len(list(self.r.core.zones)), 0)
-
-    def test_setPowerIfNecessary(self):
-        self.assertAlmostEqual(self.r.core.p.power, 0)
-        self.assertAlmostEqual(self.r.core.p.powerDensity, 0)
-
-        # to start, this method shouldn't do anything
-        self.r.core.setPowerIfNecessary()
-        self.assertAlmostEqual(self.r.core.p.power, 0)
-
-        # take the powerDensity when needed
-        self.r.core.p.power = 0
-        self.r.core.p.powerDensity = 1e9
-        mass = self.r.core.getHMMass()
-        self.r.core.setPowerIfNecessary()
-        self.assertAlmostEqual(self.r.core.p.power, 1e9 * mass)
-
-        # don't take the powerDensity when not needed
-        self.r.core.p.power = 3e9
-        self.r.core.p.powerDensity = 2e9
-        self.r.core.setPowerIfNecessary()
-        self.assertAlmostEqual(self.r.core.p.power, 3e9)
-
-    def test_findAllMeshPoints(self):
-        """Test findAllMeshPoints().
-
-        .. test:: Test that the reactor can calculate its core block mesh.
-            :id: T_ARMI_R_MESH
-            :tests: R_ARMI_R_MESH
-        """
-        # lets do some basic sanity checking of the meshpoints
-        x, y, z = self.r.core.findAllMeshPoints()
-
-        # no two meshpoints should be the same, and they should all be monotonically increasing
-        for xx in range(1, len(x)):
-            self.assertGreater(x[xx], x[xx - 1], msg=f"x={xx}")
-
-        for yy in range(1, len(y)):
-            self.assertGreater(y[yy], y[yy - 1], msg=f"y={yy}")
-
-        for zz in range(1, len(z)):
-            self.assertGreater(z[zz], z[zz - 1], msg=f"z={zz}")
-
-        # the z-index should start at zero (the bottom)
-        self.assertEqual(z[0], 0)
-
-        # ensure the X and Y mesh spacing is correct (for a hex core)
-        pitch = self.r.core.spatialGrid.pitch
-
-        xPitch = sqrt(3) * pitch / 2
-        for xx in range(1, len(x)):
-            self.assertAlmostEqual(x[xx] - x[xx - 1], xPitch, delta=0.0001)
-
-        yPitch = pitch / 2
-        for yy in range(1, len(y)):
-            self.assertAlmostEqual(y[yy] - y[yy - 1], yPitch, delta=0.001)
 
 
 class CartesianReactorTests(ReactorTests):
