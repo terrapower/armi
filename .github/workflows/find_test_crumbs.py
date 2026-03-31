@@ -22,10 +22,6 @@ IGNORED_OBJECTS = [
     ".tox",
     "__pycache__",
     "armi.egg-info",
-    "armi/logs/ARMI.armiRun.",
-    "armi/logs/armiRun.mpi.log",
-    "armi/tests/tutorials/case-suite/",
-    "armi/tests/tutorials/logs/",
     "logs/",
 ]
 
