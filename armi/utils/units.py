@@ -33,6 +33,7 @@ DEGREES = "degrees"
 RADIANS = "radians"
 # Units (energy)
 EV = "eV"
+MEV = "MeV"
 MW = "MW"
 WATTS = "W"
 # Units (length)
