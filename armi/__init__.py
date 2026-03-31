@@ -104,7 +104,7 @@ def isStableReleaseVersion(version=None):
     return "-" not in version
 
 
-def init(choice=None, fName=None, cs=None, skipInspection=False):
+def init(fName=None, cs=None, skipInspection=False, choice=None):
     """
     Scan a directory for armi inputs and load one to interact with.
 
@@ -120,14 +120,14 @@ def init(choice=None, fName=None, cs=None, skipInspection=False):
 
     Parameters
     ----------
-    choice : int, optional
-        Automatically run with this item out of the menu that would be produced by the existing YAML files.
     fName : str, optional
         The path to a settings file to load: my_case.yaml
     cs : Settings, optional
         If supplied, this CS object will supersede the other case input methods and use the object directly.
     skipInspection : bool, optional
         Whether or not the inputs should be checked for valid settings. Default is False.
+    choice : int, optional
+        Automatically run with this item out of the menu that would be produced by the existing YAML files.
 
     Examples
     --------
