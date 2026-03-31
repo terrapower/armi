@@ -25,6 +25,7 @@ from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.settings.fwSettings.globalSettings import CONF_GROW_TO_FULL_CORE_AFTER_LOAD
 from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -109,6 +110,8 @@ class TestSnapshotFullCoreExpan(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.td = TemporaryDirectoryChanger()
+        cls.td.__enter__()
         o, cls.symmetricReactor = loadTestReactor(
             inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
         )
@@ -124,6 +127,7 @@ class TestSnapshotFullCoreExpan(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.DB_PATH.unlink()
+        cls.td.__exit__(None, None, None)
 
     def test_fullCoreFromThirdCore(self):
         self.assertFalse(self.symmetricReactor.core.isFullCore)

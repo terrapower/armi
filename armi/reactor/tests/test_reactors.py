@@ -32,6 +32,7 @@ from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.reactor.grids.hexagonal import HexGrid
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.fwSettings.globalSettings import (
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
@@ -146,16 +147,12 @@ class HexReactorTests(ReactorTests):
     """
 
     def setUp(self):
-        self.td = directoryChangers.TemporaryDirectoryChanger()
-        self.td.__enter__()
         self.o, self.r = loadTestReactor(
             inputFilePath=TESTING_ROOT,
             inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
             customSettings={"trackAssems": True},
         )
-
-    def tearDown(self):
-        self.td.__exit__(None, None, None)
+        self.r.excore["sfp"].spatialGrid = HexGrid(unitSteps=((2, 0, 0), (0, 3, 0), (0, 0, 0)))
 
     def test_getAssembliesInCircularRing(self):
         expectedAssemsInRing = [5, 2]
@@ -686,6 +683,48 @@ class HexReactorTests(ReactorTests):
         for yy in range(1, len(y)):
             self.assertAlmostEqual(y[yy] - y[yy - 1], yPitch, delta=0.001)
 
+    def test_removeAssembliesInRing(self):
+        aLoc = [self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1) for i in range(12)]
+        assems = {
+            i: self.r.core.childrenByLocator[loc] for i, loc in enumerate(aLoc) if loc in self.r.core.childrenByLocator
+        }
+        self.r.core.removeAssembliesInRing(3, self.o.cs)
+        for i, a in assems.items():
+            self.assertNotEqual(aLoc[i], a.spatialLocator)
+            self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
+
+    def test_removeAssembly(self):
+        """Test the removeAssembly method.
+
+        In particular, the Settings here set trackAssems to True, so when an Assembly is removed
+        from the Core, it shows up in the SFP.
+        """
+        a = self.r.core[-1]  # last assembly
+        b = a[-1]  # use the last block in case we ever figure out stationary blocks
+        aLoc = a.spatialLocator
+        self.assertIsNotNone(aLoc.grid)
+        bLoc = b.spatialLocator
+        self.r.core.removeAssembly(a)
+        self.assertNotEqual(aLoc, a.spatialLocator)
+
+        # confirm the Assembly is now in the SFP
+        self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
+
+        # confirm only attached to removed assem
+        self.assertIs(bLoc, b.spatialLocator)  # block location does not change
+        self.assertIs(a, b.parent)
+        self.assertIs(a, b.spatialLocator.grid.armiObject)
+
+    def test_removeAssembliesInRingHex(self):
+        """
+        Since the test reactor is hex, we need to use the overrideCircularRingMode option
+        to remove assemblies from it.
+        """
+        self.assertEqual(self.r.core.getNumRings(), 3)
+        for ringNum in range(6, 10):
+            self.r.core.removeAssembliesInRing(ringNum, self.o.cs, overrideCircularRingMode=True)
+        self.assertEqual(self.r.core.getNumRings(), 3)
+
 
 class HexReactorReadOnlyTests(unittest.TestCase):
     """
@@ -1096,48 +1135,6 @@ class BigHexReactorTests(ReactorTests):
         self.r.core.removeAssembly(a)
         self.r.core.add(newA)
         self.assertEqual(next(self.r.core.genAssembliesAddedThisCycle()), newA)
-
-    def test_removeAssembly(self):
-        """Test the removeAssembly method.
-
-        In particular, the Settings here set trackAssems to True, so when an Assembly is removed
-        from the Core, it shows up in the SFP.
-        """
-        a = self.r.core[-1]  # last assembly
-        b = a[-1]  # use the last block in case we ever figure out stationary blocks
-        aLoc = a.spatialLocator
-        self.assertIsNotNone(aLoc.grid)
-        bLoc = b.spatialLocator
-        self.r.core.removeAssembly(a)
-        self.assertNotEqual(aLoc, a.spatialLocator)
-
-        # confirm the Assembly is now in the SFP
-        self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
-
-        # confirm only attached to removed assem
-        self.assertIs(bLoc, b.spatialLocator)  # block location does not change
-        self.assertIs(a, b.parent)
-        self.assertIs(a, b.spatialLocator.grid.armiObject)
-
-    def test_removeAssembliesInRing(self):
-        aLoc = [self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1) for i in range(12)]
-        assems = {
-            i: self.r.core.childrenByLocator[loc] for i, loc in enumerate(aLoc) if loc in self.r.core.childrenByLocator
-        }
-        self.r.core.removeAssembliesInRing(3, self.o.cs)
-        for i, a in assems.items():
-            self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
-
-    def test_removeAssembliesInRingHex(self):
-        """
-        Since the test reactor is hex, we need to use the overrideCircularRingMode option
-        to remove assemblies from it.
-        """
-        self.assertEqual(self.r.core.getNumRings(), 9)
-        for ringNum in range(6, 10):
-            self.r.core.removeAssembliesInRing(ringNum, self.o.cs, overrideCircularRingMode=True)
-        self.assertEqual(self.r.core.getNumRings(), 5)
 
     def test_createFreshFeed(self):
         # basic creation
