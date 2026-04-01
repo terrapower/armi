@@ -275,6 +275,7 @@ class HexReactorTests(ReactorTests):
         self.assertIn("003-002-002", self.r.core.blocksByLocName)
 
     def test_setPitchUniform(self):
+        # 1. Original reactor state
         originalPitch = 16.142
         hmMassBefore = 0.0
         solidMassBefore = 0.0
@@ -289,7 +290,7 @@ class HexReactorTests(ReactorTests):
                     else:
                         liquidMassBefore += comp.getMass()
 
-        # decrease pitch size
+        # 2. decrease pitch size
         hmMassAfter = 0.0
         solidMassAfter = 0.0
         liquidMassAfter = 0.0
@@ -313,7 +314,7 @@ class HexReactorTests(ReactorTests):
         self.assertAlmostEqual(solidMassBefore, solidMassAfter, delta=1e-8)
         self.assertLessEqual(liquidMassAfter, liquidMassBefore)
 
-        # increase pitch size back to original
+        # 3. increase pitch size back to original
         hmMassFinal = 0.0
         solidMassFinal = 0.0
         liquidMassFinal = 0.0
@@ -330,10 +331,10 @@ class HexReactorTests(ReactorTests):
                     else:
                         liquidMassFinal += comp.getMass()
 
-        # verify HM mass has not changed
+        # verify HM mass goes back to original
         self.assertAlmostEqual(hmMassBefore, hmMassFinal, delta=1e-8)
 
-        # check that solid masses and liquid masses return to the normal state
+        # check that solid masses and liquid masses return to original
         self.assertAlmostEqual(solidMassBefore, solidMassFinal, delta=1e-8)
         self.assertAlmostEqual(liquidMassBefore, liquidMassFinal)
 
