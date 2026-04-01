@@ -275,9 +275,67 @@ class HexReactorTests(ReactorTests):
         self.assertIn("003-002-002", self.r.core.blocksByLocName)
 
     def test_setPitchUniform(self):
-        self.r.core.setPitchUniform(0.0)
+        originalPitch = 16.142
+        hmMassBefore = 0.0
+        solidMassBefore = 0.0
+        liquidMassBefore = 0.0
         for b in self.r.core.iterBlocks():
-            self.assertEqual(b.getPitch(), 0.0)
+            self.assertEqual(b.getPitch(), originalPitch)
+            for c in b:
+                hmMassBefore += c.getHMMass()
+                for comp in c:
+                    if comp.containsSolidMaterial():
+                        solidMassBefore += comp.getMass()
+                    else:
+                        liquidMassBefore += comp.getMass()
+
+        # decrease pitch size
+        hmMassAfter = 0.0
+        solidMassAfter = 0.0
+        liquidMassAfter = 0.0
+        self.r.core.setPitchUniform(4.0)
+
+        for b in self.r.core.iterBlocks():
+            # verify pitch has correctly reduced
+            self.assertEqual(b.getPitch(), 4.0)
+            for c in b:
+                hmMassAfter += c.getHMMass()
+                for comp in c:
+                    if comp.containsSolidMaterial():
+                        solidMassAfter += comp.getMass()
+                    else:
+                        liquidMassAfter += comp.getMass()
+
+        # verify HM mass has not changed
+        self.assertAlmostEqual(hmMassBefore, hmMassAfter, delta=1e-8)
+
+        # check that solid masses and liquid masses return to the normal state
+        self.assertAlmostEqual(solidMassBefore, solidMassAfter, delta=1e-8)
+        self.assertLessEqual(liquidMassAfter, liquidMassBefore)
+
+        # increase pitch size back to original
+        hmMassFinal = 0.0
+        solidMassFinal = 0.0
+        liquidMassFinal = 0.0
+        self.r.core.setPitchUniform(originalPitch)
+
+        for b in self.r.core.iterBlocks():
+            # verify pitch has correctly reduced
+            self.assertEqual(b.getPitch(), originalPitch)
+            for c in b:
+                hmMassFinal += c.getHMMass()
+                for comp in c:
+                    if comp.containsSolidMaterial():
+                        solidMassFinal += comp.getMass()
+                    else:
+                        liquidMassFinal += comp.getMass()
+
+        # verify HM mass has not changed
+        self.assertAlmostEqual(hmMassBefore, hmMassFinal, delta=1e-8)
+
+        # check that solid masses and liquid masses return to the normal state
+        self.assertAlmostEqual(solidMassBefore, solidMassFinal, delta=1e-8)
+        self.assertAlmostEqual(liquidMassBefore, liquidMassFinal)
 
     def test_normalizeNames(self):
         # these are the correct, normalized names
