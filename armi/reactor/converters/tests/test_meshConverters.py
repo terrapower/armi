@@ -18,15 +18,16 @@ import math
 import unittest
 
 from armi.reactor.converters import geometryConverters, meshConverters
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 
 
 class TestRZReactorMeshConverter(unittest.TestCase):
     """Loads a hex reactor and converts its mesh to RZTheta coordinates."""
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )
         self._converterSettings = {
             "uniformThetaMesh": True,
             "thetaBins": 1,
@@ -36,8 +37,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         }
 
     def test_meshByRingCompAxialBinsSmallCore(self):
-        expectedRadialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
-        expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
+        expectedRadialMesh = [2, 3, 4, 4]
+        expectedAxialMesh = [15.0, 35.32, 226.46]
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(self._converterSettings)
@@ -48,8 +49,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
 
     def test_meshByRingCompoAxialCoordsSmallCore(self):
-        expectedRadialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
-        expectedAxialMesh = [25.0, 50.0, 175.0]
+        expectedRadialMesh = [2, 3, 4, 4]
+        expectedAxialMesh = [25.0, 50.0, 226.46]
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
@@ -62,8 +63,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
 
     def test_meshByRingCompAxialFlagsSmallCore(self):
-        expectedRadialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
-        expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
+        expectedRadialMesh = [2, 3, 4, 4]
+        expectedAxialMesh = [15.0, 35.32, 226.46]
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(self._converterSettings)
@@ -76,7 +77,7 @@ class TestRZReactorMeshConverter(unittest.TestCase):
     def _growReactor(self):
         modifier = geometryConverters.FuelAssemNumModifier(self.o.cs)
         modifier.numFuelAssems = 1
-        modifier.ringsToAdd = 9 * ["igniter fuel"] + 1 * ["radial shield"]
+        modifier.ringsToAdd = 3 * ["inner fuel"] + ["middle core fuel"]
         modifier.convert(self.r)
         self._converterSettingsLargerCore = {
             "uniformThetaMesh": True,
@@ -88,8 +89,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
 
     def test_meshByRingCompAxialBinsLargeCore(self):
         self._growReactor()
-        expectedRadialMesh = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13]
-        expectedAxialMesh = [50.0, 100.0, 175.0]
+        expectedRadialMesh = [2, 3, 4, 5, 6]
+        expectedAxialMesh = [35.32, 226.46]
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
@@ -103,8 +104,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
 
     def test_meshByRingCompAxialCoordsLargeCore(self):
         self._growReactor()
-        expectedRadialMesh = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13]
-        expectedAxialMesh = [25.0, 30.0, 60.0, 90.0, 105.2151, 152.0, 175.0]
+        expectedRadialMesh = [2, 3, 4, 5, 6]
+        expectedAxialMesh = [25.0, 30.0, 60.0, 90.0, 105.2151, 152.0, 226.46]
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
@@ -118,8 +119,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
 
     def test_meshByRingCompAxialFlagsLargeCore(self):
         self._growReactor()
-        expectedRadialMesh = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13]
-        expectedAxialMesh = [25.0, 100.0, 175.0]
+        expectedRadialMesh = [2, 3, 4, 5, 6]
+        expectedAxialMesh = [15.0, 35.32, 226.46]
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
