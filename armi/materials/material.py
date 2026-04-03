@@ -18,6 +18,7 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
+import copy
 import pickle
 
 import numpy as np
@@ -138,6 +139,24 @@ class Material(MatPropsMaterial):
         Since we are unpickling in the __new__ constructor, we need this helper to avoid recursion.
         """
         return (object.__new__, (self.__class__,), self.__dict__)
+
+    def __copy__(self):
+        """Fast shallow copy that avoids the pickle factory."""
+        cls = self.__class__
+        new_obj = cls.__new__(cls)  # don't call __init__
+        new_obj.__dict__ = self.__dict__.copy()
+        return new_obj
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        new_obj = cls.__new__(cls)  # skip __init__
+        memo[id(self)] = new_obj  # avoid infinite recursion
+
+        # Deep copy each attribute
+        for k, v in self.__dict__.items():
+            setattr(new_obj, k, copy.deepcopy(v, memo))
+
+        return new_obj
 
     def getName(self):
         """Duplicate of name property, kept for backwards compatibility."""
