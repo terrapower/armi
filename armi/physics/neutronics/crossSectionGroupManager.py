@@ -611,8 +611,15 @@ class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
             theseNucs = set(nuc for nuc, ndens in c.getNumberDensities().items() if ndens > 0.0)
             thoseNucs = set(nuc for nuc, ndens in repC.getNumberDensities().items() if ndens > 0.0)
 
+            # in the nuclide list of the component, but at a number density of 0.0
+            # treat this more permissively -- i.e., it could be considered as either having or not having it
+            theseNucsAtZero = set(nuc for nuc, ndens in c.getNumberDensities().items() if ndens == 0.0)
+            thoseNucsAtZero = set(nuc for nuc, ndens in c.getNumberDensities().items() if ndens == 0.0)
+
             # check for any differences between which `consistentNucs` the components have
-            diffNucs = theseNucs.symmetric_difference(thoseNucs).intersection(consistentNucs)
+            diffNucsNonZero = theseNucs.symmetric_difference(thoseNucs).intersection(consistentNucs)
+            diffNucsAtZero = theseNucsAtZero.symmetric_difference(thoseNucsAtZero).intersection(consistentNucs)
+            diffNucs = diffNucsNonZero.symmetric_difference(diffNucsAtZero)
             if diffNucs:
                 compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
                 raise ValueError(
