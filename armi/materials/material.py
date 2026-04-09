@@ -140,14 +140,14 @@ class Material(MatPropsMaterial):
         """
         return (object.__new__, (self.__class__,), self.__dict__)
 
-    def __copy__(self):
+    def __copy__(self):  # TODO: Doesn't seem to help.
         """Fast shallow copy that avoids the pickle factory."""
         cls = self.__class__
         new_obj = cls.__new__(cls)  # don't call __init__
         new_obj.__dict__ = self.__dict__.copy()
         return new_obj
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo):  # TODO: Doesn't seem to help.
         cls = self.__class__
         new_obj = cls.__new__(cls)  # skip __init__
         memo[id(self)] = new_obj  # avoid infinite recursion
