@@ -660,9 +660,28 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
         negligibleNucDiffBlock.add(clad)
         negligibleNucDiffBlock.add(coolant)
 
+        # nuclides at zero number density should be okay
+        zeroNucBlock = HexBlock("blockNucZero")
+        mixedDensities = {
+            "control": baseComponents[0].getNumberDensities(),
+            "clad": baseComponents[2].getNumberDensities(),
+            "coolant": baseComponents[4].getNumberDensities(),
+        }
+        control, clad, coolant = self._makeComponents(7, mixedDensities)
+        # set some nuclide number densities to zero
+        control.setNumberDensity("U235", 0.0)
+        control.setNumberDensity("O16", 0.0)
+        clad.setNumberDensity("FE56", 0.0)
+        coolant.setNumberDensity("NA23", 0.0)
+        coolant.setNumberDensity("PU239", 0.0)
+        zeroNucBlock.add(control)
+        zeroNucBlock.add(clad)
+        zeroNucBlock.add(coolant)
+
         blockCollection._checkComponentConsistency(refBlock, matchingBlock)
         blockCollection._checkComponentConsistency(refBlock, unsortedBlock)
         blockCollection._checkComponentConsistency(refBlock, negligibleNucDiffBlock)
+        blockCollection._checkComponentConsistency(refBlock, zeroNucBlock)
         for b in (nonMatchingMultBlock, nonMatchingLengthBlock, nucDiffBlock):
             with self.assertRaises(ValueError):
                 blockCollection._checkComponentConsistency(refBlock, b)

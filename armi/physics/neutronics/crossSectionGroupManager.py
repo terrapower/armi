@@ -120,6 +120,39 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
         raise
 
 
+def _checkConsistentNuclides(thisComp, repComp):
+    """
+    Check that thisComp has the same set of nuclides as the analogous component in the
+    representative block.
+
+    This check is somewhat permissive in that it allows for the two components to differ
+    in nuclides where one of them is at a zero number density.
+
+    Warning
+    -------
+    This only checks ``consistentNucs`` for ones that are important in SFRs.
+    """
+    consistentNucs = {"PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"}
+    # ignore anything with zero number density
+    theseNucs = set(nuc for nuc, ndens in thisComp.getNumberDensities().items() if ndens > 0.0)
+    thoseNucs = set(nuc for nuc, ndens in repComp.getNumberDensities().items() if ndens > 0.0)
+
+    # in the nuclide list of the component, but at a number density of 0.0
+    # treat this more permissively -- i.e., it could be considered as either having or not having it
+    theseNucsAtZero = set(nuc for nuc, ndens in thisComp.getNumberDensities().items() if ndens == 0.0)
+    thoseNucsAtZero = set(nuc for nuc, ndens in repComp.getNumberDensities().items() if ndens == 0.0)
+
+    # check for any differences between which `consistentNucs` the components have
+    diffNucsNonZero = theseNucs.symmetric_difference(thoseNucs).intersection(consistentNucs)
+    diffNucsAtZero = theseNucsAtZero.symmetric_difference(thoseNucsAtZero).intersection(consistentNucs)
+    diffNucs = diffNucsNonZero - diffNucsAtZero
+    if diffNucs:
+        raise ValueError(
+            f"Component {thisComp} in block {repComp} and component {thisComp} in block {thisComp.parent} are in the "
+            f"same location, but nuclides differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
+        )
+
+
 class BlockCollection(list):
     """
     Controls which blocks are representative of a particular cross section type/BU group.
@@ -596,25 +629,14 @@ class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
         if len(b) != len(repBlock):
             raise ValueError(f"Blocks {b} and {repBlock} have differing number of components and cannot be homogenized")
 
-        # NOTE: We are using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is
-        # undesirably SFR-centric. This should be generalized in the future, if possible.
-        consistentNucs = {"PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"}
+        # NOTE: We are using Fe-56 as a proxy for structure and Na-23 as proxy for coolant, which
+        # is undesirably SFR-centric. This should be generalized in the future, if possible.
         for c, repC in zip(sorted(b), sorted(repBlock)):
-            compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
+            _checkConsistentNuclides(c, repC)
             if c.p.mult != repC.p.mult:
                 raise ValueError(
-                    f"{compString} must have the same multiplicity, but they have. {repC.p.mult} "
-                    f"and {c.p.mult}, respectively."
-                )
-
-            theseNucs = set(c.getNuclides())
-            thoseNucs = set(repC.getNuclides())
-            # check for any differences between which `consistentNucs` the components have
-            diffNucs = theseNucs.symmetric_difference(thoseNucs).intersection(consistentNucs)
-            if diffNucs:
-                raise ValueError(
-                    f"{compString} are in the same location, but nuclides "
-                    f"differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
+                    f"Component {repC} in block {repBlock} and component {c} in block {b} must have the same "
+                    f"multiplicity, but they have {repC.p.mult} and {c.p.mult}, respectively."
                 )
 
     def _getAverageComponentNucs(self, components, bWeights):
@@ -768,14 +790,9 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
         TypeError
             When the shape of the component is not a rectangle.
-
-        Warning
-        -------
-        This only checks ``consistentNucs`` for ones that are important in ZPPR and BFS.
         """
         comps = b if components is None else components
 
-        consistentNucs = ["PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"]
         for c, repC in zip(comps, repBlock):
             if not isinstance(c, basicShapes.Rectangle):
                 raise TypeError(
@@ -789,15 +806,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
                     "thermal expansion".format(compString)
                 )
 
-            theseNucs = set(c.getNuclides())
-            thoseNucs = set(repC.getNuclides())
-            for nuc in consistentNucs:
-                if (nuc in theseNucs) != (nuc in thoseNucs):
-                    raise ValueError(
-                        "{} are in the same location, but are not consistent in nuclide {}. \n{} \n{}".format(
-                            compString, nuc, theseNucs, thoseNucs
-                        )
-                    )
+            _checkConsistentNuclides(c, repC)
             if c.p.mult != repC.p.mult:
                 raise ValueError("{} must have the same multiplicity to homogenize".format(compString))
 
