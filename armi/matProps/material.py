@@ -36,7 +36,7 @@ class Material:
     validFileFormatVersions = [3.0, "TESTS"]
     YAML_PATH = None
 
-    def __init__(self):
+    def __init__(self, yamlPath=None):
         """Constructor for Material class."""
         # during unpickling, we do not want to reload the YAML file
         if hasattr(self, "materialType") and self.materialType is not None:
@@ -57,12 +57,12 @@ class Material:
         self._sha1 = None
         """SHA1 value of parsed material file."""
 
-        self.yamlPath = None
+        self.yamlPath = yamlPath if yamlPath else self.YAML_PATH
         """Path to the YAML file that was loaded to build this instance."""
 
         # Load the material, if the YAML was provided.
-        if self.YAML_PATH:
-            self.loadFile(self.YAML_PATH)
+        if self.yamlPath:
+            self.loadFile(self.yamlPath)
 
     def __repr__(self):
         """Provides string representation for Material class."""

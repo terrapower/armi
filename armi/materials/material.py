@@ -18,9 +18,6 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
-import copy
-import pickle
-
 import numpy as np
 
 from armi import runLog
@@ -35,7 +32,7 @@ from armi.utils.units import getTc, getTk
 FAIL_ON_RANGE = True
 
 # Need for an memoization optimization to cache YAML-mased materials
-PICKLED_YAML_MATS = {}
+MAT_MEMOS = {}
 
 
 class Material(MatPropsMaterial):
@@ -94,27 +91,17 @@ class Material(MatPropsMaterial):
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
-    def __new__(cls):
-        # split the creation of new Material objects between YAML/cached and pure Python
-        if cls.YAML_PATH is not None:
-            nameStub = f"{cls.YAML_PATH}:{cls.__name__}"
-            # handle matProps / YAML materials
-            if nameStub not in PICKLED_YAML_MATS:
-                mat = super().__new__(cls)
-                Material.__init__(mat)
-                PICKLED_YAML_MATS[nameStub] = pickle.dumps(mat)
-                return mat
-            else:
-                return pickle.loads(PICKLED_YAML_MATS[nameStub])
-        else:
-            # pure Python materials
-            return super().__new__(cls)
-
     def __init__(self):
-        MatPropsMaterial.__init__(self)
-        if hasattr(self, "cached"):
-            self.setDefaultMassFracs()
-            return
+        if self.YAML_PATH is not None:
+            nameStub = f"{self.YAML_PATH}:{self.__class__.__name__}"
+            if nameStub in MAT_MEMOS:
+                self.__dict__.update(MAT_MEMOS[nameStub].__dict__)
+            else:
+                mat = MatPropsMaterial(self.YAML_PATH)
+                MAT_MEMOS[nameStub] = mat
+                self.__dict__.update(mat.__dict__)
+        else:
+            MatPropsMaterial.__init__(self)
 
         self.parent = None
         self.massFrac = {}
@@ -139,24 +126,6 @@ class Material(MatPropsMaterial):
         Since we are unpickling in the __new__ constructor, we need this helper to avoid recursion.
         """
         return (object.__new__, (self.__class__,), self.__dict__)
-
-    def __copy__(self):  # TODO: Doesn't seem to help.
-        """Fast shallow copy that avoids the pickle factory."""
-        cls = self.__class__
-        new_obj = cls.__new__(cls)  # don't call __init__
-        new_obj.__dict__ = self.__dict__.copy()
-        return new_obj
-
-    def __deepcopy__(self, memo):  # TODO: Doesn't seem to help.
-        cls = self.__class__
-        new_obj = cls.__new__(cls)  # skip __init__
-        memo[id(self)] = new_obj  # avoid infinite recursion
-
-        # Deep copy each attribute
-        for k, v in self.__dict__.items():
-            setattr(new_obj, k, copy.deepcopy(v, memo))
-
-        return new_obj
 
     def getName(self):
         """Duplicate of name property, kept for backwards compatibility."""
