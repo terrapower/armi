@@ -147,9 +147,9 @@ def _checkConsistentNuclides(thisComp, repComp):
     diffNucsAtZero = theseNucsAtZero.symmetric_difference(thoseNucsAtZero).intersection(consistentNucs)
     diffNucs = diffNucsNonZero - diffNucsAtZero
     if diffNucs:
-        compString = f"Component {thisComp} in block {repComp} and component {thisComp} in block {thisComp.parent}"
         raise ValueError(
-            f"{compString} are in the same location, but nuclides differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
+            f"Component {thisComp} in block {repComp} and component {thisComp} in block {thisComp.parent} are in the "
+            f"same location, but nuclides differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
         )
 
 
@@ -634,10 +634,9 @@ class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
         for c, repC in zip(sorted(b), sorted(repBlock)):
             _checkConsistentNuclides(c, repC)
             if c.p.mult != repC.p.mult:
-                compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
                 raise ValueError(
-                    f"{compString} must have the same multiplicity, but they have. {repC.p.mult} "
-                    f"and {c.p.mult}, respectively."
+                    f"Component {repC} in block {repBlock} and component {c} in block {b} must have the same "
+                    f"multiplicity, but they have {repC.p.mult} and {c.p.mult}, respectively."
                 )
 
     def _getAverageComponentNucs(self, components, bWeights):
