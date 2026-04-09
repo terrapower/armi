@@ -131,8 +131,9 @@ def buildTestAssemblies():
 
 
 class MaterialInAssembly_TestCase(unittest.TestCase):
-    def setUp(self):
-        self.assembly, self.assembly2, self.assembly3, self.assembly4 = buildTestAssemblies()
+    @classmethod
+    def setUpClass(cls):
+        cls.assembly, cls.assembly2, cls.assembly3, cls.assembly4 = buildTestAssemblies()
 
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
@@ -163,7 +164,309 @@ def makeTestAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.
     return a
 
 
-class Assembly_TestCase(unittest.TestCase):
+class AssemblyReadOnlyTests(unittest.TestCase):
+    """These tests of Assemblies do not modify the test assembly, which can be created in a setUpClass method."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = "A0015"
+        cls.assemNum = 15
+        cls.height = 10
+        cls.cs = settings.Settings()
+        # Print nothing to the screen that would normally go to the log.
+        runLog.setVerbosity("error")
+
+        cls.r = tests.getEmptyHexReactor()
+        cls.r.core.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
+
+        cls.assembly = makeTestAssembly(NUM_BLOCKS, cls.assemNum, r=cls.r)
+
+        # Use these if they are needed
+        cls.blockParams = {
+            "height": cls.height,
+            "bondRemoved": 0.0,
+            "envGroupNum": 0,
+            "buLimit": 35,
+            "buRate": 0.0,
+            "eqRegion": -1,
+            "id": 212.0,
+            "pdens": 10.0,
+            "percentBu": 25.3,
+            "power": 100000.0,
+            "residence": 4.0,
+            "smearDensity": 0.6996721711791459,
+            "timeToLimit": 2.7e5,
+            "xsTypeNum": 65,
+            "zbottom": 97.3521,
+            "ztop": 111.80279999999999,
+        }
+
+        # add some blocks with a component
+        cls.blockList = []
+        for i in range(NUM_BLOCKS):
+            b = blocks.HexBlock("TestHexBlock")
+            b.setHeight(cls.height)
+
+            cls.hexDims = {
+                "Tinput": 273.0,
+                "Thot": 273.0,
+                "op": 0.76,
+                "ip": 0.0,
+                "mult": 1.0,
+            }
+            h = components.Hexagon("fuel", "UZr", **cls.hexDims)
+
+            # non-flaggy name important for testing
+            b.setType("igniter fuel unitst")
+            b.add(h)
+            b.parent = cls.assembly
+            b.setName(b.makeName(cls.assembly.getNum(), i))
+            cls.assembly.add(b)
+            cls.blockList.append(b)
+
+        cls.r.core.add(cls.assembly)
+        cls.assembly.calculateZCoords()
+
+    def test_isOnWhichSymmetryLine(self):
+        line = self.assembly.isOnWhichSymmetryLine()
+        self.assertEqual(line, 2)
+
+    def test_iter(self):
+        cur = []
+        for block in self.assembly:
+            cur.append(block)
+        ref = self.blockList
+        self.assertEqual(cur, ref)
+
+    def test_len(self):
+        cur = len(self.assembly)
+        ref = len(self.blockList)
+        self.assertEqual(cur, ref)
+
+    def test_getName(self):
+        cur = self.assembly.getName()
+        ref = self.name
+        self.assertEqual(cur, ref)
+
+    def test_getNum(self):
+        cur = self.assembly.getNum()
+        ref = self.assemNum
+        self.assertEqual(cur, ref)
+
+    def test_getLocation(self):
+        """
+        Test for getting string location of assembly.
+
+        .. test:: Assembly location is retrievable.
+            :id: T_ARMI_ASSEM_POSI0
+            :tests: R_ARMI_ASSEM_POSI
+        """
+        cur = self.assembly.getLocation()
+        ref = str("005-003")
+        self.assertEqual(cur, ref)
+
+    def test_getArea(self):
+        """Tests area calculation for hex assembly."""
+        # Default case: for assemblies with no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertIsNone(a.getArea())
+
+        # more realistic case: a hex block/assembly
+        cur = self.assembly.getArea()
+        ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
+        self.assertAlmostEqual(cur, ref, places=6)
+
+    def test_getVolume(self):
+        """Tests volume calculation for hex assembly."""
+        cur = self.assembly.getVolume()
+        ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
+        places = 6
+        self.assertAlmostEqual(cur, ref, places=places)
+
+    def test_getAxialMesh(self):
+        cur = self.assembly.getAxialMesh()
+        ref = [i * self.height + self.height for i in range(NUM_BLOCKS)]
+        self.assertEqual(cur, ref)
+
+    def test_calculateZCoords(self):
+        self.assembly.calculateZCoords()
+
+        places = 6
+        bottom = 0.0
+        for b in self.assembly:
+            top = bottom + self.height
+
+            cur = b.p.z
+            ref = bottom + (top - bottom) / 2.0
+            self.assertAlmostEqual(cur, ref, places=places)
+
+            cur = b.p.zbottom
+            ref = bottom
+            self.assertAlmostEqual(cur, ref, places=places)
+
+            cur = b.p.ztop
+            ref = top
+            self.assertAlmostEqual(cur, ref, places=places)
+
+            bottom = top
+
+    def test_getTotalHeight(self):
+        cur = self.assembly.getTotalHeight()
+        ref = self.height * NUM_BLOCKS
+        places = 6
+        self.assertAlmostEqual(cur, ref, places=places)
+
+    def test_getHeight(self):
+        """Test height of assembly calculation."""
+        cur = self.assembly.getHeight()
+        ref = self.height * NUM_BLOCKS
+        places = 6
+        self.assertAlmostEqual(cur, ref, places=places)
+
+    def test_getReactiveHeight(self):
+        self.assembly[2].getComponent(Flags.FUEL).adjustMassEnrichment(0.01)
+        self.assembly[2].setNumberDensity("PU239", 0.0)
+        bottomElevation, reactiveHeight = self.assembly.getReactiveHeight(enrichThresh=0.02)
+        self.assertEqual(bottomElevation, 0.0)
+        self.assertEqual(reactiveHeight, 20.0)
+
+    def test_hasFlags(self):
+        self.assembly.setType("fuel")
+
+        cur = self.assembly.hasFlags(Flags.FUEL)
+        self.assertTrue(cur)
+
+    def test_getBlocks(self):
+        cur = self.assembly.getBlocks()
+        ref = self.blockList
+        self.assertEqual(cur, ref)
+
+    def test_getFirstBlock(self):
+        cur = self.assembly.getFirstBlock()
+        ref = self.blockList[0]
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getFirstBlockByType(self):
+        b = self.assembly.getFirstBlockByType("igniter fuel unitst")
+        self.assertEqual(b.getType(), "igniter fuel unitst")
+        b = self.assembly.getFirstBlockByType("i do not exist")
+        self.assertIsNone(b)
+
+    def test_getDim(self):
+        """Tests dimensions are retrievable."""
+        # quick test, if there are no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertIsNone(a.getDim(Flags.FUEL, "op"))
+
+        # more interesting test, with blocks
+        cur = self.assembly.getDim(Flags.FUEL, "op")
+        ref = self.hexDims["op"]
+        places = 6
+        self.assertAlmostEqual(cur, ref, places=places)
+
+    def test_getDominantMaterial(self):
+        cur = self.assembly.getDominantMaterial(Flags.FUEL).getName()
+        ref = "UZr"
+        self.assertEqual(cur, ref)
+        self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
+
+    def test_countBlocksOfType(self):
+        cur = self.assembly.countBlocksWithFlags(Flags.IGNITER | Flags.FUEL)
+        self.assertEqual(cur, 3)
+
+    def test_iteration(self):
+        """Tests the ability to doubly-loop over assemblies (under development)."""
+        a = self.assembly
+
+        for bi, b in enumerate(a):
+            if bi == 2:
+                h = 0.0
+                for bi2, b2 in enumerate(a):
+                    if bi2 == 0:
+                        self.assertEqual(
+                            b2,
+                            a[0],
+                            msg="First block in new iteration is not the first block of assembly",
+                        )
+                    h += b2.getHeight()
+
+            # make sure the loop continues with the right counter
+            self.assertEqual(
+                b,
+                a[bi],
+                msg="The {0}th block in the loop ({1}) is not equal to the {0}th block in the assembly {2}".format(
+                    bi, b, "dummy"
+                ),
+            )
+
+    def test_getBlocksAndZ(self):
+        blocksAndCenters = self.assembly.getBlocksAndZ()
+        lastZ = -1.0
+        for b, c in blocksAndCenters:
+            self.assertIn(b, self.assembly.getBlocks())
+            self.assertGreater(c, lastZ)
+            lastZ = c
+
+        self.assertRaises(TypeError, self.assembly.getBlocksAndZ, 1.0)
+
+    def test_getBlocksBetweenElevations(self):
+        # assembly should have 3 blocks of 10 cm in it
+        blocksAndHeights = self.assembly.getBlocksBetweenElevations(0, 10)
+        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 10.0))
+
+        blocksAndHeights = self.assembly.getBlocksBetweenElevations(0, 5.0)
+        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 5.0))
+
+        blocksAndHeights = self.assembly.getBlocksBetweenElevations(1.0, 5.0)
+        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 4.0))
+
+        blocksAndHeights = self.assembly.getBlocksBetweenElevations(9.0, 21.0)
+        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 1.0))
+        self.assertEqual(blocksAndHeights[1], (self.assembly[1], 10.0))
+        self.assertEqual(blocksAndHeights[2], (self.assembly[2], 1.0))
+
+        blocksAndHeights = self.assembly.getBlocksBetweenElevations(-10, 1000.0)
+        self.assertEqual(len(blocksAndHeights), len(self.assembly))
+        self.assertAlmostEqual(sum([height for _b, height in blocksAndHeights]), self.assembly.getHeight())
+
+    def test_hasContinuousCoolantChannel(self):
+        self.assertFalse(self.assembly.hasContinuousCoolantChannel())
+        modifiedAssem = self.assembly
+        coolantDims = {"Tinput": 273.0, "Thot": 273.0}
+        h = components.DerivedShape("coolant", "Sodium", **coolantDims)
+        for b in modifiedAssem:
+            b.add(h)
+        self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
+
+    def test_carestianCoordinates(self):
+        """Check the coordinates of the assembly within the core with a CarestianGrid.
+
+        .. test:: Cartesian coordinates are retrievable.
+            :id: T_ARMI_ASSEM_POSI1
+            :tests: R_ARMI_ASSEM_POSI
+        """
+        a = makeTestAssembly(
+            numBlocks=1,
+            assemNum=1,
+            spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
+        )
+        self.assertEqual(a.coords(), (2.0, 2.0))
+
+    def test_assem_hex_type(self):
+        """Test that all children of a hex assembly are hexagons."""
+        for b in self.assembly:
+            # For a hex assem, confirm they are of type "Hexagon"
+            pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
+            self.assertEqual(pitch_comp_type.__name__, "Hexagon")
+
+    def test_getElevationBoundariesByBlockType(self):
+        elevations = self.assembly.getElevationBoundariesByBlockType()
+        self.assertEqual(elevations, [0.0, 10.0, 10.0, 20.0, 20.0, 30.0])
+
+
+class AssemblyTests(unittest.TestCase):
+    """These tests of Assemblies modify the test assembly, so each unit tests needs a fresh test assembly."""
+
     def setUp(self):
         self.name = "A0015"
         self.assemNum = 15
@@ -223,10 +526,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.r.core.add(self.assembly)
         self.assembly.calculateZCoords()
 
-    def test_isOnWhichSymmetryLine(self):
-        line = self.assembly.isOnWhichSymmetryLine()
-        self.assertEqual(line, 2)
-
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
 
@@ -242,18 +541,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
-
-    def test_iter(self):
-        cur = []
-        for block in self.assembly:
-            cur.append(block)
-        ref = self.blockList
-        self.assertEqual(cur, ref)
-
-    def test_len(self):
-        cur = len(self.assembly)
-        ref = len(self.blockList)
-        self.assertEqual(cur, ref)
 
     def test_append(self):
         b = blocks.HexBlock("TestBlock")
@@ -335,46 +622,6 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual(self.assembly.p["chargeFis"] / assemblyParams["chargeFis"], 1 / 3)
             self.assertEqual(self.assembly.p["chargeTime"] / assemblyParams["chargeTime"], 1)
 
-    def test_getName(self):
-        cur = self.assembly.getName()
-        ref = self.name
-        self.assertEqual(cur, ref)
-
-    def test_getNum(self):
-        cur = self.assembly.getNum()
-        ref = self.assemNum
-        self.assertEqual(cur, ref)
-
-    def test_getLocation(self):
-        """
-        Test for getting string location of assembly.
-
-        .. test:: Assembly location is retrievable.
-            :id: T_ARMI_ASSEM_POSI0
-            :tests: R_ARMI_ASSEM_POSI
-        """
-        cur = self.assembly.getLocation()
-        ref = str("005-003")
-        self.assertEqual(cur, ref)
-
-    def test_getArea(self):
-        """Tests area calculation for hex assembly."""
-        # Default case: for assemblies with no blocks
-        a = HexAssembly("TestAssem", assemNum=10)
-        self.assertIsNone(a.getArea())
-
-        # more realistic case: a hex block/assembly
-        cur = self.assembly.getArea()
-        ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
-        self.assertAlmostEqual(cur, ref, places=6)
-
-    def test_getVolume(self):
-        """Tests volume calculation for hex assembly."""
-        cur = self.assembly.getVolume()
-        ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
     def test_adjustResolution(self):
         # Make a second assembly with 4 times the resolution
         assemNum2 = self.assemNum * 4
@@ -397,53 +644,6 @@ class Assembly_TestCase(unittest.TestCase):
         ref = self.height / 4.0
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_getAxialMesh(self):
-        cur = self.assembly.getAxialMesh()
-        ref = [i * self.height + self.height for i in range(NUM_BLOCKS)]
-        self.assertEqual(cur, ref)
-
-    def test_calculateZCoords(self):
-        self.assembly.calculateZCoords()
-
-        places = 6
-        bottom = 0.0
-        for b in self.assembly:
-            top = bottom + self.height
-
-            cur = b.p.z
-            ref = bottom + (top - bottom) / 2.0
-            self.assertAlmostEqual(cur, ref, places=places)
-
-            cur = b.p.zbottom
-            ref = bottom
-            self.assertAlmostEqual(cur, ref, places=places)
-
-            cur = b.p.ztop
-            ref = top
-            self.assertAlmostEqual(cur, ref, places=places)
-
-            bottom = top
-
-    def test_getTotalHeight(self):
-        cur = self.assembly.getTotalHeight()
-        ref = self.height * NUM_BLOCKS
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_getHeight(self):
-        """Test height of assembly calculation."""
-        cur = self.assembly.getHeight()
-        ref = self.height * NUM_BLOCKS
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_getReactiveHeight(self):
-        self.assembly[2].getComponent(Flags.FUEL).adjustMassEnrichment(0.01)
-        self.assembly[2].setNumberDensity("PU239", 0.0)
-        bottomElevation, reactiveHeight = self.assembly.getReactiveHeight(enrichThresh=0.02)
-        self.assertEqual(bottomElevation, 0.0)
-        self.assertEqual(reactiveHeight, 20.0)
 
     def test_getFissileMass(self):
         for b in self.assembly:
@@ -626,32 +826,18 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual(b.core, None)
             self.assertEqual(b.parent, assembly2)
 
-    def test_hasFlags(self):
-        self.assembly.setType("fuel")
+    def test_pinPlenumVolume(self):
+        """Test the volume of a pin in the assembly's plenum."""
+        pinPlenumVolume = 5.951978e-05
 
-        cur = self.assembly.hasFlags(Flags.FUEL)
-        self.assertTrue(cur)
+        self._setup_blueprints("refSmallReactorBase.yaml")
+        assembly = self.r.blueprints.assemblies.get("igniter fuel")
+        self.assertAlmostEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 
     def test_renameBlocksAccordingToAssemblyNum(self):
         self.assembly.p.assemNum = 55
         self.assembly.renameBlocksAccordingToAssemblyNum()
         self.assertIn("{0:04d}".format(self.assembly.getNum()), self.assembly[1].getName())
-
-    def test_getBlocks(self):
-        cur = self.assembly.getBlocks()
-        ref = self.blockList
-        self.assertEqual(cur, ref)
-
-    def test_getFirstBlock(self):
-        cur = self.assembly.getFirstBlock()
-        ref = self.blockList[0]
-        self.assertAlmostEqual(cur, ref)
-
-    def test_getFirstBlockByType(self):
-        b = self.assembly.getFirstBlockByType("igniter fuel unitst")
-        self.assertEqual(b.getType(), "igniter fuel unitst")
-        b = self.assembly.getFirstBlockByType("i do not exist")
-        self.assertIsNone(b)
 
     def test_getBlockData(self):
         paramDict = {
@@ -788,84 +974,6 @@ class Assembly_TestCase(unittest.TestCase):
         ref = ["005-003-000", "005-003-001", "005-003-002"]
         self.assertEqual(cur, ref)
 
-    def test_countBlocksOfType(self):
-        cur = self.assembly.countBlocksWithFlags(Flags.IGNITER | Flags.FUEL)
-        self.assertEqual(cur, 3)
-
-    def test_getDim(self):
-        """Tests dimensions are retrievable."""
-        # quick test, if there are no blocks
-        a = HexAssembly("TestAssem", assemNum=10)
-        self.assertIsNone(a.getDim(Flags.FUEL, "op"))
-
-        # more interesting test, with blocks
-        cur = self.assembly.getDim(Flags.FUEL, "op")
-        ref = self.hexDims["op"]
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_getDominantMaterial(self):
-        cur = self.assembly.getDominantMaterial(Flags.FUEL).getName()
-        ref = "UZr"
-        self.assertEqual(cur, ref)
-
-        self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
-
-    def test_iteration(self):
-        """Tests the ability to doubly-loop over assemblies (under development)."""
-        a = self.assembly
-
-        for bi, b in enumerate(a):
-            if bi == 2:
-                h = 0.0
-                for bi2, b2 in enumerate(a):
-                    if bi2 == 0:
-                        self.assertEqual(
-                            b2,
-                            a[0],
-                            msg="First block in new iteration is not the first block of assembly",
-                        )
-                    h += b2.getHeight()
-
-            # make sure the loop continues with the right counter
-            self.assertEqual(
-                b,
-                a[bi],
-                msg="The {0}th block in the loop ({1}) is not equal to the {0}th block in the assembly {2}".format(
-                    bi, b, "dummy"
-                ),
-            )
-
-    def test_getBlocksAndZ(self):
-        blocksAndCenters = self.assembly.getBlocksAndZ()
-        lastZ = -1.0
-        for b, c in blocksAndCenters:
-            self.assertIn(b, self.assembly.getBlocks())
-            self.assertGreater(c, lastZ)
-            lastZ = c
-
-        self.assertRaises(TypeError, self.assembly.getBlocksAndZ, 1.0)
-
-    def test_getBlocksBetweenElevations(self):
-        # assembly should have 3 blocks of 10 cm in it
-        blocksAndHeights = self.assembly.getBlocksBetweenElevations(0, 10)
-        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 10.0))
-
-        blocksAndHeights = self.assembly.getBlocksBetweenElevations(0, 5.0)
-        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 5.0))
-
-        blocksAndHeights = self.assembly.getBlocksBetweenElevations(1.0, 5.0)
-        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 4.0))
-
-        blocksAndHeights = self.assembly.getBlocksBetweenElevations(9.0, 21.0)
-        self.assertEqual(blocksAndHeights[0], (self.assembly[0], 1.0))
-        self.assertEqual(blocksAndHeights[1], (self.assembly[1], 10.0))
-        self.assertEqual(blocksAndHeights[2], (self.assembly[2], 1.0))
-
-        blocksAndHeights = self.assembly.getBlocksBetweenElevations(-10, 1000.0)
-        self.assertEqual(len(blocksAndHeights), len(self.assembly))
-        self.assertAlmostEqual(sum([height for _b, height in blocksAndHeights]), self.assembly.getHeight())
-
     def test_getParamValuesAtZ(self):
         # single value param
         for b, temp in zip(self.assembly, [80, 85, 90]):
@@ -901,37 +1009,6 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertTrue(np.allclose([300, 301, 302, 303, 304, 305], value))
         finally:
             percentBuDef.location = originalLoc
-
-    def test_hasContinuousCoolantChannel(self):
-        self.assertFalse(self.assembly.hasContinuousCoolantChannel())
-        modifiedAssem = self.assembly
-        coolantDims = {"Tinput": 273.0, "Thot": 273.0}
-        h = components.DerivedShape("coolant", "Sodium", **coolantDims)
-        for b in modifiedAssem:
-            b.add(h)
-        self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
-
-    def test_carestianCoordinates(self):
-        """Check the coordinates of the assembly within the core with a CarestianGrid.
-
-        .. test:: Cartesian coordinates are retrievable.
-            :id: T_ARMI_ASSEM_POSI1
-            :tests: R_ARMI_ASSEM_POSI
-        """
-        a = makeTestAssembly(
-            numBlocks=1,
-            assemNum=1,
-            spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
-        )
-        self.assertEqual(a.coords(), (2.0, 2.0))
-
-    def test_pinPlenumVolume(self):
-        """Test the volume of a pin in the assembly's plenum."""
-        pinPlenumVolume = 5.951978e-05
-
-        self._setup_blueprints("refSmallReactorBase.yaml")
-        assembly = self.r.blueprints.assemblies.get("igniter fuel")
-        self.assertAlmostEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 
     def test_averagePlenumTemperature(self):
         """Test an assembly's average plenum temperature with a single block outlet."""
@@ -1017,7 +1094,7 @@ class Assembly_TestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
             a.rotate(math.radians(40))
 
-    def test_assem_block_types(self):
+    def test_assemBlockTypes(self):
         """Test that all children of an assembly are blocks, ordered from top to bottom.
 
         .. test:: Validate child types of assembly are blocks, ordered from top to bottom.
@@ -1039,13 +1116,6 @@ class Assembly_TestCase(unittest.TestCase):
         for i in range(1, len(zCoords)):
             self.assertGreater(zCoords[i], zCoords[i - 1])
 
-    def test_assem_hex_type(self):
-        """Test that all children of a hex assembly are hexagons."""
-        for b in self.assembly:
-            # For a hex assem, confirm they are of type "Hexagon"
-            pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
-            self.assertEqual(pitch_comp_type.__name__, "Hexagon")
-
     def test_getBIndexFromZIndex(self):
         # make sure the axMesh parameters are set in our test block
         for b in self.assembly:
@@ -1054,10 +1124,6 @@ class Assembly_TestCase(unittest.TestCase):
         for zIndex in range(6):
             bIndex = self.assembly.getBIndexFromZIndex(zIndex * 0.5)
             self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
-
-    def test_getElevationBoundariesByBlockType(self):
-        elevations = self.assembly.getElevationBoundariesByBlockType()
-        self.assertEqual(elevations, [0.0, 10.0, 10.0, 20.0, 20.0, 30.0])
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):

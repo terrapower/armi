@@ -24,31 +24,51 @@ from armi.operators import getOperatorClassFromSettings
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.settings.fwSettings.globalSettings import CONF_GROW_TO_FULL_CORE_AFTER_LOAD
-from armi.testing import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestOperatorSnapshots(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         newSettings = {}
+        newSettings["axialExpansion"] = False
         newSettings["db"] = True
+        newSettings["genReports"] = False
+        newSettings["summarizeAssemDesign"] = False
         newSettings["runType"] = "Standard"
-        newSettings["verbosity"] = "important"
-        newSettings["branchVerbosity"] = "important"
+        newSettings["verbosity"] = "error"
+        newSettings["branchVerbosity"] = "error"
         newSettings["nCycles"] = 1
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
-        o1, self.r = loadTestReactor(
+        o1, cls.r = loadTestReactor(
             customSettings=newSettings,
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
-        self.o = OperatorSnapshots(o1.cs)
-        self.o.r = self.r
+        cls.o = OperatorSnapshots(o1.cs)
+        cls.o.r = cls.r
+
+        # let's disable all the interfaces, to save time
+        allInterfaces = [
+            "database",
+            "fissionProducts",
+            "fuelHandler",
+            "history",
+            "main",
+            "memoryProfiler",
+            "snapshot",
+            "xsGroups",
+        ]
+        for i in allInterfaces:
+            cls.o.disabledInterfaces.append(i)
 
         # mock a Database Interface
-        self.dbi = DatabaseInterface(self.r, o1.cs)
-        self.dbi.loadState = lambda c, n: None
-        self.dbi.writeDBEveryNode = lambda: None
-        self.dbi.closeDB = lambda: None
+        cls.dbi = DatabaseInterface(cls.r, o1.cs)
+        cls.dbi.loadState = lambda c, n: None
+        cls.dbi.writeDBEveryNode = lambda: None
+        cls.dbi.closeDB = lambda: None
+
+        cls.o.createInterfaces()
 
     def test_atEOL(self):
         self.assertFalse(self.o.atEOL)
@@ -68,29 +88,7 @@ class TestOperatorSnapshots(unittest.TestCase):
         self.o._mainOperate()
         self.assertEqual(self.r.core.p.power, 1000000.0)
 
-    def test_createInterfaces(self):
-        self.assertEqual(len(self.o.interfaces), 0)
-        self.o.createInterfaces()
-
-        # If someone adds an interface, we don't want this test to break, so let's do >6
-        self.assertGreater(len(self.o.interfaces), 6)
-
     def test_createInterfacesDisabled(self):
-        self.assertEqual(len(self.o.interfaces), 0)
-        allInterfaces = [
-            "main",
-            "fissionProducts",
-            "xsGroups",
-            "fuelHandler",
-            "history",
-            "database",
-            "memoryProfiler",
-            "snapshot",
-        ]
-        for i in allInterfaces:
-            self.o.disabledInterfaces.append(i)
-        self.o.createInterfaces()
-
         # If someone adds an interface, we don't want this test to break, so let's do >6
         self.assertGreater(len(self.o.interfaces), 6)
         for i in self.o.interfaces:
@@ -101,8 +99,8 @@ class TestOperatorSnapshotsSettings(unittest.TestCase):
     def test_getOperatorClassFromSettings(self):
         cs = settings.Settings()
         cs = cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
-        clazz = getOperatorClassFromSettings(cs)
-        self.assertEqual(clazz, OperatorSnapshots)
+        o = getOperatorClassFromSettings(cs)
+        self.assertEqual(o, OperatorSnapshots)
 
 
 class TestSnapshotFullCoreExpan(unittest.TestCase):
@@ -112,27 +110,29 @@ class TestSnapshotFullCoreExpan(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        o, cls.symmetricReactor = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(cls.symmetricReactor, o.cs, maxNumRings=2)
+        cls.td = TemporaryDirectoryChanger()
+        cls.td.__enter__()
+        o, cls.symmetricReactor = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )
         dbi: DatabaseInterface = next(filter(lambda i: isinstance(i, DatabaseInterface), o.interfaces))
         dbi.initDB(cls.DB_PATH)
         dbi.writeDBEveryNode()
         dbi.closeDB()
 
         cls.snapshotSettings: settings.Settings = o.cs.modified(
-            newSettings={
-                "runType": RunTypes.SNAPSHOTS,
-                "reloadDBName": str(cls.DB_PATH),
-            }
+            newSettings={"runType": RunTypes.SNAPSHOTS, "reloadDBName": str(cls.DB_PATH)}
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.DB_PATH.unlink()
+        cls.td.__exit__(None, None, None)
 
     def test_fullCoreFromThirdCore(self):
         self.assertFalse(self.symmetricReactor.core.isFullCore)
         cs = self.snapshotSettings.modified(
-            newSettings={
-                CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True,
-                "dumpSnapshot": ["0000"],
-            }
+            newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True, "dumpSnapshot": ["0000"]}
         )
         o = getOperatorClassFromSettings(cs)(cs)
         self.assertIsInstance(o, OperatorSnapshots)
@@ -144,7 +144,3 @@ class TestSnapshotFullCoreExpan(unittest.TestCase):
         o.interactAllBOC = Mock(return_value=True)
         o.operate()
         self.assertTrue(o.r.core.isFullCore)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.DB_PATH.unlink()

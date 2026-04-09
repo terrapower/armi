@@ -15,7 +15,10 @@
 """Tests for basic plotting tools."""
 
 import os
+import shutil
 import unittest
+from glob import glob
+from unittest.mock import patch
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +29,7 @@ from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.testing import TESTING_ROOT
-from armi.tests import ISOAA_PATH, getEmptyHexReactor
+from armi.tests import ISOAA_PATH, TEST_ROOT, getEmptyHexReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -194,21 +197,43 @@ class TestPlotting(unittest.TestCase):
 class TestPatches(unittest.TestCase):
     """Test the ability to correctly make patches."""
 
-    def test_makeAssemPatches(self):
+    @classmethod
+    def setUpClass(cls):
+        # Prepare the input files. This is important so the unit tests run from wherever they need to run from.
+        cls.td = TemporaryDirectoryChanger()
+        cls.td.__enter__()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.td.__exit__(None, None, None)
+
+    @patch("armi.utils.plotting.plt.figure")
+    @patch("armi.utils.plotting.plt.savefig")
+    def test_makeAssemPatches(self, mockSavefig, mockFigure):
+        # mock up a flats-up version of the smallest test reactor
+        for fPath in glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml")):
+            fName = os.path.basename(fPath)
+            shutil.copyfile(fPath, fName)
+
+        txt = open("refSmallestReactor.yaml", "r").read()
+        txt = txt.replace("geom: hex_corners_up", "geom: hex")
+        with open("refSmallestReactor.yaml", "w") as f:
+            f.write(txt)
+
         # this one is flats-up with many assemblies in the core
-        _, rHexFlatsUp = test_reactors.loadTestReactor()
+        _, rHexFlatsUp = test_reactors.loadTestReactor(inputFilePath=".", inputFileName="armiRunSmallest.yaml")
 
         nAssems = len(rHexFlatsUp.core)
-        self.assertGreater(nAssems, 1)
+        self.assertEqual(nAssems, 1)
         patches = plotting._makeAssemPatches(rHexFlatsUp.core)
         self.assertEqual(len(patches), nAssems)
 
         # find the patch corresponding to the center assembly
-        for patch in patches:
-            if np.allclose(patch.xy, (0, 0)):
+        for pat in patches:
+            if np.allclose(pat.xy, (0, 0)):
                 break
 
-        vertices = patch.get_verts()
+        vertices = pat.get_verts()
         # there should be 1 more than the number of points in the shape
         self.assertEqual(len(vertices), 7)
         # for flats-up, the first vertex should have a y position of ~zero

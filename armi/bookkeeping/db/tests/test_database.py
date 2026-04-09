@@ -38,7 +38,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
 )
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -57,8 +57,11 @@ class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"})
-        reduceTestReactorRings(self.r, self.o.cs, maxNumRings=3)
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+        )
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
@@ -658,9 +661,12 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_SNAPSHOT_RESTART
         """
         # first successfully call to prepRestartRun
-        o, r = loadTestReactor(TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"})
+        o, r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+        )
         cs = o.cs
-        reduceTestReactorRings(r, cs, maxNumRings=3)
 
         ratedPower = cs["power"]
         startCycle = cs["startCycle"]

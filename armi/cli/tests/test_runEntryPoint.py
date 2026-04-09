@@ -34,7 +34,7 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
@@ -465,7 +465,6 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
                 customSettings={"reloadDBName": "reloadingDB.h5"},
                 inputFileName="smallestTestReactor/armiRunSmallest.yaml",
             )
-            reduceTestReactorRings(self.r, self.o.cs, maxNumRings=2)
             self.dbi = DatabaseInterface(self.r, self.o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
             self.dbi.initDB(fName=dbPath)
