@@ -24,9 +24,10 @@ from armi import runLog
 from armi.reactor import blocks, geometry, grids
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers, plotting
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -302,11 +303,13 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, self.o.cs, 3)
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )
 
-        # initialize the block powers to a uniform power profile, accounting for
-        # the loaded reactor being 1/3 core
+        # initialize the block powers to a uniform power profile, accounting for the loaded reactor being 1/3 core
         numBlocksInFullCore = 0
         for a in self.r.core:
             if a.getLocation() == "001-001":
@@ -327,6 +330,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def tearDown(self):
         del self.o
         del self.r
+        self.td.__exit__(None, None, None)
 
     def test_growToFullCoreFromThirdCore(self):
         """Test that a hex core can be converted from a third core to a full core geometry.

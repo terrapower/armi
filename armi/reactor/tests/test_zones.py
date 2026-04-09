@@ -28,7 +28,7 @@ from armi.reactor import (
     reactors,
     zones,
 )
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import mockRunLogs
 
 THIS_DIR = os.path.dirname(__file__)
@@ -196,7 +196,9 @@ class TestZone(unittest.TestCase):
 class TestZones(unittest.TestCase):
     def setUp(self):
         # spin up the test reactor
-        self.o, self.r = loadTestReactor()
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )
 
         # build some generic test zones to get started with
         newSettings = {}
