@@ -28,7 +28,7 @@ from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies, test_blocks
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
 from armi.tests import ISOAA_PATH, TEST_ROOT
 
 
@@ -41,7 +41,10 @@ class DummyFluxOptions:
 
 class TestConverterFactory(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+        self.o, self.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+        )
 
         self.dummyOptions = DummyFluxOptions(self.o.cs)
 
@@ -62,12 +65,13 @@ class TestAssemblyUniformMesh(unittest.TestCase):
     Uses the test reactor for detailedAxialExpansion
     """
 
-    def setUp(self):
-        self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+    @classmethod
+    def setUpClass(cls):
+        cls.o, cls.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
 
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
-        self.converter._sourceReactor = self.r
-        self.converter._setParamsToUpdate("in")
+        cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs)
+        cls.converter._sourceReactor = cls.r
+        cls.converter._setParamsToUpdate("in")
 
     def test_makeAssemWithUniformMesh(self):
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
@@ -140,9 +144,9 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             b.p.power = 10.0
             b.p.mgFlux = [1.0, 2.0]
 
-        # Create a new assembly that has the same mesh as the source assem, but also
-        # demonstrates the transfer of number densities and parameter data as a 1:1 mapping
-        # without any volume integration/data migration based on a differing mesh.
+        # Create a new assembly that has the same mesh as the source assem, but also demonstrates the transfer of number
+        # densities and parameter data as a 1:1 mapping without any volume integration/data migration based on a
+        # differing mesh.
         bpNames = ["flux", "power", "mgFlux"]
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
@@ -162,8 +166,8 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             for nuc, val in b.getNumberDensities().items():
                 self.assertAlmostEqual(val, originalNDens[nuc])
 
-        # Now, let's update the flux, power, and mgFlux on the new assembly
-        # and test that it can be transferred back to the source assembly.
+        # Now, let us update the flux, power, and mgFlux on the new assembly and test that it can be transferred back to
+        # the source assembly.
         for b in newAssem:
             b.p.flux = 2.0
             b.p.power = 20.0
@@ -218,12 +222,13 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 class TestUniformMeshGenerator(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        newSettings = {
-            CONF_XS_KERNEL: "MC2v2",
-            CONF_UNIFORM_MESH_MINIMUM_SIZE: 3.0,
-        }
-        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings=newSettings)
-        reduceTestReactorRings(cls.r, cls.o.cs, 5)
+        newSettings = {CONF_XS_KERNEL: "MC2v2", CONF_UNIFORM_MESH_MINIMUM_SIZE: 3.0}
+        cls.o, cls.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings=newSettings,
+        )
+
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
         # make the mesh a little non-uniform
@@ -281,16 +286,16 @@ class TestUniformMeshGenerator(unittest.TestCase):
 
     def test_filteredTopAndBottom(self):
         fuelBottoms, fuelTops = self.generator._getFilteredMeshTopAndBottom(Flags.FUEL)
-        self.assertListEqual(fuelBottoms, [25.0])
-        self.assertListEqual(fuelTops, [101.25, 105.0])
+        self.assertListEqual(fuelBottoms, [15.0])
+        self.assertListEqual(fuelTops, [35.32])
 
         # ctrlAndFuelBottoms and ctrlAndFuelTops include the fuelBottoms and fuelTops, respectively
         (
             ctrlAndFuelBottoms,
             ctrlAndFuelTops,
         ) = self.generator._getFilteredMeshTopAndBottom(Flags.CONTROL, fuelBottoms, fuelTops)
-        self.assertListEqual(ctrlAndFuelBottoms, [25.0, 50.0])
-        self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
+        self.assertListEqual(ctrlAndFuelBottoms, [15.0])
+        self.assertListEqual(ctrlAndFuelTops, [35.32])
 
     def test_generateCommonMesh(self):
         """
@@ -306,30 +311,31 @@ class TestUniformMeshGenerator(unittest.TestCase):
         """
         self.generator.generateCommonMesh()
         expectedMesh = [
-            25.0,
-            50.0,
-            75.0,
-            101.25,
-            105.0,
-            119.04761904761905,
-            137.79761904761904,
-            156.54761904761904,
-            175.29761904761904,
+            15.0,
+            25.16,
+            35.32,
+            60.06580357142856,
+            84.81160714285714,
+            109.55741071428572,
+            134.3032142857143,
+            159.04901785714287,
+            183.79482142857142,
+            208.540625,
+            233.2864285714286,
         ]
-        self.assertListEqual(list(self.generator._commonMesh), expectedMesh)
+        for i, item in enumerate(list(self.generator._commonMesh)):
+            self.assertAlmostEqual(item, expectedMesh[i])
 
 
 class TestUniformMeshComponents(unittest.TestCase):
-    """
-    Tests individual operations of the uniform mesh converter.
-
-    Only loads reactor once per suite.
-    """
+    """Tests individual operations of the uniform mesh converter."""
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
-        reduceTestReactorRings(cls.r, cls.o.cs, 4)
+        cls.o, cls.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+        )
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
         # make the mesh a little non-uniform
@@ -345,15 +351,12 @@ class TestUniformMeshComponents(unittest.TestCase):
         convReactor = self.converter.initNewReactor(self.converter._sourceReactor, self.o.cs)
         converted = convReactor.blueprints
         original = self.converter._sourceReactor.blueprints
-        toCompare = [
-            "activeNuclides",
-            "allNuclidesInProblem",
-            "elementsToExpand",
-            "inertNuclides",
-        ]  # Note: items within toCompare must be list or "list-like", like an ordered set
+        # NOTE: items within toCompare must be list or "list-like", like an ordered set
+        toCompare = ["activeNuclides", "allNuclidesInProblem", "elementsToExpand", "inertNuclides"]
         for attr in toCompare:
             for c, o in zip(getattr(converted, attr), getattr(original, attr)):
                 self.assertEqual(c, o)
+
         # ensure that the assemblies were copied over
         self.assertTrue(converted.assemblies, msg="Assembly objects not copied!")
 
@@ -367,27 +370,26 @@ def applyNonUniformHeightDistribution(reactor):
             newHeight = origHeight * (1 + 0.03 * random.uniform(-1, 1))
             b.setHeight(newHeight)
             delta += newHeight - origHeight
+
         a[-1].setHeight(a[-1].getHeight() - delta)
         a.calculateZCoords()
 
 
 class TestUniformMesh(unittest.TestCase):
-    """
-    Tests full uniform mesh converter.
-
-    Loads reactor once per test
-    """
+    """Tests full uniform mesh converter, using a smaller test reactor."""
 
     @classmethod
     def setUpClass(cls):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
-        reduceTestReactorRings(cls.r, cls.o.cs, 3)
+        cls.o, cls.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={CONF_XS_KERNEL: "MC2v2"},
+        )
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         cls.r.core.p.keff = 1.0
-
         cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
 
         # reactor parameters
@@ -427,6 +429,29 @@ class TestUniformMesh(unittest.TestCase):
             for ref, check in zip(refAssemMesh, mesh):
                 self.assertEqual(ref, check)
 
+
+class TestUniformMeshLargeReactor(unittest.TestCase):
+    """Tests full uniform mesh converter, using a larger test reactor."""
+
+    @classmethod
+    def setUpClass(cls):
+        # random seed to support random mesh in unit tests below
+        random.seed(987324987234)
+
+        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
+        reduceTestReactorRings(cls.r, cls.o.cs, 2)
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.p.keff = 1.0
+        cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
+
+        # reactor parameters
+        cls.r.core.p.beta = 700
+        cls.r.core.p.betaComponents = [100, 150, 150, 100, 100, 100]
+        cls.r.core.p.power = 10
+        cls.reactorParamNames = ["beta", "betaComponents", "power", "keff", "keffUnc"]
+        cls.converter._cachedReactorCoreParamData = {"powerDensity": 1.0}
+        cls.paramMapper = uniformMesh.ParamMapper(cls.reactorParamNames, [], cls.r.core.getFirstBlock())
+
     def test_applyStateToOriginal(self):
         """
         Test applyStateToOriginal() to revert mesh conversion.
@@ -435,7 +460,7 @@ class TestUniformMesh(unittest.TestCase):
             :id: T_ARMI_UMC_PARAM_BACKWARD0
             :tests: R_ARMI_UMC_PARAM_BACKWARD
         """
-        applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref mass
+        applyNonUniformHeightDistribution(self.r)  # NOTE: this perturbs the ref mass
 
         self.converter.convert(self.r)
         for ib, b in enumerate(self.converter.convReactor.core.iterBlocks()):
@@ -511,22 +536,17 @@ class TestCalcReationRates(unittest.TestCase):
 
 
 class TestGammaUniformMesh(unittest.TestCase):
-    """
-    Tests gamma uniform mesh converter.
-
-    Loads reactor once per test
-    """
+    """Tests gamma uniform mesh converter."""
 
     @classmethod
     def setUpClass(cls):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-    def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
-        self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        self.r.core.p.keff = 1.0
-        self.converter = uniformMesh.GammaUniformMeshConverter(cs=self.o.cs)
+        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.p.keff = 1.0
+        cls.converter = uniformMesh.GammaUniformMeshConverter(cs=cls.o.cs)
 
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
@@ -539,9 +559,8 @@ class TestGammaUniformMesh(unittest.TestCase):
         uniformMass = uniformReactor.core.getMass("U235")
 
         self.assertAlmostEqual(perturbedCoreMass, uniformMass)  # conversion conserved mass
-        self.assertAlmostEqual(
-            self.r.core.getMass("U235"), perturbedCoreMass
-        )  # conversion didn't change source reactor mass
+        # conversion didn't change source reactor mass
+        self.assertAlmostEqual(self.r.core.getMass("U235"), perturbedCoreMass)
 
     def test_applyStateToOriginal(self):
         """
@@ -605,10 +624,8 @@ class TestParamConversion(unittest.TestCase):
         """
         Build two assemblies.
 
-        The source assembly has two blocks, heights 3 and 7 cm. The destination
-        has one big block that's 10 cm. Flux is set to 5 and 10 respectively on
-        the two source blocks. They are populated with arbitrary flux and pdens
-        values.
+        The source assembly has two blocks, heights 3 and 7 cm. The destination has one big block that's 10 cm. Flux is
+        set to 5 and 10 respectively on the two source blocks. They are populated with arbitrary flux and pdens values.
         """
         self.sourceAssem, self.destinationAssem = test_assemblies.buildTestAssemblies()[2:]
         self.height1 = 3.0
@@ -622,14 +639,11 @@ class TestParamConversion(unittest.TestCase):
         self.destinationAssem[0].setHeight(self.height1 + self.height2)
         self.destinationAssem.calculateZCoords()
 
-        # This sets up a caching for the `mgNeutronVelocity` block
-        # parameter on each of the blocks of the destination assembly
-        # without setting the data on the blocks of the source assembly
-        # to demonstrate that only new parameters set on the source assembly will be
-        # mapped to the destination assembly. This ensures that parameters
-        # that are not being set on the source assembly are not cleared
-        # out on the destination assembly with `setAssemblyStateFromOverlaps`
-        # is called.
+        # This sets up a caching for the `mgNeutronVelocity` block parameter on each of the blocks of the destination
+        # assembly without setting the data on the blocks of the source assembly to demonstrate that only new parameters
+        # set on the source assembly will be mapped to the destination assembly. This ensures that parameters that are
+        # not being set on the source assembly are not cleared out on the destination assembly with
+        # `setAssemblyStateFromOverlaps` is called.
         self._cachedBlockParamData = collections.defaultdict(dict)
         for b in self.destinationAssem:
             self._cachedBlockParamData[b]["mgNeutronVelocity"] = [1.0] * 33
@@ -676,27 +690,24 @@ class TestParamConversion(unittest.TestCase):
 
 
 class TestUMNonUAssemFlags(unittest.TestCase):
-    """
-    Tests a reactor conversion with only a subset of assemblies being
-    defined as having a non-uniform mesh.
-    """
+    """Tests a reactor conversion with only a subset of assemblies being defined as having a non-uniform mesh."""
 
     @classmethod
     def setUpClass(cls):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-    def setUp(self):
-        self.o, self.r = loadTestReactor(
+        # def setUp(self):
+        cls.o, cls.r = loadTestReactor(
             TEST_ROOT,
             customSettings={
                 CONF_XS_KERNEL: "MC2v2",
                 "nonUniformAssemFlags": ["primary control"],
             },
         )
-        self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        self.r.core.p.keff = 1.0
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs, calcReactionRates=True)
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.p.keff = 1.0
+        cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
 
     def test_reactorConversion(self):
         """Tests the reactor conversion to and from the original reactor."""
@@ -716,16 +727,10 @@ class TestUMNonUAssemFlags(unittest.TestCase):
                 self.assertFalse(b.p.rateAbs)
 
         self.converter.convert(self.r)
-        self.assertEqual(
-            len(controlAssems),
-            len(self.converter._nonUniformAssemStorage),
-        )
+        self.assertEqual(len(controlAssems), len(self.converter._nonUniformAssemStorage))
 
         self.converter.applyStateToOriginal()
-        self.assertEqual(
-            len(self.converter._nonUniformAssemStorage),
-            0,
-        )
+        self.assertEqual(len(self.converter._nonUniformAssemStorage), 0)
         for a in controlAssems:
             for b in a:
                 self.assertTrue(all(b.getMgFlux()))
