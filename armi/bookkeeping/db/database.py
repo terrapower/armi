@@ -700,8 +700,10 @@ class Database:
         """
         runLog.info(f"Loading reactor state for time node ({cycle}, {node})")
 
-        cs = cs or self.loadCS(handleInvalids=handleInvalids)
-        bp = bp or self.loadBlueprints(cs)
+        if cs is None:
+            cs = self.loadCS(handleInvalids=handleInvalids)
+        if bp is None:
+            bp = self.loadBlueprints(cs)
 
         if callReactorConstructionHook:
             getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
