@@ -543,7 +543,11 @@ class TestGammaUniformMesh(unittest.TestCase):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
+        cls.o, cls.r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings={CONF_XS_KERNEL: "MC2v2"},
+        )
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         cls.r.core.p.keff = 1.0
         cls.converter = uniformMesh.GammaUniformMeshConverter(cs=cls.o.cs)
@@ -697,9 +701,9 @@ class TestUMNonUAssemFlags(unittest.TestCase):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-        # def setUp(self):
         cls.o, cls.r = loadTestReactor(
-            TEST_ROOT,
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
             customSettings={
                 CONF_XS_KERNEL: "MC2v2",
                 "nonUniformAssemFlags": ["primary control"],
@@ -716,11 +720,9 @@ class TestUMNonUAssemFlags(unittest.TestCase):
         self.assertEqual(self.r.core.p.keff, 1.0)
 
         controlAssems = self.r.core.getAssemblies(Flags.PRIMARY | Flags.CONTROL)
-        # Add a bunch of multi-group flux to the control assemblies
-        # in the core to demonstrate that data can be mapped back
-        # to the original control rod assemblies if they are changed.
-        # Additionally, this will check that block-level reaction rates
-        # are being calculated (i.e., `rateAbs`).
+        # Add a bunch of multi-group flux to the control assemblies in the core to demonstrate that data can be mapped
+        # back to the original control rod assemblies if they are changed. Additionally, this will check that
+        # block-level reaction rates are being calculated (i.e., `rateAbs`).
         for a in controlAssems:
             for b in a:
                 b.p.mgFlux = [1.0] * 33
