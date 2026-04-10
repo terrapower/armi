@@ -279,8 +279,6 @@ ignore_errors = true
 [tool.setuptools.package-data]
 armi = [
     "bookkeeping/tests/armiRunSmallest-A0000-aHist-ref.txt",
-    "matProps/dataSchema/dataSchema.json",
-    "matProps/dataSchema/tests/inputs/*.yaml",
     "matProps/tests/invalidTestFiles/*",
     "matProps/tests/testDir1/*",
     "matProps/tests/testDir2/*",
