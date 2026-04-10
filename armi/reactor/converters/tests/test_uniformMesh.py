@@ -385,21 +385,20 @@ class TestUniformMesh(unittest.TestCase):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-    def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
-        reduceTestReactorRings(self.r, self.o.cs, 3)
-        self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        self.r.core.p.keff = 1.0
+        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
+        reduceTestReactorRings(cls.r, cls.o.cs, 3)
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.p.keff = 1.0
 
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs, calcReactionRates=True)
+        cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
 
         # reactor parameters
-        self.r.core.p.beta = 700
-        self.r.core.p.betaComponents = [100, 150, 150, 100, 100, 100]
-        self.r.core.p.power = 10
-        self.reactorParamNames = ["beta", "betaComponents", "power", "keff", "keffUnc"]
-        self.converter._cachedReactorCoreParamData = {"powerDensity": 1.0}
-        self.paramMapper = uniformMesh.ParamMapper(self.reactorParamNames, [], self.r.core.getFirstBlock())
+        cls.r.core.p.beta = 700
+        cls.r.core.p.betaComponents = [100, 150, 150, 100, 100, 100]
+        cls.r.core.p.power = 10
+        cls.reactorParamNames = ["beta", "betaComponents", "power", "keff", "keffUnc"]
+        cls.converter._cachedReactorCoreParamData = {"powerDensity": 1.0}
+        cls.paramMapper = uniformMesh.ParamMapper(cls.reactorParamNames, [], cls.r.core.getFirstBlock())
 
     def test_convertNumberDensities(self):
         """
