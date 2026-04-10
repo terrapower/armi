@@ -21,9 +21,9 @@ from unittest.mock import patch
 from armi.nuclearDataIO.xsLibraries import IsotxsLibrary
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import Block
-from armi.reactor.cores import Core
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.testing import TESTING_ROOT
 from armi.tests import ISOAA_PATH
 from armi.utils import directoryChangers
 
@@ -35,15 +35,12 @@ class HexCoreTests(unittest.TestCase):
     def setUpClass(cls):
         cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
         cls.directoryChanger.open()
-        r = loadTestReactor(TEST_ROOT)[1]
-        cls.core: Core = r.core
+        r = loadTestReactor(
+            inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
+        )[1]
+        cls.core = r.core
 
-    def assertAllIs(
-        self,
-        actuals: typing.Iterable[typing.Any],
-        expecteds: typing.Iterable[typing.Any],
-        fill=None,
-    ):
+    def assertAllIs(self, actuals: typing.Iterable[typing.Any], expecteds: typing.Iterable[typing.Any], fill=None):
         """Assert that all items in two iterables are the same objects."""
         for actual, expected in itertools.zip_longest(actuals, expecteds, fillvalue=fill):
             self.assertIs(actual, expected)
@@ -73,10 +70,10 @@ class HexCoreTests(unittest.TestCase):
         self.assertEqual(len(aa), 0)
 
         aa = list(self.core.iterChildrenWithFlags(Flags.FUEL))
-        self.assertTrue(20 < len(aa) < 100)
+        self.assertTrue(1 < len(aa) < 10)
 
         aa = list(self.core.iterChildrenWithFlags(Flags.CONTROL))
-        self.assertTrue(1 < len(aa) < 10)
+        self.assertEqual(len(aa), 0)
 
     def test_getAssemsInZones(self):
         """Test the ability to produce assemblies in a zone."""
