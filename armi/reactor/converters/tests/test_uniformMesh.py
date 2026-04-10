@@ -31,6 +31,16 @@ from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SI
 from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
 from armi.tests import ISOAA_PATH, TEST_ROOT
 
+_ISOTXS_CACHE = None
+
+
+def _getIsotxsLibrary():
+    """These tests don't modify the isotxs lib, so we only need to load it once."""
+    global _ISOTXS_CACHE
+    if _ISOTXS_CACHE is None:
+        _ISOTXS_CACHE = isotxs.readBinary(ISOAA_PATH)
+    return _ISOTXS_CACHE
+
 
 class DummyFluxOptions:
     def __init__(self, cs):
@@ -229,7 +239,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
             customSettings=newSettings,
         )
 
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.lib = _getIsotxsLibrary()
 
         # make the mesh a little non-uniform
         a4 = cls.r.core[4]
@@ -336,7 +346,7 @@ class TestUniformMeshComponents(unittest.TestCase):
             inputFilePath=TESTING_ROOT,
             inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
         )
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.lib = _getIsotxsLibrary()
 
         # make the mesh a little non-uniform
         a = cls.r.core[4]
@@ -388,7 +398,7 @@ class TestUniformMesh(unittest.TestCase):
             inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
             customSettings={CONF_XS_KERNEL: "MC2v2"},
         )
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.lib = _getIsotxsLibrary()
         cls.r.core.p.keff = 1.0
         cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
 
@@ -440,7 +450,7 @@ class TestUniformMeshLargeReactor(unittest.TestCase):
 
         cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
         reduceTestReactorRings(cls.r, cls.o.cs, 2)
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.lib = _getIsotxsLibrary()
         cls.r.core.p.keff = 1.0
         cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
 
@@ -548,7 +558,7 @@ class TestGammaUniformMesh(unittest.TestCase):
             inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
             customSettings={CONF_XS_KERNEL: "MC2v2"},
         )
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.lib = _getIsotxsLibrary()
         cls.r.core.p.keff = 1.0
         cls.converter = uniformMesh.GammaUniformMeshConverter(cs=cls.o.cs)
 
@@ -709,7 +719,7 @@ class TestUMNonUAssemFlags(unittest.TestCase):
                 "nonUniformAssemFlags": ["primary control"],
             },
         )
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.r.core.lib = _getIsotxsLibrary()
         cls.r.core.p.keff = 1.0
         cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs, calcReactionRates=True)
 
