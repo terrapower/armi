@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   build:
-
+    if: github.repository == 'terrapower/armi'
     runs-on: macos-14
 
     steps:
