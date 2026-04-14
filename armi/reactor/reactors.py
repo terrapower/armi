@@ -104,8 +104,6 @@ class Reactor(composites.Composite):
         if isinstance(container, ExcoreStructure):
             nomen = container.name.replace(" ", "").lower()
             if nomen == "spentfuelpool":
-                runLog.warning("Changing the name of the Spent Fuel Pool to 'sfp'.")
-                # special case
                 nomen = "sfp"
             self.excore[nomen] = container
 
