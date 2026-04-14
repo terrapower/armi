@@ -2208,22 +2208,20 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return components[0]
 
-    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = False) -> Optional["Component"]:
+    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
         """
         Get a particular component from this object.
+
+        Be careful with multiple similar names in one object.
 
         Parameters
         ----------
         typeSpec : flags.Flags or list of Flags
             The type specification of the component to return
-
         exact : boolean, optional
             Demand that the component flags be exactly equal to the typespec. Default: False
-
         quiet : boolean, optional
-            Warn if the component is not found. Default: False
-
-        Careful with multiple similar names in one object
+            Log if the component is not found. Default: True
 
         Returns
         -------
@@ -2238,7 +2236,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return results[0]
         elif not results:
             if not quiet:
-                runLog.warning(
+                runLog.extra(
                     f"No component matched {typeSpec} in {self}. Returning None",
                     single=True,
                     label=f"None component returned instead of {typeSpec}",
