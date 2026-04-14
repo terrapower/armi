@@ -32,7 +32,7 @@ from armi.reactor import blueprints, grids
 from armi.reactor.blueprints import loadFromCs
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
@@ -486,7 +486,11 @@ class TestDatabaseReading(unittest.TestCase):
         cls.nCycles = 2
         newSettings["nCycles"] = cls.nCycles
         newSettings["burnSteps"] = 2
-        o, r = loadTestReactor(customSettings=newSettings)
+        o, r = loadTestReactor(
+            inputFilePath=TESTING_ROOT,
+            inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml",
+            customSettings=newSettings,
+        )
         reduceTestReactorRings(r, o.cs, 3)
 
         o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
@@ -522,7 +526,7 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 19)
         self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 95)
+        self.assertEqual(len(r.core.blocksByName), 57)
 
     def test_loadReadOnly(self):
         with Database(self.dbName, "r") as db:
@@ -548,7 +552,7 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 7)
         self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 35)
+        self.assertEqual(len(r.core.blocksByName), 21)
 
         r.core.growToFullCore(None)
         self._fullCoreSizeChecker(r)

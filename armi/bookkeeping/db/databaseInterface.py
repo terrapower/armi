@@ -142,7 +142,7 @@ class DatabaseInterface(interfaces.Interface):
 
     def interactEOC(self, cycle=None):
         """
-        Dont write; this state doesn't tend to be important since its decay only step.
+        Do not write; this state doesn't tend to be important since its decay only step.
 
         Notes
         -----
@@ -152,8 +152,7 @@ class DatabaseInterface(interfaces.Interface):
 
     def interactEOL(self):
         """DB's should be closed at run's end. (End of Life)."""
-        # minutesSinceStarts should include as much of the ARMI run as possible so EOL
-        # is necessary, too.
+        # minutesSinceStarts should include as much of the ARMI run as possible so EOL is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
         self._db.writeToDB(self.r, "EOL")
         self.closeDB()
