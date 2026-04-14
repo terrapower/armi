@@ -2236,7 +2236,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return results[0]
         elif not results:
             if not quiet:
-                runLog.extra(
+                runLog.debug(
                     f"No component matched {typeSpec} in {self}. Returning None",
                     single=True,
                     label=f"None component returned instead of {typeSpec}",
