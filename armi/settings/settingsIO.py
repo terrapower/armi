@@ -111,7 +111,7 @@ class SettingRenamer:
 
         activeRename = self._activeRenames.get(name, None)
         if activeRename is not None:
-            runLog.warning(f"Invalid setting {name} found. Renaming to {activeRename}.")
+            runLog.extra(f"Invalid setting {name} found. Renaming to {activeRename}.")
             return activeRename, True
 
         expiredCandidates = {val[1]: val[2] for val in self._expiredRenames if val[0] == name}
@@ -120,7 +120,7 @@ class SettingRenamer:
             msg = "\n".join(
                 ["   {}: {}".format(expiredRename, date) for expiredRename, date in expiredCandidates.items()]
             )
-            runLog.warning(
+            runLog.info(
                 f"Encountered an invalid setting `{name}`. There are expired renames to newer setting names:\n{msg}"
             )
 
@@ -204,7 +204,7 @@ class SettingsReader:
         if CONF_VERSIONS in setts and "armi" in setts[CONF_VERSIONS]:
             self.inputVersion = setts[CONF_VERSIONS]["armi"]
         else:
-            runLog.warning("Versions setting section not found. Continuing with uncontrolled versions.")
+            # Versions setting section not found; continuing with uncontrolled versions.
             self.inputVersion = "uncontrolled"
 
         for settingName, settingVal in caseSettings.items():
@@ -228,7 +228,7 @@ class SettingsReader:
         if not proceed:
             raise InvalidSettingsStopProcess(self)
         else:
-            runLog.warning(f"Ignoring invalid settings: {invalidNames}")
+            runLog.info(f"Ignoring invalid settings: {invalidNames}")
 
     def _applySettings(self, name, val):
         """Add a setting, if it is valid. Capture invalid settings."""
@@ -240,8 +240,8 @@ class SettingsReader:
             # apply validations
             _settingObj = self.cs.getSetting(name)
 
-            # The val is automatically coerced into the expected type when set using either the
-            # default or user-defined schema
+            # The val is automatically coerced into the expected type when set using either the default or user-defined
+            # schema
             self.cs[name] = val
 
 
@@ -263,8 +263,7 @@ class SettingsWriter:
         self.style = style
         if style not in {WRITE_SHORT, WRITE_MEDIUM, WRITE_FULL}:
             raise ValueError(f"Invalid supplied setting writing style {style}")
-        # The writer should know about the old settings it is overwriting, but only sometimes (when
-        # the style is medium)
+        # The writer should know about the old settings it is overwriting, but only sometimes (when the style is medium)
         self.settingsSetByUser = settingsSetByUser
 
     @staticmethod
