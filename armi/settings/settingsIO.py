@@ -111,18 +111,8 @@ class SettingRenamer:
 
         activeRename = self._activeRenames.get(name, None)
         if activeRename is not None:
-            runLog.extra(f"Invalid setting {name} found. Renaming to {activeRename}.")
+            runLog.extra(f"Invalid setting {name} found. Renaming to {activeRename}.", single=True)
             return activeRename, True
-
-        expiredCandidates = {val[1]: val[2] for val in self._expiredRenames if val[0] == name}
-
-        if expiredCandidates:
-            msg = "\n".join(
-                ["   {}: {}".format(expiredRename, date) for expiredRename, date in expiredCandidates.items()]
-            )
-            runLog.info(
-                f"Encountered an invalid setting `{name}`. There are expired renames to newer setting names:\n{msg}"
-            )
 
         return name, False
 
