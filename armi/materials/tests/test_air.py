@@ -195,7 +195,6 @@ class TestAir(unittest.TestCase):
 
         for Tk, densKgPerM3 in zip(REFERENCE_Tk, REFERENCE_DENSITY_KG_PER_M3):
             if Tk < 2400:
-                print(air.pseudoDensity(Tk=Tk), air.pseudoDensity(Tk=Tk) * 1000.0, densKgPerM3)
                 error = math.fabs((air.pseudoDensity(Tk=Tk) * 1000.0 - densKgPerM3) / densKgPerM3)
                 self.assertLess(error, 1e-2)
                 error = math.fabs((air.pseudoDensity(Tc=getTc(Tk=Tk)) * 1000.0 - densKgPerM3) / densKgPerM3)

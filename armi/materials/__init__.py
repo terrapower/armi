@@ -42,8 +42,8 @@ from typing import List
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
 
-# This will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
-# armi.reactor.reactors.factory).
+# This will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting
+# during reactor construction (see armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 
@@ -64,7 +64,15 @@ def setMaterialNamespaceOrder(order):
         This automatic exploration of an importable package saves the user the tedium have having to import or include
         hundreds of materials manually somehow. But it comes with a caveat; the list is ordered. If two different
         namespaces in the list include a material with the same name, the first one found in the list is chosen, i.e.
-        earlier namespaces in the list have precedence.
+        An ARMI application will need materials. Materials can be imported from
+        any code the application has access to, like plugin packages. This leads to
+        the situation where one ARMI application will want to import multiple
+        collections of materials. To handle this, ARMI keeps a list of material
+        namespaces. This is an ordered list of importable packages that ARMI
+        can search for a particular material by name.
+
+        This automatic exploration of an importable package saves the user the
+        tedium have having to import or include hundreds of materials manually somehow.
     """
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
