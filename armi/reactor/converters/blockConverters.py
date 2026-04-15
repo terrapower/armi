@@ -577,9 +577,9 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         self.mergeIntoFuel = mergeIntoFuel or []
         self.ductHeterogeneous = ductHeterogeneous
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
-        self._remainingCoolantFillArea = self.interRingComponent.getArea()
         if not self.interRingComponent:
-            raise ValueError("Block {} cannot be converted to rings without a `coolant` component".format(sourceBlock))
+            raise ValueError(f"Block {sourceBlock} cannot be converted to rings without a `coolant` component")
+        self._remainingCoolantFillArea = self.interRingComponent.getArea()
 
     def convert(self):
         """Perform the conversion.
