@@ -288,10 +288,6 @@ class Water(Fluid):
 
         return phi + 1.0 / rho * dp_dT
 
-    def pseudoDensity(self, Tk=None, Tc=None):
-        """Density for arbitrary forms of water."""
-        raise NotImplementedError("Please use a concrete instance: SaturatedWater or SaturatedSteam.")
-
 
 class SaturatedWater(Water):
     """
@@ -347,10 +343,6 @@ class SaturatedWater(Water):
         # past the supercritical point tau's raised to .5 cause complex #'s
         return normalized_rho.real * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
 
-    def pseudoDensity(self, Tk=None, Tc=None):
-        """Pseudo-density for arbitrary forms of water."""
-        return self.density(Tk=Tk, Tc=Tc)
-
 
 class SaturatedSteam(Water):
     """
@@ -404,7 +396,3 @@ class SaturatedSteam(Water):
 
         # past the supercritical point tau's raised to .5 cause complex #'s
         return math.e**log_normalized_rho.real * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
-
-    def pseudoDensity(self, Tk=None, Tc=None):
-        """Pseudo-density for arbitrary forms of water."""
-        return self.density(Tk=Tk, Tc=Tc)
