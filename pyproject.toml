@@ -337,7 +337,7 @@ armi = [
     "testing/resources/armiRun-SHUFFLES.txt",
     "testing/resources/armiRun-SHUFFLES.yaml",
     "testing/resources/COMPXS.ascii",
-    "tests/*.yaml",,
+    "tests/*.yaml",
     "tests/detailedAxialExpansion/*.yaml",
     "tests/ISOAA",
     "tests/smallestTestReactor/*.yaml",
