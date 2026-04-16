@@ -32,8 +32,8 @@ class ConstantFunction(Function):
             Property that is represented by this ConstantFunction
         """
         super().__init__(mat, prop)
+        # Constant value that is returned by ConstantFunction.
         self.value = None
-        """Constant value that is returned by ConstantFunction."""
 
     def __repr__(self):
         """Provides string representation of ConstantFunction object."""
