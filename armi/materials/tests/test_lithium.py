@@ -31,6 +31,20 @@ class LithiumTests(AbstractMaterialTest, unittest.TestCase):
         self.assertLessEqual(self.mat.getMassFrac("LI6"), 0.078)
         self.assertGreater(self.mat.getMassFrac("LI7"), 0.90)
 
+    def test_lithiumMatMods(self):
+        li5 = Lithium()
+        li5.applyInputParams(LI6_wt_frac=0.5)
+
+        li6 = Lithium()
+        li6.applyInputParams(LI6_wt_frac=0.6)
+
+        li8 = Lithium()
+        li8.applyInputParams(LI6_wt_frac=0.8)
+
+        self.assertAlmostEqual(li5.getMassFrac("LI6"), 0.5, places=10)
+        self.assertAlmostEqual(li6.getMassFrac("LI6"), 0.6, places=10)
+        self.assertAlmostEqual(li8.getMassFrac("LI6"), 0.8, places=10)
+
     def test_pseudoDensity(self):
         ref = self.mat.pseudoDensity(Tc=200)
         self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
