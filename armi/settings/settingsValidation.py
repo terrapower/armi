@@ -109,8 +109,8 @@ class Query:
                             self.correction()
                             self.corrected = True
                         self._passed = True
-                    except RunLogPromptCancel as ki:
-                        raise KeyboardInterrupt from ki
+                    except RunLogPromptCancel:
+                        raise KeyboardInterrupt("You have cancelled the submission.")
                 else:
                     try:
                         continueSubmission = prompt(
