@@ -144,8 +144,7 @@ class MaterialFindingTests(unittest.TestCase):
         setMaterialNamespaceOrder(["armi.materials", newMats])
         self.__validateMaterialNamespace()
 
-        # in the case of duplicate materials, show that the material namespace determines
-        # which material is chosen
+        # In the case of duplicate materials, show that the material namespace determines which material is chosen.
         uraniumOxideTest = materials.resolveMaterialClassByName(
             "UraniumOxide", namespaceOrder=[newMats, "armi.materials"]
         )

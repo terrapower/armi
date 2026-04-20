@@ -14,7 +14,7 @@
 """
 Basic water materials: SaturatedSteam and SaturatedWater.
 
-This is an example of a material implement purely in Python, without any matProps YAML inputs.
+This is an example of a material implemented purely in Python, without any matProps YAML inputs.
 """
 
 import math

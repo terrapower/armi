@@ -145,6 +145,12 @@ def loadAll(rootDir: str = None) -> None:
     """
     global loadedRootDirs
 
+    # We prefere the ARMI material subclass, but catch the case where matProps exists without ARMI.
+    try:
+        from armi.materials import Material
+    except ImportError:
+        from armi.matProps.material import Material
+
     if rootDir is None:
         rootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
         if not os.path.exists(rootDir):
@@ -241,6 +247,12 @@ def loadMaterial(yamlPath: str, saveMaterial: bool = False) -> Material:
     Material
         Material object whose data is parsed from material file provided by yamlPath.
     """
+    # We prefere the ARMI material subclass, but catch the case where matProps exists without ARMI.
+    try:
+        from armi.materials import Material
+    except ImportError:
+        from armi.matProps.material import Material
+
     mat = Material()
     mat.loadFile(yamlPath)
     if saveMaterial:

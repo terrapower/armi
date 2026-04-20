@@ -39,6 +39,7 @@ import inspect
 import pkgutil
 from typing import List
 
+from armi import matProps
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
 
@@ -170,7 +171,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     Returns
     -------
     matCls : armi.materials.material.Material
-        The material
+        The material, which will always be of the ARMI Material class, which subclasses the matProps class.
 
     Raises
     ------
@@ -187,17 +188,22 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     armi.reactor.reactors.factory
         Applies user settings to default namespace order.
     """
+    # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
-        # assume direct package path like `armi.materials.uZr:UZr`
         modPath, clsName = name.split(":")
         mod = importlib.import_module(modPath)
         return getattr(mod, clsName)
 
+    # 2. Try to import the material from a namespace defined above
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
     for namespace in namespaceOrder:
         mod = importlib.import_module(namespace)
         if hasattr(mod, name):
             return getattr(mod, name)
+
+    # 3. Try to import the material from the matProps namespace
+    if name in matProps.materials:
+        return matProps.materials[name]
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "
