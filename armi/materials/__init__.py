@@ -44,6 +44,7 @@ from typing import List
 
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
+from armi.matProps import addMaterial
 from armi.matProps import getPaths as getYamlPaths
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
@@ -108,7 +109,8 @@ class {0}(Material):
     exec(code)
 
 
-def importYamlMaterialDir(dirPath=None, overwriteExisting=False):
+# TODO: Should we call this load? Or loadSafe? loadSafeYamlDir? importYamlDir?
+def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True):
     """
     Import all Materials defined by YAML files in the defined directory into this package.
 
@@ -119,6 +121,8 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False):
         If this is left as None, we will look for the "materials_data" directory in the venv.
     overwriteExisting : bool, optional
         If True, will overwrite existing materials in the namespace. Default False.
+    clearFirst : bool, optional
+        TODO. Default True.
     """
     if dirPath is None:
         # If no path is provided, get the default material dir from the venv.
@@ -127,16 +131,23 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False):
     if not os.path.exists(dirPath):
         raise OSError(f"No material directory provided, and default not found: {dirPath}")
 
+    if clearFirst:
+        from armi.matProps import clear
+
+        clear()
+
     # recursively get all the *.yaml and *.yml files from the provided directory
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
-        # test that this file is a valid material
+        # tests this is a valid material file AND preps for adding to matProp registry
         mat = Material()
         try:
             mat.loadFile(yamlPath)
         except Exception:
             continue
 
+        # TODO: print(os.path.basename(yamlPath))
+        addMaterial(yamlPath, mat)
         addYamlMaterialToThisNamespace(yamlPath, overwriteExisting=overwriteExisting)
 
 
@@ -256,6 +267,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     for namespace in namespaceOrder:
         mod = importlib.import_module(namespace)
         if hasattr(mod, name):
+            # TODO: Does this work? I appear to be returning modules, not just material classes.
             return getattr(mod, name)
 
     raise KeyError(

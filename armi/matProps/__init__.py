@@ -94,6 +94,7 @@ materials = {}
 
 def getPaths(rootDir: str) -> list:
     """Get the paths of all the YAML files in a given directory."""
+    # TODO: print("\n\nCALLLING GET PATHS!!!!!!!!!!", rootDir)
     if not os.path.exists(rootDir):
         raise FileNotFoundError(f"Directory {rootDir} not found")
     elif not os.path.isdir(rootDir):
@@ -189,6 +190,7 @@ def loadSafe(rootDir: str = None) -> None:
     --------
     loadAll : More flexible way to load materials into matProps.
     """
+    # TODO: print("\n\nCALLING LOAD SAFE!!!!!", rootDir)
     clear()
     loadAll(rootDir)
 
