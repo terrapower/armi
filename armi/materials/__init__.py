@@ -36,15 +36,18 @@ that the ``armi.matProps`` YAML files support. ARMI also maintains a few example
 
 import importlib
 import inspect
+import os
 import pkgutil
+import sysconfig
+from pathlib import Path
 from typing import List
 
-from armi import matProps
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
+from armi.matProps import getPaths as getYamlPaths
 
-# This will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting
-# during reactor construction (see armi.reactor.reactors.factory).
+# This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
+# armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 
@@ -79,15 +82,69 @@ def setMaterialNamespaceOrder(order):
     _MATERIAL_NAMESPACE_ORDER = order
 
 
+def addYamlMaterialToThisNamespace(yamlPath: str, overwriteExisting=False):
+    """Given a valid material YAML file, create a class for it and add it to this package.
+
+    Parameters
+    ----------
+    yamlPath : str
+        Path to a valid material YAML file, to be imported.
+    overwriteExisting : bool, optional
+        If True, will overwrite existing materials in the namespace. Default False.
+    """
+    # Get the name of the material from the file name
+    name = Path(yamlPath).stem
+
+    # If a class with this name already exists in the package, continue
+    if not overwriteExisting and name in globals():
+        return
+
+    # Build a custom YAML material class and add it to this package
+    code = """
+global {0}
+class {0}(Material):
+    YAML_PATH = r"{1}"
+""".format(name, yamlPath)
+    exec(code)
+
+
+def importYamlMaterialDir(dirPath=None, overwriteExisting=False):
+    """
+    Import all Materials defined by YAML files in the defined directory into this package.
+
+    Parameters
+    ----------
+    dirPath : str, optional
+        Path to directory, filled with material YAML files, to be imported.
+        If this is left as None, we will look for the "materials_data" directory in the venv.
+    overwriteExisting : bool, optional
+        If True, will overwrite existing materials in the namespace. Default False.
+    """
+    if dirPath is None:
+        # If no path is provided, get the default material dir from the venv.
+        dirPath = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
+
+    if not os.path.exists(dirPath):
+        raise OSError(f"No material directory provided, and default not found: {dirPath}")
+
+    # recursively get all the *.yaml and *.yml files from the provided directory
+    paths = getYamlPaths(dirPath)
+    for yamlPath in paths:
+        # test that this file is a valid material
+        mat = Material()
+        try:
+            mat.loadFile(yamlPath)
+        except Exception:
+            continue
+
+        addYamlMaterialToThisNamespace(yamlPath, overwriteExisting=overwriteExisting)
+
+
 def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):
     """
-    Import all Material subclasses into the top subpackage.
+    Import all Material subclasses into the top subpackage. This only works for materials defined in Python.
 
     This allows devs to use ``from armi.materials import HT9``. This can be used in plugins for similar purposes.
-
-    .. warning::
-        Do not directly import materials from this namespace in code. Use the full module import instead. This is just
-        for material resolution. This will be replaced with a more formal material registry in the future.
 
     Parameters
     ----------
@@ -200,10 +257,6 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         mod = importlib.import_module(namespace)
         if hasattr(mod, name):
             return getattr(mod, name)
-
-    # 3. Try to import the material from the matProps namespace
-    if name in matProps.materials:
-        return matProps.materials[name]
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "
