@@ -44,7 +44,7 @@ from typing import List
 
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
-from armi.matProps import addMaterial
+from armi.matProps import addMaterial, clear
 from armi.matProps import getPaths as getYamlPaths
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
@@ -109,7 +109,6 @@ class {0}(Material):
     exec(code)
 
 
-# TODO: Should we call this load? Or loadSafe? loadSafeYamlDir? importYamlDir?
 def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True):
     """
     Import all Materials defined by YAML files in the defined directory into this package.
@@ -122,7 +121,8 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True
     overwriteExisting : bool, optional
         If True, will overwrite existing materials in the namespace. Default False.
     clearFirst : bool, optional
-        TODO. Default True.
+        A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
+        This is particularly popular during unit testing.
     """
     if dirPath is None:
         # If no path is provided, get the default material dir from the venv.
@@ -132,8 +132,7 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True
         raise OSError(f"No material directory provided, and default not found: {dirPath}")
 
     if clearFirst:
-        from armi.matProps import clear
-
+        # clear the loaded materials before loading this new directory
         clear()
 
     # recursively get all the *.yaml and *.yml files from the provided directory
@@ -146,7 +145,7 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True
         except Exception:
             continue
 
-        # TODO: print(os.path.basename(yamlPath))
+        # add the material to two namespaces, to support different user workflows
         addMaterial(yamlPath, mat)
         addYamlMaterialToThisNamespace(yamlPath, overwriteExisting=overwriteExisting)
 
