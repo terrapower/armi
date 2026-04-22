@@ -478,7 +478,7 @@ class Material(MatPropsMaterial):
         # try the YAML file first
         if hasattr(self, "rho") and self.rho is not None:
             Tc = getTc(Tc, Tk)
-            # matProps does density is in kg/m3, and this method is in g/cm3
+            # matProps gives density in kg/m3, and this method is in g/cm3
             return self.rho(T=Tc, TD=self.getTD()) / 1000.0
 
         # no YAML, use linear expansion
