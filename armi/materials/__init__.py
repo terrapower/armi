@@ -101,12 +101,8 @@ def addYamlMaterialToThisNamespace(yamlPath: str, overwriteExisting=False):
         return
 
     # Build a custom YAML material class and add it to this package
-    code = """
-global {0}
-class {0}(Material):
-    YAML_PATH = r"{1}"
-""".format(name, yamlPath)
-    exec(code)
+    materialClass = type(name, (Material,), {"YAML_PATH": yamlPath})
+    globals()[name] = materialClass
 
 
 def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True):
