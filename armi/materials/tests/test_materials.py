@@ -21,7 +21,11 @@ from copy import deepcopy
 from numpy import testing
 
 from armi import context, materials, settings
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
+from armi.materials import (
+    _MATERIAL_NAMESPACE_ORDER,
+    setMaterialNamespaceOrder,
+    resolveMaterialClassByName,
+)
 from armi.reactor import blueprints
 from armi.utils import units
 
@@ -33,7 +37,7 @@ class AbstractMaterialTest:
     VALID_TEMP_K = 500
 
     def setUp(self):
-        self.mat = self.MAT_CLASS()
+        self.mat = resolveMaterialClassByName(self.MAT_CLASS)()
 
     def test_isPicklable(self):
         """Test that all materials are picklable so we can do MPI communication of state."""
@@ -41,7 +45,9 @@ class AbstractMaterialTest:
         mat = pickle.loads(stream)
 
         # check a property that is sometimes interpolated.
-        self.assertEqual(self.mat.density(self.VALID_TEMP_K), mat.density(self.VALID_TEMP_K))
+        self.assertEqual(
+            self.mat.density(self.VALID_TEMP_K), mat.density(self.VALID_TEMP_K)
+        )
 
     def test_density(self):
         """Test that all materials produce a non-zero density."""
@@ -100,17 +106,25 @@ class MaterialFindingTests(unittest.TestCase):
             :tests: R_ARMI_MAT_NAMESPACE
         """
         self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.materials"]),
+            materials.resolveMaterialClassByName(
+                "Void", namespaceOrder=["armi.materials"]
+            ),
             materials.Void,
         )
         self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.cli", "armi.materials"]),
+            materials.resolveMaterialClassByName(
+                "Void", namespaceOrder=["armi.cli", "armi.materials"]
+            ),
             materials.Void,
         )
         with self.assertRaises(ModuleNotFoundError):
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["invalid.namespace", "armi.materials"])
+            materials.resolveMaterialClassByName(
+                "Void", namespaceOrder=["invalid.namespace", "armi.materials"]
+            )
         with self.assertRaises(KeyError):
-            materials.resolveMaterialClassByName("Unobtanium", namespaceOrder=["armi.materials"])
+            materials.resolveMaterialClassByName(
+                "Unobtanium", namespaceOrder=["armi.materials"]
+            )
 
     def __validateMaterialNamespace(self):
         """Helper method to validate the material namespace a little."""
@@ -133,7 +147,9 @@ class MaterialFindingTests(unittest.TestCase):
         """
         # let's do a quick test of getting a material from the default namespace
         setMaterialNamespaceOrder(["armi.materials"])
-        uraniumOxide = materials.resolveMaterialClassByName("UraniumOxide", namespaceOrder=["armi.materials"])
+        uraniumOxide = materials.resolveMaterialClassByName(
+            "UraniumOxide", namespaceOrder=["armi.materials"]
+        )
         self.assertGreater(uraniumOxide().density(500), 0)
 
         # validate the default namespace in ARMI
@@ -472,16 +488,24 @@ class UraniumOxideTests(AbstractMaterialTest, unittest.TestCase):
         massFracs = self.mat.massFrac
 
         testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
-        testing.assert_allclose(massFracs["U235"], 0.02 * (u235 * 0.02 + u238 * 0.98) / gPerMol, rtol=5e-4)
-        testing.assert_allclose(massFracs["U238"], 0.98 * (u235 * 0.02 + u238 * 0.98) / gPerMol, rtol=5e-4)
+        testing.assert_allclose(
+            massFracs["U235"], 0.02 * (u235 * 0.02 + u238 * 0.98) / gPerMol, rtol=5e-4
+        )
+        testing.assert_allclose(
+            massFracs["U238"], 0.98 * (u235 * 0.02 + u238 * 0.98) / gPerMol, rtol=5e-4
+        )
 
         self.mat.adjustMassEnrichment(0.2)
         massFracs = self.mat.massFrac
         gPerMol = 2 * o16 + 0.8 * u238 + 0.2 * u235
 
         testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
-        testing.assert_allclose(massFracs["U235"], 0.2 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4)
-        testing.assert_allclose(massFracs["U238"], 0.8 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4)
+        testing.assert_allclose(
+            massFracs["U235"], 0.2 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4
+        )
+        testing.assert_allclose(
+            massFracs["U238"], 0.8 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4
+        )
 
     def test_density(self):
         # Reference data taken from ORNL/TM-2000/351. "Thermophysical Properties of MOX and UO2 Fuels Including the
@@ -878,8 +902,12 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
         ]
         for i, Tk in enumerate(tempsK):
             Tc = Tk - units.C_TO_K
-            self.assertAlmostEqual(self.mat.linearExpansionPercent(Tc=Tc), expectedValues[i], msg=str(Tc))
-            self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=Tk), expectedValues[i], msg=str(Tk))
+            self.assertAlmostEqual(
+                self.mat.linearExpansionPercent(Tc=Tc), expectedValues[i], msg=str(Tc)
+            )
+            self.assertAlmostEqual(
+                self.mat.linearExpansionPercent(Tk=Tk), expectedValues[i], msg=str(Tk)
+            )
 
     def test_pseudoDensity(self):
         tempsK = [
@@ -916,8 +944,12 @@ class ZrTests(AbstractMaterialTest, unittest.TestCase):
         ]
         for i, Tk in enumerate(tempsK):
             Tc = Tk - units.C_TO_K
-            self.assertAlmostEqual(self.mat.pseudoDensity(Tc=Tc), expectedValues[i], msg=str(Tc))
-            self.assertAlmostEqual(self.mat.pseudoDensity(Tk=Tk), expectedValues[i], msg=str(Tk))
+            self.assertAlmostEqual(
+                self.mat.pseudoDensity(Tc=Tc), expectedValues[i], msg=str(Tc)
+            )
+            self.assertAlmostEqual(
+                self.mat.pseudoDensity(Tk=Tk), expectedValues[i], msg=str(Tk)
+            )
 
 
 class InconelTests(AbstractMaterialTest, unittest.TestCase):
@@ -974,7 +1006,16 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         massFracNameList = ["NI", "CR", "FE", "C", "MN55", "S", "SI", "CU"]
-        massFracRefValList = [0.7541, 0.1550, 0.0800, 0.0008, 0.0050, 0.0001, 0.0025, 0.0025]
+        massFracRefValList = [
+            0.7541,
+            0.1550,
+            0.0800,
+            0.0008,
+            0.0050,
+            0.0001,
+            0.0025,
+            0.0025,
+        ]
 
         for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.getMassFrac(name)
@@ -1082,7 +1123,16 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
 
     def test_linearExpansionPercent(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
-        refList = [0.099543, 0.227292, 0.365207, 0.513288, 0.671535, 0.839948, 1.018527, 1.207272]
+        refList = [
+            0.099543,
+            0.227292,
+            0.365207,
+            0.513288,
+            0.671535,
+            0.839948,
+            1.018527,
+            1.207272,
+        ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
@@ -1136,7 +1186,20 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.InconelX750
 
     def test_setDefaultMassFracs(self):
-        massFracNameList = ["NI", "CR", "FE", "TI", "AL27", "NB93", "MN55", "SI", "S", "CU", "C", "CO59"]
+        massFracNameList = [
+            "NI",
+            "CR",
+            "FE",
+            "TI",
+            "AL27",
+            "NB93",
+            "MN55",
+            "SI",
+            "S",
+            "CU",
+            "C",
+            "CO59",
+        ]
         massFracRefValList = [
             0.7180,
             0.1550,
@@ -1295,7 +1358,15 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_heatCapacity(self):
         temps = [100, 200, 300, 400, 500, 600, 700]
-        refList = [419.183138, 438.728472, 459.630622, 464.218088, 480.092250, 556.547128, 573.450902]
+        refList = [
+            419.183138,
+            438.728472,
+            459.630622,
+            464.218088,
+            480.092250,
+            556.547128,
+            573.450902,
+        ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.heatCapacity(Tc=Tc)
@@ -1355,8 +1426,32 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_linearExpansionPercent(self):
-        temps = [21.11, 456.11, 574.44, 702.22, 840.56, 846.11, 948.89, 1023.89, 1146.11, 1287.78, 1382.22]
-        refList = [0.0, 0.160, 0.203, 0.253, 0.303, 0.303, 0.342, 0.366, 0.421, 0.468, 0.504]
+        temps = [
+            21.11,
+            456.11,
+            574.44,
+            702.22,
+            840.56,
+            846.11,
+            948.89,
+            1023.89,
+            1146.11,
+            1287.78,
+            1382.22,
+        ]
+        refList = [
+            0.0,
+            0.160,
+            0.203,
+            0.253,
+            0.303,
+            0.303,
+            0.342,
+            0.366,
+            0.421,
+            0.468,
+            0.504,
+        ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
