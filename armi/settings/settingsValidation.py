@@ -118,7 +118,6 @@ class Query:
                             "Continue?",
                             "YES_NO",
                             "NO_DEFAULT",
-                            "CANCEL",
                         )
                         if not continueSubmission:
                             raise SystemExit("You have cancelled the submission.")
