@@ -14,16 +14,21 @@
 """Tests materials.py."""
 
 import math
+import os
+import pathlib
 import pickle
+import shutil
 import unittest
 from copy import deepcopy
+from random import randint
 
 from numpy import testing
 
 from armi import context, materials, settings
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, importYamlMaterialDir, setMaterialNamespaceOrder
 from armi.reactor import blueprints
 from armi.utils import units
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class AbstractMaterialTest:
@@ -86,7 +91,8 @@ class MaterialConstructionTests(unittest.TestCase):
     def test_matInit(self):
         """Make sure all materials can be instantiated without error."""
         for matClass in materials.iterAllMaterialClassesInNamespace(materials):
-            matClass()
+            m = matClass()
+            self.assertIsInstance(m, materials.Material)
 
 
 class MaterialFindingTests(unittest.TestCase):
@@ -154,6 +160,28 @@ class MaterialFindingTests(unittest.TestCase):
 
         # for safety, reset the material namespace list and order
         setMaterialNamespaceOrder(["armi.materials"])
+
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
+    def test_importYamlMaterialDir(self):
+        testName = "test_importYamlMaterialDir"
+        matName = f"{testName}{randint(0, 9999999999)}"  # random material name, probably unique
+        with TemporaryDirectoryChanger():
+            os.mkdir(testName)
+            thisDir = pathlib.Path(__file__).parent.resolve()
+            fromFile = os.path.join(thisDir, "..", "..", "matProps", "tests", "testMaterialsData", "materialA.yaml")
+            toFile = os.path.join(testName, f"{matName}.yaml")
+            shutil.copyfile(fromFile, toFile)
+
+            # prove the material does not already exist
+            with self.assertRaises(KeyError):
+                materials.resolveMaterialClassByName(matName)
+
+            importYamlMaterialDir(dirPath=testName, overwriteExisting=True, clearFirst=False)
+
+            # get a material back and show it is working
+            mat = materials.resolveMaterialClassByName(matName)()
+            self.assertIsInstance(mat, materials.Material)
+            self.assertGreater(mat.rho(T=400), 500)
 
 
 class CaliforniumTests(AbstractMaterialTest, unittest.TestCase):
