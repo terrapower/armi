@@ -13,13 +13,11 @@
 # limitations under the License.
 
 """
-A system to check user settings for validity and provide users with meaningful
-suggestions to fix.
+A system to check user settings for validity and provide users with meaningful suggestions to fix.
 
-This allows developers to define a rich set of rules and suggestions for user settings.
-These then pop up during initialization of a run, either on the command line or as
-dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
-is impossible. Would you like to switch to ___?"
+This allows developers to define a rich set of rules and suggestions for user settings. These then pop up during
+initialization of a run, either on the command line or as dialogues in the GUI. They say things like: "Your ___ setting
+has the value ___, which is impossible. Would you like to switch to ___?"
 """
 
 import itertools
@@ -44,14 +42,12 @@ class Query:
         :id: I_ARMI_SETTINGS_RULES
         :implements: R_ARMI_SETTINGS_RULES
 
-        This class is meant to represent a generic validation test against a setting.
-        The goal is: developers create new settings and they want to make sure those
-        settings are used correctly. As an implementation, users pass in a
-        ``condition`` function to this class that returns ``True`` or ``False`` based
-        on the setting name and value. And then this class has a ``resolve`` method
-        which tests if the condition is met. Optionally, this class also contains a
-        ``correction`` function that allows users to automatically correct a bad
-        setting, if the developers can find a clear path forward.
+        This class is meant to represent a generic validation test against a setting. The goal is: developers create new
+        settings and they want to make sure those settings are used correctly. As an implementation, users pass in a
+        ``condition`` function to this class that returns ``True`` or ``False`` based on the setting name and value. And
+        then this class has a ``resolve`` method which tests if the condition is met. Optionally, this class also
+        contains a ``correction`` function that allows users to automatically correct a bad setting, if the developers
+        can find a clear path forward.
     """
 
     def __init__(self, condition, statement, question, correction):
@@ -61,16 +57,14 @@ class Query:
         Parameters
         ----------
         condition : callable
-            A callable that returns True or False. If True, then the query activates
-            its question and potential correction.
+            A callable that returns True or False. If True, then the query activates its question and potential
+            correction.
         statement : str
             A statement of the problem indicated by a True condition
         question : str
-            A question asking the user for confirmation of the proposed
-            fix.
+            A question asking the user for confirmation of the proposed fix.
         correction : callable
-            A callable that when called fixes the situation. See
-            :py:meth:`Inspector.NO_ACTION` for no-ops.
+            A callable that when called fixes the situation. See :py:meth:`Inspector.NO_ACTION` for no-ops.
         """
         self.condition = condition
         self.statement = statement
@@ -82,9 +76,8 @@ class Query:
         self.autoResolved = True
 
     def __repr__(self):
-        # Add representation so that it's possible to identify which one
-        # is being referred to when there are errors.
-        return "<Query: {}>".format(self.statement)
+        # Add representation so that it's possible to identify which one is being referred to when there are errors.
+        return f"<Query: {self.statement}>"
 
     def __bool__(self):
         try:
@@ -105,32 +98,31 @@ class Query:
             try:
                 if self.isCorrective():
                     try:
-                        make_correction = prompt(
+                        makeCorrection = prompt(
                             "INSPECTOR: " + self.statement,
                             self.question,
                             "YES_NO",
                             "NO_DEFAULT",
                             "CANCEL",
                         )
-                        if make_correction:
+                        if makeCorrection:
                             self.correction()
                             self.corrected = True
                         self._passed = True
-                    except RunLogPromptCancel as ki:
-                        raise KeyboardInterrupt from ki
+                    except RunLogPromptCancel:
+                        raise SystemExit("You have cancelled the submission.")
                 else:
                     try:
-                        continue_submission = prompt(
+                        continueSubmission = prompt(
                             "INSPECTOR: " + self.statement,
                             "Continue?",
                             "YES_NO",
                             "NO_DEFAULT",
-                            "CANCEL",
                         )
-                        if not continue_submission:
-                            raise KeyboardInterrupt
-                    except RunLogPromptCancel as ki:
-                        raise KeyboardInterrupt from ki
+                        if not continueSubmission:
+                            raise SystemExit("You have cancelled the submission.")
+                    except RunLogPromptCancel:
+                        raise SystemExit("You have cancelled the submission.")
             except RunLogPromptUnresolvable:
                 self.autoResolved = False
                 self._passed = True
@@ -138,12 +130,11 @@ class Query:
 
 class Inspector:
     """
-    This manages queries which assert certain states of the data model, generally presenting
-    themselves to the user, offering information on the potential problem, a question
-    and the action to take on an affirmative and negative answer from the user.
+    This manages queries which assert certain states of the data model, generally presenting themselves to the user,
+    offering information on the potential problem, a question and the action to take on an affirmative and negative
+    answer from the user.
 
-    In practice very useful for making sure setting values are as intended and without
-    bad interplay with one another.
+    In practice very useful for making sure setting values are as intended and without bad interplay with one another.
 
     One Inspector will contain multiple Queries and be associated directly with an
     :py:class:`~armi.operators.operator.Operator`.
@@ -169,8 +160,7 @@ class Inspector:
         self._inspectBlueprints()
         self._inspectSettings()
 
-        # Gather and attach validators from all plugins
-        # This runs on all registered plugins, not just active ones.
+        # Gather and attach validators from all plugins. This runs on all registered plugins, not just active ones.
         pluginQueries = getPluginManagerOrFail().hook.defineSettingsValidators(inspector=self)
         for queries in pluginQueries:
             self.queries.extend(queries)
@@ -263,8 +253,7 @@ class Inspector:
 
     def _assignCS(self, key, value):
         """Lambda assignment workaround."""
-        # this type of assignment works, but be mindful of
-        # scoping when trying different methods
+        # this type of assignment works, but be mindful of scoping when trying different methods
         runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
