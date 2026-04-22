@@ -252,6 +252,8 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     armi.reactor.reactors.factory
         Applies user settings to default namespace order.
     """
+    from armi.matProps import Material as MatPropsMaterial
+
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
         modPath, clsName = name.split(":")
@@ -262,8 +264,9 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
     for namespace in namespaceOrder:
         mod = importlib.import_module(namespace)
-        if hasattr(mod, name):
-            # TODO: Does this work? I appear to be returning modules, not just material classes.
+        materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
+        materialsList = [material[0] for material in materialsList]
+        if name in materialsList:
             return getattr(mod, name)
 
     raise KeyError(
