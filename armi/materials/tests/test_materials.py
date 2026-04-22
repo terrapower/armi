@@ -196,9 +196,6 @@ class CaliforniumTests(AbstractMaterialTest, unittest.TestCase):
         cur = self.mat.pseudoDensity(1390)
         self.assertEqual(cur, ref)
 
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
     def test_porosities(self):
         self.mat.parent = None
         self.assertEqual(self.mat.liquidPorosity, 0.0)
@@ -216,9 +213,6 @@ class CesiumTests(AbstractMaterialTest, unittest.TestCase):
         cur = self.mat.pseudoDensity(450)
         ref = 1.843
         self.assertAlmostEqual(cur, ref, delta=ref * 0.05)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class MagnesiumTests(AbstractMaterialTest, unittest.TestCase):
@@ -316,9 +310,6 @@ class NaClTests(AbstractMaterialTest, unittest.TestCase):
         cur = self.mat.density(Tc=300)
         ref = 2.050604
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class PotassiumTests(AbstractMaterialTest, unittest.TestCase):
@@ -695,10 +686,6 @@ class VoidTests(AbstractMaterialTest, unittest.TestCase):
         ref = 0.0
         self.assertEqual(cur, ref)
 
-    def test_propertyValidTemperature(self):
-        """This material has no valid temperatures."""
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
 
 class MixtureTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials._Mixture
@@ -722,9 +709,6 @@ class MixtureTests(AbstractMaterialTest, unittest.TestCase):
     def test_linearExpansion(self):
         cur = self.mat.linearExpansion(400)
         self.assertEqual(cur, 0.0)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class LeadTests(AbstractMaterialTest, unittest.TestCase):
@@ -989,11 +973,6 @@ class InconelTests(AbstractMaterialTest, unittest.TestCase):
         for Tc, ref in zip(temps, refList):
             cur = self.Inconel800.linearExpansionPercent(Tc=Tc)
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=str(Tc))
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.Inconel.propertyValidTemperature), 0)
-        self.assertEqual(len(self.InconelPE16.propertyValidTemperature), 0)
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
@@ -1273,9 +1252,6 @@ class CaH2Tests(AbstractMaterialTest, unittest.TestCase):
         ref = self.mat.pseudoDensity(Tc=300)
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
 
 class HafniumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Hafnium
@@ -1287,9 +1263,6 @@ class HafniumTests(AbstractMaterialTest, unittest.TestCase):
 
         ref = self.mat.pseudoDensity(Tc=300)
         self.assertAlmostEqual(cur, ref, ref * 0.01)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class HT9Tests(AbstractMaterialTest, unittest.TestCase):

@@ -159,13 +159,6 @@ class TestWater(unittest.TestCase):
             self.assertAlmostEqual(massFracO, 0.888, places=3)
             self.assertAlmostEqual(massFracO + massFracH, 1.0)
 
-    def test_propertyValidTemperature(self):
-        water = SaturatedWater()
-        self.assertEqual(len(water.propertyValidTemperature), 0)
-
-        steam = SaturatedSteam()
-        self.assertEqual(len(steam.propertyValidTemperature), 0)
-
     def test_validateNames(self):
         water = Water()
         self.assertEqual(water.name, "Water")

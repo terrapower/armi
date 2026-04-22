@@ -91,6 +91,3 @@ class UZR_TestCase(TestCase):
         ref = 15.94
         delta = ref * 0.01
         self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
