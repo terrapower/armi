@@ -44,7 +44,7 @@ from typing import List
 
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
-from armi.matProps import addMaterial, clear
+from armi.matProps import addMaterial, clear, loadedRootDirs
 from armi.matProps import getPaths as getYamlPaths
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
@@ -127,6 +127,7 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True
     if not os.path.exists(dirPath):
         raise OSError(f"No material directory provided, and default not found: {dirPath}")
 
+    loadedRootDirs.append(dirPath)
     if clearFirst:
         # clear the loaded materials before loading this new directory
         clear()
