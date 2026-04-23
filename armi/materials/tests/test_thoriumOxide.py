@@ -19,7 +19,7 @@ from armi.materials import ThoriumOxide
 from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
+class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = ThoriumOxide
 
     def setUp(self):
@@ -33,7 +33,7 @@ class ThoriumOxide_TestCase(AbstractMaterialTest, unittest.TestCase):
         ref = self.mat.pseudoDensity(500)
 
         reduced = self.ThoriumOxide_TD_frac.pseudoDensity(500)
-        self.assertAlmostEqual(ref * 0.16, reduced)
+        self.assertAlmostEqual(ref * 0.4, reduced)
 
     def test_linearExpansionPercent(self):
         self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=500), 0.195334)

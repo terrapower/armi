@@ -21,7 +21,7 @@ The wrappers below are designed so new matProps material objects can be created 
 
 import os
 
-from armi.materials.material import Fluid, FuelMaterial, Material, SimpleSolid
+from armi.materials.material import Fluid, FuelMaterial, Material
 
 # handle pathing to materials files
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -113,7 +113,7 @@ class Thorium(Material):
         self.refDens = 11.68
 
 
-class ThoriumOxide(FuelMaterial, SimpleSolid):
+class ThoriumOxide(FuelMaterial):
     YAML_PATH = os.path.join(_RESOURCES_DIR, "ThoriumOxide.yaml")
 
     def __init__(self):
