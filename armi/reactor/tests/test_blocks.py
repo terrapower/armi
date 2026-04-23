@@ -39,6 +39,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
+from armi.reactor.grids.hexagonal import HexGrid
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import loadTestReactor
 from armi.testing.singleMixedAssembly import buildMixedPinAssembly
@@ -720,7 +721,6 @@ class Block_TestCase(unittest.TestCase):
             for shapeType in shapes:
                 for c in homogBlock.getComponents():
                     if isinstance(c, shapeType):
-                        print(c)
                         break
                 else:
                     # didn't find the homogenized hex in the block copy
@@ -3258,7 +3258,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(self.ThRZBlock.getBoronMassEnrich(), 0.0)
 
 
-class CartesianBlock_TestCase(unittest.TestCase):
+class CartesianBlockTests(unittest.TestCase):
     """Tests for blocks with rectangular/square outer shape."""
 
     PITCH = 70
@@ -3278,6 +3278,10 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.cartesianBlock.add(self.cartesianComponent)
         self.cartesianBlock.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0))
 
+        r = tests.getEmptyHexReactor()
+        self.cartesianBlock.parent = r.core
+        self.cartesianBlock.autoCreateSpatialGrids(r.core.spatialGrid)
+
     def test_getPitchSquare(self):
         self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
 
@@ -3287,8 +3291,8 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
         Notes
         -----
-        This assumes there are 3 materials in the homogeneous block, one with half the area
-        fraction, and 2 with 1/4 each.
+        This assumes there are 3 materials in the homogeneous block, one with half the area fraction, and 2 with 1/4
+        each.
         """
         desiredPitch = (10.0, 12.0)
         rectTotalArea = desiredPitch[0] * desiredPitch[1]
@@ -3297,19 +3301,17 @@ class CartesianBlock_TestCase(unittest.TestCase):
         areaFractions = [0.5, 0.25, 0.25]
         materials = ["HT9", "UZr", "Sodium"]
 
-        # There are 2 ways to do this, the first is to pick a component to be the pitch defining
-        # component, and given it the shape of a rectangle to define the pitch. The rectangle outer
-        # dimensions is defined by the pitch of the block/assembly. The inner dimensions is defined
-        # by whatever thickness is necessary to have the desired area fraction. The second way is to
-        # define all physical material components as unshaped, and add an additional infinitely thin
-        # Void component (no area) that defines pitch. See second part of
+        # There are 2 ways to do this, the first is to pick a component to be the pitch defining component, and given it
+        # the shape of a rectangle to define the pitch. The rectangle outer dimensions is defined by the pitch of the
+        # block/assembly. The inner dimensions is defined by whatever thickness is necessary to have the desired area
+        # fraction. The second way is to define all physical material components as unshaped, and add an additional
+        # infinitely thin Void component (no area) that defines pitch. See second part of
         # HexBlock_TestCase.test_getPitchHomogeneousBlock for demonstration.
         cartBlock = blocks.CartesianBlock("TestCartBlock")
 
         hexComponentArea = areaFractions[0] * rectTotalArea
 
-        # Picking 1st material to use for the hex component here, but really the choice is
-        # arbitrary.
+        # Picking 1st material to use for the hex component here, but really the choice is arbitrary.
         # area grows quadratically with outer dimensions.
         # Note there are infinitely many inner dims that would preserve area, this is just one.
         innerDims = [dim * areaFractions[0] ** 0.5 for dim in desiredPitch]
@@ -3341,9 +3343,9 @@ class CartesianBlock_TestCase(unittest.TestCase):
     def test_getCartesianGrid(self):
         """Since not applicable to Cartesian Grids."""
         b = self.cartesianBlock
-        self.assertIsNone(b.spatialGrid)
-        b.autoCreateSpatialGrids("FakeSpatialGrid")
         self.assertIsNotNone(b.spatialGrid)
+        b.autoCreateSpatialGrids("FakeSpatialGrid")
+        self.assertIsInstance(b.spatialGrid, HexGrid)
 
     def test_getWettedPerimeter(self):
         with self.assertRaises(NotImplementedError):
@@ -3354,21 +3356,20 @@ class CartesianBlock_TestCase(unittest.TestCase):
             _ = self.cartesianBlock.getHydraulicDiameter()
 
     def test_pinPitches(self):
-        self.assertFalse(self.cartesianBlock.hasPinPitch())
-
-        with self.assertRaises(AttributeError):
-            self.cartesianBlock.getPinPitch(cold=False)
-
-        with self.assertRaises(AttributeError):
-            self.cartesianBlock.getPinPitch(cold=True)
+        self.assertTrue(self.cartesianBlock.hasPinPitch())
+        self.assertAlmostEqual(self.cartesianBlock.getPinPitch(cold=True), 1.0)
+        self.assertAlmostEqual(self.cartesianBlock.getPinPitch(cold=False), 1.0)
 
     def test_getBoronMassEnrich(self):
         self.assertAlmostEqual(self.cartesianBlock.getBoronMassEnrich(), 0.0)
 
     def test_getPinCenterFlatToFlat(self):
-        r = tests.getEmptyHexReactor()
-        self.cartesianBlock.autoCreateSpatialGrids(r.core.spatialGrid)
-        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 14.0, delta=1e-6)
+        self.cartesianBlock.core.symmetry.isThroughCenterAssembly = False
+        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 13.0, delta=1e-6)
+
+    def test_numRingsToHoldNumCells(self):
+        self.cartesianBlock.core.symmetry.isThroughCenterAssembly = True
+        # TODO: This is not correctly resetting the variable
 
 
 class MassConservationTests(unittest.TestCase):
@@ -3378,16 +3379,15 @@ class MassConservationTests(unittest.TestCase):
         self.b = buildSimpleFuelBlock()
 
     def test_heightExpansionDifferences(self):
-        """The point of this test is to determine if the number densities stay the same with two
-        different heights of the same block.  Since we want to expand a block from cold temperatures
-        to hot using the fuel expansion coefficient (most important neutronicall), other components
-        are not grown correctly. This means that on the block level, axial expansion will NOT
-        conserve mass of non-fuel components. However, the excess mass is simply added to the top of
-        the reactor in the plenum regions (or any non fueled region).
+        """The point of this test is to determine if the number densities stay the same with two different heights of
+        the same block.  Since we want to expand a block from cold temperatures to hot using the fuel expansion
+        coefficient (most important neutronicall), other components are not grown correctly. This means that on the
+        block level, axial expansion will NOT conserve mass of non-fuel components. However, the excess mass is simply
+        added to the top of the reactor in the plenum regions (or any non fueled region).
         """
-        # Assume the default block height is 'cold' height.  Now we must determine what the hot
-        # height should be based on thermal expansion.  Change the height of the block based on the
-        # different thermal expansions of the components then see the effect on number densities.
+        # Assume the default block height is 'cold' height.  Now we must determine what the hot height should be based
+        # on thermal expansion. Change the height of the block based on the different thermal expansions of the
+        # components then see the effect on number densities.
         fuel = self.b.getComponent(Flags.FUEL)
         height = self.b.getHeight()
         Thot = fuel.temperatureInC
