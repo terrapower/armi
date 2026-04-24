@@ -93,11 +93,12 @@ class CartesianBlock(Block):
         clad = self.getComponent(Flags.CLAD)
         nRings = self.numRingsToHoldNumCells(clad.getDimension("mult"))
         pinPitch = self.getPinPitch(cold=cold)
+        pinPitchDist = math.sqrt(pinPitch[0] ** 2 + pinPitch[1] ** 2)
 
         if self.core.symmetry.isThroughCenterAssembly:
-            return 2 * (nRings - 1) * pinPitch
+            return 2 * (nRings - 1) * pinPitchDist
         else:
-            return ((2 * nRings) - 1) * pinPitch
+            return ((2 * nRings) - 1) * pinPitchDist
 
     def getNumCellsGivenRings(self, nRings: int):
         """Calculate the number of cells in a Cartesian grid with a given number of rings.

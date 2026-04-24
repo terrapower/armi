@@ -39,9 +39,9 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
-from armi.reactor.grids.hexagonal import HexGrid
+from armi.reactor.grids.cartesian import CartesianGrid
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.testing import loadTestReactor
+from armi.testing import getEmptyCartesianReactor, loadTestReactor
 from armi.testing.singleMixedAssembly import buildMixedPinAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import densityTools, hexagon, units
@@ -3278,9 +3278,10 @@ class CartesianBlockTests(unittest.TestCase):
         self.cartesianBlock.add(self.cartesianComponent)
         self.cartesianBlock.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0))
 
-        r = tests.getEmptyHexReactor()
-        self.cartesianBlock.parent = r.core
-        self.cartesianBlock.autoCreateSpatialGrids(r.core.spatialGrid)
+        self.rCenter = getEmptyCartesianReactor(throughCenterAssembly=True)
+        self.rBorder = getEmptyCartesianReactor(throughCenterAssembly=False)
+        self.cartesianBlock.parent = self.rCenter.core
+        self.cartesianBlock.autoCreateSpatialGrids(self.rCenter.core.spatialGrid)
 
     def test_getPitchSquare(self):
         self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
@@ -3345,7 +3346,7 @@ class CartesianBlockTests(unittest.TestCase):
         b = self.cartesianBlock
         self.assertIsNotNone(b.spatialGrid)
         b.autoCreateSpatialGrids("FakeSpatialGrid")
-        self.assertIsInstance(b.spatialGrid, HexGrid)
+        self.assertIsInstance(b.spatialGrid, CartesianGrid)
 
     def test_getWettedPerimeter(self):
         with self.assertRaises(NotImplementedError):
@@ -3357,19 +3358,71 @@ class CartesianBlockTests(unittest.TestCase):
 
     def test_pinPitches(self):
         self.assertTrue(self.cartesianBlock.hasPinPitch())
-        self.assertAlmostEqual(self.cartesianBlock.getPinPitch(cold=True), 1.0)
-        self.assertAlmostEqual(self.cartesianBlock.getPinPitch(cold=False), 1.0)
+        pinPitch = self.cartesianBlock.getPinPitch(cold=True)
+        self.assertAlmostEqual(pinPitch[0], 10.0)
+        self.assertAlmostEqual(pinPitch[1], 16.0)
+
+        pinPitch = self.cartesianBlock.getPinPitch(cold=False)
+        self.assertAlmostEqual(pinPitch[0], 10.0)
+        self.assertAlmostEqual(pinPitch[1], 16.0)
 
     def test_getBoronMassEnrich(self):
         self.assertAlmostEqual(self.cartesianBlock.getBoronMassEnrich(), 0.0)
 
     def test_getPinCenterFlatToFlat(self):
-        self.cartesianBlock.core.symmetry.isThroughCenterAssembly = False
-        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 13.0, delta=1e-6)
+        # test with isThroughCenterAssembly=True
+        self.cartesianBlock.parent = self.rCenter.core
+        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 226.4155471693585, delta=1e-6)
+
+        # test with isThroughCenterAssembly=False
+        self.cartesianBlock.parent = self.rBorder.core
+        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 245.2835094334717, delta=1e-6)
+
+    def test_getNumCellsGivenRings(self):
+        """
+        Testing CartesianBlock.getNumCellsGivenRings, in the two different origin locations.
+
+        There are some diagrams in the docstrings for Cartesian Grids and docs explaining this, but the number of
+        cells in a ring on a Cartesian grid changes depending on if the origin is at the center of a grid cell, or at
+        the boundary between 4 grid cells.
+        """
+        # test with isThroughCenterAssembly=True
+        self.cartesianBlock.parent = self.rCenter.core
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(1), 1)
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(2), 9)
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(3), 25)
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(4), 49)
+
+        # test with isThroughCenterAssembly=False
+        self.cartesianBlock.parent = self.rBorder.core
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(1), 4)
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(2), 16)
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(3), 36)
+        self.assertEqual(self.cartesianBlock.getNumCellsGivenRings(4), 64)
 
     def test_numRingsToHoldNumCells(self):
-        self.cartesianBlock.core.symmetry.isThroughCenterAssembly = True
-        # TODO: This is not correctly resetting the variable
+        """
+        Testing CartesianBlock.numRingsToHoldNumCells, in the two different origin locations.
+
+        There are some diagrams in the docstrings for Cartesian Grids and docs explaining this, but the number of
+        cells in a ring on a Cartesian grid changes depending on if the origin is at the center of a grid cell, or at
+        the boundary between 4 grid cells.
+        """
+        # test with isThroughCenterAssembly=True
+        self.cartesianBlock.parent = self.rCenter.core
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(1), 1)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(9), 2)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(24), 3)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(26), 4)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(50), 5)
+
+        # test with isThroughCenterAssembly=False
+        self.cartesianBlock.parent = self.rBorder.core
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(3), 1)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(16), 2)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(36), 3)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(64), 4)
+        self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(65), 5)
 
 
 class MassConservationTests(unittest.TestCase):
