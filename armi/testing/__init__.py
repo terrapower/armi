@@ -117,7 +117,7 @@ def reduceTestReactorRings(r, cs, maxNumRings):
 
 
 def getEmptyHexReactor():
-    """Make an empty hex reactor used in some tests."""
+    """Make an empty hex reactor for use in tests."""
     from armi.reactor import blueprints
 
     bp = blueprints.Blueprints()
@@ -133,8 +133,8 @@ def getEmptyHexReactor():
     return reactor
 
 
-def getEmptyCartesianReactor(pitch=(10.0, 16.0)):
-    """Return an empty Cartesian reactor used in some tests."""
+def getEmptyCartesianReactor(pitch=(10.0, 16.0), throughCenterAssembly=True):
+    """Return an empty Cartesian reactor for use in tests."""
     from armi.reactor import blueprints
 
     bp = blueprints.Blueprints()
@@ -144,7 +144,7 @@ def getEmptyCartesianReactor(pitch=(10.0, 16.0)):
     reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
         geometry.DomainType.QUARTER_CORE,
         geometry.BoundaryType.REFLECTIVE,
-        throughCenterAssembly=True,
+        throughCenterAssembly=throughCenterAssembly,
     )
     reactor.core.spatialGrid.geomType = geometry.CARTESIAN
     reactor.core.spatialGrid.armiObject = reactor.core
