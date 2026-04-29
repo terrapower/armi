@@ -73,6 +73,7 @@ class TestComplexShapes(unittest.TestCase):
             (self.hexArea(opHot) - nHoles * self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 6 * opHot / math.sqrt(3))
 
         # Test that holeRadFromCenter does not change the area.
         comp2 = HoledHexagon(
@@ -124,14 +125,15 @@ class TestComplexShapes(unittest.TestCase):
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=True), comp.getComponentArea(Tc=20.0))
 
-        loHot = comp.getDimension("lengthOuter")
-        woHot = comp.getDimension("widthOuter")
+        lo = comp.getDimension("lengthOuter")
+        wo = comp.getDimension("widthOuter")
         holeODHot = comp.getDimension("holeOD")
         self.assertAlmostEqual(
             comp.getComponentArea(cold=False),
-            (self.rectArea(loHot, woHot) - self.circArea(holeODHot)) * 2,
+            (self.rectArea(lo, wo) - self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 2 * wo + 2 * lo)
 
     def test_holedSquare(self):
         wo = 3.0
@@ -159,6 +161,7 @@ class TestComplexShapes(unittest.TestCase):
             (self.rectArea(woHot, woHot) - self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 4 * woHot)
 
     def test_hexHoledCircle(self):
         od = 3.0
@@ -186,3 +189,4 @@ class TestComplexShapes(unittest.TestCase):
             (self.circArea(odHot) - self.hexArea(holeOPHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), math.pi * odHot)

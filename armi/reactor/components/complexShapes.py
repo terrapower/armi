@@ -407,3 +407,7 @@ class Helix(ShapedComponent):
         helixFactor = math.sqrt((hd / 2.0) ** 2 + c**2) / c
         area = mult * math.pi * ((od / 2.0) ** 2 - (id / 2.0) ** 2) * helixFactor
         return area
+
+    def getPerimeter(self, cold=False, Tc=None):
+        """The Perimeter of a three-dimensional shape is undefined."""
+        raise NotImplementedError
