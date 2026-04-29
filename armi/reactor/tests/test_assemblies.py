@@ -146,7 +146,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertTrue(self.assembly < self.assembly2)
         self.assertFalse(self.assembly2 < self.assembly)
 
-    def test_UThZrMaterial(self):
+    def test_UZrMaterial(self):
         """Test the ternary UZr material."""
         b2 = self.assembly2[0]
         uZrFuel = b2.getComponent(Flags.FUEL | Flags.B)

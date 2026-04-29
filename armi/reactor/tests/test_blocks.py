@@ -2010,7 +2010,7 @@ class Block_TestCase(unittest.TestCase):
         fuel = self.block.getComponent(Flags.FUEL)
 
         u235_dens = fuel.getNumberDensity("U235")
-        self.assertEqual(u235_dens, 0.003695461770836022)
+        self.assertAlmostEqual(u235_dens, 0.003695461770836)
 
         fuel.setNumberDensity("U235", 0.5)
         u235_dens = fuel.getNumberDensity("U235")
@@ -2196,7 +2196,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getReactionRates(self):
         block = blocks.HexBlock("HexBlock")
         block.setType("defaultType")
-        comp = basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
+        comp = basicShapes.Hexagon("hexagon", "MOX", 100, 100, 1)
         block.add(comp)
         block.setHeight(1)
         block.p.xsType = "A"

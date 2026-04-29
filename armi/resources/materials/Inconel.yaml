@@ -1,0 +1,47 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Inconel is a austenitic nickel-chromium superalloy (also called Inconel617 in ARMI)
+
+material type: Metal
+composition:
+  AL27: [1.15, 1.15]
+  B10: [0.0005991, 0.0005991]
+  B11: [0.0024009, 0.0024009]
+  C: [0.1, 0.1]
+  CO59: [12.5, 12.5]
+  CR: [22.0, 22.0]
+  CU: [0.25, 0.25]
+  MN55: [0.5, 0.5]
+  MO: [9.0, 9.0]
+  NI: [52.197, 52.197]
+  SI: [0.5, 0.5]
+  TI: [0.3, 0.3]
+  FE: balance
+  references:
+  - ref: https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf
+    type: open literature
+
+
+density:
+  function:
+    T:
+      min: -273.15
+      max: 5000
+    type: constant
+    value: 8360.0
+  references:
+  - ref: https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf
+    type: open literature

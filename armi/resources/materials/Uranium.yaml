@@ -1,0 +1,153 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Uranium
+
+material type: Fuel
+composition:
+  U238: [99.2886347609115, 99.2886347609115]
+  U235: balance
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: -17.75
+      max: 900.05
+    type: symbolic
+    equation: 21.73 + (0.01591 * (T+273.15)) + (5.907e-6 * (T+273.15)**2)
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature
+
+specific heat capacity:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [24.85, 27.665]
+    - [26.85, 27.7]
+    - [126.85, 29.684]
+    - [226.85, 31.997]
+    - [326.85, 34.762]
+    - [426.85, 38.021]
+    - [526.85, 41.791]
+    - [626.85, 46.081]
+    - [668.75, 48.038]
+    - [668.85, 42.928]
+    - [726.85, 42.928]
+    - [775.75, 42.928]
+    - [775.85, 38.284]
+    - [1126.85, 38.284]
+    - [1134.75, 38.284]
+    - [1134.85, 48.66]
+    - [1626.85, 48.66]
+    - [2126.85, 48.66]
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature
+
+melting temperature:
+  function:
+    T:
+      min: -273.15
+      max: 1e7
+    type: constant
+    value: 1134.85
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature
+
+density:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+   - [19.85, 19070.0]
+   - [126.85, 18980.0]
+   - [226.85, 18890.0]
+   - [326.85, 18790.0]
+   - [426.85, 18680.0]
+   - [526.85, 18550.0]
+   - [626.85, 18410.0]
+   - [667.75, 18390.0]
+   - [667.85, 18160.0]
+   - [726.85, 18110.0]
+   - [774.75, 18070.0]
+   - [774.85, 17940.0]
+   - [826.85, 17880.0]
+   - [926.85, 17760.0]
+   - [1126.85, 17530.0]
+   - [1134.75, 17520.0]
+   - [1134.85, 16950.0]
+   - [1226.85, 16840.0]
+   - [1326.85, 16710.0]
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+   - [19.85, 1.39e-5]
+   - [126.85, 1.52e-5]
+   - [226.85, 1.69e-5]
+   - [326.85, 1.9e-5]
+   - [426.85, 2.14e-5]
+   - [526.85, 2.43e-5]
+   - [626.85, 2.77e-5]
+   - [667.75, 2.91e-5]
+   - [667.85, 1.73e-5]
+   - [774.75, 1.73e-5]
+   - [774.85, 2.29e-5]
+   - [1126.85, 2.29e-5]
+   - [1134.75, 2.29e-5]
+   - [1134.85, 2.55e-5]
+   - [1326.85, 2.55e-5]
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature
+
+linear expansion:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+   - [19.85, 0.0]
+   - [126.85, 0.157]
+   - [226.85, 0.315]
+   - [326.85, 0.494]
+   - [426.85, 0.697]
+   - [526.85, 0.924]
+   - [626.85, 1.186]
+   - [667.75, 1.3]
+   - [667.85, 1.635]
+   - [726.85, 1.737]
+   - [774.75, 1.82]
+   - [774.85, 2.05]
+   - [826.85, 2.168]
+   - [926.85, 2.398]
+   - [1126.85, 2.855]
+   - [1134.75, 2.866]
+   - [1134.85, 4.006]
+   - [1226.85, 4.232]
+   - [1326.85, 4.502]
+  references:
+  - ref: Kim, Y S, and Hofman, G L. AAA fuels handbook. United States, N. p., 2003. Web. doi:10.2172/822554.
+    type: open literature

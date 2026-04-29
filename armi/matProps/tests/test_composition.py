@@ -20,6 +20,7 @@ import unittest
 from ruamel.yaml.constructor import DuplicateKeyError
 
 import armi.matProps
+from armi.matProps.constituent import Constituent
 from armi.matProps.material import Material
 
 
@@ -64,6 +65,13 @@ class TestComposition(unittest.TestCase):
         with self.assertRaisesRegex(KeyError, "Missing YAML node `composition`"):
             mat.loadNode(materialMap)
 
+    def test_compositionVoid(self):
+        node = {"file format": "TESTS", "material type": "Metal", "density": "whatever", "composition": {"V": "void"}}
+
+        mat = Material()
+        c = Constituent.parseComposition(mat.getNode(node, "composition"))
+        self.assertEqual(len(c), 0)
+
     def test_compositionInvTuple(self):
         # Invalid doesn't have two elements
         badCompMap = {"Fe": [1.0]}
@@ -95,7 +103,7 @@ class TestComposition(unittest.TestCase):
         compMap = {"a": [15.0, 20.0], "b": [30.0, 35.0], "c": "balance"}
         mat = self._createFunction(compMap)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         c_minValue, c_maxValue = None, None
         sumMin, sumMax = 0.0, 0.0
         for compElement in mat.composition:
@@ -125,7 +133,7 @@ class TestComposition(unittest.TestCase):
 
         mat = self._createFunction(compMap)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         sumMin = 0.0
         d_minValue, d_maxValue = None, None
         for compElement in mat.composition:

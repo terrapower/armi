@@ -1,0 +1,53 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# HT9
+
+material type: Metal
+composition:
+  C: [0.2, 0.2]
+  SI: [0.25, 0.25]
+  V: [0.3, 0.3]
+  MN: [0.5, 0.5]
+  NI: [0.55, 0.55]
+  W: [0.55, 0.55]
+  MO: [1.0, 1.0]
+  CR: [11.75, 11.75]
+  FE: balance
+  references:
+  - ref: E.2-1 of https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: 19.85
+      max: 776.85
+    type: symbolic
+    equation: 29.65 - 6.668e-2 * (T + 273.15) + 2.184e-4 * (T + 273.15)**2 - 2.527e-7 * (T + 273.15)**3 + 9.621e-11 * (T + 273.15)**4
+  references:
+  - ref: https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
+    type: open literature
+
+linear expansion:
+  function:
+    T:
+      min: 19.85
+      max: 776.85
+    type: symbolic
+    equation: -0.16256 + 1.62307e-4 * (T + 273.15) + 1.42357e-6 * (T + 273.15)**2 - 5.50344e-10 * (T + 273.15)**3
+  references:
+  - ref: https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
+    type: open literature

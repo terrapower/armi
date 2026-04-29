@@ -17,9 +17,7 @@ Simplified UZr alloy.
 
 This is a notional U-10Zr material based on [Chandrabhanu]_.
 
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
+This is an example of a material implement purely in Python, without any matProps YAML inputs.
 """
 
 from armi.materials import material
@@ -31,9 +29,8 @@ class UZr(material.FuelMaterial):
     Simplified UZr fuel alloy.
 
     .. warning:: This is an academic-quality material.
-        Only the 10% Zr-frac properties are present.
-        If you use a Zr-frac other than 10%, these properties will be incorrect. Bring
-        in user-provided materials via plugins when necessary.
+        Only the 10% Zr-frac properties are present. If you use a Zr-frac other than 10%, these properties will be
+        incorrect. Bring in user-provided materials via plugins when necessary.
 
     .. [Chandrabhanu] Chandrabhanu Basak, G.J. Prasad, H.S. Kamath, N. Prabhu,
         An evaluation of the properties of As-cast U-rich UZr alloys,

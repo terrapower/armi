@@ -15,13 +15,11 @@
 
 import unittest
 
-from armi.materials.be9 import Be9
-from armi.materials.tests import test_materials
+from armi.materials import Be9
+from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class TestBe9(test_materials.AbstractMaterialTest, unittest.TestCase):
-    """Beryllium tests."""
-
+class Be9Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = Be9
 
     def test_pseudoDensity(self):
@@ -29,6 +27,3 @@ class TestBe9(test_materials.AbstractMaterialTest, unittest.TestCase):
         ref = 1.85
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)

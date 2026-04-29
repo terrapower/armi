@@ -40,7 +40,7 @@ class TestFunctions(MatPropsFunTestBase):
         """
         mat = self._createFunction(self.baseConstantData)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         density = mat.rho
         self.assertEqual(density.getMinBound("T"), -100.0)
         self.assertEqual(density.getMaxBound("T"), 500.0)

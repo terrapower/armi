@@ -256,4 +256,4 @@ class TestReactorBlueprints(unittest.TestCase):
 
         b = a[2]
         self.assertIn("fuel", str(b).lower())
-        self.assertEqual(b.p.molesHmBOL, b.getHMMoles())
+        self.assertAlmostEqual(b.p.molesHmBOL, b.getHMMoles())

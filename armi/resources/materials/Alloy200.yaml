@@ -1,0 +1,71 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Alloy-200 are wrought commercially pure nickel
+
+material type: Metal
+composition:
+  C: [0.00075, 0.00075]
+  MN: [0.00175, 0.00175]
+  S: [0.00005, 0.00005]
+  SI: [0.00175, 0.00175]
+  CU: [0.00125, 0.00125]
+  FE: [0.002, 0.002]
+  NI: balance
+  references:
+  - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
+    type: open literature
+
+density:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [-200, 8899.997303300546]
+    - [-100, 8899.99698290068]
+    - [100, 8899.996448900947]
+    - [200, 8899.996288701033]
+    - [300, 8899.996181901091]
+    - [400, 8899.996048401168]
+    - [500, 8899.995941601237]
+    - [600, 8899.995834801299]
+    - [700, 8899.995781401334]
+    - [800, 8899.995674601398]
+    - [900, 8899.99559450145]
+    - [1000, 8899.995541101487]
+  references:
+  - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
+    type: open literature
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [-200, 1.01E-5]
+    - [-100, 1.13E-5]
+    - [100, 1.33E-5]
+    - [200, 1.39E-5]
+    - [300, 1.43E-5]
+    - [400, 1.48E-5]
+    - [500, 1.52E-5]
+    - [600, 1.56E-5]
+    - [700, 1.58E-5]
+    - [800, 1.62E-5]
+    - [900, 1.65E-5]
+    - [1000, 1.67E-5]
+  references:
+  - ref: Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf
+    type: open literature

@@ -1,0 +1,90 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Inconel800
+
+material type: Metal
+composition:
+  Ni: [30.0, 35.0]
+  CR: [19.0, 23.0]
+  C: [0.075, 0.075]
+  MN: [1.5, 1.5]
+  S: [0.015, 0.015]
+  SI: [1.0, 1.0]
+  CU: [0.75, 0.75]
+  AL: [0.15, 0.60]
+  TI: [0.15, 0.60]
+  Fe: balance
+  references:
+  - ref: https://www.specialmetals.com/documents/technical-bulletins/incoloy/incoloy-alloy-800.pdf
+    type: open literature
+
+linear expansion:
+  function:
+    T:
+      min: 21
+      max: 800
+    type: symbolic
+    equation: 100 * (2.52525e-14 * T**3 - 3.77814e-11 * T**2 + 2.06360E-8 * T + 1.28071E-5) * (T-21)
+  tabulated data:
+    - [21, 0.000]
+    - [50, 3.987E-2]
+    - [100, 1.147E-1]
+    - [150, 1.953E-1]
+    - [200, 2.797E-1]
+    - [250, 3.664E-1]
+    - [300, 4.542E-1]
+    - [350, 5.423E-1]
+    - [400, 6.304E-1]
+    - [450, 7.183E-1]
+    - [500, 8.065E-1]
+    - [550, 8.956E-1]
+    - [600, 9.867E-1]
+    - [650, 1.081]
+    - [700, 1.182]
+    - [750, 1.289]
+    - [800, 1.407]
+  references:
+  - ref: https://www.specialmetals.com/documents/technical-bulletins/incoloy/incoloy-alloy-800.pdf
+    type: open literature
+
+mean coefficient of thermal expansion:
+  function:
+    T:
+      min: 20
+      max: 800
+    type: symbolic
+    equation: 2.52525e-14 * T**3 - 3.77814e-11 * T**2 + 2.06360E-8 * T + 1.28071E-5
+  tabulated data:
+    - [20, 1.320E-5]
+    - [50, 1.375E-5]
+    - [100, 1.452E-5]
+    - [150, 1.514E-5]
+    - [200, 1.563E-5]
+    - [250, 1.600E-5]
+    - [300, 1.628E-5]
+    - [350, 1.648E-5]
+    - [400, 1.663E-5]
+    - [450, 1.674E-5]
+    - [500, 1.684E-5]
+    - [550, 1.693E-5]
+    - [600, 1.704E-5]
+    - [650, 1.719E-5]
+    - [700, 1.740E-5]
+    - [750, 1.769E-5]
+    - [800, 1.807E-5]
+  references:
+  - ref: https://www.specialmetals.com/documents/technical-bulletins/incoloy/incoloy-alloy-800.pdf
+    type: open literature

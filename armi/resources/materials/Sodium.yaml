@@ -1,0 +1,56 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Sodium
+
+material type: Fluid
+composition:
+  NA: balance
+  references:
+  - ref: https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
+    type: open literature
+
+density:
+  function:
+    T:
+      min: -175.3
+      max: 1957.4
+    type: symbolic
+    equation: 219 + 275.32 * (1 - (T + 273.15) / 2503.7) + 511.58 * (1 - (T + 273.15) / 2503.7) ** 0.5
+  references:
+  - ref: From 1.3.1 in https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
+    type: open literature
+
+enthalpy:
+  function:
+    T:
+      min: 97.85
+      max: 1726.85
+    type: symbolic
+    equation: (-365.77 + 1.6582 * (T + 273.15) - 4.2395e-4 * (T + 273.15)**2 + 1.4847e-7 * (T + 273.15)**3 + 2992.6 / (T + 273.15)) * 1000.0
+  references:
+  - ref: Table 1.1-2 in https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: 98.35
+      max: 1226.85
+    type: symbolic
+    equation: 124.67 - 0.11381 * (T + 273.15) + 5.5226e-5 * (T + 273.15)**2 - 1.1842e-8 * (T + 273.15)**3
+  references:
+  - ref: Table 2.1-2 in https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
+    type: open literature

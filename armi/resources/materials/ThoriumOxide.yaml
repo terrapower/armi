@@ -1,0 +1,68 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ThoriumOxide
+
+material type: Fuel
+composition:
+  O16: [12.12, 12.12]
+  TH232: balance
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
+    type: open literature
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T:
+      min: 24.85
+      max: 949.85
+    type: constant
+    value: 9.67e-6
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
+    type: open literature
+
+linear expansion:
+  function:
+    T:
+      min: 24.85
+      max: 949.85
+    type: symbolic
+    equation: 9.67e-4 * (T - 24.85)
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: 20
+      max: 3369.85
+    type: constant
+    value: 6.20
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
+    type: open literature
+
+melting temperature:
+  function:
+    T:
+      min: -273.15
+      max: 1e7
+    type: constant
+    value: 3369.85
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005). https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
+    type: open literature

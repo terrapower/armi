@@ -25,6 +25,9 @@ This package does not include any material data files. The unit tests in this pa
 ARMI comes packaged with more real world examples at: ``armi/resources/materials/``. The user may create their own data
 files to use with ``matProps`` in a directory, and pass in that path via ``armi.matProps.loadAll(path)``.
 
+**NOTE**: Nowhere in matProps do we import anything else from ARMI. This is important and by design. People want to use
+matProps without the rest of ARMI. No exceptions will be made to change this directional paradigm.
+
 
 Loading Data
 ============
@@ -81,7 +84,6 @@ truth for what materials are.
 
 import os
 import sysconfig
-import warnings
 from glob import glob
 
 from armi.matProps.material import Material
@@ -144,7 +146,7 @@ def loadAll(rootDir: str = None) -> None:
     global loadedRootDirs
 
     if rootDir is None:
-        rootDir = os.path.join(sysconfig.getPaths()["purelib"], "materials_data")
+        rootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
         if not os.path.exists(rootDir):
             raise OSError(f"No material directory provided, and default not found: {rootDir}")
 
@@ -284,39 +286,3 @@ def getLoadedRootDirs() -> list:
     """
     global loadedRootDirs
     return loadedRootDirs
-
-
-def load_all(rootDir: str = None) -> None:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadAll, not matProps.load_all.", DeprecationWarning)
-    loadAll(rootDir)
-
-
-def load_safe(rootDir: str = None) -> None:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadSafe, not matProps.load_safe.", DeprecationWarning)
-    loadSafe(rootDir)
-
-
-def get_material(name: str) -> Material:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.getMaterial, not matProps.get_material.", DeprecationWarning)
-    return getMaterial(name)
-
-
-def load_material(yamlPath: str, saveMaterial: bool = False) -> Material:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadMaterial, not matProps.load_material.", DeprecationWarning)
-    return loadMaterial(yamlPath, saveMaterial)
-
-
-def loaded_materials() -> list:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.loadedMaterials, not matProps.loaded_materials.", DeprecationWarning)
-    return loadedMaterials()
-
-
-def get_loaded_root_dirs() -> list:
-    """Pass-through to temporarily support an old API."""
-    warnings.warn("Please use matProps.getLoadedRootDirs, not matProps.get_loaded_root_dirs.", DeprecationWarning)
-    return getLoadedRootDirs()

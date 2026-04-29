@@ -266,13 +266,15 @@ class BlockBlueprint(yamlize.KeyedList):
         perChildModifiers = set()
         for material in self._getMaterialsInComposite(c):
             for materialParentClass in material.__class__.__mro__:
-                # we must loop over parents as well, since applyInputParams
-                # could call to Parent.applyInputParams()
+                # we must loop over parents as well, since applyInputParams could call to Parent.applyInputParams()
                 if issubclass(materialParentClass, Material):
                     perChildModifiers.update(signature(materialParentClass.applyInputParams).parameters.keys())
-        # self is a parameter to methods, so it gets picked up here
-        # but that's obviously not a real material modifier
+                    if materialParentClass.enrichedNuclide:
+                        perChildModifiers.add(f"{materialParentClass.enrichedNuclide}_wt_frac")
+
+        # self is a parameter to methods, so it gets picked up here but that's obviously not a real material modifier
         perChildModifiers.discard("self")
+        perChildModifiers.add("TD_frac")
         return perChildModifiers
 
     def _getMaterialsInComposite(self, child: Composite) -> Iterator[Material]:

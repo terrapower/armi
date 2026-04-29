@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test axialExpansionChanger."""
+"""Test AxialExpansionChanger."""
 
 import collections
 import copy
@@ -176,7 +176,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase):
             self.obj.performThermalAxialExpansion(self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True)
             self._getConservationMetrics(self.a)
 
-    def test_AssemblyAxialExpansionHeight(self):
+    def test_assemblyAxialExpansionHeight(self):
         """Test the axial expansion gives correct heights for component-based expansion."""
         for idt in range(self.temp.tempSteps):
             for ib, b in enumerate(self.a):
@@ -685,7 +685,7 @@ class TestExceptions(AxialExpansionTestBase):
         with self.assertRaisesRegex(RuntimeError, "tempGrid and tempField must have the same length."):
             self.obj.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
 
-    def test_AssemblyAxialExpansionException(self):
+    def test_assemblyAxialExpansionException(self):
         """Test that negative height exception is caught."""
         # manually set axial exp target component for code coverage
         self.a[0].p.axialExpTargetComponent = self.a[0][0].name
@@ -1095,7 +1095,7 @@ def _buildDummySodium(hotTemp: float, height: float):
     return b
 
 
-class FakeMat(materials.ht9.HT9):
+class FakeMat(materials.HT9):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger.
 
     Notes
@@ -1106,7 +1106,9 @@ class FakeMat(materials.ht9.HT9):
       contraction. See TestConservation.
     """
 
-    name = "FakeMat"
+    def __init__(self):
+        materials.HT9.__init__(self)
+        self.name = "FakeMat"
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""
@@ -1114,17 +1116,19 @@ class FakeMat(materials.ht9.HT9):
         return 0.02 * Tc
 
 
-class FakeMatException(materials.ht9.HT9):
+class FakeMatException(FakeMat):
     """Fake material used to verify TestExceptions.
 
     Notes
     -----
-    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion
+    - the only difference between this and `class FakeMat(HT9)` above is that the thermal expansion
       factor is higher to ensure that a negative block height is caught in
-      TestExceptions:test_AssemblyAxialExpansionException.
+      TestExceptions:test_assemblyAxialExpansionException.
     """
 
-    name = "FakeMatException"
+    def __init__(self):
+        FakeMat.__init__(self)
+        self.name = "FakeMatException"
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""

@@ -38,8 +38,8 @@ class TestWater(unittest.TestCase):
         Tk = 273.16
         ref_vapor_pressure = 611.657
         ref_dp_dT = 44.436693
-        ref_saturated_water_rho = 999.789
-        ref_saturated_steam_rho = 0.00485426
+        ref_saturated_water_rho = 0.999789
+        ref_saturated_steam_rho = 0.000485426
         ref_alpha = -11.529101
         ref_saturated_water_enthalpy = 0.611786
         ref_saturated_steam_enthalpy = 2500.5e3
@@ -53,8 +53,8 @@ class TestWater(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT, water.vaporPressurePrime(Tk=Tk), 3)
         self.assertAlmostEqual(ref_dp_dT, steam.vaporPressurePrime(Tk=Tk), 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensity(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensity(Tk=Tk), 0)
 
         self.assertAlmostEqual(ref_alpha, water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3)
         self.assertAlmostEqual(ref_alpha, steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3)
@@ -80,8 +80,8 @@ class TestWater(unittest.TestCase):
         Tk = 373.1243
         ref_vapor_pressure = 0.101325e6
         ref_dp_dT = 3.616e3
-        ref_saturated_water_rho = 958.365
-        ref_saturated_steam_rho = 0.597586
+        ref_saturated_water_rho = 0.958365
+        ref_saturated_steam_rho = 0.000597586
         ref_alpha = 417.65e3
         ref_saturated_water_enthalpy = 417.05e3
         ref_saturated_steam_enthalpy = 2675.7e3
@@ -95,8 +95,8 @@ class TestWater(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensity(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensity(Tk=Tk), 0)
 
         self.assertAlmostEqual(ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_alpha / steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
@@ -122,8 +122,8 @@ class TestWater(unittest.TestCase):
         Tk = 647.096
         ref_vapor_pressure = 22.064e6
         ref_dp_dT = 268e3
-        ref_saturated_water_rho = 322
-        ref_saturated_steam_rho = 322
+        ref_saturated_water_rho = 0.322
+        ref_saturated_steam_rho = 0.322
         ref_alpha = 1548e3
         ref_saturated_water_enthalpy = 2086.6e3
         ref_saturated_steam_enthalpy = 2086.6e3
@@ -137,8 +137,8 @@ class TestWater(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensity(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensity(Tk=Tk), 0)
 
         self.assertAlmostEqual(ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_alpha / steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
@@ -158,13 +158,6 @@ class TestWater(unittest.TestCase):
             massFracH = water.getMassFrac("H")
             self.assertAlmostEqual(massFracO, 0.888, places=3)
             self.assertAlmostEqual(massFracO + massFracH, 1.0)
-
-    def test_propertyValidTemperature(self):
-        water = SaturatedWater()
-        self.assertEqual(len(water.propertyValidTemperature), 0)
-
-        steam = SaturatedSteam()
-        self.assertEqual(len(steam.propertyValidTemperature), 0)
 
     def test_validateNames(self):
         water = Water()

@@ -1,0 +1,78 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# InconelX750
+
+material type: Metal
+composition:
+  AL27: [0.70, 0.70]
+  C: [0.04, 0.04]
+  CO59: [0.50, 0.50]
+  CR: [15.50, 15.50]
+  CU: [0.25, 0.25]
+  MN55: [0.50, 0.50]
+  NB93: [0.95, 0.95]
+  NI: [71.80, 71.80]
+  S: [0.01, 0.01]
+  SI: [0.25, 0.25]
+  TI: [2.50, 2.50]
+  FE: balance
+  references:
+  - ref: http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: -156.7
+      max: 871.1
+    type: symbolic
+    equation: 1.4835e-6 * T**2 + 1.2668e-2 * T + 11.632
+  references:
+  - ref: http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+    type: open literature
+
+specific heat capacity:
+  function:
+    T:
+      min: -18.0
+      max: 1093.0
+    type: symbolic
+    equation: 9.2261e-7 * T**3 - 9.6368e-4 * T**2 + 4.7778e-1 * T + 420.55
+  references:
+  - ref: http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+    type: open literature
+
+linear expansion:
+  function:
+    T:
+      min: 21.1
+      max: 982.2
+    type: symbolic
+    equation: 6.8378e-7 * T**2 + 1.056e-3 * T - 1.3161e-2
+  references:
+  - ref: http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+    type: open literature
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T:
+      min: 21.1
+      max: 982.2
+    type: symbolic
+    equation: 1.36756e-8 * T + 1.056e-5
+  references:
+  - ref: http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+    type: open literature
