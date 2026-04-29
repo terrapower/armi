@@ -50,6 +50,7 @@ class TestBasicShapes(unittest.TestCase):
             math.pi * (odHot**2 / 4 - idHot**2 / 4) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=True), math.pi * od)
 
     def test_hexagonArea(self):
         op = 2.0
@@ -61,11 +62,9 @@ class TestBasicShapes(unittest.TestCase):
 
         opHot = comp.getDimension("op")
         ipHot = comp.getDimension("ip")
-        self.assertAlmostEqual(
-            comp.getComponentArea(cold=False),
-            math.sqrt(3.0) * (opHot**2 - ipHot**2),
-        )
+        self.assertAlmostEqual(comp.getComponentArea(cold=False), math.sqrt(3.0) * (opHot**2 - ipHot**2))
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 6 * opHot / math.sqrt(3))
 
     def test_rectangleArea(self):
         lo = 2.0
@@ -93,6 +92,7 @@ class TestBasicShapes(unittest.TestCase):
         wiHot = comp.getDimension("widthInner")
         self.assertAlmostEqual(comp.getComponentArea(cold=False), 2 * (loHot * woHot - liHot * wiHot))
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 2 * woHot + 2 * loHot)
 
     def test_solidRectangleArea(self):
         lo = 2.0
@@ -114,6 +114,7 @@ class TestBasicShapes(unittest.TestCase):
         woHot = comp.getDimension("widthOuter")
         self.assertAlmostEqual(comp.getComponentArea(cold=False), 2 * loHot * woHot)
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 2 * woHot + 2 * loHot)
 
     def test_squareArea(self):
         wo = 2.5
@@ -135,6 +136,7 @@ class TestBasicShapes(unittest.TestCase):
         wiHot = comp.getDimension("widthInner")
         self.assertAlmostEqual(comp.getComponentArea(cold=False), 2 * (woHot**2 - wiHot**2))
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 4 * woHot)
 
     def test_triangleArea(self):
         base = 2.5
@@ -156,3 +158,6 @@ class TestBasicShapes(unittest.TestCase):
         heightHot = comp.getDimension("height")
         self.assertAlmostEqual(comp.getComponentArea(cold=False), baseHot * heightHot)
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+
+        with self.assertRaises(NotImplementedError):
+            comp.getPerimeter(cold=False)

@@ -26,10 +26,9 @@ class HoledHexagon(basicShapes.Hexagon):
         :id: I_ARMI_COMP_SHAPES5
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides an implementation for a holed hexagonal Component. This includes setting
-        key parameters such as its material, temperature, and dimensions. It also provides the
-        capability to retrieve the diameter of the inner hole via the ``getCircleInnerDiameter``
-        method.
+        This class provides an implementation for a holed hexagonal Component. This includes setting key parameters such
+        as its material, temperature, and dimensions. It also provides the capability to retrieve the diameter of the
+        inner hole via the ``getCircleInnerDiameter`` method.
     """
 
     THERMAL_EXPANSION_DIMS = {"op", "holeOD", "holeRadFromCenter"}
@@ -129,7 +128,7 @@ class HexHoledCircle(basicShapes.Circle):
         self._linkAndStoreDimensions(components, od=od, holeOP=holeOP, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False, Tc=None):
-        r"""Computes the area for the circle with one hexagonal hole."""
+        """Computes the area for the circle with one hexagonal hole."""
         od = self.getDimension("od", cold=cold, Tc=Tc)
         holeOP = self.getDimension("holeOP", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
@@ -145,8 +144,8 @@ class HexHoledCircle(basicShapes.Circle):
 
 class FilletedHexagon(basicShapes.Hexagon):
     """
-    A hexagon with a hexagonal hole cut out of the center of it, where the corners of both the
-    outer and inner hexagons are rounded, with independent radii of curvature.
+    A hexagon with a hexagonal hole cut out of the center of it, where the corners of both the outer and inner hexagons
+    are rounded, with independent radii of curvature.
 
     By default, the inner hole has a diameter of zero, making this a solid object with no hole.
     """
@@ -270,10 +269,9 @@ class HoledSquare(basicShapes.Square):
         :id: I_ARMI_COMP_SHAPES6
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides an implementation for a holed square Component. This includes setting
-        key parameters such as its material, temperature, and dimensions. It also includes methods
-        to retrieve geometric dimension information unique to holed squares via the
-        ``getComponentArea`` and ``getCircleInnerDiameter`` methods.
+        This class provides an implementation for a holed square Component. This includes setting key parameters such as
+        its material, temperature, and dimensions. It also includes methods to retrieve geometric dimension information
+        unique to holed squares via the ``getComponentArea`` and ``getCircleInnerDiameter`` methods.
     """
 
     THERMAL_EXPANSION_DIMS = {"widthOuter", "holeOD"}
@@ -328,10 +326,9 @@ class Helix(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES7
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation for a helical Component. This includes setting key
-        parameters such as its material, temperature, and dimensions. It also includes the
-        ``getComponentArea`` method to retrieve the area of a helix. Helixes can be used for wire
-        wrapping around fuel pins in fast reactor designs.
+        This class provides the implementation for a helical Component. This includes setting key parameters such as its
+        material, temperature, and dimensions. It also includes the ``getComponentArea`` method to retrieve the area of
+        a helix. Helixes can be used for wire wrapping around fuel pins in fast reactor designs.
 
     Notes
     -----
@@ -341,11 +338,9 @@ class Helix(ShapedComponent):
 
     - od: outer diameter of the helix wire
     - id: inner diameter of the helix wire (if non-zero, helix wire is annular.)
-    - axialPitch: vertical distance between wraps. Is also the axial distance required to complete a
-                  full 2*pi rotation.
-    - helixDiameter: The helix diameter is the distance from the center of the wire-wrap on one side
-                     to the center of the wire-wrap on the opposite side (can be visualized if the
-                     axial pitch is 0.0 - creates a circle).
+    - axialPitch: vertical distance between wraps. Is also the axial distance required to complete a full 2*pi rotation.
+    - helixDiameter: The helix diameter is the distance from the center of the wire-wrap on one side to the center of
+                     the wire-wrap on the opposite side (can be visualized if the axial pitch is 0 - creates a circle).
     """
 
     is3D = False
