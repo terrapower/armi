@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from armi import configure, settings
-from armi.materials import ht9, sodium, uZr
+from armi.materials import HT9, Sodium, UZr
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Circle, DerivedShape, Hexagon
@@ -79,17 +79,17 @@ def createDummyReactor():
 
     # Create a single fuel component with UZr fuel.
     dims = {"Tinput": 20, "Thot": 900, "id": 0.0, "od": 2.9, "mult": 7}
-    c = Circle("fuel", uZr.UZr(), **dims)
+    c = Circle("fuel", UZr(), **dims)
     b.add(c)
 
     # Create a single structure component with HT9.
     dims = {"Tinput": 20, "Thot": 600, "op": 16.0, "ip": 15.0, "mult": 1}
-    c = Hexagon("structure", ht9.HT9(), **dims)
+    c = Hexagon("structure", HT9(), **dims)
     b.add(c)
 
     # Fill in the rest of the block with sodium coolant.
     dims = {"Tinput": 600, "Thot": 600}
-    c = DerivedShape("coolant", sodium.Sodium(), **dims)
+    c = DerivedShape("coolant", Sodium(), **dims)
     b.add(c)
 
     a.add(b)
