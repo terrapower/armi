@@ -31,7 +31,6 @@ Functional Requirements
     :acceptance_criteria: Only the preferred material class is returned when multiple material classes with the same name are defined.
     :status: accepted
 
-.. TODO: Include the matProps version here: impl and test tags
 .. req:: The materials package shall provide the capability to retrieve material properties at different temperatures.
     :id: R_ARMI_MAT_PROPERTIES
     :subtype: functional

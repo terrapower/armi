@@ -117,7 +117,12 @@ class PropertyTests(unittest.TestCase):
         self.assertIsNone(mat.k)
 
     def test_spotCheckAllPropsDict(self):
-        """Spot check every property at least once, using a dictionary of input values."""
+        """Spot check every property at least once, using a dictionary of input values.
+
+        .. test:: We can access matProps-based material properties through a dictionary of independent variable values.
+            :id: T_ARMI_MAT_PROPERTIES3
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
         testMat = loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
         self.assertAlmostEqual(testMat.rho.calc({"T": 300.0}), 1.0)
@@ -169,7 +174,12 @@ class PropertyTests(unittest.TestCase):
         self.assertAlmostEqual(testMat.Elong.calc({"T": 300.0}), 47.0)
 
     def test_spotCheckAllPropsKwargs(self):
-        """Spot check every property at least once, using kwargs."""
+        """Spot check every property at least once, using kwargs.
+
+        .. test:: We can access matProps-based material properties using independent variables.
+            :id: T_ARMI_MAT_PROPERTIES4
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
         testMat = loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
         self.assertAlmostEqual(testMat.rho.calc(T=300.0), 1.0)
@@ -219,6 +229,63 @@ class PropertyTests(unittest.TestCase):
         self.assertAlmostEqual(testMat.Kv_prime.calc(T=300.0), 45.0)
         self.assertAlmostEqual(testMat.S.calc(T=300.0), 46.0)
         self.assertAlmostEqual(testMat.Elong.calc(T=300.0), 47.0)
+
+    def test_spotCheckAllPropsCall(self):
+        """Spot check every property at least once, using the __call__ method.
+
+        .. test:: We can access matProps-based material properties using independent variables.
+            :id: T_ARMI_MAT_PROPERTIES5
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
+        pathToTestYaml = path.join(path.dirname(path.realpath(__file__)), "testDir4")
+        testMat = loadMaterial(path.join(pathToTestYaml, "sampleProperty.yaml"))
+        self.assertAlmostEqual(testMat.rho(T=300.0), 1.0)
+        self.assertAlmostEqual(testMat.c_p(T=300.0), 2.0)
+        self.assertAlmostEqual(testMat.k(T=300.0), 3.0)
+        self.assertAlmostEqual(testMat.alpha_d(T=300.0), 4.0)
+        self.assertAlmostEqual(testMat.mu_d(T=300.0), 5.0)
+        self.assertAlmostEqual(testMat.mu_k(T=300.0), 6.0)
+        self.assertAlmostEqual(testMat.T_melt(T=300.0), 7.0)
+        self.assertAlmostEqual(testMat.T_boil(T=300.0), 8.0)
+        self.assertAlmostEqual(testMat.dH_vap(T=300.0), 9.0)
+        self.assertAlmostEqual(testMat.dH_fus(T=300.0), 10.0)
+        self.assertAlmostEqual(testMat.gamma(T=300.0), 11.0)
+        self.assertAlmostEqual(testMat.P_sat(T=300.0), 12.0)
+        self.assertAlmostEqual(testMat.kappa(T=300.0), 13.0)
+        self.assertAlmostEqual(testMat.alpha_mean(T=300.0), 14.0)
+        self.assertAlmostEqual(testMat.alpha_inst(T=300.0), 15.0)
+        self.assertAlmostEqual(testMat.E(T=300.0), 16.0)
+        self.assertAlmostEqual(testMat.nu(T=300.0), 17.0)
+        self.assertAlmostEqual(testMat.Sy(T=300.0), 18.0)
+        self.assertAlmostEqual(testMat.Su(T=300.0), 19.0)
+        self.assertAlmostEqual(testMat.Sm(T=300.0), 20.0)
+        self.assertAlmostEqual(testMat.So(T=300.0), 21.0)
+        self.assertAlmostEqual(testMat.Sa(T=300.0), 22.0)
+        self.assertAlmostEqual(testMat.St(T=300.0), 23.0)
+        self.assertAlmostEqual(testMat.Smt(T=300.0), 24.0)
+        self.assertAlmostEqual(testMat.Sr(T=300.0), 25.0)
+        self.assertAlmostEqual(testMat.TSRF(T=300.0), 26.0)
+        self.assertAlmostEqual(testMat.YSRF(T=300.0), 27.0)
+        self.assertAlmostEqual(testMat.WSRF(T=300.0), 28.0)
+        self.assertAlmostEqual(testMat.tMaxSr(T=300.0), 29.0)
+        self.assertAlmostEqual(testMat.tMaxSt(T=300.0), 30.0)
+        self.assertAlmostEqual(testMat.eps_t(T=300.0), 31.0)
+        self.assertAlmostEqual(testMat.eps_iso(T=300.0), 32.0)
+        self.assertAlmostEqual(testMat.SaFat(T=300.0), 33.0)
+        self.assertAlmostEqual(testMat.dl_l(T=300.0), 34.0)
+        self.assertAlmostEqual(testMat.nu_g(T=300.0), 35.0)
+        self.assertAlmostEqual(testMat.v_sound(T=300.0), 36.0)
+        self.assertAlmostEqual(testMat.T_sol(T=300.0), 37.0)
+        self.assertAlmostEqual(testMat.T_liq(T=300.0), 38.0)
+        self.assertAlmostEqual(testMat.dV(T=300.0), 39.0)
+        self.assertAlmostEqual(testMat.H(T=300.0), 40.0)
+        self.assertAlmostEqual(testMat.H_calc_T(T=300.0), 41.0)
+        self.assertAlmostEqual(testMat.K_IC(T=300.0), 42.0)
+        self.assertAlmostEqual(testMat.HBW(T=300.0), 43.0)
+        self.assertAlmostEqual(testMat.f(T=300.0), 44.0)
+        self.assertAlmostEqual(testMat.Kv_prime(T=300.0), 45.0)
+        self.assertAlmostEqual(testMat.S(T=300.0), 46.0)
+        self.assertAlmostEqual(testMat.Elong(T=300.0), 47.0)
 
     def test_defPropDup(self):
         with self.assertRaises(KeyError):
