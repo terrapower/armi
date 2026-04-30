@@ -31,6 +31,16 @@ class Material:
     properties, or steel properties.
 
     It may be necessary to have multiple Material definitions for a single material containing different phases.
+
+    .. impl:: Materials can be defined in custom YAML files.
+        :id: I_ARMI_MAT_YAML
+        :implements: R_ARMI_MAT_YAML
+
+        The ARMI matProps package can build a material object from a custom YAML format. This file format is flexible
+        and extensible. It is designed around the idea that mostly what scientists and engineers want from a material in
+        software is the ability to define it in terms of nuclide fractions and properties. In particular, the most work
+        in this code is to allow users to define material properties (like density) using simple mathematical syntax or
+        tabular data.
     """
 
     validFileFormatVersions = [3.0, "TESTS"]

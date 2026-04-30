@@ -64,7 +64,6 @@ Functional Requirements
 I/O Requirements
 ++++++++++++++++
 
-.. TODO: Need impl and test tags
 .. req:: The matProps package shall allow for a material to be defined from a human-readable plain text file.
     :id: R_ARMI_MAT_YAML
     :subtype: io
