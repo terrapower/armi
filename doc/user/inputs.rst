@@ -1282,7 +1282,6 @@ Here is a complete fuel block definition::
 
 Making blocks with unshaped components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Sometimes you will want to make a homogeneous block,  which is a mixture of multiple
 materials, and will not want to define an exact shape for each of the components in
 the block. In this case unshaped components can be used, but ARMI still requires there
@@ -1429,7 +1428,10 @@ The Materials Input File
 The **materials** input files define materials to be used during an ARMI-based simulation. The YAML data format below is
 the preferred way to define materials in ARMI, and they are loaded by the `armi.matProps` package. However, for
 increased flexiblity, the `armi.materials` package allows users to define materials entirely in Python, without dealing
-with the below YAML data format.
+with the below YAML data format. Please see the `armi.materials.material.Material` class for more information.
+
+You can find example YAML material files under `armi/resources/materials/` and example Python materials under:
+`armi/materials/`.
 
 This YAML material file format is human readable, hierarchical, and compact. The base name of the YAML filename (the
 file name without the file path or extension suffix) is interpreted by matProps as the case-sensitive material name. The
