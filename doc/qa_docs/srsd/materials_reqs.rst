@@ -46,7 +46,6 @@ Functional Requirements
     :acceptance_criteria: Instantiate a reactor from blueprints that uses the material modifications and show that the modifications are used.
     :status: accepted
 
-.. TODO: Include the matProps version here: impl and test tags
 .. req:: Materials shall generate nuclide mass fractions at instantiation.
     :id: R_ARMI_MAT_FRACS
     :subtype: functional
