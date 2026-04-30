@@ -31,7 +31,6 @@ matProps without the rest of ARMI. No exceptions will be made to change this dir
 
 Loading Data
 ============
-
 In your Python code, you can load a full set of matProps materials into memory with just one or two lines of code. You
 just have to provide a path to a directory filled with correctly-formatted YAML files:
 
