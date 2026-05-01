@@ -95,6 +95,73 @@ class HoledHexagon(basicShapes.Hexagon):
             return 0.0
 
 
+class CircleHoledCircle(basicShapes.Circle):
+    """Circle with n uniform circular holes hollowed out of it."""
+
+    THERMAL_EXPANSION_DIMS = {"od", "holeOD", "holeRadFromCenter"}
+
+    pDefs = componentParameters.getCircleHoledCircleParameterDefinitions()
+
+    def __init__(
+        self,
+        name,
+        material,
+        Tinput,
+        Thot,
+        od,
+        holeOD,
+        nHoles,
+        holeRadFromCenter=0.0,
+        mult=1.0,
+        modArea=None,
+        isotopics=None,
+        mergeWith=None,
+        components=None,
+    ):
+        ShapedComponent.__init__(
+            self,
+            name,
+            material,
+            Tinput,
+            Thot,
+            isotopics=isotopics,
+            mergeWith=mergeWith,
+            components=components,
+        )
+        self._linkAndStoreDimensions(
+            components,
+            od=od,
+            holeOD=holeOD,
+            nHoles=nHoles,
+            holeRadFromCenter=holeRadFromCenter,
+            mult=mult,
+            modArea=modArea,
+        )
+
+    def getComponentArea(self, cold=False, Tc=None):
+        """Computes the area for the circle with n circular holes."""
+        od = self.getDimension("od", cold=cold, Tc=Tc)
+        outerArea = math.pi * ((od / 2.0) ** 2)
+
+        holeOD = self.getDimension("holeOD", cold=cold, Tc=Tc)
+        nHoles = self.getDimension("nHoles", cold=cold, Tc=Tc)
+        innerArea = nHoles * math.pi * ((holeOD / 2.0) ** 2)
+
+        mult = self.getDimension("mult")
+        return mult * (outerArea - innerArea)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        For the special case of only one single hole, returns the diameter of that hole.
+
+        For any other case, returns 0.0 because a "circle inner diameter" becomes undefined.
+        """
+        if self.getDimension("nHoles") == 1:
+            return self.getDimension("holeOD", Tc, cold)
+        else:
+            return 0.0
+
+
 class HexHoledCircle(basicShapes.Circle):
     """Circle with a single uniform hexagonal hole hollowed out of it."""
 
@@ -129,7 +196,7 @@ class HexHoledCircle(basicShapes.Circle):
         self._linkAndStoreDimensions(components, od=od, holeOP=holeOP, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False, Tc=None):
-        r"""Computes the area for the circle with one hexagonal hole."""
+        """Computes the area for the circle with one hexagonal hole."""
         od = self.getDimension("od", cold=cold, Tc=Tc)
         holeOP = self.getDimension("holeOP", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
