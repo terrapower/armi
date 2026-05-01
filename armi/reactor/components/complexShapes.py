@@ -138,6 +138,9 @@ class CircleHoledCircle(basicShapes.Circle):
             modArea=modArea,
         )
 
+        assert (holeRadFromCenter + holeOD) < od, "Holes extend past outer diameter"
+        assert 2 * holeRadFromCenter * math.sin(math.pi / nHoles) > holeOD, "Internal holes overlap"
+
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the circle with n circular holes."""
         od = self.getDimension("od", cold=cold, Tc=Tc)
