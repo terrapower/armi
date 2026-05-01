@@ -19,6 +19,7 @@ import unittest
 
 from armi.materials import resolveMaterialClassByName
 from armi.reactor.components.complexShapes import (
+    CircleHoledCircle,
     HexHoledCircle,
     HoledHexagon,
     HoledRectangle,
@@ -193,3 +194,27 @@ class TestComplexShapes(unittest.TestCase):
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
         self.assertAlmostEqual(comp.getPerimeter(cold=False), math.pi * odHot)
+
+    def test_circleHoledCircle(self):
+        od = 200
+        holeOD = 2
+        holeRadFromCenter = 80
+        nHoles = 10
+
+        comp = CircleHoledCircle(
+            "Test",
+            material=self.material,
+            Tinput=20,
+            Thot=300,
+            od=od,
+            holeOD=holeOD,
+            nHoles=nHoles,
+            holeRadFromCenter=holeRadFromCenter,
+            mult=1,
+        )
+
+        coldArea = self.circArea(od) - nHoles * self.circArea(holeOD)
+        self.assertAlmostEqual(comp.getComponentArea(cold=True), coldArea, delta=1e-6)
+        self.assertGreater(comp.getComponentArea(cold=False, Tc=300), coldArea)
+        self.assertAlmostEqual(comp.getComponentArea(cold=True), comp.getComponentArea(cold=False, Tc=20))
+        self.assertAlmostEqual(comp.getCircleInnerDiameter(), 0.0)
