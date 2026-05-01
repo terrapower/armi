@@ -154,7 +154,7 @@ class CircleHoledCircle(basicShapes.Circle):
         """
         For the special case of only one single hole, returns the diameter of that hole.
 
-        For any other case, returns 0.0 because an "circle inner diameter" becomes undefined.
+        For any other case, returns 0.0 because a "circle inner diameter" becomes undefined.
         """
         if self.getDimension("nHoles") == 1:
             return self.getDimension("holeOD", Tc, cold)
