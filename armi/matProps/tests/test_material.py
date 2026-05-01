@@ -69,7 +69,7 @@ class TestMapPropsMaterial(unittest.TestCase):
 
     def test_loadFile(self):
         mat = armi.matProps.Material()
-        self.assertEqual(str(mat), "<Material None None>")
+        self.assertEqual(str(mat), "<MatProps Material None None>")
         fPath = os.path.join(THIS_DIR, "testMaterialsData", "materialA.yaml")
         self.assertEqual(len(sorted(armi.matProps.materials.keys())), 0)
         mat.loadFile(fPath)

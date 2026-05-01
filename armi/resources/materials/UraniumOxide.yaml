@@ -1,0 +1,136 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Uranium Oxide
+#
+# UO2 is a common ceramic nuclear fuel form. It's properties are well known. This mostly uses data from [#ornltm2000]_.
+# 
+# [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
+#    et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
+
+material type: Fuel
+composition:
+  U235: [0.627, 0.627]
+  U238: [87.523, 87.523]
+  O: balance
+
+density:
+  function:
+    T:
+      min: 20
+      max: 2826.85
+    TD: 
+      min: 0
+      max: 1
+    type: symbolic
+    equation: (-1.01147e-4 * (T+273.15)**2 - 0.129933 * (T+273.15) + 1.09805e4) * TD
+  references:
+  - ref: Popov, S.G., et al. ORNL/TM-2000/351 "Thermophysical Properties of MOX and UOz Fuels lnbluding the Effects of Irradiation" Oak Ridge National Laboratory, 2000.
+    type: open literature
+
+melting temperature:
+  function:
+    T:
+      min: -273.15
+      max: 1e7
+    type: symbolic
+    equation: 2849.85
+  references:
+  - ref: Popov, S.G., et al. ORNL/TM-2000/351 "Thermophysical Properties of MOX and UOz Fuels lnbluding the Effects of Irradiation" Oak Ridge National Laboratory, 2000.
+    type: open literature
+
+thermal conductivity:
+  function:
+    T: 0
+    type: table
+  tabulated data:
+    - [26.85, 7.991]
+    - [326.85, 4.864]
+    - [626.85, 3.64]
+    - [926.85, 2.768]
+    - [1226.85, 2.567]
+    - [1526.85, 2.294]
+    - [1826.85, 2.073]
+    - [2126.85, 1.891]
+    - [2426.85, 1.847]
+    - [2726.85, 1.718]
+  references:
+  - ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
+    type: open literature
+
+specific heat capacity:
+  function:
+    T:
+      min: 25
+      max: 2849.85
+    type: symbolic
+    equation: 302.27 * (548.68 / (T+273.15))**2 * exp(548.68 / (T+273.15)) / (exp(548.68 / (T+273.15)) - 1.0)**2 + 2 * 8.463e-3 * (T+273.15) + 8.741e7 * 18531.7 * exp(-18531.7 / (T+273.15)) / (T+273.15)**2
+  tabulated data:
+    - [97.85, 2.59E+2]
+    - [100, 2.595E+2]
+    - [300, 2.899E+2]
+    - [500, 3.03E+2]
+    - [700, 3.109E+2]
+    - [900, 3.168E+2]
+    - [1100, 3.227E+2]
+    - [1300, 3.309E+2]
+    - [1500, 3.448E+2]
+    - [1700, 3.684E+2]
+    - [1900, 4.053E+2]
+    - [2100, 4.579E+2]
+    - [2300, 5.27E+2]
+    - [2500, 6.121E+2]
+    - [2700, 7.116E+2]
+    - [2849.85, 7.924E+2]
+  references:
+  - ref: Popov, S.G., et al. ORNL/TM-2000/351 "Thermophysical Properties of MOX and UOz Fuels lnbluding the Effects of Irradiation" Oak Ridge National Laboratory, 2000.
+    type: open literature
+
+linear expansion:
+  tabulated data: &UO2_linear_expansion_percentage_tabulated_data
+    - [26.85, 0.2681]
+    - [326.85, 0.3219]
+    - [626.85, 0.6263]
+    - [649.85, 0.6502]
+    - [926.85, 0.9472]
+    - [1226.85, 1.305]
+    - [1526.85, 1.718]
+    - [1826.85, 2.206]
+    - [2126.85, 2.788]
+    - [2426.85, 3.484]
+    - [2726.85, 4.314]
+  function:
+    T:
+      min: 0
+      max: 2849.85
+    type: piecewise
+    functions:
+      - function:
+          T:
+            min: 0
+            max: 649.85
+          type: symbolic
+          equation: -0.266 + 9.802e-4 * (T+273.15) - 2.705e-8 * (T+273.15)**2 + 4.391e-11 * (T+273.15)**3
+        tabulated data: *UO2_linear_expansion_percentage_tabulated_data
+      - function:
+          T:
+            min: 649.85
+            max: 2849.85
+          type: symbolic
+          equation: -0.328 + 1.179e-3* (T+273.15) - 2.429e-7 * (T+273.15)**2 + 1.219e-10 * (T+273.15)**3
+        tabulated data: *UO2_linear_expansion_percentage_tabulated_data
+  references:
+  - ref: Popov, S.G., et al. ORNL/TM-2000/351 "Thermophysical Properties of MOX and UOz Fuels lnbluding the Effects of Irradiation" Oak Ridge National Laboratory, 2000.
+    type: open literature

@@ -65,7 +65,7 @@ class TestRadar(unittest.TestCase):
 
         self.assertEqual(vals[0], 25.0)
         self.assertEqual(vals[1], 1)
-        self.assertAlmostEqual(vals[2], 52474.8927038, delta=1e-5)
+        self.assertAlmostEqual(vals[2], 52474.89270384451, delta=1e-5)
         self.assertEqual(vals[3], 16.8)
         self.assertAlmostEqual(vals[5], 4290.60340961, delta=1e-5)
         self.assertEqual(len(vals), 6)

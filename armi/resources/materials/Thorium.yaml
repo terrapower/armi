@@ -1,0 +1,53 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Thorium
+
+material type: Fuel
+composition:
+  TH232: balance
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T:
+      min: -243.15
+      max: 326.85
+    type: constant
+    value: 11.9e-6
+  references:
+    - ref: IAEA TECDOC 1450
+      type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: -273.15
+      max: 10000
+    type: constant
+    value: 43.1
+  references:
+    - ref: IAEA TECDOC 1450
+      type: open literature
+
+melting temperature:
+  function:
+    T:
+      min: -273.15
+      max: 10000
+    type: constant
+    value: 1751.85
+  references:
+    - ref: IAEA TECDOC 1450
+      type: open literature

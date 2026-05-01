@@ -11,61 +11,57 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for lithium."""
+"""Tests for liquid Lithium."""
 
 import unittest
 
-from armi.materials.lithium import Lithium
+from armi.materials import Lithium
 from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class Lithium_TestCase(AbstractMaterialTest, unittest.TestCase):
+class LithiumTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = Lithium
 
     def setUp(self):
         AbstractMaterialTest.setUp(self)
         self.mat = Lithium()
 
-        self.Lithium_LI_wt_frac = Lithium()
-        self.Lithium_LI_wt_frac.applyInputParams(LI6_wt_frac=0.5)
+    def test_liAbundance(self):
+        self.assertGreaterEqual(self.mat.getMassFrac("LI6"), 0.019)
+        self.assertLessEqual(self.mat.getMassFrac("LI6"), 0.078)
+        self.assertGreater(self.mat.getMassFrac("LI7"), 0.90)
 
-        self.Lithium_LI6_wt_frac = Lithium()
-        self.Lithium_LI6_wt_frac.applyInputParams(LI6_wt_frac=0.6)
+    def test_lithiumMatMods(self):
+        li5 = Lithium()
+        li5.applyInputParams(LI6_wt_frac=0.5)
 
-        self.Lithium_both = Lithium()
-        self.Lithium_both.applyInputParams(LI6_wt_frac=0.8)
+        li6 = Lithium()
+        li6.applyInputParams(LI6_wt_frac=0.6)
 
-    def test_Lithium_material_modifications(self):
-        self.assertEqual(self.mat.getMassFrac("LI6"), 0.0759)
-        self.assertAlmostEqual(self.Lithium_LI_wt_frac.getMassFrac("LI6"), 0.5, places=10)
-        self.assertAlmostEqual(self.Lithium_LI6_wt_frac.getMassFrac("LI6"), 0.6, places=10)
-        self.assertAlmostEqual(self.Lithium_both.getMassFrac("LI6"), 0.8, places=10)
+        li8 = Lithium()
+        li8.applyInputParams(LI6_wt_frac=0.8)
+
+        self.assertAlmostEqual(li5.getMassFrac("LI6"), 0.5, places=10)
+        self.assertAlmostEqual(li6.getMassFrac("LI6"), 0.6, places=10)
+        self.assertAlmostEqual(li8.getMassFrac("LI6"), 0.8, places=10)
 
     def test_pseudoDensity(self):
-        ref = self.mat.pseudoDensity(Tc=100)
-        self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
-
         ref = self.mat.pseudoDensity(Tc=200)
         self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
 
-    def test_meltingPoint(self):
-        ref = self.mat.meltingPoint()
-        cur = 453.69
-        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+        ref = self.mat.pseudoDensity(Tc=500)
+        self.assertAlmostEqual(ref, 0.512, delta=abs(ref * 0.001))
 
     def test_boilingPoint(self):
-        ref = self.mat.boilingPoint()
-        cur = 1615.0
+        ref = self.mat.T_boil(T=300)  # Celcius
+        cur = 1341.85
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
     def test_heatCapacity(self):
-        ref = self.mat.heatCapacity(Tc=100)
-        cur = 3570.0
-        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
-
         ref = self.mat.heatCapacity(Tc=200)
         cur = 3570.0
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+        ref = self.mat.heatCapacity(Tc=500)
+        cur = 3570.0
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))

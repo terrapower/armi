@@ -16,7 +16,7 @@
 import math
 import unittest
 
-from armi.materials.graphite import Graphite
+from armi.materials import Graphite
 
 
 class Graphite_TestCase(unittest.TestCase):
@@ -32,16 +32,13 @@ class Graphite_TestCase(unittest.TestCase):
         ref = 0.013186
         self.assertAlmostEqual(cur, ref, accuracy)
 
-        cur = self.mat.linearExpansionPercent(1500)
-        ref = 0.748161
+        cur = self.mat.linearExpansionPercent(500)
+        ref = 0.10051249562625
         self.assertAlmostEqual(cur, ref, accuracy)
 
-        cur = self.mat.linearExpansionPercent(3000)
-        ref = 2.149009
+        cur = self.mat.linearExpansionPercent(995)
+        ref = 0.39247643987625
         self.assertAlmostEqual(cur, ref, accuracy)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
     def test_density(self):
         """Test to reproduce density measurements results in table 2 from [INL-EXT-16-38241]."""

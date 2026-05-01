@@ -26,7 +26,7 @@ import numpy as np
 
 from armi import materials, runLog
 from armi.bookkeeping import report
-from armi.materials import custom, material, void
+from armi.materials import Void, custom, material
 from armi.reactor import composites, flags, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
@@ -427,8 +427,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         try:
             self.getProperties().setLumpedFissionProducts(lfpCollection)
         except AttributeError:
-            # This material doesn't setLumpedFissionProducts because it's a regular
-            # material, not a lumpedFissionProductCompatable material
+            # This material doesn't setLumpedFissionProducts because it is a regular material, not a
+            # lumpedFissionProductCompatable material
             pass
 
     def getArea(self, cold=False, Tc=None):
@@ -470,9 +470,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        ``self.p.volume`` is not set until this method is called, so under most circumstances it is
-        probably not safe to access ``self.p.volume`` directly. This is because not all components
-        (e.g., ``DerivedShape``) can compute their volume during initialization.
+        ``self.p.volume`` is not set until this method is called, so under most circumstances it is probably not safe to
+        access ``self.p.volume`` directly. This is because not all components (e.g., ``DerivedShape``) can compute their
+        volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -484,9 +484,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Invalidate the volume so that it will be recomputed from current dimensions upon next access.
 
-        The updated value will be based on its shape and current dimensions.
-        If there is a parent container and that container contains a DerivedShape, then that must be
-        updated as well since its volume may be changing.
+        The updated value will be based on its shape and current dimensions. If there is a parent container and that
+        container contains a DerivedShape, then that must be updated as well since its volume may be changing.
 
         See Also
         --------
@@ -514,12 +513,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Check for negative area and warn/error when appropriate.
 
-        Negative component area is allowed for Void materials (such as gaps) which may be placed
-        between components that will overlap during thermal expansion (such as liners and cladding
-        and annular fuel).
+        Negative component area is allowed for Void materials (such as gaps) which may be placed between components that
+        will overlap during thermal expansion (such as liners and cladding and annular fuel).
 
-        Overlapping is allowed to maintain conservation of atoms while sticking close to the
-        as-built geometry. Modules that need true geometries will have to handle this themselves.
+        Overlapping is allowed to maintain conservation of atoms while sticking close to the as-built geometry. Modules
+        that need true geometries will have to handle this themselves.
         """
         if np.isnan(area):
             return
@@ -550,8 +548,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             raise ArithmeticError(negVolFailure)
 
     def containsVoidMaterial(self):
-        """Returns True if component material is void."""
-        return isinstance(self.material, void.Void)
+        """Returns True if component material is Void."""
+        return isinstance(self.material, Void)
 
     def containsSolidMaterial(self):
         """Returns True if the component material is a solid."""
@@ -583,18 +581,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         r"""
         Adjust temperature of this component.
 
-        This will cause thermal expansion or contraction of solid or liquid components and will
-        accordingly adjust number densities to conserve mass.
+        This will cause thermal expansion or contraction of solid or liquid components and will accordingly adjust
+        number densities to conserve mass.
 
-        Liquids still have a number density adjustment, but some mass tends to expand in or out of
-        the bounding area.
+        Liquids still have a number density adjustment, but some mass tends to expand in or out of the bounding area.
 
-        Since some composites have multiple materials in them that thermally expand differently,
-        the axial dimension is generally left unchanged. Hence, this a 2-D thermal expansion.
+        Since some composites have multiple materials in them that thermally expand differently, the axial dimension is
+        generally left unchanged. Hence, this a 2-D thermal expansion.
 
-        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`.
-        A multiplicative factor :math:`f_N` to apply to number densities when going from T to T'
-        is as follows:
+        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`. A multiplicative factor
+        :math:`f_N` to apply to number densities when going from T to T' is as follows:
 
         .. math::
 
@@ -667,9 +663,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Get number densities using direct array lookup.
 
-        When only a small subset of nuclide number densities are requested, it is
-        likely faster to lookup the index for each nuclide than to recreate the
-        entire dictionary for a lookup.
+        When only a small subset of nuclide number densities are requested, it is likely faster to lookup the index for
+        each nuclide than to recreate the entire dictionary for a lookup.
 
         Parameters
         ----------
@@ -704,9 +699,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_NUCLIDE_FRACS0
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
-            The method allows a user or plugin to set the number density of a Component. It also
-            indicates to other processes that may depend on a Component's status about this change
-            via the ``assigned`` attribute.
+            The method allows a user or plugin to set the number density of a Component. It also indicates to other
+            processes that may depend on a Component's status about this change via the ``assigned`` attribute.
 
         Parameters
         ----------
@@ -1069,9 +1063,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 f"Specified tolerance: {self._TOLERANCE}",
                 single=True,
             )
-            raise RuntimeError(
-                f"Linear expansion percent may not be implemented in the {self.material} material class."
-            )
+            raise RuntimeError(f"Linear expansion factor may not be implemented in the {self.material} material class.")
         return 1.0 + dLL
 
     def printContents(self, includeNuclides=True):
@@ -1400,11 +1392,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
-        if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case,
-            # defer to Material. Material.density is wrapped to warn if it's attached
-            # to a parent. Avoid that by calling the inner function directly
-            density = self.material.density.__wrapped__(self.material, Tc=self.temperatureInC)
+        if not density:
+            # It is possible that there are no nuclides in this component yet. In that case, we defer to the Material.
+            density = self.material.density(Tc=self.temperatureInC)
 
         return density
 

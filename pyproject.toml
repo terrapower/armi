@@ -93,12 +93,12 @@ docs = [
 ######################################################################################
     "docutils==0.21.2", # Needed by sphinx-rtd-them
     "ipykernel>=6.0.0", # iPython kernel to run Jupyter notebooks
-    "Jinja2==3.1.5", # Used in numpydoc and nbconvert
+    "Jinja2==3.1.6", # Used in numpydoc and nbconvert
     "nbsphinx-link==1.3.1", # Adds Jupyter NBs to Sphinx source root
     "nbsphinx==0.9.6", # Parses Jupyter notebooks
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
-    "pypdf==5.3.1", # Generating a single PDF file for the Sphinx documentation
+    "pypdf==6.10.2", # Generating a single PDF file for the Sphinx documentation
     "setuptools",  # needed for conf.py tooling
     "sphinx-data-viewer==0.1.5",
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
@@ -280,10 +280,10 @@ ignore_errors = true
 armi = [
     "bookkeeping/tests/armiRunSmallest-A0000-aHist-ref.txt",
     "matProps/tests/invalidTestFiles/*",
-    "matProps/tests/testDir1/*",
-    "matProps/tests/testDir2/*",
-    "matProps/tests/testDir3/*",
-    "matProps/tests/testDir4/*",
+    "matProps/tests/testDir1/*.yaml",
+    "matProps/tests/testDir2/*.yaml",
+    "matProps/tests/testDir3/*.yaml",
+    "matProps/tests/testDir4/*.yaml",
     "matProps/tests/testMaterialsData/*",
     "nuclearDataIO/cccc/tests/fixtures/labels.ascii",
     "nuclearDataIO/cccc/tests/fixtures/labels.binary",
@@ -314,17 +314,13 @@ armi = [
     "nuclearDataIO/tests/fixtures/mc2v3-AB.isotxs",
     "nuclearDataIO/tests/fixtures/mc2v3-AB.pmatrx",
     "nuclearDataIO/tests/library-file-generation",
-    "nuclearDataIO/tests/library-file-generation/combine-AA-AB.inp",
-    "nuclearDataIO/tests/library-file-generation/combine-and-lump-AA-AB.inp",
-    "nuclearDataIO/tests/library-file-generation/mc2v2-dlayxs.inp",
-    "nuclearDataIO/tests/library-file-generation/mc2v3-AA.inp",
-    "nuclearDataIO/tests/library-file-generation/mc2v3-AB.inp",
-    "nuclearDataIO/tests/library-file-generation/mc2v3-dlayxs.inp",
+    "nuclearDataIO/tests/library-file-generation/*.inp",
     "nuclearDataIO/tests/simple_hexz.inp",
     "physics/neutronics/tests/ISOXA",
     "physics/neutronics/tests/rzmflxYA",
     "resources/burn-chain.yaml",
     "resources/elements.dat",
+    "resources/materials/*.yaml",
     "resources/mcc-nuclides.yaml",
     "resources/nuclides.dat",
     "resources/referenceFissionProducts.dat",
@@ -341,24 +337,10 @@ armi = [
     "testing/resources/armiRun-SHUFFLES.txt",
     "testing/resources/armiRun-SHUFFLES.yaml",
     "testing/resources/COMPXS.ascii",
-    "tests/1DslabXSByCompTest.yaml",
-    "tests/armiRun.yaml",
-    "tests/detailedAxialExpansion/armiRun.yaml",
-    "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
-    "tests/detailedAxialExpansion/refSmallReactor.yaml",
-    "tests/detailedAxialExpansion/refSmallReactorBase.yaml",
+    "tests/*.yaml",
+    "tests/detailedAxialExpansion/*.yaml",
     "tests/ISOAA",
-    "tests/refSmallCartesian.yaml",
-    "tests/refSmallCoreGrid.yaml",
-    "tests/refSmallReactor.yaml",
-    "tests/refSmallReactorBase.yaml",
-    "tests/refSmallSfpGrid.yaml",
-    "tests/refTestCartesian.yaml",
-    "tests/smallestTestReactor/armiRunSmallest.yaml",
-    "tests/smallestTestReactor/refOneBlockReactor.yaml",
-    "tests/smallestTestReactor/refSmallestReactor.yaml",
+    "tests/smallestTestReactor/*.yaml",
     "tests/tutorials",
     "tests/tutorials/data_model.ipynb",
-    "tests/zpprTest.yaml",
-    "tests/zpprTestGeom.yaml",
 ]

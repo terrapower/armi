@@ -510,7 +510,7 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
         refTemps = {"fuel": 600.0, "coolant": 450.0, "structure": 462.4565}
 
         for c, compDensity, compArea in zip(reprBlock, self.expectedComponentDensities, self.expectedComponentAreas):
-            self.assertEqual(compArea, c.getArea())
+            self.assertAlmostEqual(compArea, c.getArea())
             cNucs = c.getNuclides()
             for nuc in cNucs:
                 self.assertAlmostEqual(c.getNumberDensity(nuc), compDensity.get(nuc, 0.0))

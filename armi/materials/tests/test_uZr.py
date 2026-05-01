@@ -37,7 +37,7 @@ class UZR_TestCase(TestCase):
         mat = pickle.loads(stream)
 
         # check a property that is sometimes interpolated.
-        self.assertEqual(self.mat.thermalConductivity(500), mat.thermalConductivity(500))
+        self.assertEqual(self.mat.density(500), mat.density(500))
 
     def test_TD(self):
         """Test the material theoretical density."""
@@ -78,28 +78,6 @@ class UZR_TestCase(TestCase):
         val = self.mat._getCached("Emmy")
         self.assertEqual(val, "Noether")
 
-    def test_densityKgM3(self):
-        """Test the density for kg/m^3.
-
-        .. test:: Test the material base class has temp-dependent density.
-            :id: T_ARMI_MAT_PROPERTIES2
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
-        dens = self.mat.density(500)
-        densKgM3 = self.mat.densityKgM3(500)
-        self.assertEqual(dens * 1000.0, densKgM3)
-
-    def test_pseudoDensityKgM3(self):
-        """Test the pseudo density for kg/m^3.
-
-        .. test:: Test the material base class has temp-dependent 2D density.
-            :id: T_ARMI_MAT_PROPERTIES3
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
-        dens = self.mat.pseudoDensity(500)
-        densKgM3 = self.mat.pseudoDensityKgM3(500)
-        self.assertEqual(dens * 1000.0, densKgM3)
-
     def test_density(self):
         """Test that all materials produce a zero density from density.
 
@@ -113,6 +91,3 @@ class UZR_TestCase(TestCase):
         ref = 15.94
         delta = ref * 0.01
         self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)

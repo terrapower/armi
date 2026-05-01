@@ -19,9 +19,7 @@ Note that this material defaults to a theoretical density fraction of 0.9, refle
 100% theoretical density in real life. To get different fraction, use the `TD_frac` material modification in your
 assembly definition.
 
-The data in this file exists for testing and demonstration purposes only. Developers of ARMI applications can refer to
-this file for a fully worked example of an ARMI material. And this material has proven useful for testing. The data
-contained in this file should not be used in production simulations.
+This is an example of a material implement purely in Python, without any matProps YAML inputs.
 """
 
 from armi import runLog
@@ -47,8 +45,8 @@ class B4C(material.Material):
             self.adjustMassEnrichment(B10_wt_frac)
         if theoretical_density is not None:
             runLog.warning(
-                "The 'theoretical_density' material modification for B4C will be "
-                "deprecated. Update your inputs to use 'TD_frac' instead.",
+                "The 'theoretical_density' material modification for B4C will be deprecated. Update your inputs to use "
+                "'TD_frac' instead.",
                 single=True,
             )
             if TD_frac is not None:
@@ -169,16 +167,6 @@ class B4C(material.Material):
             b11AtomicMass = 11.0093054803
 
         return b10NumFrac * b10AtomicMass / (b10NumFrac * b10AtomicMass + (1.0 - b10NumFrac) * b11AtomicMass)
-
-    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Return density that preserves mass when thermally expanded in 2D.
-
-        Notes
-        -----
-        Applies theoretical density of B4C to parent method
-        """
-        return material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """

@@ -48,7 +48,7 @@ class B4C_TestCase(AbstractMaterialTest, unittest.TestCase):
         self.assertAlmostEqual(ref * 0.4 / B4C.DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
 
     def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+        self.assertEqual(len(self.mat.propertyValidTemperature), 1)
 
     def test_variousEdgeCases(self):
         with self.assertRaises(ValueError):

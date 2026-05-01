@@ -17,8 +17,8 @@ import unittest
 
 import numpy as np
 
+from armi.materials import UO2
 from armi.materials.material import Material
-from armi.materials.uraniumOxide import UO2
 from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.utils import densityTools
 
@@ -26,8 +26,8 @@ from armi.utils import densityTools
 class UraniumOxide(Material):
     """A test material that needs to be stored in a different namespace.
 
-    This is a duplicate (by name only) of :py:class:`armi.materials.uraniumOxide.UraniumOxide`
-    and is used for testing in :py:meth:`armi.materials.tests.test_materials.MaterialFindingTests.test_namespacing`
+    This is a duplicate (by name only) of :py:class:`armi.materials.UraniumOxide` and is used for testing in
+    :py:meth:`armi.materials.tests.test_materials.MaterialFindingTests.test_namespacing`
     """
 
     def pseudoDensity(self, Tk=None, Tc=None):

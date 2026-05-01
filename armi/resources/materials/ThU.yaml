@@ -1,0 +1,57 @@
+file format: 3.0
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Thorium-Uranium metal
+
+material type: Fuel
+composition:
+  TH232: [1.0, 1.0]
+  U233: balance
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
+    type: open literature
+
+instantaneous coefficient of thermal expansion:
+  function:
+    T:
+      min: -243.15
+      max: 326.85
+    type: constant
+    value: 11.9e-6
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
+    type: open literature
+
+thermal conductivity:
+  function:
+    T:
+      min: -243.15
+      max: 326.85
+    type: constant
+    value: 43.1
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
+    type: open literature
+
+melting temperature:
+  function:
+    T:
+      min: -273.15
+      max: 1e7
+    type: constant
+    value: 2025.0
+  references:
+  - ref: Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005)
+    type: open literature

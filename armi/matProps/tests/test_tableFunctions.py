@@ -46,7 +46,7 @@ class TestTableFunctions(MatPropsFunTestBase):
         """Test interpolation for a two-point one-dimensional table."""
         mat = self._createFunction(self.baseOneDimTableData, self.baseOneDimTable)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         func = mat.rho
         self.assertIn("TableFunction1D", str(func))
         for index in range(9):
@@ -80,7 +80,7 @@ class TestTableFunctions(MatPropsFunTestBase):
 
         mat = self._createFunction(data, tableData)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         self.assertAlmostEqual(mat.rho.calc(T=250), 25.68)
         self.assertAlmostEqual(mat.rho.calc(T=275), 25.825)
         self.assertAlmostEqual(mat.rho.calc(T=500), 26.26)
@@ -111,7 +111,7 @@ class TestTableFunctions(MatPropsFunTestBase):
 
         mat = self._createFunction(self.baseOneDimTableData, tableData, minT=250, maxT=900)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         self.assertAlmostEqual(mat.rho.calc(T=275), 5.5)
         self.assertAlmostEqual(mat.rho.calc(T=312.5), 6.125)
 
@@ -119,7 +119,7 @@ class TestTableFunctions(MatPropsFunTestBase):
         """Test that evaluates TableFunction2D for different combinations of integer and floating values."""
         mat = self._createFunction(self.baseTwoDimTableData, self.baseTwoDimTable)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
         func = mat.rho
         self.assertIn("TableFunction2D", str(func))
         self.assertAlmostEqual(func.calc({"T": 2, "t": 1}), 10)
