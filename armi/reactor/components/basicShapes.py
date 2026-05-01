@@ -89,10 +89,11 @@ class Circle(ShapedComponent):
         myID, myOD = self.getDimension("id"), self.getDimension("od")
         return otherID <= myID < otherOD and otherID < myOD <= otherOD
 
-    def getPerimeter(self, cold=False, Tc=None):
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
-        od = self.getDimension("od", cold=cold, Tc=Tc)
-        return math.pi * od
+        d = self.getDimension("id", cold=cold, Tc=Tc) if inner else self.getDimension("od", cold=cold, Tc=Tc)
+        mult = self.getDimension("mult") if inner else 1.0
+        return math.pi * d * mult
 
 
 class Hexagon(ShapedComponent):
@@ -170,10 +171,11 @@ class Hexagon(ShapedComponent):
         """
         return self.getDimension("op")
 
-    def getPerimeter(self, cold=False, Tc=None):
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
-        sideLength = self.getDimension("op", Tc, cold) / math.sqrt(3)
-        return 6 * sideLength
+        pitch = self.getDimension("ip", Tc, cold) if inner else self.getDimension("op", Tc, cold)
+        mult = self.getDimension("mult") if inner else 1.0
+        return 6 * mult * pitch / math.sqrt(3)
 
 
 class Rectangle(ShapedComponent):
@@ -246,7 +248,7 @@ class Rectangle(ShapedComponent):
         widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         lengthI = self.getDimension("lengthInner", cold=cold, Tc=Tc)
         widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * (lengthO * widthO - lengthI * widthI)
         return area
 
@@ -266,11 +268,17 @@ class Rectangle(ShapedComponent):
         """
         return (self.getDimension("lengthOuter"), self.getDimension("widthOuter"))
 
-    def getPerimeter(self, cold=False, Tc=None):
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
-        length = self.getDimension("lengthOuter", Tc, cold=cold)
-        width = self.getDimension("widthOuter", Tc, cold=cold)
-        return 2 * length + 2 * width
+        if inner:
+            length = self.getDimension("lengthInner", Tc, cold=cold)
+            width = self.getDimension("widthInner", Tc, cold=cold)
+        else:
+            length = self.getDimension("lengthOuter", Tc, cold=cold)
+            width = self.getDimension("widthOuter", Tc, cold=cold)
+
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
+        return 2 * (length + width) * mult
 
 
 class SolidRectangle(Rectangle):
@@ -324,7 +332,7 @@ class SolidRectangle(Rectangle):
         """Computes the area of the solid rectangle in cm^2."""
         lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
         widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * (lengthO * widthO)
         return area
 
@@ -381,7 +389,7 @@ class Square(Rectangle):
         """Computes the area of the square in cm^2."""
         widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * (widthO * widthO - widthI * widthI)
         return area
 
@@ -406,10 +414,15 @@ class Square(Rectangle):
         # both dimensions are the same for a square.
         return (self.getDimension("widthOuter"), self.getDimension("widthOuter"))
 
-    def getPerimeter(self, cold=False, Tc=None):
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
-        width = self.getDimension("widthOuter", Tc, cold=cold)
-        return 4 * width
+        if inner:
+            width = self.getDimension("widthInner", Tc, cold=cold)
+        else:
+            width = self.getDimension("widthOuter", Tc, cold=cold)
+
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
+        return 4 * width * mult
 
 
 class Triangle(ShapedComponent):
@@ -466,10 +479,10 @@ class Triangle(ShapedComponent):
         """Computes the area of the triangle in cm^2."""
         base = self.getDimension("base", cold=cold, Tc=Tc)
         height = self.getDimension("height", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * base * height / 2.0
         return area
 
-    def getPerimeter(self, cold=False, Tc=None):
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
         """The perimeter of a triangle depends on the type of triangle, this basic shape is too generic."""
         raise NotImplementedError

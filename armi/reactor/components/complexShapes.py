@@ -93,6 +93,15 @@ class HoledHexagon(basicShapes.Hexagon):
         else:
             return 0.0
 
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        if inner:
+            d = self.getDimension("holeOD", Tc, cold)
+            n = self.getDimension("nHoles")
+            return math.pi * d * n
+        else:
+            return super().getPerimeter(cold=cold, Tc=Tc, inner=False)
+
 
 class HexHoledCircle(basicShapes.Circle):
     """Circle with a single uniform hexagonal hole hollowed out of it."""
@@ -183,13 +192,49 @@ class FilletedHexagon(basicShapes.Hexagon):
         self._linkAndStoreDimensions(components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea)
 
     @staticmethod
-    def _area(D, r):
-        """Helper function, to calculate the area of a hexagon with rounded corners."""
-        if D <= 0.0:
+    def _perimeter(D: float, r: float):
+        """Calculate the perimeter of a hexagon with rounded corners.
+
+        Parameters
+        ----------
+        D: float
+            Flat-to-flat Diameter (represented by something like "ip").
+        r: float
+            Radius of curvature of the rounded corner (0 ≤ r ≤ D/2)
+
+        Returns
+        -------
+        float
+            Perimeter of a hexagon with rounded corners.
+        """
+        if D <= 0.0 or r < 0.0:
             return 0.0
 
-        area = 1.0 - (1.0 - (math.pi / (2.0 * math.sqrt(3)))) * (2 * r / D) ** 2
-        area *= (math.sqrt(3.0) / 2.0) * D**2
+        perim = 2.0 * math.sqrt(3.0) * D
+        perim *= 1.0 - (1.0 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D)
+        return perim
+
+    @staticmethod
+    def _area(D: float, r: float):
+        """Calculate the area of a hexagon with rounded corners.
+
+        Parameters
+        ----------
+        D: float
+            Flat-to-flat Diameter (represented by something like "ip").
+        r: float
+            Radius of curvature of the rounded corner (0 ≤ r ≤ D/2)
+
+        Returns
+        -------
+        float
+            Area of a hexagon with rounded corners
+        """
+        if D <= 0.0 or r < 0.0:
+            return 0.0
+
+        area = (math.sqrt(3.0) / 2.0) * D**2
+        area *= 1.0 - (1.0 - (math.pi / (2.0 * math.sqrt(3)))) * (2 * r / D) ** 2
         return area
 
     def getComponentArea(self, cold=False, Tc=None):
@@ -203,6 +248,17 @@ class FilletedHexagon(basicShapes.Hexagon):
         area = self._area(op, oR) - self._area(ip, iR)
         area *= mult
         return area
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        if inner:
+            D = self.getDimension("ip", cold=cold, Tc=Tc)
+            r = self.getDimension("iR", cold=cold, Tc=Tc)
+        else:
+            D = self.getDimension("op", cold=cold, Tc=Tc)
+            r = self.getDimension("oR", cold=cold, Tc=Tc)
+
+        return self._perimeter(D, r)
 
 
 class HoledRectangle(basicShapes.Rectangle):
