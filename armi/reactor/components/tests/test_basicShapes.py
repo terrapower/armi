@@ -37,20 +37,21 @@ class TestBasicShapes(unittest.TestCase):
 
     def test_circleArea(self):
         od = 2.0
-        id = 1.5
-        comp = Circle("Test", material=self.material, Tinput=20, Thot=300, od=od, id=id, mult=2)
+        iDim = 1.5
+        mult = 2
+        comp = Circle("Test", material=self.material, Tinput=20, Thot=300, od=od, id=iDim, mult=mult)
 
-        self.assertAlmostEqual(comp.getComponentArea(cold=True), math.pi * (od**2 / 4 - id**2 / 4) * 2)
+        self.assertAlmostEqual(comp.getComponentArea(cold=True), math.pi * (od**2 / 4 - iDim**2 / 4) * mult)
         self.assertAlmostEqual(comp.getComponentArea(cold=True), comp.getComponentArea(Tc=20.0))
 
         odHot = comp.getDimension("od")
         idHot = comp.getDimension("id")
         self.assertAlmostEqual(
             comp.getComponentArea(cold=False),
-            math.pi * (odHot**2 / 4 - idHot**2 / 4) * 2,
+            math.pi * (odHot**2 / 4 - idHot**2 / 4) * mult,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
-        self.assertAlmostEqual(comp.getPerimeter(cold=True), math.pi * od)
+        self.assertAlmostEqual(comp.getPerimeter(cold=True), math.pi * od * mult)
 
     def test_hexagonArea(self):
         op = 2.0

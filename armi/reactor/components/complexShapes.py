@@ -169,6 +169,17 @@ class CircleHoledCircle(basicShapes.Circle):
         else:
             return 0.0
 
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        mult = self.getDimension("mult")
+        if inner:
+            holeOD = self.getDimension("holeOD", cold=cold, Tc=Tc)
+            nHoles = self.getDimension("nHoles", cold=cold, Tc=Tc)
+            return math.pi * holeOD * nHoles * mult
+        else:
+            d = self.getDimension("od", cold=cold, Tc=Tc)
+            return math.pi * d * mult
+
 
 class HexHoledCircle(basicShapes.Circle):
     """Circle with a single uniform hexagonal hole hollowed out of it."""
@@ -216,6 +227,15 @@ class HexHoledCircle(basicShapes.Circle):
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """Returns the diameter of the hole equal to the hexagon outer pitch."""
         return self.getDimension("holeOP", Tc, cold)
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        if inner:
+            pitch = self.getDimension("holeOP", Tc, cold) if inner else self.getDimension("op", Tc, cold)
+            mult = self.getDimension("mult") if inner else 1.0
+            return 6 * mult * pitch / math.sqrt(3)
+        else:
+            return super().getPerimeter(cold=cold, Tc=Tc, inner=False)
 
 
 class FilletedHexagon(basicShapes.Hexagon):
@@ -384,6 +404,15 @@ class HoledRectangle(basicShapes.Rectangle):
         """Returns the ``holeOD``."""
         return self.getDimension("holeOD", Tc, cold)
 
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        if inner:
+            holeOD = self.getDimension("holeOD", cold=cold, Tc=Tc)
+            mult = self.getDimension("mult")
+            return math.pi * holeOD * mult
+        else:
+            return super().getPerimeter(cold=cold, Tc=Tc, inner=False)
+
 
 class HoledSquare(basicShapes.Square):
     """Square with one circular hole in it.
@@ -440,6 +469,16 @@ class HoledSquare(basicShapes.Square):
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """Returns the ``holeOD``."""
         return self.getDimension("holeOD", Tc, cold)
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        mult = self.getDimension("mult")
+        if inner:
+            holeOD = self.getDimension("holeOD", cold=cold, Tc=Tc)
+            return math.pi * holeOD * mult
+        else:
+            width = self.getDimension("widthOuter", cold=cold, Tc=Tc)
+            return 4 * width * mult
 
 
 class Helix(ShapedComponent):

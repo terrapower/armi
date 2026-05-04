@@ -92,7 +92,7 @@ class Circle(ShapedComponent):
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
         d = self.getDimension("id", cold=cold, Tc=Tc) if inner else self.getDimension("od", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult") if inner else 1.0
+        mult = self.getDimension("mult")
         return math.pi * d * mult
 
 
