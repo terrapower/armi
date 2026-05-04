@@ -2,11 +2,17 @@
 
 Materials Package
 -----------------
+This section provides requirements for the :py:mod:`armi.materials` and the :py:mod:`armi.matProps` packages within the
+framework, which contains ARMI's system for defining materials. The materials system in ARMI allows for an extreme
+amount of flexibility in defining materials with temperature-dependent properties like density, linear expansion,
+and the like. Materials can be defined by YAML input files (a system defined in :py:mod:`armi.matProps`), which is
+preferred, or they can be defined in pure Python (a system defined in :py:mod:`armi.materials`). The Python materials
+are defined as a subclass of the matProps materials.
 
-This section provides requirements for the :py:mod:`armi.materials` package within the framework, which contains ARMI's system for defining materials. The materials system in ARMI allows for an extreme amount of flexibility in defining materials with temperature-dependent properties like density, linear expansion factor, and the like.
-
-ARMI also comes packaged with a small set of basic materials, though these are meant only as example materials and (because ARMI is open source) these materials can not include proprietary or classified information. As such, we explicitly forbid the use of the example ARMI materials in safety-related modeling and will not be writing requirements on those materials.
-
+ARMI also comes packaged with a small set of high-quality materials. The best examples of how to define a material for
+and ARMI simulation are the material YAML files stored under `armi/resources/materials/`. However, for completeness,
+we have a few examples of materials defined in Python stored under `armi/materials/`. The system should be flexible to
+support nearly any material definition needs.
 
 Functional Requirements
 +++++++++++++++++++++++
@@ -51,4 +57,14 @@ Functional Requirements
     :subtype: functional
     :basis: Thermal expansion coefficients need to be zero for fluids so that fluid components cannot drive thermal expansion of their own or linked component dimensions.
     :acceptance_criteria: Instantiate a Fluid material and show that its linear expansion is identically zero.
+    :status: accepted
+
+I/O Requirements
+++++++++++++++++
+
+.. req:: The matProps package shall allow for a material to be defined from a human-readable plain text file.
+    :id: R_ARMI_MAT_YAML
+    :subtype: io
+    :basis: It is preferable to separate data and code, especially for the purposes of quality assurance.
+    :acceptance_criteria: Instantiate a few materials from YAML files, showing some of the scope for the functionality supported by the YAML format.
     :status: accepted

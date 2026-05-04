@@ -16,7 +16,20 @@
 
 
 class Constituent:
-    """Makeup of the Material.composition."""
+    """Makeup of the Material.composition.
+
+
+    .. impl:: Materials created from YAML files generate nuclide mass fractions at instantiation.
+        :id: I_ARMI_MAT_FRACS2
+        :implements: R_ARMI_MAT_FRACS
+
+        An ARMI material is meant to be able to represent real world materials that might be used in the
+        construction of a nuclear reactor. As such, they are not just individual nuclides, but practical materials like
+        a particular concrete, steel, or water. One of the main things that will be needed to describe such a material
+        is the exact nuclide fractions. As such, all materials loaded via YAML are required to include a "composition"
+        field to provide this data.
+
+    """
 
     def __init__(self, name: str, minValue: float, maxValue: float, isBalance: bool):
         """

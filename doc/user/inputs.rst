@@ -868,58 +868,36 @@ nozzleType
   different pressure loss coefficients and/or flow rates to different types of assemblies.
 
 material modifications
-  These are a variety of modifications that are made to the
-  materials in blocks in these locations. It may include the fuel enrichment (mass frac.), poison
-  enrichment (mass frac.), zirconium mass frac, and any additional options required to fully define
-  the material loaded in the component. The material definitions in the material library define
-  valid modifications for them.
+  There are a variety of material modifications available for each material. The most common material modifications are
+  usually to do with enrichment of a particular nuclide, modifying the theoretical density of a material, or changing
+  some list of custom isotpics. You can set values to these material modifications in your blueprints. And if you want
+  to add new modifications to your own custom material, you would typically implement that change in your materials's
+  `applyInputParams()` method. Here are some example materical modifications from ARMI's history:
 
-  .. exec::
-      from armi.materials import Material
-      from armi.utils.tabulate import tabulate
+  * Lithium: LI6_wt_frac
+  * Sulfur: sulfur_density_frac, TD_frac
+  * B4C: B10_wt_frac, theoretical_density, TD_frac
+  * Uranium: U235_wt_frac, TD_frac, class1_custom_isotopics, class2_custom_isotopics, class1_wt_frac, customIsotopics
 
-      data = []
-      for m in Material.__subclasses__():
-          numArgs = m.applyInputParams.__code__.co_argcount
-          if numArgs > 1:
-              modNames = m.applyInputParams.__code__.co_varnames[1:numArgs]
-              data.append((m.__name__, ", ".join(modNames)))
+  In the Lithium example above, both material modifications modify the weight fraction, or mass fraction, of an element
+  or nuclide. That is useful if you need to specify the fraction of a particular nuclide in your material. Similarly,
+  the Sulfur, B4C, and Uranium examples above have things like "B10_wt_frac" and "U235_wt_frac" where the goal is
+  clearly to set the mass enrichment of some important nuclide in your material. This is particularly common in
+  depletable fuel-type fuels.
 
-          for subM in m.__subclasses__():
-              num = subM.applyInputParams.__code__.co_argcount
-              if num > 1:
-                  mods = subM.applyInputParams.__code__.co_varnames[1:num]
-                  if numArgs > 1:
-                      mods += modNames
-                  data.append((subM.__name__, ", ".join(mods)))
+  A popular class of material modifications is adjusting the theoretical density of a material. The modification name
+  for this is usually "TD_frac" as a soft convention. But you will also see "theoretical_density" above, and can pick
+  whatever naming convention you like. This is popular for solids when the actual density of the material is slightly
+  different than the theoretical density due to the manufacturing process.
 
-      d = {}
-      for k, v in data:
-          if k not in d:
-              d[k] = v
-          else:
-              d[k] = d[k].split(",") + v.split(",")
-              d[k] = sorted(set([vv.strip() for vv in d[k]]))
-              d[k] = ", ".join(d[k])
-      data = [(k, v) for k, v in d.items()]
-      data.sort(key=lambda t: t[0])
-      return tabulate(
-          headers=("Material Name", "Available Modifications"),
-          data=data,
-          tableFmt="rst",
-      )
+  The class 1/class 2 modifications in fuel materials are used to identify mixtures of custom isotopics labels for
+  input scenarios where a varying blend of a high-reactivity feed with a low-reactivity feed. This is often useful for
+  closed fuel cycles. For example, you can define any fuel material as being made of LWR-derived TRU plus depleted
+  uranium at various weight fractions. Note that this input style only adjusts the heavy metal.
 
-  The class 1/class 2 modifications in fuel materials are used to identify mixtures of
-  custom isotopics labels for input scenarios where a varying blend of a high-reactivity
-  feed with a low-reactivity feed. This is often useful for closed fuel cycles. For example,
-  you can define any fuel material as being made of LWR-derived TRU plus depleted uranium
-  at various weight fractions. Note that this input style only adjusts the heavy metal.
-
-  To enable the application of different values for the same material modification type
-  on different components within a block, the user may specify material modifications
-  by component. This is useful, for instance, when two pins within an assembly
-  made of the same base material have different fuel enrichments. This is done
-  using the ``by component`` attribute to the material modifications as in::
+  User can specify material modications on a by-component basis. This is useful, for instance, when two pins within an
+  assembly are made of the same base material but have different fuel enrichments. This is done   using the
+  ``by component`` attribute to the material modifications. For example::
 
         blocks:
             fuel: &block_fuel
@@ -955,7 +933,7 @@ material modifications
                     U235_wt_frac: [0.30]
 
   Material modifications specified on the ``material modifications`` level are referred to as "block default" values
-  and apply to all components on the block not associated with a by-component value. This example would apply an
+  and apply to all components on the block not associated with a by-component value. The example above would apply an
   enrichment of 20% to the ``fuel1`` component and an enrichment of 30% to all other components in the block that
   accept the ``U235_wt_frac`` material modification.
 
@@ -1282,7 +1260,6 @@ Here is a complete fuel block definition::
 
 Making blocks with unshaped components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Sometimes you will want to make a homogeneous block,  which is a mixture of multiple
 materials, and will not want to define an exact shape for each of the components in
 the block. In this case unshaped components can be used, but ARMI still requires there
@@ -1423,6 +1400,415 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 
 .. |Tinput| replace:: T\ :sub:`input`
 .. |Thot| replace:: T\ :sub:`hot`
+
+The Materials Input File
+========================
+The **materials** input files define materials to be used during an ARMI-based simulation. The YAML data format below is
+the preferred way to define materials in ARMI, and they are loaded by the `armi.matProps` package. However, for
+increased flexiblity, the `armi.materials` package allows users to define materials entirely in Python, without dealing
+with the below YAML data format. Please see the `armi.materials.material.Material` class for more information.
+
+You can find example YAML material files under `armi/resources/materials/` and example Python materials under:
+`armi/materials/`.
+
+This YAML material file format is human readable, hierarchical, and compact. The base name of the YAML filename (the
+file name without the file path or extension suffix) is interpreted by matProps as the case-sensitive material name. The
+extension for the material data file must be one of these: `.yaml`, `.yml`, `.YAML`, or `.YML`.
+
+Below is an example material data file containing all the basic matProps concepts, discussed in the following sections.
+
+.. code-block:: yaml
+
+    file format: 3.0
+    material type: Metal
+    composition:
+        C: [0.17, 0.23]
+        P: [0.0, 0.040]
+        Cr: [11.0, 12.5]
+        Fe: balance
+    references:
+        - ref: reference citation 1
+          type: open literature
+        - ref: reference citation 2
+          type: open literature
+
+    Young's modulus:
+        function:
+            T:
+                min: 0
+                max: 700
+            type: symbolic
+            equation: 1.100E+11 - 1.200E+07 - 1.300E+03 * T**2
+        tabulated data:
+            - [  0, 1.100E+11]
+            - [200, 1.075E+11]
+            - [400, 1.050E+11]
+            - [600, 1.023E+11]
+            - [700, 1.010E+11]
+
+    density:
+        tabulated data: &tagged_data
+            - [ 20, 1.088E-05]
+            - [200, 1.215E-05]
+            - [400, 1.316E-05]
+            - [600, 1.369E-05]
+            - [800, 1.576E-05]
+        function:
+            T:
+                min: 20
+                max: 800
+            type: piecewise
+            functions:
+                - function:
+                    T: 0
+                    type: table
+                    tabulated data: *tagged_data
+                - function:
+                    T:
+                        min: 602
+                        max: 800
+                    type: symbolic
+                    equation: 2.1e8 - 2.2E8 * tanh((T-550.0)/180.0)
+    Poisson's ratio:
+        function:
+            T:
+                min: -273
+                max: 5000
+            type: symbolic
+            equation: 0.321
+
+    yield strength:
+        function:
+            T: 
+                min: 350
+                max: 500
+            D: 
+                min: 0
+                max: 100
+            type: symbolic
+            equation: 400.0 * T**2.0 + D
+
+    stress to rupture:
+        function:
+            T: 0
+            t: 1
+            type: two dimensional table
+        tabulated data:
+          - [null,    [   100.,    200.,    300.]]
+          - [1000.,   [123.456, 23456.7, 456.789]]
+          - [10000.,  [78910.1, 89.0123, 10111.2]]
+
+    design fatigue strain range:
+        function:
+            T: 0
+            n: 1
+            type: two dimensional table
+        tabulated data:
+            - [null,     [  427.,   600.,   775.,   800.]]
+            - [10.,      [  0.012, 0.0059,0.0036, 0.0029]]
+            - [20.,      [  0.01,  0.0051,0.0033, 0.0020]]
+
+The only required entries in a material file are "file format", "composition", and "material type".
+
+File Format 
+"""""""""""
+The `file format: version` field defines the file format version. This is a required field. This version string is
+verified to see if it is supported for use by `matProps`.
+
+.. _ref_matType:
+
+Material Type 
+"""""""""""""
+The `material type` field defines the type of material. Valid values for this key include Metal, Fuel, Fluid, Ceramic,
+ASME2015, ASME2017, SimpleSolid, and Composite. This is a required field. This field is meant to provide information to
+the user, and is not used by matProps. Though it may be used by downstream codes.
+
+.. _ref_comp:
+
+Composition
+"""""""""""
+The `composition` field defines the chemical composition of the material. This is a required field. The value for this
+field is a collection of key-value pairs, as denoted by indentation. In this second layer, the key is an element name,
+and the value is a list of length 2 that defines the minimum percent composition then the maximum percent composition
+for the element. There must be one and only one element’s value listed as "balance" instead of a pair of minimum and maximum values. The "balance"  element will fill any remaining fraction of the elements composition, to get the total to
+100 percent.
+
+Optionally, this data entry can be associated with a references keyword.
+
+Composition Requirements:
+
+- The value `balance` shall be assigned to one and only one element.
+- The sum of the mean of the percent composition range for non-trace elements (elements with a minimum composition of 0)
+  shall not exceed 100.
+
+Properties
+""""""""""
+The `property` field defines a property of the material. This is usually a temperature-dependent curve describing the
+material, like density. The value for this field is a collection consisting of several required and optional keywords. A
+summary of the keywords, their relevant status and appropriate section can be found below.
+
+.. table:: Summary of Property Components
+
+    +----------------------+-------------------------------------+--------------------------+
+    | Property Components  | Required Status                     | Section                  |
+    +======================+=====================================+==========================+
+    | function             | Required                            | :numref:`ref_functions`  |
+    +----------------------+-------------------------------------+--------------------------+
+    | references           | Optional                            | :numref:`ref_references` |
+    +----------------------+-------------------------------------+--------------------------+
+    | tabulated data       | Required for table data functions.  | :numref:`ref_tabdata`    |
+    |                      | Otherwise, it is optional.          |                          |
+    +----------------------+-------------------------------------+--------------------------+
+
+The table below lists the default collection of properties that are defined for a material by matProps. Though this list
+is easy to expand. Note that these property names are case sensitive.
+
+.. table:: Available material properties for YAML definition and corresponding matProps API.
+
+    +------------------------------------------------+---------------+
+    | Material Property YAML Name                    | API Name      |
+    +================================================+===============+
+    | thermal diffusivity                            | alpha_d       |
+    +------------------------------------------------+---------------+
+    | instantaneous coefficient of thermal expansion | alpha_inst    |
+    +------------------------------------------------+---------------+
+    | mean coefficient of thermal expansion          | alpha_mean    |
+    +------------------------------------------------+---------------+
+    | specific heat capacity                         | c_p           |
+    +------------------------------------------------+---------------+
+    | Young's modulus                                | E             |
+    +------------------------------------------------+---------------+
+    | shear modulus                                  | S             |
+    +------------------------------------------------+---------------+
+    | thermal conductivity                           | k             |
+    +------------------------------------------------+---------------+
+    | dynamic viscosity                              | mu_d          |
+    +------------------------------------------------+---------------+
+    | kinematic viscosity                            | mu_k          |
+    +------------------------------------------------+---------------+
+    | Poisson's ratio                                | nu            |
+    +------------------------------------------------+---------------+
+    | elongation                                     | Elong         |
+    +------------------------------------------------+---------------+
+    | density                                        | rho           |
+    +------------------------------------------------+---------------+
+    | allowable stress                               | Sa            |
+    +------------------------------------------------+---------------+
+    | design stress                                  | Sm            |
+    +------------------------------------------------+---------------+
+    | service reference stress                       | Smt           |
+    +------------------------------------------------+---------------+
+    | design reference stress                        | So            |
+    +------------------------------------------------+---------------+
+    | stress to rupture                              | Sr            |
+    +------------------------------------------------+---------------+
+    | time dependent design stress                   | St            |
+    +------------------------------------------------+---------------+
+    | tensile strength                               | Su            |
+    +------------------------------------------------+---------------+
+    | yield strength                                 | Sy            |
+    +------------------------------------------------+---------------+
+    | allowable time to rupture                      | tMaxSr        |
+    +------------------------------------------------+---------------+
+    | allowable time to allowable stress             | tMaxSt        |
+    +------------------------------------------------+---------------+
+    | tensile strength reduction factor              | TSRF          |
+    +------------------------------------------------+---------------+
+    | yield strength reduction factor                | YSRF          |
+    +------------------------------------------------+---------------+
+    | weld strength reduction factor                 | WSRF          |
+    +------------------------------------------------+---------------+
+    | design fatigue strain range                    | eps_t         |
+    +------------------------------------------------+---------------+
+    | strain from isochronous stress-strain curve    | eps_iso       |
+    +------------------------------------------------+---------------+
+    | design fatigue stress                          | SaFat         |
+    +------------------------------------------------+---------------+
+    | surface tension                                | gamma         |
+    +------------------------------------------------+---------------+
+    | electrical conductance                         | G             |
+    +------------------------------------------------+---------------+
+    | vapor pressure                                 | P_sat         |
+    +------------------------------------------------+---------------+
+    | isothermal compressibility                     | kappa         |
+    +------------------------------------------------+---------------+
+    | melting temperature                            | T_melt        |
+    +------------------------------------------------+---------------+
+    | boiling temperature                            | T_boil        |
+    +------------------------------------------------+---------------+
+    | linear expansion                               | dl_l          |
+    +------------------------------------------------+---------------+
+    | vapor specific volume                          | nu_g          |
+    +------------------------------------------------+---------------+
+    | speed of sound                                 | v_sound       |
+    +------------------------------------------------+---------------+
+    | solidus temperature                            | T_sol         |
+    +------------------------------------------------+---------------+
+    | liquidus temperature                           | T_liq         |
+    +------------------------------------------------+---------------+
+    | volumetric expansion                           | dV            |
+    +------------------------------------------------+---------------+
+    | enthalpy                                       | H             |
+    +------------------------------------------------+---------------+
+    | temperature from enthalpy                      | H_calc_T      |
+    +------------------------------------------------+---------------+
+    | enthalpy of fusion                             | dH_fus        |
+    +------------------------------------------------+---------------+
+    | latent heat of vaporization                    | dH_vap        |
+    +------------------------------------------------+---------------+
+    | fracture toughness                             | K_IC          |
+    +------------------------------------------------+---------------+
+    | Brinell Hardness                               | HBW           |
+    +------------------------------------------------+---------------+
+    | factor f from ASME.III.5 Fig. HBB-T-1432-2     | f             |
+    +------------------------------------------------+---------------+
+    | factor Kv' from ASME.III.5 Fig. HBB-T-1432-3   | Kv_prime      |
+    +------------------------------------------------+---------------+
+
+It is quite easy to add another material property to your simulation. Use the `defProp` function, and describe the new
+property by: short name, long name, and units. It will then be available to use in your material YAML files like any
+other property.
+
+.. code-block:: python
+
+    from armi.matProps.prop import defProp
+
+    defProp("fuzz", "fuzziness", "1/m^2")
+    defProp("goo", "gooiness", "m^2/s")
+    defProp("squish", "squishiness", "1/Pa")
+
+    armi.matProps.loadSafe("path/to/hilarious/materials/")
+
+Tabulated Data
+""""""""""""""
+A material property can be defined not just by math, but by tabulated data. This is flexible, easy to use, and can
+better match laboratory measurements. Currently, matProps supports one dimensional and two dimensional tables of data,
+as shown in the example at the beginning of this section. Notice that the "type" field is used to make this distinction.
+
+These tables of data can be large and inconvienent to duplicate. So you can tag and name the tables of data for use
+elsewhere in the YAML file. (Look for "tabulated data: &tagged_data" in the example file above.)
+
+Functions
+"""""""""
+The `function` field allows the developer to define a mathematical curve for a material property. For instance, in the
+example file above, a function is used to represent the "Young's modulus" of the material. The independent variable "T"
+is defined to represent Temperature in degrees C, and the min and max values of 0 and 700 are given. This defines the
+valid bounds upon which the "equation" can be evaluated. And the "equation" listed is a polynomial equation.
+
+The `function` system is very flexible though. Notice that "Poisson's ratio" above has "equation: 0.321", so constant
+functions are easy to define. And "yield strength" is actually a function of two independent variables, which matProps
+supports. Functions can also include tabular data. For tabular functions, instead of child keys, the value `0` or `1` is
+provided to indicate which dimension of the table corresponds to which variable. Values returned from tabular functions will be interpretted from the provided values. Several other types of functions are defined in detail below.
+
+Like most everything else in a matProps YAML file, this field can (and probably should) also include a list of
+references to properly attribute the source of the data.
+
+
+Symbolic
+========
+A symbolic function is defined by supplying value `symbolic` for the key `type`. Symbolic functions may use any number
+of independent variables. The `equation` node must be supplied which contains a string with the equation function.
+The `symbolicOperators` field defines the set of operators that may be used in the symbolic equation string. These
+operators may be combined in any order or grouping in order to build up a symbolic expression. While other operators
+outside of the table might function in matProps, they are untested and may not be used in qualified scope. 
+
+.. note:: Both operators and variables are case sensitive. 
+
+.. note:: Implicit multiplication will result in a Value Error. The multiplication operator must be used.
+
+.. table:: Available symbolic function operators
+
+    +-------------+----------------------------------+
+    | Operator    | Definition                       |
+    +=============+==================================+
+    | \*          | Multiplication                   |    
+    +-------------+----------------------------------+
+    | \*\*        | Exponent                         |
+    +-------------+----------------------------------+
+    | /           | Division                         |
+    +-------------+----------------------------------+
+    | \+          | Addition                         |
+    +-------------+----------------------------------+
+    | \-          | Subtraction                      |
+    +-------------+----------------------------------+
+    | ( )         | Grouping symbol                  |
+    +-------------+----------------------------------+
+    | sin         | Sine                             |
+    +-------------+----------------------------------+
+    | cos         | Cosine                           |
+    +-------------+----------------------------------+
+    | tan         | Tangent                          |
+    +-------------+----------------------------------+
+    | sinh        | Hyperbolic Sine                  |
+    +-------------+----------------------------------+
+    | cosh        | Hyperbolic Cosine                |
+    +-------------+----------------------------------+
+    | tanh        | Hyperbolic Tangent               |
+    +-------------+----------------------------------+
+    | ln          | Natural Logarithm                |
+    +-------------+                                  +
+    | log         |                                  |
+    +-------------+----------------------------------+
+    | log10       | Base 10 Logarithm                |
+    +-------------+----------------------------------+
+    | exp         | Exponential (base e)             |
+    +-------------+----------------------------------+
+    | e or E      | Scientific Notation              |
+    +-------------+----------------------------------+
+
+
+Table
+=====
+Providing `table` for the `type` key indicates a one dimensional tables that uses interpolation. This function type
+requires a set of tabulated data to be defined in the collection. The set of tabulated data is a list of lists of length
+2 with the first element being the independent variable, and the second element being the property value at that
+independent variable value. 
+
+Piecewise
+=========
+Using the "piecewise" keyword allows multiple functions to be defined for different ranges of independent variable
+values. As in the "density" example above, the field "functions" is used to define a list of functions, one for each
+range defined.
+
+.. note:: While, piecewise-defined functions are allowed to have gaps in the valid range between child functions, the
+    child function valid regions may not overlap. An error will be raised during parsing the set of child functions have
+    overlapping valid ranges or utilize different independent variables.
+
+.. note:: If the piecewise-defined function is discontinuous at a point (two child functions overlap at a point), the
+    function that is defined first in the input file will be used. 
+
+Two Dimensional Table
+=====================
+The "two dimensional table" field defines a two-dimensional table, that needs to be supplied a specially formatted data
+set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to share
+data with other fields, see the "&tagged_data" in the above example file.
+
+The form of the inner lists varies depending on whether the list corresponds to the first row or one of the subsequent
+rows. The first row will always have its first entry be a `None` value. The second value will be a list containing all
+of the values for the first independent variable (indicated by `0` in the independent variable node), in ascending
+order, that are utilized in the two-dimensional table. Each subsequent row will have its first entry be the second
+independent variable value corresponding to that row. The second entry will be the property values that map to the
+independent variable combination for that row and column. The size of the lists in the second entry must be consistent
+for each row. If there is a property value that does not exist for an independent variable combination, then a value of
+`None` must be specified in its place. If the point including `None` is used in evaluation, an error will be raised.
+
+
+Troubleshooting
+---------------
+MatProps includes significant error checking to avoid invalid states or returning inaccurate data. Any error found
+raises an `Exception` that includes a helpful message. The four broad categories of matProps errors are:
+
+* Invalid file format
+* Failed node value check
+* Property evaluation problem
+* Problem loading or retrieving material data
+
+The first two categories of problems are formatting errors or invalid values in the material YAML file. These problems
+can only be resolved by making an edit to the material YAML file. Property evaluation issues arise from users providing
+invalid input to property functions. For instance, ask for the density outside the defined valid range of temperatures.
+Finally, problems loading or retrieving material data usually arise by trying to either load a material file (or
+directory) that does not exist or by an attempted overwrite of a material has already been saved.
+
 
 .. _fuel-management-input:
 

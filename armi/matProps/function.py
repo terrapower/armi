@@ -20,6 +20,14 @@ class Function:
     An base class for computing material Properties. The word "function" here is used in the mathematical sense, to
     describe a generic mathematical curve. The various Function types are read in from YAML, and interpreted at run
     time. The sub-classes of Function have specific requirements on the YAML format.
+
+    .. impl:: The matProps package represents any material property as a function of 1 or more independent variables.
+        :id: I_ARMI_MAT_PROPERTIES2
+        :implements: R_ARMI_MAT_PROPERTIES
+
+        The matProps materials tooling uses this generic ``Function`` class to define material properties like density,
+        heat capacity, or linear expansion coefficient. This is a powerful system that allows for a broad range of
+        mathematical and tabular representations of the material property.
     """
 
     # This is the list of all nodes that are associated with functions in the YAML input file. Any node named something
