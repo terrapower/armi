@@ -868,58 +868,36 @@ nozzleType
   different pressure loss coefficients and/or flow rates to different types of assemblies.
 
 material modifications
-  These are a variety of modifications that are made to the
-  materials in blocks in these locations. It may include the fuel enrichment (mass frac.), poison
-  enrichment (mass frac.), zirconium mass frac, and any additional options required to fully define
-  the material loaded in the component. The material definitions in the material library define
-  valid modifications for them.
+  There are a variety of material modifications available for each material. The most common material modifications are
+  usually to do with enrichment of a particular nuclide, modifying the theoretical density of a material, or changing
+  some list of custom isotpics. You can set values to these material modifications in your blueprints. And if you want
+  to add new modifications to your own custom material, you would typically implement that change in your materials's
+  `applyInputParams()` method. Here are some example materical modifications from ARMI's history:
 
-  .. exec::
-      from armi.materials import Material
-      from armi.utils.tabulate import tabulate
+  * Lithium: LI6_wt_frac
+  * Sulfur: sulfur_density_frac, TD_frac
+  * B4C: B10_wt_frac, theoretical_density, TD_frac
+  * Uranium: U235_wt_frac, TD_frac, class1_custom_isotopics, class2_custom_isotopics, class1_wt_frac, customIsotopics
 
-      data = []
-      for m in Material.__subclasses__():
-          numArgs = m.applyInputParams.__code__.co_argcount
-          if numArgs > 1:
-              modNames = m.applyInputParams.__code__.co_varnames[1:numArgs]
-              data.append((m.__name__, ", ".join(modNames)))
+  In the Lithium example above, both material modifications modify the weight fraction, or mass fraction, of an element
+  or nuclide. That is useful if you need to specify the fraction of a particular nuclide in your material. Similarly,
+  the Sulfur, B4C, and Uranium examples above have things like "B10_wt_frac" and "U235_wt_frac" where the goal is
+  clearly to set the mass enrichment of some important nuclide in your material. This is particularly common in
+  depletable fuel-type fuels.
 
-          for subM in m.__subclasses__():
-              num = subM.applyInputParams.__code__.co_argcount
-              if num > 1:
-                  mods = subM.applyInputParams.__code__.co_varnames[1:num]
-                  if numArgs > 1:
-                      mods += modNames
-                  data.append((subM.__name__, ", ".join(mods)))
+  A popular class of material modifications is adjusting the theoretical density of a material. The modification name
+  for this is usually "TD_frac" as a soft convention. But you will also see "theoretical_density" above, and can pick
+  whatever naming convention you like. This is popular for solids when the actual density of the material is slightly
+  different than the theoretical density due to the manufacturing process.
 
-      d = {}
-      for k, v in data:
-          if k not in d:
-              d[k] = v
-          else:
-              d[k] = d[k].split(",") + v.split(",")
-              d[k] = sorted(set([vv.strip() for vv in d[k]]))
-              d[k] = ", ".join(d[k])
-      data = [(k, v) for k, v in d.items()]
-      data.sort(key=lambda t: t[0])
-      return tabulate(
-          headers=("Material Name", "Available Modifications"),
-          data=data,
-          tableFmt="rst",
-      )
+  The class 1/class 2 modifications in fuel materials are used to identify mixtures of custom isotopics labels for
+  input scenarios where a varying blend of a high-reactivity feed with a low-reactivity feed. This is often useful for
+  closed fuel cycles. For example, you can define any fuel material as being made of LWR-derived TRU plus depleted
+  uranium at various weight fractions. Note that this input style only adjusts the heavy metal.
 
-  The class 1/class 2 modifications in fuel materials are used to identify mixtures of
-  custom isotopics labels for input scenarios where a varying blend of a high-reactivity
-  feed with a low-reactivity feed. This is often useful for closed fuel cycles. For example,
-  you can define any fuel material as being made of LWR-derived TRU plus depleted uranium
-  at various weight fractions. Note that this input style only adjusts the heavy metal.
-
-  To enable the application of different values for the same material modification type
-  on different components within a block, the user may specify material modifications
-  by component. This is useful, for instance, when two pins within an assembly
-  made of the same base material have different fuel enrichments. This is done
-  using the ``by component`` attribute to the material modifications as in::
+  User can specify material modications on a by-component basis. This is useful, for instance, when two pins within an
+  assembly are made of the same base material but have different fuel enrichments. This is done   using the
+  ``by component`` attribute to the material modifications. For example::
 
         blocks:
             fuel: &block_fuel
@@ -955,7 +933,7 @@ material modifications
                     U235_wt_frac: [0.30]
 
   Material modifications specified on the ``material modifications`` level are referred to as "block default" values
-  and apply to all components on the block not associated with a by-component value. This example would apply an
+  and apply to all components on the block not associated with a by-component value. The example above would apply an
   enrichment of 20% to the ``fuel1`` component and an enrichment of 30% to all other components in the block that
   accept the ``U235_wt_frac`` material modification.
 
