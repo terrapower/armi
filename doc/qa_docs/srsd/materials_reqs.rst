@@ -4,7 +4,7 @@ Materials Package
 -----------------
 This section provides requirements for the :py:mod:`armi.materials` and the :py:mod:`armi.matProps` packages within the
 framework, which contains ARMI's system for defining materials. The materials system in ARMI allows for an extreme
-amount of flexibility in defining materials with temperature-dependent properties like density, linear expansion factor,
+amount of flexibility in defining materials with temperature-dependent properties like density, linear expansion,
 and the like. Materials can be defined by YAML input files (a system defined in :py:mod:`armi.matProps`), which is
 preferred, or they can be defined in pure Python (a system defined in :py:mod:`armi.materials`). The Python materials
 are defined as a subclass of the matProps materials.
