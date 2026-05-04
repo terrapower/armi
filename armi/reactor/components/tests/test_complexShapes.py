@@ -74,6 +74,8 @@ class TestComplexShapes(unittest.TestCase):
             (self.hexArea(opHot) - nHoles * self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False, inner=False), 6 * opHot / math.sqrt(3))
+        self.assertAlmostEqual(comp.getPerimeter(cold=True, inner=True), math.pi * holeOD * nHoles)
 
         # Test that holeRadFromCenter does not change the area.
         comp2 = HoledHexagon(
@@ -108,6 +110,7 @@ class TestComplexShapes(unittest.TestCase):
         lo = 2.0
         wo = 3.0
         holeOD = 0.5
+        mult = 2
         comp = HoledRectangle(
             "Test",
             material=self.material,
@@ -116,7 +119,7 @@ class TestComplexShapes(unittest.TestCase):
             lengthOuter=lo,
             widthOuter=wo,
             holeOD=holeOD,
-            mult=2,
+            mult=mult,
         )
 
         self.assertAlmostEqual(
@@ -125,18 +128,21 @@ class TestComplexShapes(unittest.TestCase):
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=True), comp.getComponentArea(Tc=20.0))
 
-        loHot = comp.getDimension("lengthOuter")
-        woHot = comp.getDimension("widthOuter")
+        lo = comp.getDimension("lengthOuter")
+        wo = comp.getDimension("widthOuter")
         holeODHot = comp.getDimension("holeOD")
         self.assertAlmostEqual(
             comp.getComponentArea(cold=False),
-            (self.rectArea(loHot, woHot) - self.circArea(holeODHot)) * 2,
+            (self.rectArea(lo, wo) - self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 2 * (wo + lo) * mult)
+        self.assertAlmostEqual(comp.getPerimeter(cold=True, inner=True), mult * math.pi * holeOD)
 
     def test_holedSquare(self):
         wo = 3.0
         holeOD = 0.5
+        mult = 2
         comp = HoledSquare(
             "Test",
             material=self.material,
@@ -144,7 +150,7 @@ class TestComplexShapes(unittest.TestCase):
             Thot=300,
             widthOuter=wo,
             holeOD=holeOD,
-            mult=2,
+            mult=mult,
         )
 
         self.assertAlmostEqual(
@@ -160,10 +166,13 @@ class TestComplexShapes(unittest.TestCase):
             (self.rectArea(woHot, woHot) - self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), 4 * woHot * mult)
+        self.assertAlmostEqual(comp.getPerimeter(cold=True, inner=True), mult * math.pi * holeOD)
 
     def test_hexHoledCircle(self):
         od = 3.0
         holeOP = 0.5
+        mult = 2
         comp = HexHoledCircle(
             "Test",
             material=self.material,
@@ -171,12 +180,12 @@ class TestComplexShapes(unittest.TestCase):
             Thot=300,
             od=od,
             holeOP=holeOP,
-            mult=2,
+            mult=mult,
         )
 
         self.assertAlmostEqual(
             comp.getComponentArea(cold=True),
-            (self.circArea(od) - self.hexArea(holeOP)) * 2,
+            (self.circArea(od) - self.hexArea(holeOP)) * mult,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=True), comp.getComponentArea(Tc=20.0))
 
@@ -184,14 +193,17 @@ class TestComplexShapes(unittest.TestCase):
         holeOPHot = comp.getDimension("holeOP")
         self.assertAlmostEqual(
             comp.getComponentArea(cold=False),
-            (self.circArea(odHot) - self.hexArea(holeOPHot)) * 2,
+            (self.circArea(odHot) - self.hexArea(holeOPHot)) * mult,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
 
+        self.assertAlmostEqual(comp.getPerimeter(cold=False), math.pi * odHot * mult)
+        self.assertAlmostEqual(comp.getPerimeter(cold=True, inner=True), 6 * mult * holeOP / math.sqrt(3))
+
     def test_circleHoledCircle(self):
-        od = 200
-        holeOD = 2
-        holeRadFromCenter = 80
+        od = 100
+        holeOD = 1
+        holeRadFromCenter = 10
         nHoles = 10
 
         comp = CircleHoledCircle(
@@ -208,8 +220,8 @@ class TestComplexShapes(unittest.TestCase):
 
         coldArea = self.circArea(od) - nHoles * self.circArea(holeOD)
         self.assertAlmostEqual(comp.getComponentArea(cold=True), coldArea, delta=1e-6)
-
         self.assertGreater(comp.getComponentArea(cold=False, Tc=300), coldArea)
         self.assertAlmostEqual(comp.getComponentArea(cold=True), comp.getComponentArea(cold=False, Tc=20))
-
         self.assertAlmostEqual(comp.getCircleInnerDiameter(), 0.0)
+        self.assertAlmostEqual(comp.getPerimeter(cold=True), math.pi * od)
+        self.assertAlmostEqual(comp.getPerimeter(cold=True, inner=True), math.pi * holeOD * nHoles)

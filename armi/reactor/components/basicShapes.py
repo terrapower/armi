@@ -15,8 +15,8 @@
 """
 Components represented by basic shapes.
 
-Many reactor components can be described in 2D by circles, hexagons, rectangles, etc. These
-are defined in this subpackage.
+Many reactor components can be described in 2D by circles, hexagons, rectangles, etc. These are defined in this
+subpackage.
 """
 
 import math
@@ -31,10 +31,9 @@ class Circle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES0
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation of a Circle Component. This includes
-        setting key parameters such as its material, temperature, and dimensions. It
-        also includes a method to retrieve the area of a Circle
-        Component via the ``getComponentArea`` method.
+        This class provides the implementation of a Circle Component. This includes setting key parameters such as its
+        material, temperature, and dimensions. It also includes a method to retrieve the area of a Circle Component via
+        the ``getComponentArea`` method.
     """
 
     is3D = False
@@ -90,21 +89,26 @@ class Circle(ShapedComponent):
         myID, myOD = self.getDimension("id"), self.getDimension("od")
         return otherID <= myID < otherOD and otherID < myOD <= otherOD
 
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        d = self.getDimension("id", cold=cold, Tc=Tc) if inner else self.getDimension("od", cold=cold, Tc=Tc)
+        mult = self.getDimension("mult")
+        return math.pi * d * mult
+
 
 class Hexagon(ShapedComponent):
     """A Hexagon.
 
-    This hexagonal shape has a hexagonal hole cut out of the center of it. By default, that inner
-    hole has a diameter of zero, making this a solid object with no hole.
+    This hexagonal shape has a hexagonal hole cut out of the center of it. By default, that inner hole has a diameter of
+    zero, making this a solid object with no hole.
 
     .. impl:: Hexagon shaped Component
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation of a hexagonal Component. This includes setting key
-        parameters such as its material, temperature, and dimensions. It also includes methods for
-        retrieving geometric dimension information unique to hexagons such as the ``getPitchData``
-        method.
+        This class provides the implementation of a hexagonal Component. This includes setting key parameters such as
+        its material, temperature, and dimensions. It also includes methods for retrieving geometric dimension
+        information unique to hexagons such as the ``getPitchData`` method.
     """
 
     is3D = False
@@ -162,11 +166,16 @@ class Hexagon(ShapedComponent):
 
         Notes
         -----
-        This pitch data should only be used if this is the pitch defining component in
-        a block. The block is responsible for determining which component in it is the
-        pitch defining component.
+        This pitch data should only be used if this is the pitch defining component in a block. The block is responsible
+        for determining which component in it is the pitch defining component.
         """
         return self.getDimension("op")
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        pitch = self.getDimension("ip", Tc, cold) if inner else self.getDimension("op", Tc, cold)
+        mult = self.getDimension("mult") if inner else 1.0
+        return 6 * mult * pitch / math.sqrt(3)
 
 
 class Rectangle(ShapedComponent):
@@ -176,11 +185,9 @@ class Rectangle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES2
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation for a rectangular Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes methods for computing geometric
-        information related to rectangles, such as the
-        ``getBoundingCircleOuterDiameter`` and ``getPitchData`` methods.
+        This class provides the implementation for a rectangular Component. This includes setting key parameters such as
+        its material, temperature, and dimensions. It also includes methods for computing geometric information related
+        to rectangles, such as the ``getBoundingCircleOuterDiameter`` and ``getPitchData`` methods.
     """
 
     is3D = False
@@ -241,7 +248,7 @@ class Rectangle(ShapedComponent):
         widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         lengthI = self.getDimension("lengthInner", cold=cold, Tc=Tc)
         widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * (lengthO * widthO - lengthI * widthI)
         return area
 
@@ -255,12 +262,23 @@ class Rectangle(ShapedComponent):
 
         Notes
         -----
-        For rectangular components there are two pitches, one for each dimension.
-        This pitch data should only be used if this is the pitch defining component in
-        a block. The block is responsible for determining which component in it is the
-        pitch defining component.
+        For rectangular components there are two pitches, one for each dimension. This pitch data should only be used if
+        this is the pitch defining component in a block. The block is responsible for determining which component in it
+        is the pitch defining component.
         """
         return (self.getDimension("lengthOuter"), self.getDimension("widthOuter"))
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        if inner:
+            length = self.getDimension("lengthInner", Tc, cold=cold)
+            width = self.getDimension("widthInner", Tc, cold=cold)
+        else:
+            length = self.getDimension("lengthOuter", Tc, cold=cold)
+            width = self.getDimension("widthOuter", Tc, cold=cold)
+
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
+        return 2 * (length + width) * mult
 
 
 class SolidRectangle(Rectangle):
@@ -302,12 +320,11 @@ class SolidRectangle(Rectangle):
             modArea=modArea,
         )
 
-        # these need to be set so that we don't try to write NoDefaults to the database.
-        # Ultimately, it makes more sense to have the non-Solid Rectangle inherit from
-        # this (and probably be called a HollowRectangle or RectangularShell or
-        # whatever), since a solid rectangle is more generic of the two. Then the
-        # Parameter definitions for the hollow rectangle could inherit from the ones,
-        # adding the inner dimensions so that we wouldn't need to do this here.
+        # These need to be set so that we don't try to write NoDefaults to the database. Ultimately, it makes more sense
+        # to have the non-Solid Rectangle inherit from this (and probably be called a HollowRectangle or
+        # RectangularShell or whatever), since a solid rectangle is more generic of the two. Then the Parameter
+        # definitions for the hollow rectangle could inherit from the ones, adding the inner dimensions so that we
+        # would not need to do this here.
         self.p.lengthInner = 0
         self.p.widthInner = 0
 
@@ -315,7 +332,7 @@ class SolidRectangle(Rectangle):
         """Computes the area of the solid rectangle in cm^2."""
         lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
         widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * (lengthO * widthO)
         return area
 
@@ -327,10 +344,9 @@ class Square(Rectangle):
         :id: I_ARMI_COMP_SHAPES3
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation for a square Component. This class
-        subclasses the ``Rectangle`` class because a square is a type of rectangle.
-        This includes setting key parameters such as its material, temperature, and
-        dimensions.
+        This class provides the implementation for a square Component. This class subclasses the ``Rectangle`` class
+        because a square is a type of rectangle. This includes setting key parameters such as its material, temperature,
+        and dimensions.
     """
 
     is3D = False
@@ -373,7 +389,7 @@ class Square(Rectangle):
         """Computes the area of the square in cm^2."""
         widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * (widthO * widthO - widthI * widthI)
         return area
 
@@ -391,13 +407,22 @@ class Square(Rectangle):
 
         Notes
         -----
-        For rectangular components there are two pitches, one for each dimension.
-        This pitch data should only be used if this is the pitch defining component in
-        a block. The block is responsible for determining which component in it is the
-        pitch defining component.
+        For rectangular components there are two pitches, one for each dimension. This pitch data should only be used if
+        this is the pitch defining component in a block. The block is responsible for determining which component in it
+        is the pitch defining component.
         """
         # both dimensions are the same for a square.
         return (self.getDimension("widthOuter"), self.getDimension("widthOuter"))
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        if inner:
+            width = self.getDimension("widthInner", Tc, cold=cold)
+        else:
+            width = self.getDimension("widthOuter", Tc, cold=cold)
+
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
+        return 4 * width * mult
 
 
 class Triangle(ShapedComponent):
@@ -408,15 +433,14 @@ class Triangle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES4
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation for defining a triangular Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes providing a method for retrieving the area of a
-        Triangle Component via the ``getComponentArea`` method.
+        This class provides the implementation for defining a triangular Component. This includes setting key parameters
+        such as its material, temperature, and dimensions. It also includes providing a method for retrieving the area
+        of a Triangle Component via the ``getComponentArea`` method.
 
     Notes
     -----
-    The exact angles of the triangle are undefined. The exact side lengths and angles
-    are not critical to calculation of component area, so area can still be calculated.
+    The exact angles of the triangle are undefined. The exact side lengths and angles are not critical to calculation of
+    component area, so area can still be calculated.
     """
 
     is3D = False
@@ -455,6 +479,10 @@ class Triangle(ShapedComponent):
         """Computes the area of the triangle in cm^2."""
         base = self.getDimension("base", cold=cold, Tc=Tc)
         height = self.getDimension("height", cold=cold, Tc=Tc)
-        mult = self.getDimension("mult")
+        mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         area = mult * base * height / 2.0
         return area
+
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """The perimeter of a triangle depends on the type of triangle, this basic shape is too generic."""
+        raise NotImplementedError
