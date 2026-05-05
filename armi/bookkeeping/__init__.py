@@ -94,7 +94,6 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
         return True
 
-
     @staticmethod
     @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs, dbLoad):

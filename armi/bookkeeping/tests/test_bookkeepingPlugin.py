@@ -44,11 +44,12 @@ core:
       [3, 2]: 120.0
 """
 
+
 class TestBookkeepingPlugin(TestPlugin):
     plugin = BookkeepingPlugin
 
-class TestBookkeepingPluginHooks(unittest.TestCase):
 
+class TestBookkeepingPluginHooks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a reactor core with case settings, blueprints, reactor."""
@@ -80,5 +81,3 @@ class TestBookkeepingPluginHooks(unittest.TestCase):
             self.assertIn("Summarizing Source of Material Data for", mock.getStdout())
             self.assertIn("Material Name    Source Location", mock.getStdout())
             self.assertIn("UZr              ARMI", mock.getStdout())
-
-
