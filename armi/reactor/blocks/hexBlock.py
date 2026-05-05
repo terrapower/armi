@@ -683,7 +683,8 @@ class HexBlock(Block):
         wettedHollowHexagonComponents = []
         for flag in wettedHollowHexagonComponentFlags:
             c = self.getComponent(flag, exact=True)
-            wettedHollowHexagonComponents.append(c) if c else None
+            if c:
+                wettedHollowHexagonComponents.append(c)
 
         wettedPinComponents = []
         for flag in wettedPinComponentFlags:
@@ -694,16 +695,18 @@ class HexBlock(Block):
         wettedHollowHexComponents = []
         for flag in wettedHollowComponentFlags:
             c = self.getComponent(flag, exact=True)
-            if isinstance(c, Hexagon):
-                wettedHollowHexComponents.append(c) if c else None
-            else:
-                wettedHollowCircleComponents.append(c) if c else None
+            if c:
+                if isinstance(c, Hexagon):
+                    wettedHollowHexComponents.append(c)
+                else:
+                    wettedHollowCircleComponents.append(c)
 
         # calculate wetted perimeters according to their geometries
         # hollow hexagon = 6 * ip / sqrt(3)
         wettedHollowHexagonPerimeter = 0.0
         for c in wettedHollowHexagonComponents:
-            wettedHollowHexagonPerimeter += c.getPerimeter() if c else 0.0
+            if c:
+                wettedHollowHexagonPerimeter += c.getPerimeter()
 
         # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
@@ -720,12 +723,14 @@ class HexBlock(Block):
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
         for c in wettedHollowCircleComponents:
-            wettedHollowCirclePerimeter += c.getPerimeter() if c else 0.0
+            if c:
+                wettedHollowCirclePerimeter += c.getPerimeter()
 
         # hollow hexagon = 6 * (ip + op) / sqrt(3)
         wettedHollowHexPerimeter = 0.0
         for c in wettedHollowHexComponents:
-            wettedHollowHexPerimeter += c.getPerimeter() if c else 0.0
+            if c:
+                wettedHollowHexPerimeter += c.getPerimeter()
 
         return (
             wettedHollowHexagonPerimeter + wettedPinPerimeter + wettedHollowCirclePerimeter + wettedHollowHexPerimeter
