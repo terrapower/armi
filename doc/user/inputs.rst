@@ -1519,16 +1519,16 @@ Material Type
 """""""""""""
 The ``material type`` field defines the type of material. Valid values for this key include Metal, Fuel, Fluid, Ceramic,
 ASME2015, ASME2017, SimpleSolid, and Composite. This is a required field. This field is meant to provide information to
-the user, and is not used by matProps. Though it may be used by downstream codes.
+the user and is not used by matProps, though it may be used by downstream codes.
 
 .. _ref_comp:
 
 Composition
 """""""""""
 The ``composition`` field defines the chemical composition of the material. This is a required field. The value for this
-field is a collection of key-value pairs, as denoted by indentation. In this second layer, the key is an element name,
+field is a collection of key-value pairs, as denoted by indentation. The key is an element name,
 and the value is a list of length 2 that defines the minimum percent composition then the maximum percent composition
-for the element. There must be one and only one element’s value listed as "balance" instead of a pair of minimum and maximum values. The "balance"  element will fill any remaining fraction of the elements composition, to get the total to
+for the element. There must be one and only one element listed as "balance" instead of a pair of minimum and maximum values. The "balance"  element will fill any remaining fraction of the elements composition, to get the total to
 100 percent.
 
 Optionally, this data entry can be associated with a references keyword.
@@ -1558,8 +1558,8 @@ summary of the keywords, their relevant status and appropriate section can be fo
     |                      | Otherwise, it is optional.          |                          |
     +----------------------+-------------------------------------+--------------------------+
 
-The table below lists the default collection of properties that are defined for a material by matProps. Though this list
-is easy to expand. Note that these property names are case sensitive.
+The table below lists the default collection of properties that are defined for a material by matProps. 
+Note that these property names are case sensitive.
 
 .. table:: Available material properties for YAML definition and corresponding matProps API.
 
@@ -1691,7 +1691,7 @@ Functions
 The ``function`` field allows the developer to define a mathematical curve for a material property. For instance, in the
 example file above, a function is used to represent the "Young's modulus" of the material. The independent variable "T"
 is defined to represent Temperature in degrees C, and the min and max values of 0 and 700 are given. This defines the
-valid bounds upon which the "equation" can be evaluated. And the "equation" listed is a polynomial equation.
+valid bounds upon which the polynomial "equation" can be evaluated.
 
 The ``function`` system is very flexible though. Notice that "Poisson's ratio" above has "equation: 0.321", so constant
 functions are easy to define. And "yield strength" is actually a function of two independent variables, which matProps
@@ -1768,7 +1768,7 @@ Using the "piecewise" keyword allows multiple functions to be defined for differ
 values. As in the "density" example above, the field "functions" is used to define a list of functions, one for each
 range defined.
 
-.. note:: While, piecewise-defined functions are allowed to have gaps in the valid range between child functions, the
+.. note:: While piecewise-defined functions are allowed to have gaps in the valid range between child functions, the
     child function valid regions may not overlap. An error will be raised during parsing the set of child functions have
     overlapping valid ranges or utilize different independent variables.
 
@@ -1779,7 +1779,7 @@ Two Dimensional Table
 =====================
 The "two dimensional table" field defines a two-dimensional table, that needs to be supplied a specially formatted data
 set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to share
-data with other fields, see the "&tagged_data" in the above example file.
+data with other fields, see ``&tagged_data`` in the above example file.
 
 The form of the inner lists varies depending on whether the list corresponds to the first row or one of the subsequent
 rows. The first row will always have its first entry be a ``None`` value. The second value will be a list containing all
@@ -1803,9 +1803,9 @@ raises an ``Exception`` that includes a helpful message. The four broad categori
 
 The first two categories of problems are formatting errors or invalid values in the material YAML file. These problems
 can only be resolved by making an edit to the material YAML file. Property evaluation issues arise from users providing
-invalid input to property functions. For instance, ask for the density outside the defined valid range of temperatures.
+invalid input to property functions. For instance, if the density is requested outside the defined valid range of temperatures.
 Finally, problems loading or retrieving material data usually arise by trying to either load a material file (or
-directory) that does not exist or by an attempted overwrite of a material has already been saved.
+directory) that does not exist or by an attempted overwrite of a material that has already been saved.
 
 
 .. _fuel-management-input:
