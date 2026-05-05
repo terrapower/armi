@@ -250,6 +250,25 @@ def getHoledHexagonParameterDefinitions():
     return pDefs
 
 
+def getCircleHoledCircleParameterDefinitions():
+    """Return parameters for CircleHoledCircle."""
+    pDefs = parameters.ParameterDefinitionCollection()
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
+        pb.defParam("holeOD", units=units.CM, description="Diameter of interior hole(s)")
+
+        pb.defParam("nHoles", units=units.UNITLESS, description="Number of interior holes")
+
+        pb.defParam(
+            "holeRadFromCenter",
+            units=units.CM,
+            description="Distance from the center of the circle to the center of the holes assuming the hole centers "
+            "all lie on a circle.",
+            default=0.0,
+        )
+
+    return pDefs
+
+
 def getHexHoledCircleParameterDefinitions():
     """Return parameters for HexHoledCircle."""
     pDefs = parameters.ParameterDefinitionCollection()
