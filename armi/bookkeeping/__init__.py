@@ -14,7 +14,8 @@
 
 """The bookkeeping package handles data persistence, reporting, and some debugging."""
 
-from armi import plugins
+from armi import plugins, runLog
+from armi.utils import tabulate
 
 
 class BookkeepingPlugin(plugins.ArmiPlugin):
@@ -92,3 +93,33 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                     return False
 
         return True
+
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def onProcessCoreLoading(core, cs, dbLoad):
+        """Called whenever a Core object is newly built."""
+        summarizeMaterialData(core)
+
+
+def summarizeMaterialData(container):
+    """
+    Create a summary of the material objects and source data for a reactor container.
+
+    Parameters
+    ----------
+    container : Core object
+        Any Core object with Blocks and Components defined.
+    """
+    runLog.header(f"=========== Summarizing Source of Material Data for {container} ===========")
+    materialNames = set()
+    materialData = []
+    for c in container.iterComponents():
+        if c.material.name in materialNames:
+            continue
+        materialData.append((c.material.name, c.material.DATA_SOURCE))
+        materialNames.add(c.material.name)
+
+    materialData = sorted(materialData)
+    runLog.info(tabulate.tabulate(data=materialData, headers=["Material Name", "Source Location"], tableFmt="armi"))
+    return materialData
