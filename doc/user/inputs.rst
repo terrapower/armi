@@ -1793,8 +1793,8 @@ for each row. If there is a property value that does not exist for an independen
 
 Troubleshooting
 ---------------
-MatProps includes significant error checking to avoid invalid states or returning inaccurate data. Any error found
-raises an ``Exception`` that includes a helpful message. The four broad categories of matProps errors are:
+The ``armi.matProps`` package includes error checking to avoid invalid states or returning inaccurate data. Any error
+found raises an ``Exception`` that includes a helpful message. The four broad categories of matProps errors are:
 
 * Invalid file format
 * Failed node value check
