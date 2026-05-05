@@ -21,7 +21,7 @@ from armi.bookkeeping import BookkeepingPlugin, summarizeMaterialData
 from armi.reactor import blueprints, reactors
 from armi.reactor.blueprints import gridBlueprint, reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.tests import mockRunLogs
 from armi.tests.test_plugins import TestPlugin
 
 CORE_BLUEPRINT = """
@@ -47,11 +47,11 @@ core:
 class TestBookkeepingPlugin(TestPlugin):
     plugin = BookkeepingPlugin
 
-class TestBookkeepingPlugin(unittest.TestCase):
+class TestBookkeepingPluginHooks(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Create a reactor core with case settings, blueprints, reactor"""
+        """Create a reactor core with case settings, blueprints, reactor."""
         # TODO: Just copied over old test setup b/c I assume this is a much smaller reactor than the test reactors.
         # But this may be simplifiable via test reactor.
         cs = settings.Settings()
