@@ -655,7 +655,7 @@ class HexBlock(Block):
         obviously an awkward design choice, and we hope to improve upon it soon.
         """
         # 1. Identify the Component Flags that are wetted.
-        # flags pertaining to hexagon components where the interior of the hexagon is wetted
+        # hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
             Flags.GRID_PLATE,
@@ -667,13 +667,13 @@ class HexBlock(Block):
             Flags.HANDLING_SOCKET | Flags.DEPLETABLE,
         )
 
-        # flags pertaining to circular pin components where the exterior of the circle is wetted
+        # circular pin components where the exterior of the circle is wetted
         wettedPinComponentFlags = (
             Flags.CLAD,
             Flags.WIRE,
         )
 
-        # flags pertaining to components where both the interior and exterior are wetted
+        # components where both the interior and exterior are wetted
         wettedHollowComponentFlags = (
             Flags.DUCT | Flags.INNER,
             Flags.DUCT | Flags.INNER | Flags.DEPLETABLE,
@@ -705,24 +705,21 @@ class HexBlock(Block):
         # a. hollow hexagon
         wettedPerim = 0.0
         for c in wettedHollowHexagonComponents:
-            if c:
-                wettedPerim += c.getPerimeter(inner=True)
+            wettedPerim += c.getPerimeter(inner=True)
 
         # b. solid circle
         for c in wettedPinComponents:
-            wettedPerim += c.getPerimeter()
+            wettedPerim += c.getPerimeter(inner=False)
 
         # c. hollow circle
         for c in wettedHollowCircleComponents:
-            if c:
-                wettedPerim += c.getPerimeter(inner=True)
-                wettedPerim += c.getPerimeter(inner=False)
+            wettedPerim += c.getPerimeter(inner=True)
+            wettedPerim += c.getPerimeter(inner=False)
 
         # d. hollow hexagon
         for c in wettedHollowHexComponents:
-            if c:
-                wettedPerim += c.getPerimeter(inner=True)
-                wettedPerim += c.getPerimeter(inner=False)
+            wettedPerim += c.getPerimeter(inner=True)
+            wettedPerim += c.getPerimeter(inner=False)
 
         return wettedPerim
 
