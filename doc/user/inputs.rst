@@ -875,13 +875,12 @@ material modifications
   ``applyInputParams()`` method. Here are some example material modifications from ARMI's history:
 
   * Lithium: LI6_wt_frac
-  * Sulfur: sulfur_density_frac, TD_frac
   * B4C: B10_wt_frac, TD_frac
   * Uranium: U235_wt_frac, TD_frac, class1_custom_isotopics, class2_custom_isotopics, class1_wt_frac, customIsotopics
 
   In the Lithium example above, both material modifications modify the weight fraction, or mass fraction, of an element
   or nuclide. That is useful if you need to specify the fraction of a particular nuclide in your material. Similarly,
-  the Sulfur, B4C, and Uranium examples above have things like "B10_wt_frac" and "U235_wt_frac" where the goal is
+  the B4C, and Uranium examples above have things like "B10_wt_frac" and "U235_wt_frac" where the goal is
   clearly to set the mass enrichment of some important nuclide in your material. This is particularly common in
   depletable fuel-type fuels.
 
