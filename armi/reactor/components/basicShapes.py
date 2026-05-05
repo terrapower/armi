@@ -95,12 +95,6 @@ class Circle(ShapedComponent):
         mult = self.getDimension("mult")
         return math.pi * d * mult
 
-    def getPerimeterX(self, inner=False):
-        """Return the length of the closed boundary that surrounds a 2D shape."""
-        d = self.getDimension("id") if inner else self.getDimension("od")
-        mult = self.getDimension("mult")
-        return math.pi * d * mult
-
 
 class Hexagon(ShapedComponent):
     """A Hexagon.
@@ -181,13 +175,6 @@ class Hexagon(ShapedComponent):
         """Return the length of the closed boundary that surrounds a 2D shape."""
         pitch = self.getDimension("ip", cold=cold, Tc=Tc) if inner else self.getDimension("op", cold=cold, Tc=Tc)
         mult = self.getDimension("mult") if inner else 1.0
-        return 6 * mult * pitch / math.sqrt(3)
-
-    def getPerimeterX(self, inner=False):
-        """Return the length of the closed boundary that surrounds a 2D shape."""
-        pitch = self.getDimension("ip") if inner else self.getDimension("op")
-        mult = self.getDimension("mult") if inner else 1.0
-        print("hex perim:", pitch)
         return 6 * mult * pitch / math.sqrt(3)
 
 
