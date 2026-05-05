@@ -871,12 +871,12 @@ material modifications
   There are a variety of material modifications available for each material. The most common material modifications are
   usually to do with enrichment of a particular nuclide, modifying the theoretical density of a material, or changing
   some list of custom isotpics. You can set values to these material modifications in your blueprints. And if you want
-  to add new modifications to your own custom material, you would typically implement that change in your materials's
-  `applyInputParams()` method. Here are some example materical modifications from ARMI's history:
+  to add new modifications to your own custom material, you would typically implement that change in your material's
+  ``applyInputParams()`` method. Here are some example material modifications from ARMI's history:
 
   * Lithium: LI6_wt_frac
   * Sulfur: sulfur_density_frac, TD_frac
-  * B4C: B10_wt_frac, theoretical_density, TD_frac
+  * B4C: B10_wt_frac, TD_frac
   * Uranium: U235_wt_frac, TD_frac, class1_custom_isotopics, class2_custom_isotopics, class1_wt_frac, customIsotopics
 
   In the Lithium example above, both material modifications modify the weight fraction, or mass fraction, of an element
@@ -886,9 +886,8 @@ material modifications
   depletable fuel-type fuels.
 
   A popular class of material modifications is adjusting the theoretical density of a material. The modification name
-  for this is usually "TD_frac" as a soft convention. But you will also see "theoretical_density" above, and can pick
-  whatever naming convention you like. This is popular for solids when the actual density of the material is slightly
-  different than the theoretical density due to the manufacturing process.
+  for this is usually "TD_frac" as a soft convention. This is popular for solids when the actual density of the
+  material is slightly different than the theoretical density due to the manufacturing process.
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of custom isotopics labels for
   input scenarios where a varying blend of a high-reactivity feed with a low-reactivity feed. This is often useful for
