@@ -16,6 +16,8 @@
 
 import math
 
+import numpy as np
+
 from armi.reactor.components import ShapedComponent, basicShapes, componentParameters
 
 
@@ -89,14 +91,14 @@ class HoledHexagon(basicShapes.Hexagon):
         For any other case, returns 0.0 because an "circle inner diameter" becomes undefined.
         """
         if self.getDimension("nHoles") == 1:
-            return self.getDimension("holeOD", Tc, cold)
+            return self.getDimension("holeOD", Tc=Tc, cold=cold)
         else:
             return 0.0
 
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
         if inner:
-            d = self.getDimension("holeOD", Tc, cold)
+            d = self.getDimension("holeOD", cold=cold, Tc=Tc)
             n = self.getDimension("nHoles")
             return math.pi * d * n
         else:
@@ -165,7 +167,7 @@ class CircleHoledCircle(basicShapes.Circle):
         For any other case, returns 0.0 because a "circle inner diameter" becomes undefined.
         """
         if self.getDimension("nHoles") == 1:
-            return self.getDimension("holeOD", Tc, cold)
+            return self.getDimension("holeOD", Tc=Tc, cold=cold)
         else:
             return 0.0
 
@@ -226,12 +228,14 @@ class HexHoledCircle(basicShapes.Circle):
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """Returns the diameter of the hole equal to the hexagon outer pitch."""
-        return self.getDimension("holeOP", Tc, cold)
+        return self.getDimension("holeOP", Tc=Tc, cold=cold)
 
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
         if inner:
-            pitch = self.getDimension("holeOP", Tc, cold) if inner else self.getDimension("op", Tc, cold)
+            pitch = (
+                self.getDimension("holeOP", cold=cold, Tc=Tc) if inner else self.getDimension("op", cold=cold, Tc=Tc)
+            )
             mult = self.getDimension("mult") if inner else 1.0
             return 6 * mult * pitch / math.sqrt(3)
         else:
@@ -402,7 +406,7 @@ class HoledRectangle(basicShapes.Rectangle):
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """Returns the ``holeOD``."""
-        return self.getDimension("holeOD", Tc, cold)
+        return self.getDimension("holeOD", Tc=Tc, cold=cold)
 
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
@@ -468,7 +472,7 @@ class HoledSquare(basicShapes.Square):
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """Returns the ``holeOD``."""
-        return self.getDimension("holeOD", Tc, cold)
+        return self.getDimension("holeOD", Tc=Tc, cold=cold)
 
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
@@ -549,27 +553,40 @@ class Helix(ShapedComponent):
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the exterior of the wire-wrap."""
-        return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension("od", Tc, cold)
+        return self.getDimension("helixDiameter", Tc=Tc, cold=cold) + self.getDimension("od", Tc=Tc, cold=cold)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the interior of the wire-wrap.
 
         This should be equal to the outer diameter of the pin in which the wire is wrapped around.
         """
-        return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension("od", Tc, cold)
+        return self.getDimension("helixDiameter", Tc=Tc, cold=cold) - self.getDimension("od", Tc=Tc, cold=cold)
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the helix in cm^2."""
         ap = self.getDimension("axialPitch", cold=cold, Tc=Tc)
         hd = self.getDimension("helixDiameter", cold=cold, Tc=Tc)
-        id = self.getDimension("id", cold=cold, Tc=Tc)
+        iDim = self.getDimension("id", cold=cold, Tc=Tc)
         od = self.getDimension("od", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         c = ap / (2.0 * math.pi)
         helixFactor = math.sqrt((hd / 2.0) ** 2 + c**2) / c
-        area = mult * math.pi * ((od / 2.0) ** 2 - (id / 2.0) ** 2) * helixFactor
+        area = mult * math.pi * ((od / 2.0) ** 2 - (iDim / 2.0) ** 2) * helixFactor
         return area
 
-    def getPerimeter(self, cold=False, Tc=None):
-        """The Perimeter of a three-dimensional shape is undefined."""
-        raise NotImplementedError
+    def getPerimeter(self, cold=False, Tc=None, inner=False):
+        """Return the length of the closed boundary that surrounds a 2D shape."""
+        mult = self.getDimension("mult")
+        correctionFactor = np.hypot(
+            1.0,
+            math.pi
+            * self.getDimension("helixDiameter", cold=cold, Tc=Tc)
+            / self.getDimension("axialPitch", cold=cold, Tc=Tc),
+        )
+        if inner:
+            diam = self.getDimension("id", cold=cold, Tc=Tc)
+            pass
+        else:
+            diam = self.getDimension("od", cold=cold, Tc=Tc)
+
+        return diam * math.pi * correctionFactor * mult

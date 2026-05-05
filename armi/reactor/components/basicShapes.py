@@ -69,10 +69,10 @@ class Circle(ShapedComponent):
         self._linkAndStoreDimensions(components, od=od, id=id, mult=mult, modArea=modArea)
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        return max(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
+        return max(self.getDimension("id", cold=cold, Tc=Tc), self.getDimension("od", cold=cold, Tc=Tc))
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        return min(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
+        return min(self.getDimension("id", cold=cold, Tc=Tc), self.getDimension("od", cold=cold, Tc=Tc))
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the circle component in cm^2."""
@@ -144,11 +144,11 @@ class Hexagon(ShapedComponent):
         self._linkAndStoreDimensions(components, op=op, ip=ip, mult=mult, modArea=modArea)
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        sideLength = self.getDimension("op", Tc, cold) / math.sqrt(3)
+        sideLength = self.getDimension("op", cold=cold, Tc=Tc) / math.sqrt(3)
         return 2.0 * sideLength
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        sideLength = self.getDimension("ip", Tc, cold) / math.sqrt(3)
+        sideLength = self.getDimension("ip", cold=cold, Tc=Tc) / math.sqrt(3)
         return 2.0 * sideLength
 
     def getComponentArea(self, cold=False, Tc=None):
@@ -173,7 +173,7 @@ class Hexagon(ShapedComponent):
 
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
-        pitch = self.getDimension("ip", Tc, cold) if inner else self.getDimension("op", Tc, cold)
+        pitch = self.getDimension("ip", cold=cold, Tc=Tc) if inner else self.getDimension("op", cold=cold, Tc=Tc)
         mult = self.getDimension("mult") if inner else 1.0
         return 6 * mult * pitch / math.sqrt(3)
 
@@ -233,13 +233,13 @@ class Rectangle(ShapedComponent):
         )
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        lengthO = self.getDimension("lengthOuter", Tc, cold=cold)
-        widthO = self.getDimension("widthOuter", Tc, cold=cold)
+        lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         return math.sqrt(widthO**2 + lengthO**2)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        lengthI = self.getDimension("lengthInner", Tc, cold=cold)
-        widthI = self.getDimension("widthInner", Tc, cold=cold)
+        lengthI = self.getDimension("lengthInner", cold=cold, Tc=Tc)
+        widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
         return math.sqrt(widthI**2 + lengthI**2)
 
     def getComponentArea(self, cold=False, Tc=None):
@@ -271,11 +271,11 @@ class Rectangle(ShapedComponent):
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
         if inner:
-            length = self.getDimension("lengthInner", Tc, cold=cold)
-            width = self.getDimension("widthInner", Tc, cold=cold)
+            length = self.getDimension("lengthInner", cold=cold, Tc=Tc)
+            width = self.getDimension("widthInner", cold=cold, Tc=Tc)
         else:
-            length = self.getDimension("lengthOuter", Tc, cold=cold)
-            width = self.getDimension("widthOuter", Tc, cold=cold)
+            length = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
+            width = self.getDimension("widthOuter", cold=cold, Tc=Tc)
 
         mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         return 2 * (length + width) * mult
@@ -394,11 +394,11 @@ class Square(Rectangle):
         return area
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        widthO = self.getDimension("widthOuter", Tc, cold=cold)
+        widthO = self.getDimension("widthOuter", Tc=Tc, cold=cold)
         return math.sqrt(widthO**2 + widthO**2)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        widthI = self.getDimension("widthInner", Tc, cold=cold)
+        widthI = self.getDimension("widthInner", Tc=Tc, cold=cold)
         return math.sqrt(widthI**2 + widthI**2)
 
     def getPitchData(self):
@@ -417,9 +417,9 @@ class Square(Rectangle):
     def getPerimeter(self, cold=False, Tc=None, inner=False):
         """Return the length of the closed boundary that surrounds a 2D shape."""
         if inner:
-            width = self.getDimension("widthInner", Tc, cold=cold)
+            width = self.getDimension("widthInner", cold=cold, Tc=Tc)
         else:
-            width = self.getDimension("widthOuter", Tc, cold=cold)
+            width = self.getDimension("widthOuter", cold=cold, Tc=Tc)
 
         mult = self.getDimension("mult") if self.getDimension("mult") is not None else 1.0
         return 4 * width * mult

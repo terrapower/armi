@@ -703,7 +703,7 @@ class HexBlock(Block):
         # hollow hexagon = 6 * ip / sqrt(3)
         wettedHollowHexagonPerimeter = 0.0
         for c in wettedHollowHexagonComponents:
-            wettedHollowHexagonPerimeter += 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
+            wettedHollowHexagonPerimeter += c.getPerimeter() if c else 0.0
 
         # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
@@ -715,20 +715,17 @@ class HexBlock(Block):
                     1.0,
                     math.pi * c.getDimension("helixDiameter") / c.getDimension("axialPitch"),
                 )
-            compWettedPerim = c.getDimension("od") * correctionFactor * c.getDimension("mult") * math.pi
-            wettedPinPerimeter += compWettedPerim
+            wettedPinPerimeter += c.getPerimeter() * correctionFactor
 
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
         for c in wettedHollowCircleComponents:
-            wettedHollowCirclePerimeter += c.getDimension("id") + c.getDimension("od") if c else 0.0
-        wettedHollowCirclePerimeter *= math.pi
+            wettedHollowCirclePerimeter += c.getPerimeter() if c else 0.0
 
         # hollow hexagon = 6 * (ip + op) / sqrt(3)
         wettedHollowHexPerimeter = 0.0
         for c in wettedHollowHexComponents:
-            wettedHollowHexPerimeter += c.getDimension("ip") + c.getDimension("op") if c else 0.0
-        wettedHollowHexPerimeter *= 6 / math.sqrt(3)
+            wettedHollowHexPerimeter += c.getPerimeter() if c else 0.0
 
         return (
             wettedHollowHexagonPerimeter + wettedPinPerimeter + wettedHollowCirclePerimeter + wettedHollowHexPerimeter
