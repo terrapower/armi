@@ -255,12 +255,6 @@ def _getNeutronicsBlockParams():
         categories=[parameters.Category.detailedAxialExpansion, "depletion"],
     ) as pb:
         pb.defParam(
-            "pointsEdgeFastFluxFr",
-            units=units.UNITLESS,
-            description="Fraction of flux above 100keV at edges of the block",
-        )
-
-        pb.defParam(
             "pointsEdgeDpa",
             setter=isNumpyArray("pointsEdgeDpa"),
             units=units.DPA,
