@@ -16,33 +16,10 @@
 
 import unittest
 
-from armi import settings
 from armi.bookkeeping import BookkeepingPlugin, summarizeMaterialData
-from armi.reactor import blueprints, reactors
-from armi.reactor.blueprints import gridBlueprint, reactorBlueprint
-from armi.reactor.blueprints.tests import test_customIsotopics
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.tests.test_plugins import TestPlugin
-
-CORE_BLUEPRINT = """
-core:
-  grid name: core
-  origin:
-    x: 0.0
-    y: 10.1
-    z: 1.1
-"""
-GRIDS = """
-core:
-    geom: hex
-    symmetry: third core periodic
-    grid contents:
-      [0, 0]: IC
-      [1, 1]: IC
-    orientationBOL:
-      [1, 1]: 60.0
-      [3, 2]: 120.0
-"""
 
 
 class TestBookkeepingPlugin(TestPlugin):
@@ -52,32 +29,23 @@ class TestBookkeepingPlugin(TestPlugin):
 class TestBookkeepingPluginHooks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Create a reactor core with case settings, blueprints, reactor."""
-        # TODO: Just copied over old test setup b/c I assume this is a much smaller reactor than the test reactors.
-        # But this may be simplifiable via test reactor.
-        cs = settings.Settings()
-        bp = blueprints.Blueprints.load(test_customIsotopics.TestCustomIsotopics.yamlString)
-        bp.systemDesigns = reactorBlueprint.Systems.load(CORE_BLUEPRINT)
-        bp.gridDesigns = gridBlueprint.Grids.load(GRIDS)
-        reactor = reactors.Reactor(cs.caseTitle, bp)
-        cls.core = bp.systemDesigns["core"].construct(cs, bp, reactor)
+        _, cls.r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
         expectedMaterialData = [
-            ("Custom", "ARMI"),
             ("HT9", "ARMI"),
             ("Sodium", "ARMI"),
             ("UZr", "ARMI"),
         ]
-        materialData = summarizeMaterialData(self.core)
+        materialData = summarizeMaterialData(self.r.core)
         for actual, expected in zip(materialData, expectedMaterialData):
             self.assertEqual(actual, expected)
 
     def test_bookkeepingOnProcessCoreLoading(self):
         """Test that the onProcessCoreLoading plugin hook operates properly."""
         with mockRunLogs.BufferLog() as mock:
-            BookkeepingPlugin.onProcessCoreLoading(self.core, None, None)
+            BookkeepingPlugin.onProcessCoreLoading(self.r.core, None, None)
             self.assertIn("Summarizing Source of Material Data for", mock.getStdout())
             self.assertIn("Material Name    Source Location", mock.getStdout())
             self.assertIn("UZr              ARMI", mock.getStdout())
