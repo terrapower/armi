@@ -287,12 +287,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "pointsCornerFastFluxFr",
-            units=units.UNITLESS,
-            description="Fraction of flux above 100keV at corners of the block",
-        )
-
-        pb.defParam(
             "pointsCornerDpa",
             setter=isNumpyArray("pointsCornerDpa"),
             units=units.DPA,
