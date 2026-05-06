@@ -59,7 +59,6 @@ class Report:
         try:
             return self.groups[group]
         except KeyError:
-            runLog.warning("Cannot locate group {} in report {}".format(group.title, self.title))
             return None
 
 
@@ -77,7 +76,7 @@ class Group:
         self.titleStyle = "font-weight: bold; padding-top: 20px;"
 
     def __str__(self):
-        str_ = "\n{} - (GROUP) {}\n".format(self.title, self.description)
+        str_ = f"\n{self.title} - (GROUP) {self.description}\n"
         for name, value in self.data.items():
             str_ += "\t{:<30} {}\n".format(name, value)
         return str_
@@ -86,7 +85,7 @@ class Group:
         try:
             return self.data[name]
         except KeyError:
-            runLog.warning("Given name {} not present in report group {}".format(name, self.title))
+            runLog.extra(f"Given name {name} not present in report group {self.title}")
 
         return None
 

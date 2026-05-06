@@ -587,9 +587,7 @@ def setNeutronBalancesReport(core):
     core : armi.reactor.reactors.Core
     """
     if not core.getFirstBlock().p.rateCap:
-        runLog.warning(
-            "No rate information (rateCap, rateAbs, etc.) available on the blocks. Skipping balance summary."
-        )
+        runLog.info("No rate information (rateCap, rateAbs, etc.) available on the blocks. Skipping balance summary.")
         return
 
     cap = core.calcAvgParam("rateCap", volumeAveraged=False, generationNum=2)

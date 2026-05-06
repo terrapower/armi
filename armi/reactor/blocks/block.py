@@ -1061,7 +1061,7 @@ class Block(composites.Composite):
         if tFrac:
             return tFrac
         else:
-            runLog.warning(
+            runLog.info(
                 f"No component {typeSpec} exists on {self}, so area fraction is zero.",
                 single=True,
                 label=f"{typeSpec} areaFrac is zero",
