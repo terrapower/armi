@@ -40,8 +40,7 @@ class B4C(material.Material):
 
     def applyInputParams(self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs):
         if B10_wt_frac is not None:
-            # we can't just use the generic enrichment adjustment here because the
-            # carbon has to change with enrich.
+            # We can not just use the generic enrichment adjustment here because the carbon has to change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
         if theoretical_density is not None:
             runLog.warning(
@@ -50,7 +49,7 @@ class B4C(material.Material):
                 single=True,
             )
             if TD_frac is not None:
-                runLog.warning(
+                runLog.info(
                     f"Both 'theoretical_density' and 'TD_frac' are specified for {self}. 'TD_frac' will be used."
                 )
             else:

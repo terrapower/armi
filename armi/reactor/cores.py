@@ -437,7 +437,7 @@ class Core(composites.Composite):
             try:
                 del self.blocksByName[b.getName()]
             except KeyError:
-                runLog.warning(
+                runLog.info(
                     "Cannot delete block {0}. It is not in the Core.blocksByName structure".format(b),
                     single=True,
                     label="cannot dereference: lost block",
@@ -1149,7 +1149,6 @@ class Core(composites.Composite):
             try:
                 return next(a for a in self if a.hasFlags(typeSpec, exact))
             except StopIteration:
-                runLog.warning("No assem of type {0} in reactor".format(typeSpec))
                 return None
 
         # Assumes at least one assembly in `self`
@@ -1906,12 +1905,12 @@ class Core(composites.Composite):
             dP1 = meshList[i + 1] - innerMeshVal
 
             if dP0 / (dP0 + dP1) < ratio:
-                runLog.warning("Mesh gap too small. Adjusting mesh to be more reasonable.")
+                runLog.extra("Mesh gap too small. Adjusting mesh to be more reasonable.")
                 meshList.append(innerMeshVal + dP1 * ratio)
                 meshList.sort()
                 return meshList, False
             elif dP0 / (dP0 + dP1) > (1.0 - ratio):
-                runLog.warning("Mesh gap too large. Adjusting mesh to be more reasonable.")
+                runLog.extra("Mesh gap too large. Adjusting mesh to be more reasonable.")
                 meshList.append(meshList[i - 1] + dP0 * (1.0 - ratio))
                 meshList.sort()
                 return meshList, False
