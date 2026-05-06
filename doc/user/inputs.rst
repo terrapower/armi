@@ -1710,8 +1710,8 @@ Symbolic
 A symbolic function is defined by supplying value ``symbolic`` for the key ``type``. Symbolic functions may use any
 number of independent variables. The ``equation`` node must be supplied which contains a string with the equation
 function. The ``symbolicOperators`` field defines the set of operators that may be used in the symbolic equation
-string. These operators may be combined in any order or grouping in order to build up a symbolic expression. While
-other operators outside of the table might function in ``matProps``, they are untested and may not be used in qualified scope. 
+string. These operators may be combined in any order to build a symbolic expression. While other operators outside of
+the table might function in ``matProps``, they are untested and may not be used in qualified scope. 
 
 .. note:: Both operators and variables are case sensitive. 
 
