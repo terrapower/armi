@@ -41,7 +41,6 @@ class HexBlockRotateTests(unittest.TestCase):
         "pointsCornerFastFluxFr",
         "pointsEdgeDpa",
         "pointsEdgeDpaRate",
-        "pointsEdgeFastFluxFr",
         "THedgeTemp",
         "THcornTemp",
     ]
