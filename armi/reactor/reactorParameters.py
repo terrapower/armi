@@ -320,24 +320,6 @@ def defineCoreParameters():
             default=None,
         )
 
-    with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.AVERAGE,
-        categories=["reactivity coefficients", "core wide"],
-    ) as pb:
-        # CORE WIDE REACTIVITY COEFFICIENTS
-        pb.defParam(
-            "rxFuelAxialExpansionCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Fuel Axial Expansion Coefficient",
-        )
-
-        pb.defParam(
-            "rxGridPlateRadialExpansionCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Grid Plate Radial Expansion Coefficient",
-        )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, categories=["equilibrium"]) as pb:
         pb.defParam(
             "cyclics",
