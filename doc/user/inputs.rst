@@ -1519,7 +1519,7 @@ Material Type
 """""""""""""
 The ``material type`` field defines the type of material. Valid values for this key include Metal, Fuel, Fluid, Ceramic,
 ASME2015, ASME2017, SimpleSolid, and Composite. This is a required field. This field is meant to provide information to
-the user and is not used by matProps, though it may be used by downstream codes.
+the user and is not used by ``matProps``, though it may be used by downstream codes.
 
 .. _ref_comp:
 
@@ -1680,8 +1680,9 @@ other property.
 Tabulated Data
 """"""""""""""
 A material property can be defined not just by math, but by tabulated data. This is flexible, easy to use, and can
-better match laboratory measurements. Currently, matProps supports one dimensional and two dimensional tables of data,
-as shown in the example at the beginning of this section. Notice that the "type" field is used to make this distinction.
+better match laboratory measurements. Currently, ``matProps`` supports one dimensional and two dimensional tables of
+data, as shown in the example at the beginning of this section. Notice that the "type" field is used to make this
+distinction.
 
 These tables of data can be large and inconvienent to duplicate. So you can tag and name the tables of data for use
 elsewhere in the YAML file. (Look for ``"tabulated data: &tagged_data"`` in the example file above.)
@@ -1694,11 +1695,13 @@ is defined to represent Temperature in degrees C, and the min and max values of 
 valid bounds upon which the polynomial "equation" can be evaluated.
 
 The ``function`` system is very flexible though. Notice that "Poisson's ratio" above has ``"equation: 0.321"``, so constant
-functions are easy to define. And "yield strength" is actually a function of two independent variables, which matProps
-supports. Functions can also include tabular data. For tabular functions, instead of child keys, the value ``0`` or
-``1`` is provided to indicate which dimension of the table corresponds to which variable. Values returned from tabular functions will be interpretted from the provided values. Several other types of functions are defined in detail below.
+functions are easy to define. And "yield strength" is actually a function of two independent variables, which
+``matProps`` supports. Functions can also include tabular data. For tabular functions, instead of child keys, the value
+``0`` or ``1`` is provided to indicate which dimension of the table corresponds to which variable. Values returned from
+tabular functions will be interpretted from the provided values. Several other types of functions are defined in detail
+below.
 
-Like most everything else in a matProps YAML file, this field can (and probably should) also include a list of
+Like most everything else in a ``matProps`` YAML file, this field can (and probably should) also include a list of
 references to properly attribute the source of the data.
 
 
@@ -1708,7 +1711,7 @@ A symbolic function is defined by supplying value ``symbolic`` for the key ``typ
 number of independent variables. The ``equation`` node must be supplied which contains a string with the equation
 function. The ``symbolicOperators`` field defines the set of operators that may be used in the symbolic equation
 string. These operators may be combined in any order or grouping in order to build up a symbolic expression. While
-other operators outside of the table might function in matProps, they are untested and may not be used in qualified scope. 
+other operators outside of the table might function in ``matProps``, they are untested and may not be used in qualified scope. 
 
 .. note:: Both operators and variables are case sensitive. 
 
