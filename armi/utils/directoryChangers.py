@@ -211,15 +211,15 @@ class DirectoryChanger:
             for fromName, destName in copies:
                 fromPath = os.path.join(initialPath, fromName)
                 if not os.path.exists(fromPath):
-                    runLog.warning(f"{fromPath} does not exist and will not be copied.")
+                    runLog.extra(f"{fromPath} does not exist and will not be copied.")
                     continue
 
                 toPath = os.path.join(destinationPath, destName)
                 if moveFiles:
-                    runLog.extra("Moving {} to {}".format(fromPath, toPath))
+                    runLog.debug(f"Moving {fromPath} to {toPath}")
                     safeMove(fromPath, toPath)
                 else:
-                    runLog.extra("Copying {} to {}".format(fromPath, toPath))
+                    runLog.debug(f"Copying {fromPath} to {toPath}")
                     safeCopy(fromPath, toPath)
 
 

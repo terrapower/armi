@@ -53,7 +53,7 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
     except shutil.SameFileError:
         pass
     except Exception as e:
-        runLog.warning(
+        runLog.info(
             "Could not copy {} from {} to {}\nError was: {}".format(filepathDescription, sourcePath, destinationPath, e)
         )
 
@@ -61,8 +61,7 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
 def isFilePathNewer(path1, path2):
     """Returns true if path1 is newer than path2.
 
-    Returns true if path1 is newer than path2, or if path1 exists and path2 does not, otherwise
-    raises an IOError.
+    Returns true if path1 is newer than path2, or if path1 exists and path2 does not, otherwise raises an IOError.
     """
     exist1 = os.path.exists(path1)
     exist2 = os.path.exists(path2)
@@ -73,7 +72,7 @@ def isFilePathNewer(path1, path2):
     elif exist1 and not exist2:
         return True
     else:
-        raise IOError("Path 1 does not exist: {}".format(path1))
+        raise IOError(f"Path 1 does not exist: {path1}")
 
 
 def isAccessible(path):
