@@ -1693,7 +1693,7 @@ example file above, a function is used to represent the "Young's modulus" of the
 is defined to represent Temperature in degrees C, and the min and max values of 0 and 700 are given. This defines the
 valid bounds upon which the polynomial "equation" can be evaluated.
 
-The ``function`` system is very flexible though. Notice that "Poisson's ratio" above has "equation: 0.321", so constant
+The ``function`` system is very flexible though. Notice that "Poisson's ratio" above has ``"equation: 0.321"``, so constant
 functions are easy to define. And "yield strength" is actually a function of two independent variables, which matProps
 supports. Functions can also include tabular data. For tabular functions, instead of child keys, the value ``0`` or
 ``1`` is provided to indicate which dimension of the table corresponds to which variable. Values returned from tabular functions will be interpretted from the provided values. Several other types of functions are defined in detail below.
@@ -1779,7 +1779,7 @@ Two Dimensional Table
 =====================
 The "two dimensional table" field defines a two-dimensional table, that needs to be supplied a specially formatted data
 set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to share
-data with other fields, see ``&tagged_data`` in the above example file.
+data with other fields, see ``"&tagged_data"`` in the above example file.
 
 The form of the inner lists varies depending on whether the list corresponds to the first row or one of the subsequent
 rows. The first row will always have its first entry be a ``None`` value. The second value will be a list containing all
