@@ -334,13 +334,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "capturePowerFrac",
-            units=units.UNITLESS,
-            description="Fraction of the power produced through capture in a block.",
-            saveToDB="True",
-        )
-
-        pb.defParam(
             "fluence",
             units=f"#/{units.CM}^2",
             description="Fluence",
