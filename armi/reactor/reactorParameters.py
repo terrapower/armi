@@ -97,32 +97,6 @@ def defineCoreParameters():
 
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves", default=0)
 
-    with pDefs.createBuilder(location=ParamLocation.NA, categories=["control rods"]) as pb:
-        pb.defParam(
-            "crMostValuablePrimaryRodLocation",
-            default="",
-            units=units.UNITLESS,
-            saveToDB=True,
-            description=("Core assembly location for the most valuable primary control rod."),
-        )
-        pb.defParam(
-            "crMostValuableSecondaryRodLocation",
-            default="",
-            units=units.UNITLESS,
-            saveToDB=True,
-            description=("Core assembly location for the most valuable secondary control rod."),
-        )
-        pb.defParam(
-            "crTransientOverpowerWorth",
-            default=0.0,
-            units=units.PCM,
-            saveToDB=True,
-            description=(
-                "Reactivity worth introduced by removal of the highest worth primary control rod "
-                "from the core, starting from its critical position"
-            ),
-        )
-
     with pDefs.createBuilder() as pb:
         pb.defParam(
             "axialMesh",
