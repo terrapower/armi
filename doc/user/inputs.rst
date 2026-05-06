@@ -1410,10 +1410,10 @@ You can find example YAML material files under ``armi/resources/materials/`` and
 ``armi/materials/``.
 
 This YAML material file format is human readable, hierarchical, and compact. The base name of the YAML filename (the
-file name without the file path or extension suffix) is interpreted by matProps as the case-sensitive material name. The
+file name without the file path or extension suffix) is interpreted by ``matProps`` as the case-sensitive material name. The
 extension for the material data file must be one of these: ``.yaml``, ``.yml``, ``.YAML``, or ``.YML``.
 
-Below is an example material data file containing all the basic matProps concepts, discussed in the following sections.
+Below is an example material data file containing all the basic ``matProps`` concepts, discussed in the following sections.
 
 .. code-block:: yaml
 
@@ -1558,7 +1558,7 @@ summary of the keywords, their relevant status and appropriate section can be fo
     |                      | Otherwise, it is optional.          |                          |
     +----------------------+-------------------------------------+--------------------------+
 
-The table below lists the default collection of properties that are defined for a material by matProps. 
+The table below lists the default collection of properties that are defined for a material by ``matProps``. 
 Note that these property names are case sensitive.
 
 .. table:: Available material properties for YAML definition and corresponding matProps API.
@@ -1698,7 +1698,7 @@ The ``function`` system is very flexible though. Notice that "Poisson's ratio" a
 functions are easy to define. And "yield strength" is actually a function of two independent variables, which
 ``matProps`` supports. Functions can also include tabular data. For tabular functions, instead of child keys, the value
 ``0`` or ``1`` is provided to indicate which dimension of the table corresponds to which variable. Values returned from
-tabular functions will be interpretted from the provided values. Several other types of functions are defined in detail
+tabular functions will be interpreted from the provided values. Several other types of functions are defined in detail
 below.
 
 Like most everything else in a ``matProps`` YAML file, this field can (and probably should) also include a list of
@@ -1797,7 +1797,7 @@ for each row. If there is a property value that does not exist for an independen
 Troubleshooting
 ---------------
 The ``armi.matProps`` package includes error checking to avoid invalid states or returning inaccurate data. Any error
-found raises an ``Exception`` that includes a helpful message. The four broad categories of matProps errors are:
+found raises an ``Exception`` that includes a helpful message. The four broad categories of ``matProps`` errors are:
 
 * Invalid file format
 * Failed node value check
