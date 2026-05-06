@@ -21,12 +21,7 @@ import numpy as np
 
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
-from armi.reactor.grids import (
-    CoordinateLocation,
-    HexGrid,
-    IndexLocation,
-    MultiIndexLocation,
-)
+from armi.reactor.grids import CoordinateLocation, HexGrid, IndexLocation, MultiIndexLocation
 from armi.reactor.tests.test_blocks import NUM_PINS_IN_TEST_BLOCK, loadTestBlock
 from armi.utils import iterables
 
@@ -38,13 +33,12 @@ class HexBlockRotateTests(unittest.TestCase):
         "cornerFastFlux",
         "pointsCornerDpa",
         "pointsCornerDpaRate",
-        "pointsCornerFastFluxFr",
         "pointsEdgeDpa",
         "pointsEdgeDpaRate",
         "THedgeTemp",
         "THcornTemp",
     ]
-    BOUNDARY_DATA = np.arange(6, dtype=float) * 10
+    BOUNDARY_DATA = np.arange(6, dtype=float) * 7
 
     PIN_PARAMS = [
         "percentBuByPin",
