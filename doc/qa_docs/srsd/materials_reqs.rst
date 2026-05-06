@@ -31,7 +31,7 @@ Functional Requirements
     :acceptance_criteria: Only the preferred material class is returned when multiple material classes with the same name are defined.
     :status: accepted
 
-.. req:: The materials package shall provide the capability to retrieve material properties at different temperatures.
+.. req:: The materials package shall provide the capability to retrieve material properties given one or more independent variables.
     :id: R_ARMI_MAT_PROPERTIES
     :subtype: functional
     :basis: The ability to represent physical material properties is a basic need for nuclear modeling.
