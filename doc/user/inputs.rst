@@ -1506,7 +1506,7 @@ Below is an example material data file containing all the basic matProps concept
             - [10.,      [  0.012, 0.0059,0.0036, 0.0029]]
             - [20.,      [  0.01,  0.0051,0.0033, 0.0020]]
 
-The only required entries in a material file are "file format", "composition", and "material type".
+The only required entries in a material file are ``file format``, ``composition``, and ``material type``.
 
 File Format 
 """""""""""
@@ -1767,8 +1767,8 @@ independent variable value.
 
 Piecewise
 =========
-Using the "piecewise" keyword allows multiple functions to be defined for different ranges of independent variable
-values. As in the "density" example above, the field "functions" is used to define a list of functions, one for each
+Using the ``piecewise`` keyword allows multiple functions to be defined for different ranges of independent variable
+values. As in the ``density`` example above, the field "functions" is used to define a list of functions, one for each
 range defined.
 
 .. note:: While piecewise-defined functions are allowed to have gaps in the valid range between child functions, the
@@ -1780,9 +1780,9 @@ range defined.
 
 Two Dimensional Table
 =====================
-The "two dimensional table" field defines a two-dimensional table, that needs to be supplied a specially formatted data
-set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to share
-data with other fields, see ``"&tagged_data"`` in the above example file.
+The ``two dimensional table`` field defines a two-dimensional table, that needs to be supplied a specially formatted
+data set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to
+share data with other fields, see ``"&tagged_data"`` in the above example file.
 
 The form of the inner lists varies depending on whether the list corresponds to the first row or one of the subsequent
 rows. The first row will always have its first entry be a ``None`` value. The second value will be a list containing all
@@ -1806,9 +1806,9 @@ found raises an ``Exception`` that includes a helpful message. The four broad ca
 
 The first two categories of problems are formatting errors or invalid values in the material YAML file. These problems
 can only be resolved by making an edit to the material YAML file. Property evaluation issues arise from users providing
-invalid input to property functions. For instance, if the density is requested outside the defined valid range of temperatures.
-Finally, problems loading or retrieving material data usually arise by trying to either load a material file (or
-directory) that does not exist or by an attempted overwrite of a material that has already been saved.
+invalid input to property functions. For instance, if the density is requested outside the defined valid range of
+temperatures. Finally, problems loading or retrieving material data usually arise by trying to either load a material
+file (or directory) that does not exist or by an attempted overwrite of a material that has already been saved.
 
 
 .. _fuel-management-input:
