@@ -889,11 +889,11 @@ material modifications
   material is slightly different than the theoretical density due to the manufacturing process.
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of custom isotopics labels for
-  input scenarios where a varying blend of a high-reactivity feed with a low-reactivity feed. This is often useful for
+  input scenarios where there is a blend of a high-reactivity feed with a low-reactivity feed. This is often useful for
   closed fuel cycles. For example, you can define any fuel material as being made of LWR-derived TRU plus depleted
   uranium at various weight fractions. Note that this input style only adjusts the heavy metal.
 
-  User can specify material modications on a by-component basis. This is useful, for instance, when two pins within an
+  Users can specify material modications on a by-component basis. This is useful, for instance, when two pins within an
   assembly are made of the same base material but have different fuel enrichments. This is done   using the
   ``by component`` attribute to the material modifications. For example::
 
@@ -1535,7 +1535,7 @@ Optionally, this data entry can be associated with a references keyword.
 
 Composition Requirements:
 
-- The value ``balance`` shall be assigned to one and only one element.
+- The value "balance" shall be assigned to one and only one element.
 - The sum of the mean of the percent composition range for non-trace elements (elements with a minimum composition of 0)
   shall not exceed 100.
 
@@ -1681,7 +1681,7 @@ Tabulated Data
 """"""""""""""
 A material property can be defined not just by math, but by tabulated data. This is flexible, easy to use, and can
 better match laboratory measurements. Currently, ``matProps`` supports one dimensional and two dimensional tables of
-data, as shown in the example at the beginning of this section. Notice that the "type" field is used to make this
+data, as shown in the example at the beginning of this section. Notice that the ``type`` field is used to make this
 distinction.
 
 These tables of data can be large and inconvienent to duplicate. So you can tag and name the tables of data for use
@@ -1768,7 +1768,7 @@ independent variable value.
 Piecewise
 =========
 Using the ``piecewise`` keyword allows multiple functions to be defined for different ranges of independent variable
-values. As in the ``density`` example above, the field "functions" is used to define a list of functions, one for each
+values. As in the density example above, the field ``functions`` is used to define a list of functions, one for each
 range defined.
 
 .. note:: While piecewise-defined functions are allowed to have gaps in the valid range between child functions, the
