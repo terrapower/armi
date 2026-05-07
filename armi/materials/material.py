@@ -21,7 +21,7 @@ Most temperatures may be specified in either K or C and the functions will conve
 import numpy as np
 
 from armi import runLog
-from armi.matProps.material import Material as MatPropsMaterial
+from armi.matProps.material import MatPropsMaterial
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools

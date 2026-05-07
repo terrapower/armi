@@ -22,7 +22,7 @@ import unittest
 
 import numpy as np
 
-from armi.matProps.material import Material
+from armi.matProps.material import MatPropsMaterial
 
 
 class TestSymbolicFunction(unittest.TestCase):
@@ -46,7 +46,7 @@ class TestSymbolicFunction(unittest.TestCase):
 
     def loadMaterial(self, num=1):
         """Loads the material file based on `self.yaml` and returns the material object."""
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(self.yaml)
         return mat
 
@@ -862,7 +862,7 @@ class TestBrokenSymbolicFunctions(unittest.TestCase):
             },
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(yaml)
 
         # stomp all over the equation, to force it to return a complex number
@@ -887,7 +887,7 @@ class TestBrokenSymbolicFunctions(unittest.TestCase):
             },
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(yaml)
 
         # stomp all over the equation, to force it to return a complex number

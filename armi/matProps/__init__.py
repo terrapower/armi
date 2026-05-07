@@ -85,7 +85,7 @@ import os
 import sysconfig
 from glob import glob
 
-from armi.matProps.material import Material
+from armi.matProps.material import MatPropsMaterial
 
 loadedRootDirs = []
 materials = {}
@@ -108,14 +108,14 @@ def getPaths(rootDir: str) -> list:
 
 def addMaterial(yamlPath: str, mat):
     """
-    Adds Material object instance to matProps.materials dict.
+    Adds MatPropsMaterial object instance to matProps.materials dict.
 
     Parameters
     ----------
     yamlPath: str
         Yaml file path whose information is being parsed.
-    mat: Material
-        Material object whose data will be saved.
+    mat: MatPropsMaterial
+        MatPropsMaterial object whose data will be saved.
     """
     global materials
     if mat.name in materials:
@@ -151,7 +151,7 @@ def loadAll(rootDir: str = None) -> None:
 
     paths = getPaths(rootDir)
     for yamlPath in paths:
-        mat = Material()
+        mat = MatPropsMaterial()
         try:
             mat.loadFile(yamlPath)
         except Exception as exc:
@@ -193,7 +193,7 @@ def loadSafe(rootDir: str = None) -> None:
 
 
 def getHashes() -> dict:
-    """Calls Material.hash() for each Material object in materials."""
+    """Calls Material.hash() for each MatPropsMaterial object in materials."""
     global materials
     hashes = {}
     for material in materials.values():
@@ -202,7 +202,7 @@ def getHashes() -> dict:
     return hashes
 
 
-def getMaterial(name: str) -> Material:
+def getMaterial(name: str) -> MatPropsMaterial:
     """
     Returns a material object with the given name from matProps.materials.
 
@@ -213,8 +213,8 @@ def getMaterial(name: str) -> Material:
 
     Returns
     -------
-    Material
-        Material object returned from matProps.materials.
+    MatPropsMaterial
+        MatPropsMaterial object returned from matProps.materials.
     """
     global materials
     try:
@@ -224,7 +224,7 @@ def getMaterial(name: str) -> Material:
         raise KeyError(msg) from None
 
 
-def loadMaterial(yamlPath: str, saveMaterial: bool = False) -> Material:
+def loadMaterial(yamlPath: str, saveMaterial: bool = False) -> MatPropsMaterial:
     """
     Loads an individual material file.
 
@@ -233,14 +233,14 @@ def loadMaterial(yamlPath: str, saveMaterial: bool = False) -> Material:
     yamlPath: str
         Path to YAML file that will be parsed into this object instance.
     saveMaterial: bool
-        If True, Material object instance will be saved into matProps.materials.
+        If True, MatPropsMaterial object instance will be saved into matProps.materials.
 
     Returns
     -------
-    Material
-        Material object whose data is parsed from material file provided by yamlPath.
+    MatPropsMaterial
+        MatPropsMaterial object whose data is parsed from material file provided by yamlPath.
     """
-    mat = Material()
+    mat = MatPropsMaterial()
     mat.loadFile(yamlPath)
     if saveMaterial:
         addMaterial(yamlPath, mat)
@@ -259,12 +259,12 @@ def loadMaterial(yamlPath: str, saveMaterial: bool = False) -> Material:
 
 def loadedMaterials() -> list:
     """
-    Returns all the Material objects that have been loaded into matProps.materials.
+    Returns all the MatPropsMaterial objects that have been loaded into matProps.materials.
 
     Returns
     -------
-    list of Material
-        Loaded Material objects
+    list of MatPropsMaterial
+        Loaded MatPropsMaterial objects
     """
     global materials
     mats = []
