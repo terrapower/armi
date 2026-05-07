@@ -1675,7 +1675,7 @@ other property.
     defProp("goo", "gooiness", "m^2/s")
     defProp("squish", "squishiness", "1/Pa")
 
-    armi.matProps.loadSafe("path/to/hilarious/materials/")
+    armi.matProps.loadSafe("/pop/six/squish/uhuh/cicero/lipschitz")
 
 Tabulated Data
 """"""""""""""
