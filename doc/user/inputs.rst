@@ -870,7 +870,7 @@ nozzleType
 material modifications
   There are a variety of material modifications available for each material. The most common material modifications are
   usually to do with enrichment of a particular nuclide, modifying the theoretical density of a material, or changing
-  some list of custom isotpics. You can set values to these material modifications in your blueprints. And if you want
+  some list of custom isotopics. You can set values to these material modifications in your blueprints. And if you want
   to add new modifications to your own custom material, you would typically implement that change in your material's
   ``applyInputParams()`` method. Here are some example material modifications from ARMI's history:
 
