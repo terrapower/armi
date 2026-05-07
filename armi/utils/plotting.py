@@ -768,12 +768,17 @@ def plotAssemblyTypes(
     ax.spines["top"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.yaxis.set_ticks_position("left")
+
     yBlockHeights.insert(0, 0.0)
     yBlockHeights.sort()
     yBlockHeightDiffs = np.diff(yBlockHeights)  # Compute differential heights between each block
-    ax.set_yticks([0.0] + list(set(np.cumsum(yBlockHeightDiffs))))
-    ax.xaxis.set_visible(False)
+    yTicks = np.array([0.0] + list(set(np.cumsum(yBlockHeightDiffs))))
+    if len(yTicks) > 20:
+        # keep the number of y-axis ticks to a legible maximum
+        yTicks = yTicks[np.linspace(0, yTicks.size - 1, 20, dtype=int)]
+    ax.set_yticks(yTicks)
 
+    ax.xaxis.set_visible(False)
     ax.set_title(title, y=1.03)
     ax.set_ylabel(yAxisLabel, labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
