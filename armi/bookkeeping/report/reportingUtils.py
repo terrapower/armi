@@ -381,8 +381,7 @@ def getSystemInfo():
         return _getSystemInfoLinux()
     else:
         runLog.warning(
-            f"Cannot get system information for {sys.platform} because ARMI only "
-            + "supports Linux, MacOS, and Windows."
+            f"Cannot get system information for {sys.platform} because ARMI only supports Linux, MacOS, and Windows."
         )
         return ""
 
@@ -587,9 +586,7 @@ def setNeutronBalancesReport(core):
     core : armi.reactor.reactors.Core
     """
     if not core.getFirstBlock().p.rateCap:
-        runLog.warning(
-            "No rate information (rateCap, rateAbs, etc.) available on the blocks. Skipping balance summary."
-        )
+        runLog.info("No rate information (rateCap, rateAbs, etc.) available on the blocks. Skipping balance summary.")
         return
 
     cap = core.calcAvgParam("rateCap", volumeAveraged=False, generationNum=2)
@@ -698,7 +695,7 @@ def summarizePinDesign(core):
         runLog.info(report.ALL[report.PIN_ASSEM_DESIGN])
 
         first_fuel_block = core.getFirstBlock(Flags.FUEL)
-        runLog.info("Design & component information for first fuel block {}".format(first_fuel_block))
+        runLog.info(f"Design & component information for first fuel block {first_fuel_block}")
 
         runLog.info(first_fuel_block.setAreaFractionsReport())
 
@@ -706,8 +703,7 @@ def summarizePinDesign(core):
             runLog.info(component_.setDimensionReport())
 
     except Exception as error:
-        runLog.warning("Pin summarization failed to work")
-        runLog.warning(error)
+        runLog.warning(f"Pin summarization failed to work: {error}")
 
 
 def summarizePowerPeaking(core):
