@@ -40,7 +40,7 @@ class Material(MatPropsMaterial):
     A material is made up of elements or isotopes. It has bulk properties like density.
 
     .. impl:: The abstract material class.
-        :id: I_ARMI_MAT_PROPERTIES
+        :id: I_ARMI_MAT_PROPERTIES1
         :implements: R_ARMI_MAT_PROPERTIES
 
         The ARMI Materials library is based on the Object-Oriented Programming design approach, and uses this generic
@@ -49,7 +49,7 @@ class Material(MatPropsMaterial):
         values to those properties.
 
     .. impl:: Materials generate nuclide mass fractions at instantiation.
-        :id: I_ARMI_MAT_FRACS
+        :id: I_ARMI_MAT_FRACS1
         :implements: R_ARMI_MAT_FRACS
 
         An ARMI material is meant to be able to represent real world materials that might be used in the construction of

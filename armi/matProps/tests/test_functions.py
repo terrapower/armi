@@ -34,9 +34,11 @@ class TestFunctions(MatPropsFunTestBase):
         self.assertEqual(mat.rho.references[1], "2")
 
     def test_datafilesVarVals(self):
-        """
-        Test to make sure that parsing variable values return the expected values when parsing "max" and "min" nodes for
-        the T variable.
+        """Ensure that parsing variable values return the expected values when parsing "max" and "min" nodes.
+
+        .. test:: For matProps-based material properties, we can define a valid range of input independent variables.
+            :id: T_ARMI_MAT_PROPERTIES2
+            :tests: R_ARMI_MAT_PROPERTIES
         """
         mat = self._createFunction(self.baseConstantData)
         mat.name = self.testName
@@ -108,7 +110,7 @@ class TestFunctions(MatPropsFunTestBase):
         with self.assertRaises(KeyError):
             fun.calc({"Z": 200})
 
-        # whoops, I forgot to declare a "max" value
+        # whoops, we forgot to declare a "max" value
         materialData = {
             "file format": "TESTS",
             "composition": {"Fe": "balance"},

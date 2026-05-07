@@ -37,6 +37,12 @@ class TestConstituent(unittest.TestCase):
             Constituent("Fe", 50.0, 1.0, False)
 
     def test_parseComposition(self):
+        """Test some basic cases for parsing material composition from the YAML custom format.
+
+        .. test:: The mandatory "composition" YAML field defines material composition.
+            :id: T_ARMI_MAT_FRACS0
+            :tests: R_ARMI_MAT_FRACS
+        """
         # test we fail correctly when providing invalid inputs
         with self.assertRaises(ValueError):
             Constituent.parseComposition({})
