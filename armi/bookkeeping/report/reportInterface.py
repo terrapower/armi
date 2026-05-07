@@ -143,6 +143,10 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def reportSFP(sfp):
         """A high-level summary of the Spent Fuel Pool."""
+        # Do not print this report if the SFP is the ARMI default, or empty, as it will not be interesting to the user.
+        if sfp.numColumns is None or not len(sfp):
+            return
+
         title = "SpentFuelPool Report"
         runLog.important("-" * len(title))
         runLog.important(title)
