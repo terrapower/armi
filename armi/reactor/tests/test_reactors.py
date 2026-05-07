@@ -216,10 +216,10 @@ class HexReactorTests(ReactorTests):
 
         # Test at assembly level
         assembly = core.getFirstAssembly()
-        self.assertGreater(assembly.p.crRodLength, -1)
+        self.assertGreater(assembly.p.maxPercentBu, -1)
 
-        assembly.p.crRodLength = 234
-        self.assertEqual(assembly.p.crRodLength, 234)
+        assembly.p.maxPercentBu = 234
+        self.assertEqual(assembly.p.maxPercentBu, 234)
 
         # Test at block level
         block = core.getFirstBlock()

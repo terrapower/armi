@@ -255,12 +255,6 @@ def _getNeutronicsBlockParams():
         categories=[parameters.Category.detailedAxialExpansion, "depletion"],
     ) as pb:
         pb.defParam(
-            "pointsEdgeFastFluxFr",
-            units=units.UNITLESS,
-            description="Fraction of flux above 100keV at edges of the block",
-        )
-
-        pb.defParam(
             "pointsEdgeDpa",
             setter=isNumpyArray("pointsEdgeDpa"),
             units=units.DPA,
@@ -290,12 +284,6 @@ def _getNeutronicsBlockParams():
             "cornerFastFlux",
             units=f"n/{units.CM}^2/{units.SECONDS}",
             description="Neutron flux above 100keV at hexagon block corners",
-        )
-
-        pb.defParam(
-            "pointsCornerFastFluxFr",
-            units=units.UNITLESS,
-            description="Fraction of flux above 100keV at corners of the block",
         )
 
         pb.defParam(
@@ -331,13 +319,6 @@ def _getNeutronicsBlockParams():
             "rateProdNet",
             units=f"1/{units.CM}^3/{units.SECONDS}",
             description="The total neutron production including (n,2n) source and fission source.",
-        )
-
-        pb.defParam(
-            "capturePowerFrac",
-            units=units.UNITLESS,
-            description="Fraction of the power produced through capture in a block.",
-            saveToDB="True",
         )
 
         pb.defParam(

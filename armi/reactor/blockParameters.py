@@ -220,13 +220,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "heliumInB4C",
-            units=f"He/{units.SECONDS}/{units.CM}^3",
-            description="Alpha particle production rate in B4C control and shield material.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "powerRx",
             units=f"{units.WATTS}/{units.CM}^3",
             description="Power density of the reactor",

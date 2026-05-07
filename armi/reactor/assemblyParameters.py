@@ -160,18 +160,6 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(location=ParamLocation.NA, default=0.0, categories=["control rods"]) as pb:
         pb.defParam(
-            "crCriticalFraction",
-            units=units.UNITLESS,
-            description=(
-                "The insertion fraction when the control rod assembly is in its critical "
-                "configuration. Note that the default of -1.0 is a trigger for this value not "
-                "being set yet."
-            ),
-            saveToDB=True,
-            default=-1.0,
-        )
-
-        pb.defParam(
             "crCurrentElevation",
             units=units.CM,
             description="The current elevation of the bottom of the moveable section of a control rod assembly.",
@@ -188,13 +176,6 @@ def getAssemblyParameterDefinitions():
                 "bottom-most moveable section in the assembly when fully inserted."
             ),
             categories=[parameters.Category.assignInBlueprints],
-            saveToDB=True,
-        )
-
-        pb.defParam(
-            "crRodLength",
-            units=units.CM,
-            description="length of the control material within the control rod",
             saveToDB=True,
         )
 
