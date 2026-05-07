@@ -876,7 +876,7 @@ material modifications
 
   * Lithium: LI6_wt_frac
   * B4C: B10_wt_frac, TD_frac
-  * Uranium: U235_wt_frac, TD_frac, class1_custom_isotopics, class2_custom_isotopics, class1_wt_frac, customIsotopics
+  * Uranium: U235_wt_frac, TD_frac, customIsotopics
 
   In the Lithium example above, both material modifications modify the weight fraction, or mass fraction, of an element
   or nuclide. That is useful if you need to specify the fraction of a particular nuclide in your material. Similarly,
