@@ -484,13 +484,12 @@ class Material(MatPropsMaterial):
         # no YAML, use linear expansion
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
-        refD = self.refDens
-        if refD is None:
+        if self.refDens is None:
             runLog.warning(f"{self} has no reference density", single=True, label=f"No refD {self.getName()}")
             return None
 
         f = (1.0 + dLL / 100.0) ** 3
-        return refD / f
+        return self.refDens / f
 
     def dynamicVisc(self, Tk: float = None, Tc: float = None) -> float:
         """Dynamic viscosity in Pa-s."""
