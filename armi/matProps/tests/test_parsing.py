@@ -55,19 +55,19 @@ class TestParsing(unittest.TestCase):
             matNam = path.splitext(matFile)[0]
             # the default behavior is loadMaterial(matPath, false)
             m = armi.matProps.loadMaterial(matPath)
-            self.assertIsInstance(m, armi.matProps.Material)
+            self.assertIsInstance(m, armi.matProps.MatPropsMaterial)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
                 armi.matProps.getMaterial(matNam)
 
             m = armi.matProps.loadMaterial(self.dummyMatFiles[matFile], False)
-            self.assertIsInstance(m, armi.matProps.Material)
+            self.assertIsInstance(m, armi.matProps.MatPropsMaterial)
             with self.assertRaisesRegex(KeyError, f"No material named `{matNam}` was loaded within loaded data."):
                 armi.matProps.getMaterial(matNam)
 
             m = armi.matProps.loadMaterial(self.dummyMatFiles[matFile], True)
-            self.assertIsInstance(m, armi.matProps.Material)
+            self.assertIsInstance(m, armi.matProps.MatPropsMaterial)
             m = armi.matProps.getMaterial(matNam)
-            self.assertIsInstance(m, armi.matProps.Material)
+            self.assertIsInstance(m, armi.matProps.MatPropsMaterial)
 
     def test_multiDataLoadingLoadingAll(self):
         armi.matProps.loadAll(self.dummyDataPath)

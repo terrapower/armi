@@ -17,7 +17,7 @@
 import math
 import unittest
 
-from armi.matProps.material import Material
+from armi.matProps.material import MatPropsMaterial
 
 
 class MatPropsFunTestBase(unittest.TestCase):
@@ -119,7 +119,7 @@ class MatPropsFunTestBase(unittest.TestCase):
             "density": {"function": funcBody},
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(materialData)
 
         return mat
@@ -148,7 +148,7 @@ class MatPropsFunTestBase(unittest.TestCase):
             "density": {"function": funcBody, "tabulated data": tableData or {}},
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(materialData)
 
         return mat

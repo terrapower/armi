@@ -14,7 +14,7 @@
 
 """Tests related to piecewise functions."""
 
-from armi.matProps.material import Material
+from armi.matProps.material import MatPropsMaterial
 from armi.matProps.tests import MatPropsFunTestBase
 
 
@@ -244,7 +244,7 @@ class TestPiecewiseFunction(MatPropsFunTestBase):
             "density": {"function": funcBody, "tabulated data": {}},
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(materialData)
 
         return mat
