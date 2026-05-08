@@ -737,12 +737,6 @@ class Database:
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
             root.sort()
-        else:
-            runLog.warning(
-                "DeprecationWarning: This Reactor is not being sorted on DB load. Due to the setting "
-                f"{CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is temporary and will be removed by "
-                "2024."
-            )
 
         if cs[CONF_GROW_TO_FULL_CORE_AFTER_LOAD] and not root.core.isFullCore:
             root.core.growToFullCore(cs)
