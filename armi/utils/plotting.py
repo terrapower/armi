@@ -775,7 +775,7 @@ def plotAssemblyTypes(
     yTicks = np.array([0.0] + list(set(np.cumsum(yBlockHeightDiffs))))
     if len(yTicks) > 20:
         # keep the number of y-axis ticks to a legible maximum
-        yTicks = yTicks[np.linspace(0, yTicks.size - 1, 20, dtype=int)]
+        yTicks = np.linspace(yTicks[0], yTicks[-1], 20, dtype=float)]
     ax.set_yticks(yTicks)
 
     ax.xaxis.set_visible(False)
