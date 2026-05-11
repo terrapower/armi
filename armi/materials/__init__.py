@@ -252,7 +252,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     armi.reactor.reactors.factory
         Applies user settings to default namespace order.
     """
-    from armi.matProps import Material as MatPropsMaterial
+    from armi.matProps import MatPropsMaterial
 
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
