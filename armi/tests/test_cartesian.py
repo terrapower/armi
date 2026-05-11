@@ -14,31 +14,20 @@
 
 """Tests for Cartesian reactors."""
 
+import os
 import unittest
 
 from armi.reactor import geometry
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
-from armi.utils import directoryChangers
+from armi.tests import TESTING_ROOT
 
 
 class CartesianReactorTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # prepare the input files. This is important so the unit tests run from wherever
-        # they need to run from.
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
-        cls.directoryChanger.open()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.directoryChanger.close()
-
     def setUp(self):
-        """Use the related setup in the testFuelHandlers module."""
         self.o, self.r = test_reactors.loadTestReactor(
-            self.directoryChanger.destination, inputFileName="refTestCartesian.yaml"
+            os.path.join(TESTING_ROOT, "reactors", "smallCartesian"),
+            inputFileName="refTestCartesian.yaml",
         )
 
     def test_custom(self):

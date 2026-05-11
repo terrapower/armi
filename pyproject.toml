@@ -336,6 +336,8 @@ armi = [
     "testing/reactors/detailedAxialExpansion/refSmallReactorBase.yaml",
     "testing/reactors/godiva/godiva-blueprints.yaml",
     "testing/reactors/godiva/godiva.armi.unittest.yaml",
+    "testing/reactors/smallCartesian/refSmallCartesian.yaml",
+    "testing/reactors/smallCartesian/refTestCartesian.yaml",
     "testing/reactors/smallestTestReactor/armiRunSmallest.yaml",
     "testing/reactors/smallestTestReactor/refOneBlockReactor.yaml",
     "testing/reactors/smallestTestReactor/refSmallestReactor.yaml",

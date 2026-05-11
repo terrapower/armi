@@ -257,7 +257,9 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][0], 0)
 
         # this one is cartestian, with many assemblies in the core
-        _, rCartesian = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml")
+        _, rCartesian = test_reactors.loadTestReactor(
+            os.path.join(TESTING_ROOT, "reactors", "smallCartesian"), inputFileName="refTestCartesian.yaml"
+        )
 
         nAssems = len(rCartesian.core)
         self.assertGreater(nAssems, 1)
