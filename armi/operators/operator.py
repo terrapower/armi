@@ -1067,7 +1067,7 @@ class Operator:
                     self.restartData.append((float(match.group(1)), float(match.group(2)), factorList))
         runLog.info("loaded restart data for {0} cycles".format(len(self.restartData)))
 
-    def loadState(self, cycle, timeNode, timeStepName="", fileName=None, updateMassFractions=None):
+    def loadState(self, cycle, timeNode, timeStepName="", fileName=None):
         """
         Convenience method reroute to the database interface state reload method.
 
@@ -1084,9 +1084,6 @@ class Operator:
         dbi = self.getInterface("database")
         if not dbi:
             raise RuntimeError("Cannot load from snapshot without a database interface")
-
-        if updateMassFractions is not None:
-            runLog.warning("deprecated: updateMassFractions is no longer a valid option for loadState")
 
         dbi.loadState(cycle, timeNode, timeStepName, fileName)
 
