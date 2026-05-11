@@ -1333,7 +1333,7 @@ class CartesianReactorTests(ReactorTests):
 
 class CartesianReactorNeighborTests(ReactorTests):
     def setUp(self):
-        self.r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
+        self.r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml")[1]
 
     def test_findNeighborsCartesian(self):
         """Find neighbors of a given assembly in a Cartesian grid."""

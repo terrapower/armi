@@ -27,7 +27,7 @@ from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
-from armi.testing import TEST_ROOT, loadTestReactor
+from armi.testing import TEST_ROOT, TESTING_ROOT, loadTestReactor
 from armi.testing.singleMixedAssembly import buildMixedThreePinAssembly
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -392,7 +392,7 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_convertCartesianLatticeWithFuelDriver(self):
         """Test conversion with fuel driver."""
-        r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
+        r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml")[1]
         driverBlock = r.core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
         block = r.core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.BLANKET)
 

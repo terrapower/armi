@@ -45,7 +45,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks, test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.tests import TEST_ROOT, TESTING_ROOT, mockRunLogs
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -326,7 +326,9 @@ class TestBlockCollCompAvg(unittest.TestCase):
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")
+        self.o, self.r = test_reactors.loadTestReactor(
+            os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml"
+        )
 
         #                    ndrawer1  lenFuelTypeD1  ndrawer2  lenFuelTypeD2
         EuWeight = float(1 * 60 + 3 * 15)
