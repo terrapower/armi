@@ -29,6 +29,7 @@ from armi.reactor.tests.test_reactors import (
     buildOperatorOfEmptyHexBlocks,
     loadTestReactor,
 )
+from armi.testing import TESTING_ROOT
 
 
 class TestFPMLumpedFP(unittest.TestCase):
@@ -67,7 +68,7 @@ class TestFPMLumpedFP(unittest.TestCase):
         self.assertIn("XE135", fissionProductNames)
 
     def test_fpApplication(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         # Set up the global LFPs and check that they are setup.
         self.assertTrue(fpModel._useGlobalLFPs)
@@ -99,11 +100,12 @@ class TestFPMExplicitMC2Lib(unittest.TestCase):
 
     def setUp(self):
         o, r = loadTestReactor(
+            TESTING_ROOT,
             customSettings={
                 CONF_FP_MODEL: "explicitFissionProducts",
                 CONF_FISSION_PRODUCT_LIBRARY_NAME: "MC2-3",
             },
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
         )
         self.r = r
         self.nuclideBases = self.r.nuclideBases

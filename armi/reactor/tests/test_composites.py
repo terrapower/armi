@@ -30,8 +30,8 @@ from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.testing import loadTestReactor
-from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:
@@ -97,7 +97,7 @@ class TestCompositePattern(unittest.TestCase):
         self.container = DummyComposite("inner test fuel", 99)
 
         # Make sure the Composite is within the Reactor
-        _o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         r.core.getFirstBlock().add(self.container)
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
         r.core.lib = lib
@@ -471,7 +471,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(sum([r for r in rRates.values()]), 0)
 
         # init reactor
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
         r.core.lib = lib
 

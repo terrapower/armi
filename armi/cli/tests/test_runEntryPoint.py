@@ -34,7 +34,7 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
@@ -62,8 +62,8 @@ def buildTestDB(fileName, numNodes=1, numCycles=1):
         Database file name.
     """
     o, r = loadTestReactor(
-        TEST_ROOT,
-        inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        TESTING_ROOT,
+        inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
     )
 
     # create the tests DB
@@ -270,7 +270,7 @@ class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
         with TemporaryDirectoryChanger() as newDir:
             # build test DB
-            o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+            o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
             dbi = DatabaseInterface(r, o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
             dbi.initDB(fName=dbPath)
@@ -461,9 +461,9 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
         with TemporaryDirectoryChanger() as newDir:
             # build test DB
             self.o, self.r = loadTestReactor(
-                TEST_ROOT,
+                TESTING_ROOT,
                 customSettings={"reloadDBName": "reloadingDB.h5"},
-                inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+                inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
             )
             self.dbi = DatabaseInterface(self.r, self.o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")

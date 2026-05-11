@@ -944,7 +944,9 @@ class TestXSGM(unittest.TestCase):
 
     def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
         """Reusable code used in multiple unit tests."""
-        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         # set a few random non-default settings on AA to be copied to the new BA group
         o.cs[CONF_CROSS_SECTION].update(
             {
@@ -1102,7 +1104,9 @@ class TestXSGM(unittest.TestCase):
         Tests copying pre-generated cross section and flux files using reactor that is built from a
         case settings file.
         """
-        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         # Need to overwrite the relative paths with absolute
         o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [os.path.join(THIS_DIR, "ISOXA")]
         o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(THIS_DIR, "rzmflxYA")

@@ -22,7 +22,7 @@ import numpy as np
 
 from armi import utils
 from armi.settings.caseSettings import Settings
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils import (
     codeTiming,
@@ -164,7 +164,7 @@ class TestGeneralUtils(unittest.TestCase):
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)

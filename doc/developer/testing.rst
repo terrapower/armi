@@ -125,8 +125,8 @@ So many interfaces and methods require an operator or a reactor, and ``loadTestR
 .. code-block:: python
 
      _o, r = loadTestReactor(
-        os.path.join(TEST_ROOT, "smallestTestReactor"),
-        inputFileName="armiRunSmallest.yaml",
+        TESTING_ROOT,
+        inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
     )
 
     # grab a pinned fuel block

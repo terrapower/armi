@@ -21,7 +21,7 @@ from armi import context, getApp, interfaces, plugins, utils
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers
 
 
@@ -237,7 +237,9 @@ class TestUserPlugins(unittest.TestCase):
         plug0 = [p[1] for p in pluginz if p[0] == name][0]
 
         # load a reactor and grab the fuel assemblies
-        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         fuels = r.core.getBlocks(Flags.FUEL)
 
         # prove that our plugin affects the core in the desired way
@@ -262,7 +264,9 @@ class TestUserPlugins(unittest.TestCase):
         self.assertIn("UserPluginWithInterface", pluginNames)
 
         # load a reactor and grab the fuel assemblieapps
-        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         _fuels = r.core.getAssemblies(Flags.FUEL)
 
         # This is here because we have multiple tests altering the App()

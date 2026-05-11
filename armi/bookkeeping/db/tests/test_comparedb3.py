@@ -32,7 +32,7 @@ from armi.bookkeeping.db.compareDB3 import (
 )
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.tests import TESTING_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -100,9 +100,9 @@ class TestCompareDB3(unittest.TestCase):
         """End-to-end test of compareDatabases() on a photocopy database."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT,
+            TESTING_ROOT,
             customSettings={"reloadDBName": "reloadingDB.h5"},
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
         )
 
         # create two DBs, identical but for file names
@@ -131,9 +131,9 @@ class TestCompareDB3(unittest.TestCase):
         """End-to-end test of compareDatabases() on very similar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT,
+            TESTING_ROOT,
             customSettings={"reloadDBName": "reloadingDB.h5"},
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
         )
 
         # create two DBs, identical but for file names and cycle lengths

@@ -47,7 +47,9 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refSmallestReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = os.path.join(
+        TESTING_ROOT, "reactors", "smallestTestReactor", "refSmallestReactor.yaml"
+    )
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
@@ -79,7 +81,9 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     def test_interactBOL(self):
         """This test is in its own class, because of temporary directory issues."""
         with directoryChangers.TemporaryDirectoryChanger():
-            self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+            self.o, self.r = loadTestReactor(
+                TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+            )
             self.dbi = DatabaseInterface(self.r, self.o.cs)
 
             dbName = f"{self._testMethodName}.h5"
@@ -102,7 +106,9 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, self.r = loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database = self.dbi.database

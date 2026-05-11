@@ -38,7 +38,8 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT
+from armi.tests import ARMI_RUN_PATH, mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -100,7 +101,7 @@ class MpiOperatorTests(unittest.TestCase):
 
     def setUp(self):
         self.old_op, self.r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
         )
         self.o = OperatorMPI(cs=self.old_op.cs)
         self.o.r = self.r

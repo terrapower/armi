@@ -42,8 +42,9 @@ class TestOperatorSnapshots(unittest.TestCase):
         newSettings["nCycles"] = 1
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
         o1, cls.r = loadTestReactor(
+            TESTING_ROOT,
             customSettings=newSettings,
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
         )
         cls.o = OperatorSnapshots(o1.cs)
         cls.o.r = cls.r
