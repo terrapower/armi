@@ -41,9 +41,9 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.testing import TESTING_ROOT, getEmptyCartesianReactor, loadTestReactor
+from armi.testing import TESTING_ROOT, getEmptyCartesianReactor, loadTestReactor, mockRunLogs
 from armi.testing.singleMixedAssembly import buildMixedPinAssembly
-from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
+from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import (

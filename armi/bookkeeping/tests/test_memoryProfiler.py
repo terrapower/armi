@@ -25,7 +25,7 @@ from armi.bookkeeping.memoryProfiler import (
     getTotalJobMemory,
 )
 from armi.reactor.tests import test_reactors
-from armi.tests import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 
 
 class TestMemoryProfiler(unittest.TestCase):

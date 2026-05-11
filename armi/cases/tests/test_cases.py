@@ -27,8 +27,8 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 from armi.utils import directoryChangers
 
 BLUEPRINT_INPUT = """

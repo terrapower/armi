@@ -45,7 +45,8 @@ from armi.physics.neutronics.settings import (
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks, test_reactors
-from armi.tests import TEST_ROOT, TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

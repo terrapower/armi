@@ -28,8 +28,7 @@ from armi.mpiActions import (
     runBatchedActions,
 )
 from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import iterables
 
 

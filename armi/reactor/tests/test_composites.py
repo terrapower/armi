@@ -30,8 +30,8 @@ from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import ISOAA_PATH, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
+from armi.tests import ISOAA_PATH
 
 
 class MockBP:

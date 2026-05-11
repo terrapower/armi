@@ -40,8 +40,7 @@ from armi.bookkeeping.report.reportingUtils import (
     writeCycleSummary,
     writeWelcomeHeaders,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 

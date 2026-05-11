@@ -38,8 +38,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

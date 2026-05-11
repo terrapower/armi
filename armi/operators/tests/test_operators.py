@@ -40,8 +40,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_SETTINGS,
 )
-from armi.testing import TESTING_ROOT
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

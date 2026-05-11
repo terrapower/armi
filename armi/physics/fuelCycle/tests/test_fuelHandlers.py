@@ -47,8 +47,8 @@ from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
-from armi.testing import TESTING_ROOT
-from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.tests import TEST_ROOT, ArmiTestHelper
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import InputError
 

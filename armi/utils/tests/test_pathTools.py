@@ -20,7 +20,7 @@ import types
 import unittest
 
 from armi import context
-from armi.tests import mockRunLogs
+from armi.testing import mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

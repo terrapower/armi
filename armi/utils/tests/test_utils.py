@@ -22,8 +22,7 @@ import numpy as np
 
 from armi import utils
 from armi.settings.caseSettings import Settings
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import (
     codeTiming,
     directoryChangers,

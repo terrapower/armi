@@ -24,8 +24,8 @@ from armi import runLog
 from armi.reactor import blocks, geometry, grids
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
-from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs, reduceTestReactorRings
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers, plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

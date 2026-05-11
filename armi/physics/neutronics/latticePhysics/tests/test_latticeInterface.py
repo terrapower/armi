@@ -32,7 +32,8 @@ from armi.reactor.assemblies import (
 )
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-from armi.tests import ISOAA_PATH, mockRunLogs
+from armi.testing import mockRunLogs
+from armi.tests import ISOAA_PATH
 
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used

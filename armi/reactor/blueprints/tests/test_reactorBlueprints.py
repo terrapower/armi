@@ -27,8 +27,7 @@ from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core, loadFromCs
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.caseSettings import Settings
-from armi.testing import TESTING_ROOT
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 
 CORE_BLUEPRINT = """
 core:

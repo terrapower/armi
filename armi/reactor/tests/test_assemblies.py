@@ -29,7 +29,8 @@ from armi.reactor import assemblies, blocks, blueprints, components, geometry, p
 from armi.reactor.assemblies import Flags, HexAssembly, copy, grids, runLog
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3

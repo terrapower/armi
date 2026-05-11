@@ -29,7 +29,8 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings, setting
 from armi.settings.settingsValidation import Inspector, validateVersion
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
+from armi.testing import mockRunLogs
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 

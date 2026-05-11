@@ -38,8 +38,8 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT
-from armi.tests import ARMI_RUN_PATH, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.tests import ARMI_RUN_PATH
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

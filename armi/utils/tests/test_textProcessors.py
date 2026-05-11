@@ -22,8 +22,7 @@ from io import StringIO
 import ruamel
 
 from armi import runLog
-from armi.testing import TESTING_ROOT
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import textProcessors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

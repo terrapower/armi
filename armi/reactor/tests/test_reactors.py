@@ -38,8 +38,8 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings  # noqa: F401
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs, reduceTestReactorRings  # noqa: F401
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 _THIS_DIR = os.path.dirname(__file__)
