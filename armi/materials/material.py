@@ -24,7 +24,6 @@ from armi import runLog
 from armi.matProps.material import MatPropsMaterial
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
-from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
 
 # Setting this to False will globally allow you to access material properties outside their defined bounds. This only
