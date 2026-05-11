@@ -77,7 +77,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+        cls.o, cls.r = loadTestReactor(inputFilePath=os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"))
 
         cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs)
         cls.converter._sourceReactor = cls.r
