@@ -241,7 +241,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             except KeyError:
                 if name in {a.name for a in self.r.core}:
                     raise Exception("Found it")
-                runLog.warning(
+                runLog.extra(
                     "Cannot find detail assembly {} in assemblies-by-name lookup table, which has {} entries".format(
                         name, len(self.r.core.assembliesByName)
                     )

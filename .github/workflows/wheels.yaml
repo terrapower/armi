@@ -36,4 +36,4 @@ jobs:
           name: armi-wheels
           path: |
             dist/armi*.whl
-          retention-days: 7
+          retention-days: 90

@@ -27,7 +27,6 @@ from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import components, geometry, grids
 from armi.reactor.blocks.block import Block
 from armi.reactor.components.basicShapes import Circle, Hexagon
-from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import hexagon, iterables, units
@@ -655,7 +654,8 @@ class HexBlock(Block):
         Please be aware that this method is specific to Fast Reactors, and probably even Sodium Fast Reactors. This is
         obviously an awkward design choice, and we hope to improve upon it soon.
         """
-        # flags pertaining to hexagon components where the interior of the hexagon is wetted
+        # 1. Identify the Component Flags that are wetted.
+        # hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
             Flags.GRID_PLATE,
@@ -667,23 +667,24 @@ class HexBlock(Block):
             Flags.HANDLING_SOCKET | Flags.DEPLETABLE,
         )
 
-        # flags pertaining to circular pin components where the exterior of the circle is wetted
+        # circular pin components where the exterior of the circle is wetted
         wettedPinComponentFlags = (
             Flags.CLAD,
             Flags.WIRE,
         )
 
-        # flags pertaining to components where both the interior and exterior are wetted
+        # components where both the interior and exterior are wetted
         wettedHollowComponentFlags = (
             Flags.DUCT | Flags.INNER,
             Flags.DUCT | Flags.INNER | Flags.DEPLETABLE,
         )
 
-        # obtain all wetted components based on type
+        # 2. Identify the wetted Components.
         wettedHollowHexagonComponents = []
         for flag in wettedHollowHexagonComponentFlags:
             c = self.getComponent(flag, exact=True)
-            wettedHollowHexagonComponents.append(c) if c else None
+            if c:
+                wettedHollowHexagonComponents.append(c)
 
         wettedPinComponents = []
         for flag in wettedPinComponentFlags:
@@ -694,45 +695,33 @@ class HexBlock(Block):
         wettedHollowHexComponents = []
         for flag in wettedHollowComponentFlags:
             c = self.getComponent(flag, exact=True)
-            if isinstance(c, Hexagon):
-                wettedHollowHexComponents.append(c) if c else None
-            else:
-                wettedHollowCircleComponents.append(c) if c else None
+            if c:
+                if isinstance(c, Hexagon):
+                    wettedHollowHexComponents.append(c)
+                else:
+                    wettedHollowCircleComponents.append(c)
 
-        # calculate wetted perimeters according to their geometries
-        # hollow hexagon = 6 * ip / sqrt(3)
-        wettedHollowHexagonPerimeter = 0.0
+        # 3. Calculate wetted perimeters according to their geometries
+        # a. hollow hexagon
+        wettedPerim = 0.0
         for c in wettedHollowHexagonComponents:
-            wettedHollowHexagonPerimeter += 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
+            wettedPerim += c.getPerimeter(inner=True)
 
-        # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
-        wettedPinPerimeter = 0.0
+        # b. solid circle
         for c in wettedPinComponents:
-            correctionFactor = 1.0
-            if isinstance(c, Helix):
-                # account for the helical wire wrap
-                correctionFactor = np.hypot(
-                    1.0,
-                    math.pi * c.getDimension("helixDiameter") / c.getDimension("axialPitch"),
-                )
-            compWettedPerim = c.getDimension("od") * correctionFactor * c.getDimension("mult") * math.pi
-            wettedPinPerimeter += compWettedPerim
+            wettedPerim += c.getPerimeter(inner=False)
 
-        # hollow circle = (id + od) * pi
-        wettedHollowCirclePerimeter = 0.0
+        # c. hollow circle
         for c in wettedHollowCircleComponents:
-            wettedHollowCirclePerimeter += c.getDimension("id") + c.getDimension("od") if c else 0.0
-        wettedHollowCirclePerimeter *= math.pi
+            wettedPerim += c.getPerimeter(inner=True)
+            wettedPerim += c.getPerimeter(inner=False)
 
-        # hollow hexagon = 6 * (ip + op) / sqrt(3)
-        wettedHollowHexPerimeter = 0.0
+        # d. hollow hexagon
         for c in wettedHollowHexComponents:
-            wettedHollowHexPerimeter += c.getDimension("ip") + c.getDimension("op") if c else 0.0
-        wettedHollowHexPerimeter *= 6 / math.sqrt(3)
+            wettedPerim += c.getPerimeter(inner=True)
+            wettedPerim += c.getPerimeter(inner=False)
 
-        return (
-            wettedHollowHexagonPerimeter + wettedPinPerimeter + wettedHollowCirclePerimeter + wettedHollowHexPerimeter
-        )
+        return wettedPerim
 
     def getFlowArea(self):
         """Return the total flowing coolant area of the block in cm^2."""

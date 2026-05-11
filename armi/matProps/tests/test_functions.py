@@ -14,7 +14,7 @@
 
 """Unit tests for the Function class."""
 
-from armi.matProps.material import Material
+from armi.matProps.material import MatPropsMaterial
 from armi.matProps.tests import MatPropsFunTestBase
 
 
@@ -34,13 +34,15 @@ class TestFunctions(MatPropsFunTestBase):
         self.assertEqual(mat.rho.references[1], "2")
 
     def test_datafilesVarVals(self):
-        """
-        Test to make sure that parsing variable values return the expected values when parsing "max" and "min" nodes for
-        the T variable.
+        """Ensure that parsing variable values return the expected values when parsing "max" and "min" nodes.
+
+        .. test:: For matProps-based material properties, we can define a valid range of input independent variables.
+            :id: T_ARMI_MAT_PROPERTIES2
+            :tests: R_ARMI_MAT_PROPERTIES
         """
         mat = self._createFunction(self.baseConstantData)
         mat.name = self.testName
-        self.assertEqual(str(mat), f"<MatProps Material {self.testName} <MaterialType Metal>>")
+        self.assertEqual(str(mat), f"<MatPropsMaterial {self.testName} <MaterialType Metal>>")
         density = mat.rho
         self.assertEqual(density.getMinBound("T"), -100.0)
         self.assertEqual(density.getMaxBound("T"), 500.0)
@@ -108,7 +110,7 @@ class TestFunctions(MatPropsFunTestBase):
         with self.assertRaises(KeyError):
             fun.calc({"Z": 200})
 
-        # whoops, I forgot to declare a "max" value
+        # whoops, we forgot to declare a "max" value
         materialData = {
             "file format": "TESTS",
             "composition": {"Fe": "balance"},
@@ -116,7 +118,7 @@ class TestFunctions(MatPropsFunTestBase):
             "density": {"function": {"T": {"min": 1.0}, "type": "symbolic", "equation": 1.0}},
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         with self.assertRaises(KeyError):
             mat.loadNode(materialData)
 
@@ -135,7 +137,7 @@ class TestFunctions(MatPropsFunTestBase):
             },
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(materialData)
         self.assertEqual(len(mat.rho.references), 1)
         self.assertEqual(mat.rho.references[0].getRef(), "things")
@@ -165,7 +167,7 @@ class TestFunctions(MatPropsFunTestBase):
             },
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(materialData)
         self.assertEqual(len(mat.rho.references), 0)
         self.assertEqual(len(mat.rho.tableData._values), 7)

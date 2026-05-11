@@ -291,7 +291,7 @@ class Assembly(composites.Composite):
         try:
             return self[0].getArea()
         except IndexError:
-            runLog.warning(f"{self} has no blocks and therefore no area.")
+            runLog.info(f"{self} has no blocks and therefore no area.")
             return None
 
     def getVolume(self):
@@ -331,7 +331,7 @@ class Assembly(composites.Composite):
 
         # no plenum blocks, use the top block of the assembly for plenum temperature
         if not plenumTemps:
-            runLog.warning("No plenum blocks exist. Using outlet coolant temperature.")
+            runLog.info("No plenum blocks exist. Using outlet coolant temperature.")
             plenumTemps = [self[-1].p.THcoolantOutletT]
 
         return sum(plenumTemps) / len(plenumTemps)

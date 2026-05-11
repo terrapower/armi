@@ -25,34 +25,44 @@ from armi.matProps.function import Function
 from armi.matProps.materialType import MaterialType
 
 
-class Material:
+class MatPropsMaterial:
     """
-    The Material class is a generic container for all Material types, whether they contain ASME properties, fluid
-    properties, or steel properties.
+    The MatPropsMaterial class is a generic container for all material types, whether they contain ASME properties,
+    fluid properties, or steel properties.
 
-    It may be necessary to have multiple Material definitions for a single material containing different phases.
+    It may be necessary to have multiple MatPropsMaterial definitions for a single material containing different phases.
+
+    .. impl:: Materials can be defined in custom YAML files.
+        :id: I_ARMI_MAT_YAML
+        :implements: R_ARMI_MAT_YAML
+
+        The ARMI matProps package can build a MatPropsMaterial object from a custom YAML format. This file format is
+        flexible and extensible. It is designed around the idea that mostly what scientists and engineers want from a
+        material in software is the ability to define it in terms of nuclide fractions and properties. In particular,
+        the most work in this code is to allow users to define material properties (like density) using simple
+        mathematical syntax or tabular data.
     """
 
     validFileFormatVersions = [3.0, "TESTS"]
     YAML_PATH = None
 
     def __init__(self, yamlPath=None):
-        """Constructor for Material class."""
+        """Constructor for MatPropsMaterial class."""
         # during unpickling, we do not want to reload the YAML file
         if hasattr(self, "materialType") and self.materialType is not None:
             return
 
         self._saved = False
-        """Boolean denoting whether or not Material object is saved in materials dict."""
+        """Boolean denoting whether or not MatPropsMaterial object is saved in materials dict."""
 
         self.materialType = None
-        """Enum represting type for the Material object"""
+        """Enum represting type for the MatPropsMaterial object"""
 
         self.composition = []
-        """List of Constituent objects representing composition of Material."""
+        """List of Constituent objects representing composition of MatPropsMaterial."""
 
         self.name = None
-        """Name of Material object."""
+        """Name of MatPropsMaterial object."""
 
         self._sha1 = None
         """SHA1 value of parsed material file."""
@@ -65,22 +75,22 @@ class Material:
             self.loadFile(self.yamlPath)
 
     def __repr__(self):
-        """Provides string representation for Material class."""
-        return f"<MatProps Material {self.name} {str(self.materialType)}>"
+        """Provides string representation for MatPropsMaterial class."""
+        return f"<MatPropsMaterial {self.name} {str(self.materialType)}>"
 
     def hash(self) -> str:
-        """Returns the SHA1 hash value of a Material instance."""
+        """Returns the SHA1 hash value of a MatPropsMaterial instance."""
         return self._sha1
 
     def saved(self) -> bool:
         """
-        Returns a bool value indicating whether the Material has been stored internally in the matProps.materials map
-        via matProps.addMaterial().
+        Returns a bool value indicating whether the MatPropsMaterial has been stored internally in the
+        matProps.materials map via matProps.addMaterial().
         """
         return self._saved
 
     def save(self):
-        """Sets Material._saved flag to True."""
+        """Sets MatPropsMaterial._saved flag to True."""
         self._saved = True
 
     @staticmethod
@@ -97,8 +107,8 @@ class Material:
         rootNode: dict
             Root YAML node of file parsed from filePath.
         """
-        file_format = Material.getNode(rootNode, "file format")
-        if file_format not in Material.validFileFormatVersions:
+        file_format = MatPropsMaterial.getNode(rootNode, "file format")
+        if file_format not in MatPropsMaterial.validFileFormatVersions:
             msg = f"Invalid file format version `{file_format}` used in: {filePath}"
             raise ValueError(msg)
 
@@ -113,7 +123,7 @@ class Material:
     @staticmethod
     def getValidFileFormatVersions():
         """Get a vector of strings with all of the valid file format versions."""
-        return Material.validFileFormatVersions
+        return MatPropsMaterial.validFileFormatVersions
 
     @staticmethod
     def getNode(node: dict, subnodeName: str):
@@ -135,12 +145,12 @@ class Material:
 
     def loadNode(self, node: dict):
         """
-        Loads YAML and parses information to fill in Material data members including all relevant Function objects.
+        Loads YAML and parses information to fill in material data members including all relevant Function objects.
 
         Parameters
         ----------
         node: dict
-            Material definition, like a dict that is loaded from a YAML file.
+            MatPropsMaterial definition, like a dict that is loaded from a YAML file.
         """
         self.materialType = MaterialType.fromString(self.getNode(node, "material type"))
         self.composition = Constituent.parseComposition(self.getNode(node, "composition"))
@@ -154,7 +164,8 @@ class Material:
 
     def loadFile(self, yamlPath: str):
         """
-        Loads YAML file and parses information to fill in Material data members including all relevant Function objects.
+        Loads YAML file and parses information to fill in MatPropsMaterial data members including all relevant Function
+        objects.
 
         Parameters
         ----------

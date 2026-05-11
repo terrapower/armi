@@ -18,14 +18,14 @@ import os
 import unittest
 
 import armi.matProps
-from armi.matProps.material import Material
+from armi.matProps.material import MatPropsMaterial
 from armi.matProps.materialType import MaterialType
 
 THIS_DIR = os.path.dirname(__file__)
 
 
 class TestMapPropsMaterial(unittest.TestCase):
-    """Class which tests the functionality of the matProps Material class."""
+    """Class which tests the functionality of the matProps MatPropsMaterial class."""
 
     @staticmethod
     def _createFunction(materialType):
@@ -55,21 +55,21 @@ class TestMapPropsMaterial(unittest.TestCase):
             },
         }
 
-        mat = Material()
+        mat = MatPropsMaterial()
         mat.loadNode(testNode)
 
         return mat
 
     def test_getValidFileFormatVersions(self):
-        versions = armi.matProps.Material.getValidFileFormatVersions()
+        versions = armi.matProps.MatPropsMaterial.getValidFileFormatVersions()
         self.assertGreater(len(versions), 1)
         for version in versions:
             if type(version) is not float:
                 self.assertEqual(version, "TESTS")
 
     def test_loadFile(self):
-        mat = armi.matProps.Material()
-        self.assertEqual(str(mat), "<MatProps Material None None>")
+        mat = armi.matProps.MatPropsMaterial()
+        self.assertEqual(str(mat), "<MatPropsMaterial None None>")
         fPath = os.path.join(THIS_DIR, "testMaterialsData", "materialA.yaml")
         self.assertEqual(len(sorted(armi.matProps.materials.keys())), 0)
         mat.loadFile(fPath)
@@ -94,7 +94,7 @@ class TestMapPropsMaterial(unittest.TestCase):
 
     def test_invalidFileFormat(self):
         fPath = os.path.join(THIS_DIR, "invalidTestFiles", "badFileFormat.YAML")
-        mat = armi.matProps.Material()
+        mat = armi.matProps.MatPropsMaterial()
 
         with self.assertRaises(ValueError):
             mat.loadFile(fPath)

@@ -89,7 +89,7 @@ class ReportInterface(interfaces.Interface):
 
                 blocks.Block.plotFlux(self.r.core, fName=figName, peak=True, adjoint=adjoint)
             else:
-                runLog.warning("No mgFlux to plot in reports")
+                runLog.info("No mgFlux to plot in reports")
 
     def interactBOC(self, cycle=None):
         self.fuelCycleSummary["bocFissile"] = self.r.core.getTotalBlockParam("kgFis")
