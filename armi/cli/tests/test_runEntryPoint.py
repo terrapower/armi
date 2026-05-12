@@ -35,7 +35,6 @@ from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
 from armi.testing import ARMI_RUN_PATH, TESTING_ROOT, loadTestReactor, mockRunLogs
-from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
 
@@ -325,7 +324,8 @@ class TestInjectInputs(unittest.TestCase):
             ii = InjectInputs()
             ii.addOptions()
 
-            bp = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+            root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+            bp = os.path.join(root, "refSmallReactor.yaml")
             ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
 
             # invoke and check log
