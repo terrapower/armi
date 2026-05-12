@@ -33,7 +33,6 @@ from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.physics.neutronics.settings import (
-    CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
 from armi.reactor import blocks, blueprints, components, geometry, grids
@@ -43,7 +42,7 @@ from armi.reactor.grids.cartesian import CartesianGrid
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import TESTING_ROOT, getEmptyCartesianReactor, loadTestReactor, mockRunLogs
 from armi.testing.singleMixedAssembly import buildMixedPinAssembly
-from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.tests import ISOAA_PATH
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import (
@@ -758,8 +757,6 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getXsType(self):
         self.cs = settings.Settings()
-        newSettings = {CONF_LOADING_FILE: os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
-        self.cs = self.cs.modified(newSettings=newSettings)
 
         self.block.p.xsType = "B"
         cur = self.block.p.xsType
