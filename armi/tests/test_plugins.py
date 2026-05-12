@@ -145,15 +145,21 @@ class TestPluginRegistration(unittest.TestCase):
             o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml", useCache=False)
             self.assertTrue(o.cs.beforeReactorConstructionFlag)
 
-            # Check that hook is called for database loading
             with TemporaryDirectoryChanger():
                 dbi = DatabaseInterface(r, o.cs)
                 dbi.initDB(fName=self._testMethodName + ".h5")
                 db = dbi.database
                 db.writeToDB(r)
                 db.close()
-                o = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True)
-            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+                o1 = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=False)
+                o2 = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True)
+            # Check that hook is not called for database loading for o1
+            with self.assertRaisesRegex(
+                AttributeError, "'Settings' object has no attribute 'beforeReactorConstructionFlag'"
+            ):
+                self.assertFalse(o1.cs.beforeReactorConstructionFlag)
+            # Check that hook is called for database loading for o2
+            self.assertTrue(o2.cs.beforeReactorConstructionFlag)
         finally:
             pm.unregister(BeforeReactorPlugin)
 
