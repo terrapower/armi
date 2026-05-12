@@ -25,7 +25,6 @@ from armi.reactor import blocks, geometry, grids
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs, reduceTestReactorRings
-from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers, plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -34,7 +33,8 @@ THIS_DIR = os.path.dirname(__file__)
 
 class TestGeometryConverters(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        self.o, self.r = loadTestReactor(root)
         self.cs = self.o.cs
 
     def test_addRing(self):
@@ -110,7 +110,8 @@ class TestGeometryConverters(unittest.TestCase):
 
 class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        self.o, self.r = loadTestReactor(root)
         reduceTestReactorRings(self.r, self.o.cs, 2)
         self.cs = self.o.cs
 
@@ -250,7 +251,8 @@ class TestHexToRZConverter(unittest.TestCase):
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
         """Use the related setup in the testFuelHandlers module."""
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        self.o, self.r = loadTestReactor(root)
         reduceTestReactorRings(self.r, self.o.cs, 3)
 
     def tearDown(self):

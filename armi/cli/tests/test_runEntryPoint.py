@@ -34,8 +34,8 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.testing import ARMI_RUN_PATH, TESTING_ROOT, loadTestReactor, mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
 
@@ -366,7 +366,7 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
                 "refSmallReactor.yaml",
                 "refSmallReactorShuffleLogic.py",
             ]:
-                copyfile(os.path.join(TEST_ROOT, fileName), fileName)
+                copyfile(ARMI_RUN_PATH, fileName)
 
             # pass in --nTasks=333
             mcs.parse_args(["--nTasks=333", "--rootDir", ".", "armiRun.yaml"])

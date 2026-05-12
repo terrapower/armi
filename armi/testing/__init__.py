@@ -30,19 +30,20 @@ from armi.reactor import geometry, grids, reactors
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))
-ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")
+_ARMI_RUN_DIR = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+ARMI_RUN_PATH = os.path.join(_ARMI_RUN_DIR, "armiRun.yaml")
 COMPXS_PATH = os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii")
 ISOAA_PATH = os.path.join(TESTING_ROOT, "resources", "ISOAA")
 _TEST_REACTORS = {}  # dictionary of pickled string of test reactors (for fast caching)
 
 
-def loadTestReactor(inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
+def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
     """
     Loads a test reactor. Can be used in other test modules.
 
     Parameters
     ----------
-    inputFilePath : str, default=TEST_ROOT
+    inputFilePath : str, default=armi/testing/reactors/sodiumHexReactor
         Path to the directory of the input file.
     customSettings : dict with str keys and values of any type, default=None
         For each key in customSettings, the cs which is loaded from the armiRun.yaml will be overwritten to the value

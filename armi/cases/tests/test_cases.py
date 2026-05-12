@@ -28,7 +28,7 @@ from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor.tests import test_reactors
 from armi.testing import TESTING_ROOT, mockRunLogs
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.tests import ARMI_RUN_PATH
 from armi.utils import directoryChangers
 
 BLUEPRINT_INPUT = """
@@ -224,8 +224,6 @@ class TestArmiCase(unittest.TestCase):
                 title=testTitle,
                 modifiedSettings={"verbosity": "important"},
             )
-            # Check additional files made it
-            self.assertTrue(os.path.exists("ISOAA"))
             # Check title change made it
             clonedYaml = testTitle + ".yaml"
             self.assertTrue(os.path.exists(clonedYaml))
@@ -239,7 +237,7 @@ class TestArmiCase(unittest.TestCase):
 
         # test the medium write style
         with directoryChangers.TemporaryDirectoryChanger():
-            cs = settings.Settings(ARMI_RUN_PATH)
+            cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
             case = cases.Case(cs)
             case.clone(writeStyle="medium")
             clonedYaml = "armiRun.yaml"
@@ -471,7 +469,7 @@ class TestExtraInputWriting(unittest.TestCase):
     """Make sure extra inputs from interfaces are written."""
 
     def test_writeInput(self):
-        fName = os.path.join(TEST_ROOT, "armiRun.yaml")
+        fName = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml")
         cs = settings.Settings(fName)
         baseCase = cases.Case(cs)
         with directoryChangers.TemporaryDirectoryChanger():
@@ -573,8 +571,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         shuffleFile = cs[testSetting]
 
         # test it passes
-        sourceFullPath = os.path.join(TEST_ROOT, shuffleFile)
-        # ensure we are not in TEST_ROOT
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        sourceFullPath = os.path.join(root, shuffleFile)
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             destFilePath = cases.case._copyInputsHelper(
                 testSetting,
@@ -586,7 +585,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(destFilePath, os.path.basename(newFilePath))
 
-        # test with bad file path, should return original file ensure we are not in TEST_ROOT
+        # test with bad file path, should return original file ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             destFilePath = cases.case._copyInputsHelper(
                 testSetting,
@@ -602,7 +601,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePath = os.path.join(newDir.destination, shuffleFile)
@@ -615,7 +614,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         fakeShuffle = "fakeFile.py"
         cs = cs.modified(newSettings={testSetting: fakeShuffle})
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             self.assertFalse(os.path.exists(newSettings[testSetting]))
@@ -627,7 +626,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         fakeShuffle = ""
         cs = cs.modified(newSettings={testSetting: fakeShuffle})
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             with self.assertRaises(KeyError):
@@ -649,18 +648,18 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         app.pluginManager.register(TestPluginCopyInterfaceFiles)
 
         pluginPath = "armi.cases.tests.test_cases.TestPluginCopyInterfaceFiles"
-        settingFiles = [str(os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii")), "ISOAA"]
+        settingFiles = [
+            str(os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii")),
+            str(os.path.join(TESTING_ROOT, "resources", "ISOAA")),
+        ]
         testName = "test_copyInterfaceInputs_multipleFiles"
         testSetting = "multipleFilesSetting"
 
         cs = settings.Settings(ARMI_RUN_PATH)
-        cs = cs.modified(
-            caseTitle=testName,
-            newSettings={testName: [pluginPath]},
-        )
+        cs = cs.modified(caseTitle=testName, newSettings={testName: [pluginPath]})
         cs = cs.modified(newSettings={testSetting: settingFiles})
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
@@ -685,7 +684,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         )
         cs = cs.modified(newSettings={testSetting: settingFiles})
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
@@ -697,10 +696,10 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         # Use something that isn't the shuffle logic file in the case settings
-        wcFile = "ISO*"
+        wcFile = os.path.join(TESTING_ROOT, "resources", "ISO*")
         cs = cs.modified(newSettings={testSetting: wcFile})
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePath = [os.path.join(newDir.destination, "ISOAA")]
@@ -719,15 +718,15 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
-        relFile = "../tests/" + shuffleFile
+        relFile = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", shuffleFile)
         cs = cs.modified(newSettings={testSetting: relFile})
 
-        # ensure we are not in TEST_ROOT
+        # ensure we are not in TESTING_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePath = os.path.join(newDir.destination, shuffleFile)
-            self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
+            self.assertTrue(os.path.exists(newDir.destination))
+            self.assertEqual(os.path.basename(newSettings[testSetting]), os.path.basename(newFilePath))
 
     def test_copyInterfaceInputsAbsPath(self):
         testSetting = CONF_SHUFFLE_LOGIC

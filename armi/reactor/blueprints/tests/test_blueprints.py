@@ -30,6 +30,7 @@ from armi.reactor.blueprints.gridBlueprint import saveToStream
 from armi.reactor.blueprints.isotopicOptions import CustomIsotopics, NuclideFlags
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
+from armi.testing import TESTING_ROOT
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers, textProcessors
 
@@ -47,7 +48,9 @@ class TestBlueprints(unittest.TestCase):
         cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
         cls.directoryChanger.open()
 
-        y = textProcessors.resolveMarkupInclusions(pathlib.Path(os.getcwd()) / "refSmallReactor.yaml")
+        y = textProcessors.resolveMarkupInclusions(
+            pathlib.Path(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "refSmallReactor.yaml"))
+        )
         cls.blueprints = blueprints.Blueprints.load(y)
         cls.blueprints._prepConstruction(cls.cs)
 
