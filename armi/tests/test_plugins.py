@@ -69,13 +69,9 @@ class BeforeReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def beforeReactorConstruction(cs) -> None:
-        print("~~~~~~~~~~~~~~~~~~~~")
-        print("Before Check")
         if getattr(BeforeReactorPlugin.beforeReactorConstruction, "_hasRun", False):
             return
-        print("After Check")
         cs.beforeReactorConstructionFlag = True
-
         BeforeReactorPlugin.beforeReactorConstruction._hasRun = True
 
 
