@@ -647,17 +647,7 @@ class Database:
         # Reload the file in append mode and continue on our merry way
         self.h5db = h5py.File(self._fullPath, "r+")
 
-    def load(
-        self,
-        cycle,
-        node,
-        cs=None,
-        bp=None,
-        statePointName=None,
-        allowMissing=False,
-        handleInvalids=True,
-        callReactorConstructionHook=True,
-    ):
+    def load(self, cycle, node, cs=None, bp=None, statePointName=None, allowMissing=False, handleInvalids=True):
         """Load a new reactor from a DB at (cycle, node).
 
         Case settings and blueprints can be provided, or read from the database. Providing  can be useful for snapshot
@@ -690,8 +680,6 @@ class Database:
             with undefined parameters. Default False.
         handleInvalids : bool
             Whether to check for invalid settings. Default True.
-        callReactorConstructionHook : bool
-            Flag for whether the beforeReactorConstruction plugin hook should be executed. Default is True.
 
         Returns
         -------
@@ -705,8 +693,7 @@ class Database:
         if bp is None:
             bp = self.loadBlueprints(cs)
 
-        if callReactorConstructionHook:
-            getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
+        getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
         if node < 0:
             numNodes = getNodesPerCycle(cs)[cycle]

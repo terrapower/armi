@@ -151,15 +151,9 @@ class TestPluginRegistration(unittest.TestCase):
                 db = dbi.database
                 db.writeToDB(r)
                 db.close()
-                o1 = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=False)
-                o2 = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True)
-            # Check that hook is not called for database loading for o1
-            with self.assertRaisesRegex(
-                AttributeError, "'Settings' object has no attribute 'beforeReactorConstructionFlag'"
-            ):
-                self.assertFalse(o1.cs.beforeReactorConstructionFlag)
-            # Check that hook is called for database loading for o2
-            self.assertTrue(o2.cs.beforeReactorConstructionFlag)
+                o = loadOperator(self._testMethodName + ".h5", 0, 0)
+            # Check that hook is called for database loading
+            self.assertTrue(o.cs.beforeReactorConstructionFlag)
         finally:
             pm.unregister(BeforeReactorPlugin)
 
