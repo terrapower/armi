@@ -237,7 +237,26 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def beforeReactorConstruction(cs) -> None:
-        """Function to call before the reactor is constructed."""
+        """
+        Function to call before the reactor is constructed.
+
+        Warning
+        -------
+
+        This plugin hook runs during a simulation spin-up before reactor construction as well as during ``db.load()``. It is only meant to be run one time. Because ``db.load()`` may be run several times in the same script, it is strongly recommended that developers implement the following pattern when adding this hook to any plugin:
+
+        .. code::
+
+            @staticmethod
+            @HOOKSPEC
+            def beforeReactorConstruction(cs) -> None:
+                if getattr(<PLUGIN>.beforeReactorConstruction, "_hasRun", False):
+                    return
+
+                # <Code for before reactor construction>
+
+                <PLUGIN>.beforeReactorConstruction._hasRun = True
+        """
 
     @staticmethod
     @HOOKSPEC

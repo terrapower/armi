@@ -69,7 +69,14 @@ class BeforeReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def beforeReactorConstruction(cs) -> None:
+        print("~~~~~~~~~~~~~~~~~~~~")
+        print("Before Check")
+        if getattr(BeforeReactorPlugin.beforeReactorConstruction, "_hasRun", False):
+            return
+        print("After Check")
         cs.beforeReactorConstructionFlag = True
+
+        BeforeReactorPlugin.beforeReactorConstruction._hasRun = True
 
 
 class TestPluginRegistration(unittest.TestCase):
@@ -139,21 +146,34 @@ class TestPluginRegistration(unittest.TestCase):
 
     def test_beforeReactorConstructionHook(self):
         """Test that plugin hook successfully injects code before reactor initialization."""
-        pm = getPluginManagerOrFail()
-        pm.register(BeforeReactorPlugin)
         try:
+            # Load a test reactor to save to DB. This should be loaded before the `BeforeReactorPlugin` is registered,
+            # because we aren't testing that functionality just yet
             o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml", useCache=False)
-            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+
+            # Now, register the plugin before `loadOperator` is called
+            pm = getPluginManagerOrFail()
+            pm.register(BeforeReactorPlugin)
 
             with TemporaryDirectoryChanger():
+                # Save loaded reactor to DB
                 dbi = DatabaseInterface(r, o.cs)
                 dbi.initDB(fName=self._testMethodName + ".h5")
                 db = dbi.database
                 db.writeToDB(r)
                 db.close()
-                o = loadOperator(self._testMethodName + ".h5", 0, 0)
-            # Check that hook is called for database loading
-            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+                # Call `loadOperator`, which will trigger the plugin hook we are testing
+                o1 = loadOperator(self._testMethodName + ".h5", 0, 0)
+                # Asserts to prove that the plugin hook code ran
+                self.assertTrue(BeforeReactorPlugin.beforeReactorConstruction._hasRun)
+                self.assertTrue(o1.cs.beforeReactorConstructionFlag)
+                o2 = loadOperator(self._testMethodName + ".h5", 0, 0)
+                # Assert to prove that the plugin hook code did not run
+                with self.assertRaisesRegex(
+                    AttributeError, "'Settings' object has no attribute 'beforeReactorConstructionFlag'"
+                ):
+                    o2.cs.beforeReactorConstructionFlag
+
         finally:
             pm.unregister(BeforeReactorPlugin)
 
