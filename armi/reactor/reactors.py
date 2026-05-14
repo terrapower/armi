@@ -28,27 +28,23 @@ class Reactor(composites.Composite):
     """
     Top level of the composite structure, potentially representing all components in a reactor.
 
-    This class contains the core and any ex-core structures that are to be represented in the ARMI
-    model. Historically, the ``Reactor`` contained only the core. To support better representation
-    of ex-core structures, the old ``Reactor`` functionality was moved to the newer `Core` class,
-    which has a ``Reactor`` parent.
+    This class contains the core and any ex-core structures that are to be represented in the ARMI model. Historically,
+    the ``Reactor`` contained only the core. To support better representation of ex-core structures, the old ``Reactor``
+    functionality was moved to the newer `Core` class, which has a ``Reactor`` parent.
 
     .. impl:: The user-specified reactor.
         :id: I_ARMI_R
         :implements: R_ARMI_R
 
-        The :py:class:`Reactor <armi.reactor.reactors.Reactor>` is the top level of the composite
-        structure, which can represent all components within a reactor core. The reactor contains a
-        :py:class:`Core <armi.reactor.reactors.Core>`, which contains a collection of
-        :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects arranged in a hexagonal or
-        Cartesian grid. Each Assembly consists of a stack of
-        :py:class:`Block <armi.reactor.blocks.Block>` objects, which are each composed of one or
-        more :py:class:`Component <armi.reactor.components.component.Component>` objects. Each
-        :py:class:`Interface <armi.interfaces.Interface>` is able to interact with the reactor and
-        its child :py:class:`Composites <armi.reactor.composites.Composite>` by retrieving data from
-        it or writing new data to it. This is the main medium through which input information and
-        the output of physics calculations is exchanged between interfaces and written to an ARMI
-        database.
+        The Reactor is the top level of the composite structure, which can represent all components within a reactor
+        core. The reactor contains a :py:class:`Core <armi.reactor.reactors.Core>`, which contains a collection of
+        :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects arranged in a hexagonal or Cartesian grid. Each
+        Assembly consists of a stack of :py:class:`Block <armi.reactor.blocks.Block>` objects, which are each composed
+        of one or more :py:class:`Component <armi.reactor.components.component.Component>` objects. Each
+        :py:class:`Interface <armi.interfaces.Interface>` is able to interact with the reactor and its child
+        :py:class:`Composites <armi.reactor.composites.Composite>` by retrieving data from it or writing new data to it.
+        This is the main medium through which input information and the output of physics calculations is exchanged
+        between interfaces and written to an ARMI database.
     """
 
     pDefs = reactorParameters.defineReactorParameters()

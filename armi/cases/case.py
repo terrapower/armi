@@ -490,11 +490,10 @@ class Case:
             This method checks the validity of the current settings. It relies on an
             :py:class:`~armi.settings.settingsValidation.Inspector` object from the
             :py:class:`~armi.operators.operator.Operator` to generate a list of
-            :py:class:`~armi.settings.settingsValidation.Query` objects that represent potential
-            issues in the settings. After gathering the queries, this method prints a table of query
-            "statements" and "questions" to the console. If running in an interactive mode, the user
-            then has the opportunity to address the questions posed by the queries by either
-            addressing the potential issue or ignoring it.
+            :py:class:`~armi.settings.settingsValidation.Query` objects that represent potential issues in the settings.
+            After gathering the queries, this method prints a table of query "statements" and "questions" to the
+            console. If running in an interactive mode, the user then has the opportunity to address the questions posed
+            by the queries by either addressing the potential issue or ignoring it.
 
         Returns
         -------
@@ -507,8 +506,8 @@ class Case:
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
 
-            # Write out the settings validation issues that will be prompted for resolution if in an
-            # interactive session or forced to be resolved otherwise.
+            # Write out the settings validation issues that will be prompted for resolution if in an interactive session
+            # or forced to be resolved otherwise.
             queryData = []
             for i, query in enumerate(inspectorIssues, start=1):
                 queryData.append(
@@ -520,13 +519,7 @@ class Case:
                 )
 
             if queryData and context.MPI_RANK == 0:
-                runLog.info(
-                    tabulate.tabulate(
-                        queryData,
-                        headers=["Number", "Statement", "Question"],
-                        tableFmt="armi",
-                    )
-                )
+                runLog.info(tabulate.tabulate(queryData, headers=["Number", "Statement", "Question"], tableFmt="armi"))
             if context.CURRENT_MODE == context.Mode.INTERACTIVE:
                 # if interactive, ask user to deal with settings issues
                 inspector.run()
@@ -543,8 +536,8 @@ class Case:
         """
         Clone existing ARMI inputs to current directory with optional settings modifications.
 
-        Since each case depends on multiple inputs, this is a safer way to move cases around without
-        having to wonder if you copied all the files appropriately.
+        Since each case depends on multiple inputs, this is a safer way to move cases around without having to wonder if
+        you copied all the files appropriately.
 
         Parameters
         ----------
@@ -555,8 +548,7 @@ class Case:
         modifiedSettings : dict (optional)
             settings to set/modify before creating the cloned case
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files
-            (short, medium, or full).
+            Writing style for which settings get written back to the settings files (short, medium, or full).
 
         Raises
         ------
@@ -653,14 +645,14 @@ class Case:
         """
         Write the inputs to disk.
 
-        This allows input objects that have been modified in memory (e.g. for a parameter sweep or
-        migration) to be written out as input for a forthcoming case.
+        This allows input objects that have been modified in memory (e.g. for a parameter sweep or migration) to be
+        written out as input for a forthcoming case.
 
         Parameters
         ----------
         sourceDir : str (optional)
-            The path to copy inputs from (if different from the cs.path). Needed
-            in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
+            The path to copy inputs from (if different from the cs.path). Needed in SuiteBuilder cases to find the
+            baseline inputs from plugins (e.g. shuffleLogic)
         writeStyle : str (optional)
             Writing style for which settings get written back to the settings files (short, medium, or full).
 
