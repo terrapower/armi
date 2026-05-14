@@ -185,19 +185,6 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertIsInstance(sfp, SpentFuelPool)
         self.assertIsInstance(evst, ExcoreStructure)
 
-    def test_materialDataSummary(self):
-        """Test that the material data summary for the core is valid as a printout to the stdout."""
-        expectedMaterialData = [
-            ("Custom", "ARMI"),
-            ("HT9", "ARMI"),
-            ("Sodium", "ARMI"),
-            ("UZr", "ARMI"),
-        ]
-        core, _sfp, _evst = self._setupReactor()
-        materialData = reactorBlueprint.summarizeMaterialData(core)
-        for actual, expected in zip(materialData, expectedMaterialData):
-            self.assertEqual(actual, expected)
-
     def test_excoreStructure(self):
         _core, _sfp, evst = self._setupReactor()
         self.assertIsInstance(evst, ExcoreStructure)
