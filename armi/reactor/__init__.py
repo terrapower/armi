@@ -22,6 +22,7 @@ See :doc:`/developer/index`.
 from typing import TYPE_CHECKING, Callable, Dict, Union
 
 from armi import materials, plugins
+from armi.utils import onlyRunOnce
 
 if TYPE_CHECKING:
     from armi.reactor.excoreStructure import ExcoreStructure
@@ -34,21 +35,17 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
+    @onlyRunOnce
     def beforeReactorConstruction(cs) -> None:
         """Just before reactor construction, update the material "registry" with user settings, if it is set. Often it
         is set by the application.
         """
-        if getattr(ReactorPlugin.beforeReactorConstruction, "_hasRun", False):
-            return
-
         from armi.settings.fwSettings.globalSettings import (
             CONF_MATERIAL_NAMESPACE_ORDER,
         )
 
         if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
             materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
-
-        ReactorPlugin.beforeReactorConstruction._hasRun = True
 
     @staticmethod
     @plugins.HOOKIMPL

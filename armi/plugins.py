@@ -248,16 +248,13 @@ class ArmiPlugin:
         strongly recommended that developers implement the following pattern when adding this hook to any plugin:
 
         .. code::
+            from armi.utils import onlyRunOnce
 
             @staticmethod
             @HOOKSPEC
+            @onlyRunOnce
             def beforeReactorConstruction(cs) -> None:
-                if getattr(<PLUGIN>.beforeReactorConstruction, "_hasRun", False):
-                    return
-
                 # <Code for before reactor construction>
-
-                <PLUGIN>.beforeReactorConstruction._hasRun = True
         """
 
     @staticmethod

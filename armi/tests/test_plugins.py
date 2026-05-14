@@ -37,6 +37,7 @@ from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
+from armi.utils import onlyRunOnce
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -62,17 +63,14 @@ class SillyAxialPlugin(plugins.ArmiPlugin):
     def getAxialExpansionChanger() -> type[SillyAxialExpansionChanger]:
         return SillyAxialExpansionChanger
 
-
 class BeforeReactorPlugin(plugins.ArmiPlugin):
     """Trivial plugin that implements the before reactor construction hook."""
 
     @staticmethod
     @plugins.HOOKIMPL
+    @onlyRunOnce
     def beforeReactorConstruction(cs) -> None:
-        if getattr(BeforeReactorPlugin.beforeReactorConstruction, "_hasRun", False):
-            return
         cs.beforeReactorConstructionFlag = True
-        BeforeReactorPlugin.beforeReactorConstruction._hasRun = True
 
 
 class TestPluginRegistration(unittest.TestCase):
@@ -160,9 +158,9 @@ class TestPluginRegistration(unittest.TestCase):
                 db.close()
                 # Call `loadOperator`, which will trigger the plugin hook we are testing
                 o1 = loadOperator(self._testMethodName + ".h5", 0, 0)
-                # Asserts to prove that the plugin hook code ran
-                self.assertTrue(BeforeReactorPlugin.beforeReactorConstruction._hasRun)
+                # Assert to prove that the plugin hook code ran
                 self.assertTrue(o1.cs.beforeReactorConstructionFlag)
+                # Run `loadOperator` a second time
                 o2 = loadOperator(self._testMethodName + ".h5", 0, 0)
                 # Assert to prove that the plugin hook code did not run
                 with self.assertRaisesRegex(
