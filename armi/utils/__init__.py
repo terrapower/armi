@@ -749,6 +749,7 @@ def safeMove(src: str, dst: str) -> None:
 
 
 def onlyRunOnce(method):
+    """A decorator to ensure a method is only run once."""
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
         if wrapper.hasRun:
