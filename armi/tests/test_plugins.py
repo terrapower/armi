@@ -63,6 +63,7 @@ class SillyAxialPlugin(plugins.ArmiPlugin):
     def getAxialExpansionChanger() -> type[SillyAxialExpansionChanger]:
         return SillyAxialExpansionChanger
 
+
 class BeforeReactorPlugin(plugins.ArmiPlugin):
     """Trivial plugin that implements the before reactor construction hook."""
 

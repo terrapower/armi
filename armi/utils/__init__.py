@@ -747,6 +747,7 @@ def safeMove(src: str, dst: str) -> None:
     runLog.extra(f"Moved {src} -> {dst}")
     return dst
 
+
 def onlyRunOnce(method):
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
@@ -754,5 +755,6 @@ def onlyRunOnce(method):
             return
         wrapper.hasRun = True
         return method(*args, **kwargs)
+
     wrapper.hasRun = False
     return wrapper
