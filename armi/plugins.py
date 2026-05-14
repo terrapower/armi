@@ -237,7 +237,37 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def beforeReactorConstruction(cs) -> None:
-        """Function to call before the reactor is constructed."""
+        """
+        Function to call before the reactor is constructed, typically implemented as related to global materials
+        loading.
+
+        Attention
+        ---------
+
+        This plugin hook runs during a simulation spin-up before reactor construction as well as during ``db.load()``.
+        It is only meant to be run one time. Because ``db.load()`` may be run several times in the same script, it is
+        strongly recommended that developers implement the following pattern when adding this hook to any plugin:
+
+        .. code::
+            from armi.utils import onlyRunOnce
+
+            @staticmethod
+            @HOOKSPEC
+            @onlyRunOnce
+            def beforeReactorConstruction(cs) -> None:
+                # <Code for before reactor construction>
+
+        Note that the custom ``onlyRunOnce`` decorator is to protect against repeated materials loading for global
+        materials. If a user requires repeated ``beforeReactorConstruction`` calls due to loading different reactors
+        with potentially different materials libraries in the same python instance, they may reset the ``onlyRunOnce``
+        decorator with the following:
+
+        .. code::
+            from <somewhere> import <PLUGIN>
+
+            <PLUGIN>.beforeReactorConstruction.reset_onlyRunOnce()
+            # Proceed with database or operator loading
+        """
 
     @staticmethod
     @HOOKSPEC

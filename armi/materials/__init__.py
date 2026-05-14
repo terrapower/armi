@@ -127,10 +127,10 @@ def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True
     if not os.path.exists(dirPath):
         raise OSError(f"No material directory provided, and default not found: {dirPath}")
 
-    loadedRootDirs.append(dirPath)
     if clearFirst:
         # clear the loaded materials before loading this new directory
         clear()
+    loadedRootDirs.append(dirPath)
 
     # recursively get all the *.yaml and *.yml files from the provided directory
     paths = getYamlPaths(dirPath)
