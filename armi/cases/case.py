@@ -41,7 +41,6 @@ import coverage
 
 from armi import context, getPluginManager, interfaces, operators, runLog, settings
 from armi.bookkeeping.db import compareDatabases
-from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import blueprints, reactors
 from armi.utils import pathTools, tabulate, textProcessors
@@ -445,19 +444,24 @@ class Case:
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
-            self._initBurnChain()
             o = operators.factory(self.cs)
             if r is None:
                 r = reactors.factory(self.cs, self.bp)
+            self._initBurnChain(r)
             o.initializeInterfaces(r)
             # Set this here to make sure the full duration of initialization is properly captured.
             # Cannot be done in reactors since the above self.bp call implicitly initializes blueprints.
             r.core.timeOfStart = self._startTime
             return o
 
-    def _initBurnChain(self):
+    def _initBurnChain(self, r):
         """
         Apply the burn chain setting to the nucDir.
+
+        Parameters
+        ----------
+        r: Reactor
+            The reactor object for this case.
 
         Notes
         -----
@@ -477,7 +481,7 @@ class Case:
             )
 
         with open(self.cs["burnChainFileName"]) as burnChainStream:
-            nuclideBases.imposeBurnChain(burnChainStream)
+            r.nuclideBases.imposeBurnChain(burnChainStream)
 
     def checkInputs(self):
         """
