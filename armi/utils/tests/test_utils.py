@@ -273,6 +273,8 @@ class TestGeneralUtils(unittest.TestCase):
         def f(x):
             calls.append(x)
 
+        # Test a specific use case first: calling the reset before the decorator has been used
+        f.reset_onlyRunOnce()
         # Call it 3x then test it only ran once
         f(1)
         f(2)

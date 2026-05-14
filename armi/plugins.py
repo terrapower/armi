@@ -263,8 +263,10 @@ class ArmiPlugin:
         decorator with the following:
 
         .. code::
+            from <somewhere> import <PLUGIN>
 
             <PLUGIN>.beforeReactorConstruction.reset_onlyRunOnce()
+            # Proceed with database or operator loading
         """
 
     @staticmethod
