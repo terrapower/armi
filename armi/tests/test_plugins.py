@@ -168,7 +168,10 @@ class TestPluginRegistration(unittest.TestCase):
                     AttributeError, "'Settings' object has no attribute 'beforeReactorConstructionFlag'"
                 ):
                     o2.cs.beforeReactorConstructionFlag
-
+                # Reset the decorator wrapper, and run `loadOperator` a third time
+                BeforeReactorPlugin.beforeReactorConstruction.reset_onlyRunOnce()
+                o3 = loadOperator(self._testMethodName + ".h5", 0, 0)
+                self.assertTrue(o3.cs.beforeReactorConstructionFlag)
         finally:
             pm.unregister(BeforeReactorPlugin)
 

@@ -278,6 +278,11 @@ class TestGeneralUtils(unittest.TestCase):
         f(2)
         f(3)
         self.assertEqual(calls, [1])
+        # Reset then try other calls
+        f.reset_onlyRunOnce()
+        f(4)
+        f(5)
+        self.assertEqual(calls, [1, 4])
 
         # 2. Test with args/kwargs
         calls = []
