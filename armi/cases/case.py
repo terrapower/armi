@@ -13,11 +13,10 @@
 # limitations under the License.
 
 """
-The ``Case`` object is responsible for running, and executing a set of user inputs. Many entry
-points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
+The ``Case`` object is responsible for running, and executing a set of user inputs. Many entry points redirect into
+``Case`` methods, such as ``clone``, ``compare``, and ``run``.
 
-The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and
-collection of cases.
+The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and collection of cases.
 
 See Also
 --------
@@ -47,10 +46,7 @@ from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import blueprints, reactors
 from armi.utils import pathTools, tabulate, textProcessors
 from armi.utils.customExceptions import NonexistentSetting
-from armi.utils.directoryChangers import (
-    DirectoryChanger,
-    ForcedCreationDirectoryChanger,
-)
+from armi.utils.directoryChangers import DirectoryChanger, ForcedCreationDirectoryChanger
 
 # Change from default .coverage to help with Windows dotfile issues.
 # Must correspond with data_file entry in `pyproject.toml`!
@@ -61,9 +57,8 @@ class Case:
     """
     An ARMI Case that can be used for suite set up and post-analysis.
 
-    A Case is capable of loading inputs, checking that they are valid, and initializing a reactor
-    model. Cases can also compare against other cases and be collected into multiple
-    :py:class:`armi.cases.suite.CaseSuite`.
+    A Case is capable of loading inputs, checking that they are valid, and initializing a reactor model. Cases can also
+    compare against other cases and be collected into multiple :py:class:`armi.cases.suite.CaseSuite`.
     """
 
     def __init__(self, cs, caseSuite=None, bp=None):
@@ -75,14 +70,12 @@ class Case:
         cs : Settings
             Settings for this Case
         caseSuite : CaseSuite, optional
-            CaseSuite this particular case belongs. Passing this in allows dependency tracking
-            across the other cases (e.g. if one case uses the output of another as input, as happens
-            in in-use testing for reactivity coefficient snapshot testing or more complex analysis
-            sequences).
+            CaseSuite this particular case belongs. Passing this in allows dependency tracking across the other cases
+            (e.g. if one case uses the output of another as input, as happens in in-use testing for reactivity
+            coefficient snapshot testing or more complex analysis sequences).
         bp : Blueprints, optional
-            :py:class:`armi.reactor.blueprints.Blueprints` object containing the assembly
-            definitions and other information. If not supplied, it will be loaded from the ``cs`` as
-            needed.
+            :py:class:`armi.reactor.blueprints.Blueprints` object containing the assembly definitions and other
+            information. If not supplied, it will be loaded from the ``cs`` as needed.
         """
         self._startTime = time.time()
         self._caseSuite = caseSuite
@@ -94,12 +87,12 @@ class Case:
         if bp is not None:
             cs.filelessBP = True
 
-        # NOTE: in order to prevent slow submission times for loading massively large blueprints
-        # (e.g. certain computer-generated input files), self.bp can be None.
+        # NOTE: in order to prevent slow submission times for loading massively large blueprints (e.g. certain
+        # computer-generated input files), self.bp can be None.
         self.cs = cs
         self._bp = bp
 
-        # this is used in parameter sweeps
+        # This is used in parameter sweeps.
         self._independentVariables = {}
 
     @property
@@ -107,8 +100,8 @@ class Case:
         """
         Get dictionary of independent variables and their values.
 
-        This unpacks independent variables from the cs object's independentVariables setting the
-        first time it is run. This is used in parameter sweeps.
+        This unpacks independent variables from the cs object's independentVariables setting the first time it is run.
+        This is used in parameter sweeps.
 
         See Also
         --------
@@ -147,9 +140,8 @@ class Case:
 
         Notes
         -----
-        This is performed on demand so that if someone changes the underlying Settings, the case
-        will reflect the correct dependencies. As a result, if this is being done iteratively,
-        you may want to cache it somehow (in a dict?).
+        This is performed on demand so that if someone changes the underlying Settings, the case will reflect the
+        correct dependencies. As a result, if this is being done iteratively, you may want to cache it somehow.
 
         Ideally, this should not be the responsibility of the Case, but rather the suite!
         """
@@ -160,8 +152,7 @@ class Case:
                 for pluginDependencies in pm.hook.defineCaseDependencies(case=self, suite=self._caseSuite):
                     dependencies.update(pluginDependencies)
 
-            # the ([^\/]) capture basically gets the file name portion and excludes any
-            # directory separator
+            # the ([^\/]) capture basically gets the file name portion and excludes any directory separator
             dependencies.update(
                 self.getPotentialParentFromSettingValue(
                     self.cs["explicitRepeatShuffles"],
@@ -199,17 +190,16 @@ class Case:
         Parameters
         ----------
         settingValue : str
-            A particular setting value that might contain a reference to an input that
-            is produced by a dependency.
+            A particular setting value that might contain a reference to an input that is produced by a dependency.
         filePattern : str
-            A regular expression for extracting the location and name of the dependency.
-            If the ``settingValue`` matches the passed pattern, this function will
-            attempt to extract the ``dirName`` and ``title`` groups to find the dependency.
+            A regular expression for extracting the location and name of the dependency. If the ``settingValue`` matches
+            the passed pattern, this function will attempt to extract the ``dirName`` and ``title`` groups to find the
+            dependency.
         """
         m = re.match(filePattern, settingValue, re.IGNORECASE)
         deps = self._getPotentialDependencies(**m.groupdict()) if m else set()
         if len(deps) > 1:
-            raise KeyError("Found more than one case matching {}".format(settingValue))
+            raise KeyError(f"Found more than one case matching {settingValue}")
         return deps
 
     def _getPotentialDependencies(self, dirName, title):
@@ -248,8 +238,7 @@ class Case:
 
     def __eq__(self, that):
         """
-        Compares two cases to determine if they are equivalent by looking at the ``title`` and
-        ``directory``.
+        Compares two cases to determine if they are equivalent by looking at the ``title`` and ``directory``.
 
         Notes
         -----
@@ -426,8 +415,7 @@ class Case:
 
     @staticmethod
     def _endProfiling(profiler=None):
-        """Helper to the Case.run(): stop and report python profiling,
-        if the Settings file says to.
+        """Helper to the Case.run(): stop and report python profiling, if the Settings file says to.
 
         Parameters
         ----------
@@ -610,8 +598,7 @@ class Case:
             runLog.warning(f"skipping {CONF_LOADING_FILE}, there is no file specified")
 
         with open(self.cs[CONF_LOADING_FILE], "r") as f:
-            # The root for handling YAML includes is relative to the YAML file, not the
-            # settings file
+            # The root for handling YAML includes is relative to the YAML file, not the settings file
             root = pathlib.Path(self.cs.inputDirectory) / pathlib.Path(self.cs[CONF_LOADING_FILE]).parent
             cloneRoot = pathlib.Path(clone.cs.inputDirectory) / pathlib.Path(clone.cs[CONF_LOADING_FILE]).parent
             for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
@@ -622,9 +609,9 @@ class Case:
                     # don't bother copying absolute files
                     continue
                 if not includeSrc.exists():
-                    raise OSError("The input file file `{}` referenced at {} does not exist.".format(includeSrc, mark))
+                    raise OSError(f"The input file file `{includeSrc}` referenced at {mark} does not exist.")
                 pathTools.copyOrWarn(
-                    "auxiliary input file `{}` referenced at {}".format(includeSrc, mark),
+                    f"auxiliary input file `{includeSrc}` referenced at {mark}",
                     includeSrc,
                     includeDest,
                 )
@@ -658,7 +645,7 @@ class Case:
         code = 1 if diffResults is None else diffResults.nDiffs()
 
         sameOrDifferent = "different" if diffResults is None or diffResults.nDiffs() > 0 else "the same"
-        runLog.important("Cases are {}.".format(sameOrDifferent))
+        runLog.important(f"Cases are {sameOrDifferent}.")
 
         return code
 
@@ -675,8 +662,7 @@ class Case:
             The path to copy inputs from (if different from the cs.path). Needed
             in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files
-            (short, medium, or full).
+            Writing style for which settings get written back to the settings files (short, medium, or full).
 
         Notes
         -----
@@ -719,9 +705,8 @@ class Case:
 
 def _copyInputsHelper(fileDescription: str, sourcePath: str, destPath: str, origFile: str) -> str:
     """
-    Helper function for copyInterfaceInputs: Creates an absolute file path, and copies the file to
-    that location. If that file path does not exist, returns the file path from the original
-    settings file.
+    Helper function for copyInterfaceInputs: Creates an absolute file path, and copies the file to that location. If
+    that file path does not exist, returns the file path from the original settings file.
 
     Parameters
     ----------
