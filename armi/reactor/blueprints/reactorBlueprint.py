@@ -36,7 +36,6 @@ import yamlize
 from armi import context, getPluginManagerOrFail, runLog
 from armi.reactor import geometry, grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
-from armi.utils import tabulate
 
 
 class SystemBlueprint(yamlize.Object):
@@ -187,7 +186,6 @@ class SystemBlueprint(yamlize.Object):
 
             if isinstance(system, Core):
                 self._modifyGeometry(system, gridDesign)
-                summarizeMaterialData(system)
                 system.processLoading(cs)
 
         return system
@@ -262,26 +260,3 @@ class SystemBlueprint(yamlize.Object):
 class Systems(yamlize.KeyedList):
     item_type = SystemBlueprint
     key_attr = SystemBlueprint.name
-
-
-def summarizeMaterialData(container):
-    """
-    Create a summary of the material objects and source data for a reactor container.
-
-    Parameters
-    ----------
-    container : Core object
-        Any Core object with Blocks and Components defined.
-    """
-    runLog.header(f"=========== Summarizing Source of Material Data for {container} ===========")
-    materialNames = set()
-    materialData = []
-    for c in container.iterComponents():
-        if c.material.name in materialNames:
-            continue
-        materialData.append((c.material.name, c.material.DATA_SOURCE))
-        materialNames.add(c.material.name)
-
-    materialData = sorted(materialData)
-    runLog.info(tabulate.tabulate(data=materialData, headers=["Material Name", "Source Location"], tableFmt="armi"))
-    return materialData
