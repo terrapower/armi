@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-The lumped fission product (LFP)  module deals with representing LFPs and loading
-them from files.
+The lumped fission product (LFP)  module deals with representing LFPs and loading them from files.
 
 These are generally managed by the
 :py:mod:`~armi.physics.neutronics.fissionProductModel.fissionProductModel.FissionProductModel`
@@ -383,8 +382,7 @@ def _buildMo99LumpedFissionProduct():
     mo99 = nuclideBases.byName["MO99"]
     mo99LFPs = LumpedFissionProductCollection()
     for lfp in nuclideBases.where(lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)):
-        # Not all lump nuclides bases defined are fission products, so ensure that only fission
-        # products are considered.
+        # Not all lump nuclides bases defined are fission products, so ensure that only fission products are considered.
         if not ("FP" in lfp.name or "REGN" in lfp.name):
             continue
         mo99FP = LumpedFissionProduct(lfp.name)
