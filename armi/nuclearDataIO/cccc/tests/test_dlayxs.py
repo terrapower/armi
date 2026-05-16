@@ -22,7 +22,7 @@ import numpy as np
 from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO.cccc import dlayxs
 from armi.nuclearDataIO.tests import test_xsLibraries
-from armi.tests import mockRunLogs
+from armi.testing import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 

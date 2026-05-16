@@ -25,7 +25,7 @@ from armi.physics.neutronics.isotopicDepletion import (
 from armi.physics.neutronics.latticePhysics import ORDER
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.settings import Settings
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -62,7 +62,7 @@ class TestCrossSectionTable(unittest.TestCase):
             :id: T_ARMI_DEPL_ABC
             :tests: R_ARMI_DEPL_ABC
         """
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)

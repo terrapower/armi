@@ -37,8 +37,7 @@ from armi.reactor.converters.axialExpansionChanger import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import units
 from armi.utils.customExceptions import InputError
 
@@ -298,7 +297,7 @@ class TestConservation(AxialExpansionTestBase):
         Assemblies with liners are not supported and not considered for conservation testing.
         """
         _oCold, rCold = loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
         assems = list(rCold.blueprints.assemblies.values())
@@ -572,7 +571,7 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def setUp(self):
         self.axialExpChngr = AxialExpansionChanger()
-        _o, self.r = loadTestReactor(os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+        _o, self.r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"))
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         self.componentLst = []
@@ -899,14 +898,14 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def setUp(self):
         """This test uses a different armiRun.yaml than the default."""
         o, r = loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
 
         self.stdAssems = list(r.core)
 
         oCold, rCold = loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
 

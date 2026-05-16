@@ -28,8 +28,7 @@ from armi.reactor import (
     reactors,
     zones,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 
 THIS_DIR = os.path.dirname(__file__)
 

@@ -21,7 +21,7 @@ import numpy as np
 
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.reportPlotting import (
     _getPhysicalVals,
@@ -37,7 +37,7 @@ from armi.utils.reportPlotting import (
 class TestRadar(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
         )
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()

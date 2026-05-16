@@ -17,8 +17,7 @@
 import unittest
 
 from armi.bookkeeping import BookkeepingPlugin, summarizeMaterialData
-from armi.testing import loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.tests.test_plugins import TestPlugin
 
 
@@ -29,7 +28,7 @@ class TestBookkeepingPlugin(TestPlugin):
 class TestBookkeepingPluginHooks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        _, cls.r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _, cls.r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""

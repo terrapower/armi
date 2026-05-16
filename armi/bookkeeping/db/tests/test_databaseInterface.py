@@ -33,7 +33,6 @@ from armi.reactor.blueprints import loadFromCs
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor
 from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 
@@ -47,7 +46,9 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refSmallestReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = os.path.join(
+        TESTING_ROOT, "reactors", "smallestTestReactor", "refSmallestReactor.yaml"
+    )
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
@@ -79,7 +80,9 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     def test_interactBOL(self):
         """This test is in its own class, because of temporary directory issues."""
         with directoryChangers.TemporaryDirectoryChanger():
-            self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+            self.o, self.r = loadTestReactor(
+                TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+            )
             self.dbi = DatabaseInterface(self.r, self.o.cs)
 
             dbName = f"{self._testMethodName}.h5"
@@ -102,7 +105,9 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, self.r = loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database = self.dbi.database
@@ -318,7 +323,7 @@ class TestDatabaseWriter(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+        cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
         cs = cs.modified(newSettings={"power": 0.0, "powerDensity": 9e4})
         self.o, cs = getSimpleDBOperator(cs)
         self.r = self.o.r
@@ -666,7 +671,7 @@ class TestDatabaseReading(unittest.TestCase):
 
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
-        cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+        cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
         cs = cs.modified(newSettings={"reloadDBName": "aRmIRuN.h5"})
 
         dbi = DatabaseInterface(None, cs)
@@ -684,7 +689,9 @@ class TestStandardFollowOn(unittest.TestCase):
         cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
         # make DB to load from
-        o = cls._getOperatorThatChangesVariables(settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml")))
+        o = cls._getOperatorThatChangesVariables(
+            settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
+        )
         with o:
             o.operate()
             cls.FIRST_END_TIME = o.r.p.time
@@ -738,7 +745,7 @@ class TestStandardFollowOn(unittest.TestCase):
             )
 
     def _getRestartOperator(self):
-        cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+        cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
         newSettings = {}
         newSettings["loadStyle"] = "fromDB"
         newSettings["reloadDBName"] = self.LOAD_DB_PATH

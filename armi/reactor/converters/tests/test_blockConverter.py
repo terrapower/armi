@@ -27,7 +27,7 @@ from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
-from armi.testing import TEST_ROOT, loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.testing.singleMixedAssembly import buildMixedThreePinAssembly
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -296,7 +296,8 @@ class TestBlockConverter(unittest.TestCase):
             :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL1
             :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
         """
-        block = loadTestReactor(TEST_ROOT)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        block = loadTestReactor(root)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
         converter = blockConverters.HexComponentsToCylConverter(block)
@@ -321,9 +322,11 @@ class TestBlockConverter(unittest.TestCase):
             :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL0
             :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
         """
-        driverBlock = loadTestReactor(TEST_ROOT)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        core = loadTestReactor(root)[1].core
+        driverBlock = core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
 
-        block = loadTestReactor(TEST_ROOT)[1].core.getFirstBlock(Flags.CONTROL)
+        block = core.getFirstBlock(Flags.CONTROL)
         control = block.getComponent(Flags.CONTROL)
 
         # add depletable flag to see if it is carried
@@ -373,7 +376,8 @@ class TestBlockConverter(unittest.TestCase):
         Tests the conversion of a control block with linked components, where a component contains a
         negative area due to thermal expansion.
         """
-        driverBlock = loadTestReactor(TEST_ROOT)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        driverBlock = loadTestReactor(root)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
 
         block = buildControlBlockWithLinkedNegativeAreaComponent()
         areas = [c.getArea() for c in block]
@@ -392,7 +396,7 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_convertCartesianLatticeWithFuelDriver(self):
         """Test conversion with fuel driver."""
-        r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
+        r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml")[1]
         driverBlock = r.core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
         block = r.core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.BLANKET)
 

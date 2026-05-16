@@ -14,25 +14,19 @@
 
 """Test the Lattice Physics Writer."""
 
+import os
 import unittest
 from collections import defaultdict
 
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_FP_MODEL,
-)
-from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
-    setBlockNeutronVelocities,
-)
-from armi.physics.neutronics.latticePhysics.latticePhysicsWriter import (
-    LatticePhysicsWriter,
-)
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import setBlockNeutronVelocities
+from armi.physics.neutronics.latticePhysics.latticePhysicsWriter import LatticePhysicsWriter
 from armi.physics.neutronics.settings import (
     CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
     CONF_XS_BLOCK_REPRESENTATION,
 )
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 
 
 class FakeLatticePhysicsWriter(LatticePhysicsWriter):
@@ -59,7 +53,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
     """Test Lattice Physics Writer."""
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor"))
         self.cs = self.o.cs
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],

@@ -35,8 +35,7 @@ from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import onlyRunOnce
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -144,7 +143,9 @@ class TestPluginRegistration(unittest.TestCase):
         try:
             # Load a test reactor to save to DB. This should be loaded before the `BeforeReactorPlugin` is registered,
             # because we aren't testing that functionality just yet
-            o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml", useCache=False)
+            o, r = loadTestReactor(
+                TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml", useCache=False
+            )
 
             # Now, register the plugin before `loadOperator` is called
             pm = getPluginManagerOrFail()
@@ -236,7 +237,7 @@ class TestPluginBasics(unittest.TestCase):
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         # generate a test operator, with a full set of interfaces from plugsin
-        o = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")[0]
+        o = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")[0]
         pm = getPluginManagerOrFail()
 
         # test the plugins were generated
