@@ -15,6 +15,7 @@
 """Tests assemblies.py."""
 
 import math
+import os
 import pathlib
 import random
 import unittest
@@ -29,7 +30,7 @@ from armi.reactor import assemblies, blocks, blueprints, components, geometry, p
 from armi.reactor.assemblies import Flags, HexAssembly, copy, grids, runLog
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
@@ -746,7 +747,8 @@ class AssemblyTests(unittest.TestCase):
 
     def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
-        with directoryChangers.DirectoryChanger(TEST_ROOT):
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        with directoryChangers.DirectoryChanger(root):
             newSettings = {CONF_LOADING_FILE: filename}
             self.cs = self.cs.modified(newSettings=newSettings)
 
@@ -1128,7 +1130,8 @@ class AssemblyTests(unittest.TestCase):
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        self.o, self.r = test_reactors.loadTestReactor(root)
 
     def test_snapAxialMesViaBlockIgn(self):
         """Snap axial mesh to a reference mesh should conserve mass based on Block igniter fuel."""
@@ -1147,6 +1150,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
             # mass should only be conserved within fuel component, not over the whole block
             fuelComp.setNumberDensity("FE56", 1e-10)
             fuelComp.setNumberDensity("NA23", 1e-10)
+
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0

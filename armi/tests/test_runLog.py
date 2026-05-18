@@ -21,7 +21,7 @@ from pathlib import Path
 from shutil import rmtree
 
 from armi import runLog
-from armi.tests import mockRunLogs
+from armi.testing import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 

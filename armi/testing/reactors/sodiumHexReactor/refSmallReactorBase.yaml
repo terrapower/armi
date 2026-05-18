@@ -340,7 +340,7 @@ blocks:
     outer liner:
       shape: Circle
       material: Zr
-      Tinput: 20.0
+      Tinput: 25.0
       Thot: 430.0
       id: 0.898
       mult: fuel.mult

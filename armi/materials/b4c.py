@@ -22,7 +22,6 @@ assembly definition.
 This is an example of a material implement purely in Python, without any matProps YAML inputs.
 """
 
-from armi import runLog
 from armi.materials import material
 from armi.utils.units import getTc
 
@@ -38,22 +37,11 @@ class B4C(material.Material):
         self.b10NumFrac = self.NATURAL_B10_NUM_FRAC
         super().__init__()
 
-    def applyInputParams(self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs):
+    def applyInputParams(self, B10_wt_frac=None, TD_frac=None, *args, **kwargs):
         if B10_wt_frac is not None:
             # We can not just use the generic enrichment adjustment here because the carbon has to change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
-        if theoretical_density is not None:
-            runLog.warning(
-                "The 'theoretical_density' material modification for B4C will be deprecated. Update your inputs to use "
-                "'TD_frac' instead.",
-                single=True,
-            )
-            if TD_frac is not None:
-                runLog.info(
-                    f"Both 'theoretical_density' and 'TD_frac' are specified for {self}. 'TD_frac' will be used."
-                )
-            else:
-                self.updateTD(theoretical_density)
+
         if TD_frac is not None:
             self.updateTD(TD_frac)
 

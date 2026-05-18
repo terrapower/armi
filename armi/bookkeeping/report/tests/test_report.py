@@ -41,8 +41,7 @@ from armi.bookkeeping.report.reportingUtils import (
     writeWelcomeHeaders,
 )
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.testing import loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -177,7 +176,7 @@ class TestReport(unittest.TestCase):
 
     def test_reactorSpecificReporting(self):
         """Test a number of reporting utils that require reactor/core information."""
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         # make sure makeCoreDesignReport() doesn't fail, though it won't generate an output here
         makeCoreDesignReport(r.core, o.cs)
@@ -230,7 +229,7 @@ class TestReport(unittest.TestCase):
             self.assertEqual(len(mock.getStdout()), 0)
 
     def test_writeWelcomeHeaders(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         # grab this file path
         randoFile = os.path.abspath(__file__)
@@ -278,7 +277,7 @@ class TestReportInterface(unittest.TestCase):
         self.assertEqual(repInt.distributable(), 4)
 
     def test_interactBOLReportInt(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:
@@ -288,7 +287,7 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("wetMass", mock.getStdout())
 
     def test_interactEveryNode(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:
@@ -298,7 +297,7 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("keff=", mock.getStdout())
 
     def test_interactBOC(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         self.assertEqual(repInt.fuelCycleSummary["bocFissile"], 0.0)
@@ -306,7 +305,7 @@ class TestReportInterface(unittest.TestCase):
         self.assertAlmostEqual(repInt.fuelCycleSummary["bocFissile"], 4.290603409612653)
 
     def test_interactEOC(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:
@@ -315,7 +314,7 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("TIMER REPORTS", mock.getStdout())
 
     def test_interactEOL(self):
-        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:

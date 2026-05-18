@@ -45,7 +45,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks, test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -326,7 +326,9 @@ class TestBlockCollCompAvg(unittest.TestCase):
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")
+        self.o, self.r = test_reactors.loadTestReactor(
+            os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml"
+        )
 
         #                    ndrawer1  lenFuelTypeD1  ndrawer2  lenFuelTypeD2
         EuWeight = float(1 * 60 + 3 * 15)
@@ -412,7 +414,8 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        self.o, self.r = test_reactors.loadTestReactor(root)
 
         sodiumDensity = {"NA23": 0.022166571826233578}
         steelDensity = {
@@ -874,17 +877,16 @@ class TestXSGM(unittest.TestCase):
             :id: T_ARMI_XSGM_CREATE_XS_GROUPS0
             :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
         """
-        _o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        _o, r = test_reactors.loadTestReactor(root)
         self.csm.r = r
 
-        # Assumption: All sodium in fuel blocks for this test is 450 C and this is the expected
-        # sodium temperature. These lines of code take the first sodium block and decrease the
-        # temperature of the block, but change the atom density to approximately zero. Checking
-        # later on the nuclide temperature of sodium is asserted to be still 450. This perturbation
-        # proves that altering the temperature of an component with near zero atom density does not
-        # affect the average temperature of the block collection. This demonstrates that the
-        # temperatures of a block collection are atom weighted rather than just the average
-        # temperature.
+        # Assumption: All sodium in fuel blocks for this test is 450 C and this is the expected sodium temperature.
+        # These lines of code take the first sodium block and decrease the temperature of the block, but change the atom
+        # density to approximately zero. Checking later on the nuclide temperature of sodium is asserted to be still
+        # 450. This perturbation proves that altering the temperature of an component with near zero atom density does
+        # not affect the average temperature of the block collection. This demonstrates that the temperatures of a block
+        # collection are atom weighted rather than just the average temperature.
         regularFuel = r.core.getFirstBlock(Flags.FUEL, exact=True)
         intercoolant = regularFuel.getComponent(Flags.INTERCOOLANT)
         intercoolant.setTemperature(100)  # just above melting
@@ -942,7 +944,9 @@ class TestXSGM(unittest.TestCase):
 
     def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
         """Reusable code used in multiple unit tests."""
-        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         # set a few random non-default settings on AA to be copied to the new BA group
         o.cs[CONF_CROSS_SECTION].update(
             {
@@ -1100,7 +1104,9 @@ class TestXSGM(unittest.TestCase):
         Tests copying pre-generated cross section and flux files using reactor that is built from a
         case settings file.
         """
-        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        o, r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         # Need to overwrite the relative paths with absolute
         o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [os.path.join(THIS_DIR, "ISOXA")]
         o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(THIS_DIR, "rzmflxYA")
@@ -1211,6 +1217,7 @@ class TestXSNumberConverters(unittest.TestCase):
 
 
 def makeBlocks(howMany=20):
-    _o, r = test_reactors.loadTestReactor(TEST_ROOT)
+    root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+    _o, r = test_reactors.loadTestReactor(root)
     # shift y 3 to skip central assemblies 1/3 volume
     return r.core.getBlocks(Flags.FUEL)[3 : howMany + 3]

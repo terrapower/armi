@@ -23,15 +23,16 @@ from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters imp
     ParameterSweepConverter,
     SettingsModifier,
 )
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 
 THIS_DIR = os.path.dirname(__file__)
 
 
 class TestParamSweepConverters(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, self.r = loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.cs = self.o.cs
 
     def test_paramSweepConverter(self):

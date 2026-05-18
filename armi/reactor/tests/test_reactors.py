@@ -38,8 +38,8 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings  # noqa: F401
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs, reduceTestReactorRings  # noqa: F401
+from armi.tests import TEST_ROOT  # noqa: F401
 from armi.utils import directoryChangers
 
 _THIS_DIR = os.path.dirname(__file__)
@@ -171,7 +171,7 @@ class HexReactorTests(ReactorTests):
     def test_factorySortSetting(self):
         """Create a core object from an input yaml."""
         # get a sorted Reactor (the default)
-        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "armiRun.yaml"))
+        cs = settings.Settings(fName=os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
         r0 = reactors.loadFromCs(cs)
 
         # get an unsorted Reactor (for whatever reason)
@@ -1181,7 +1181,8 @@ class BigHexReactorTests(ReactorTests):
     """
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(inputFilePath=TEST_ROOT, customSettings={"trackAssems": True})
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        self.o, self.r = loadTestReactor(inputFilePath=root, customSettings={"trackAssems": True})
 
     def test_genAssembliesAddedThisCycle(self):
         allAssems = self.r.core.getAssemblies()
@@ -1333,7 +1334,7 @@ class CartesianReactorTests(ReactorTests):
 
 class CartesianReactorNeighborTests(ReactorTests):
     def setUp(self):
-        self.r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
+        self.r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml")[1]
 
     def test_findNeighborsCartesian(self):
         """Find neighbors of a given assembly in a Cartesian grid."""

@@ -52,7 +52,7 @@ from armi.reactor.components import (
     materials,
 )
 from armi.reactor.reactors import Reactor
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils.units import getTc
 
 
@@ -560,7 +560,7 @@ class TestDerivedShapeGetArea(unittest.TestCase):
     def test_getAreaColdTrue(self):
         """Prove that the DerivedShape.getArea() works at cold=True."""
         # load one-block test reactor
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         b = r.core[0][0]
 
         # ensure there is a DerivedShape in this Block
@@ -581,7 +581,7 @@ class TestDerivedShapeGetArea(unittest.TestCase):
     def test_getAreaTemp(self):
         """Prove that the DerivedShape.getArea() works for an arbitrary temperature."""
         # load one-block test reactor
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         b = r.core[0][0]
         b.clearCache()
 
@@ -1983,7 +1983,7 @@ class TestPinQuantities(unittest.TestCase):
     """Test methods that involve retrieval of pin quantities."""
 
     def setUp(self):
-        self.r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")[1]
+        self.r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")[1]
 
     def test_getPinMgFluxes(self):
         """Test proper retrieval of pin multigroup flux for fuel component."""

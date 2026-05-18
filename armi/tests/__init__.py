@@ -31,6 +31,7 @@ from armi.testing import (  # noqa: F401
     ISOAA_PATH,
     getEmptyCartesianReactor,
     getEmptyHexReactor,
+    mockRunLogs,
 )
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))

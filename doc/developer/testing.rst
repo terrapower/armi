@@ -115,9 +115,9 @@ This function will return a reactor object. And it takes various input arguments
 .. code-block:: python
 
      def loadTestReactor( 
-         inputFilePath=TEST_ROOT, 
+         inputFilePath=TESTING_ROOT, 
          customSettings=None, 
-         inputFileName="armiRun.yaml", 
+         inputFileName="reactors/sodiumHexReactor/armiRun.yaml", 
      ): 
 
 So many interfaces and methods require an operator or a reactor, and ``loadTestReactor`` returns both. From there you can use the whole reactor or just grab a single ARMI object, like a `fuel block <https://github.com/terrapower/armi/blob/58b0e8198d2f8a217c1db84e97127adfe7e91c09/armi/reactor/tests/test_blocks.py#L3030-L3036>`_:
@@ -125,8 +125,8 @@ So many interfaces and methods require an operator or a reactor, and ``loadTestR
 .. code-block:: python
 
      _o, r = loadTestReactor(
-        os.path.join(TEST_ROOT, "smallestTestReactor"),
-        inputFileName="armiRunSmallest.yaml",
+        TESTING_ROOT,
+        inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
     )
 
     # grab a pinned fuel block

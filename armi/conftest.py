@@ -30,7 +30,7 @@ import matplotlib
 
 from armi import apps, configure, context
 from armi.settings import caseSettings
-from armi.tests import TEST_ROOT
+from armi.tests import TESTING_ROOT
 
 
 def pytest_sessionstart(session):
@@ -40,11 +40,7 @@ def pytest_sessionstart(session):
 
 
 def bootstrapArmiTestEnv():
-    """
-    Perform ARMI config appropriate for running unit tests.
-
-    .. tip:: This can be imported and run from other ARMI applications for test support.
-    """
+    """Perform ARMI config appropriate for running unit tests."""
     from armi.nucDirectory import nuclideBases
 
     cs = caseSettings.Settings()
@@ -63,6 +59,7 @@ def bootstrapArmiTestEnv():
     if not os.path.exists(context.getFastPath()):
         os.makedirs(context.getFastPath())
 
-    # some tests need to find the TEST_ROOT via an env variable when they're filling in templates with ``$ARMITESTBASE``
-    # in them or opening input files use the variable in an `!include` tag. Thus we provide it here.
-    os.environ["ARMITESTBASE"] = TEST_ROOT
+    # Some tests need to find the TESTING_ROOT via an env variable when they're filling in templates with
+    # ``$ARMITESTBASE`` in them or opening input files use the variable in an `!include` tag. Thus we provide it here.
+    root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+    os.environ["ARMITESTBASE"] = root

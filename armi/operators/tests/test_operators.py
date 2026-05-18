@@ -40,7 +40,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_SETTINGS,
 )
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -64,7 +64,9 @@ class InterfaceC(Interface):
 
 class OperatorTests(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, self.r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_operatorData(self):
@@ -171,7 +173,9 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
     def test_interfaceIsActive(self):
-        self.o, _r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, _r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
@@ -549,7 +553,8 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.o, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            TESTING_ROOT,
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
             customSettings={CONF_TIGHT_COUPLING: True},
         )
         cls.r.p.cycle = 0
@@ -596,7 +601,8 @@ class OperatorRestartTests(unittest.TestCase):
         cls.START_CYCLE = 4
         cls.START_NODE = 2
         cls.o, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            TESTING_ROOT,
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
             customSettings={
                 "loadStyle": "fromDB",
                 "startCycle": cls.START_CYCLE,
