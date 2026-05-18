@@ -5,7 +5,6 @@ permissions:
 
 on:
   push:
-  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,7 +40,6 @@ jobs:
           coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover --fail-under=90
       - name: Publish to codecov.io
         continue-on-error: true
-        if: github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: false
