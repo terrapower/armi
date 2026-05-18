@@ -87,18 +87,8 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
 
     # data is a dict of OrderedDict: { <paramName> : { (<cycle>, <node>) : value } }
     scalars = {key: list(timeStepDict.values()) for key, timeStepDict in data.items()}
-    runLog.info("scalars for plotting {}".format(scalars))
+    runLog.info(f"scalars for plotting {scalars}")
 
-    valueVsTime(
-        reactor.name,
-        scalars["time"],
-        scalars["maxPD"],
-        "maxPD",
-        "Max Areal PD (MW/m^2)",
-        "Max Areal PD vs. time",
-        0.0,
-        extension=extension,
-    )
     keffVsTime(
         reactor.name,
         scalars["time"],

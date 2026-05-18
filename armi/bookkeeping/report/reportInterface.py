@@ -123,7 +123,6 @@ class ReportInterface(interfaces.Interface):
         self.writeRunSummary()
         self.o.timer.stopAll()  # consider the run done
         runLog.info(self.o.timer.report(inclusionCutoff=0.001, totalTime=True))
-        _timelinePlot = self.o.timer.timeline(self.cs.caseTitle, 0.03, totalTime=True)
         runLog.info(self.printReports())
 
     def printReports(self):
@@ -144,6 +143,10 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def reportSFP(sfp):
         """A high-level summary of the Spent Fuel Pool."""
+        # Do not print this report if the SFP is the ARMI default, or empty, as it will not be interesting to the user.
+        if sfp.numColumns is None or not len(sfp):
+            return
+
         title = "SpentFuelPool Report"
         runLog.important("-" * len(title))
         runLog.important(title)

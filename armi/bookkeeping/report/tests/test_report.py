@@ -40,8 +40,11 @@ from armi.bookkeeping.report.reportingUtils import (
     writeCycleSummary,
     writeWelcomeHeaders,
 )
+from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+SMALLEST_DIR = os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor")
 
 
 class _MockReturnResult:
@@ -320,3 +323,21 @@ class TestReportInterface(unittest.TestCase):
             repInt.interactEOL()
             self.assertIn("Comprehensive Core Report", mock.getStdout())
             self.assertIn("Assembly Area Fractions", mock.getStdout())
+
+    def test_reportSFP(self):
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+        sfp = r.excore["sfp"]
+        self.assertIsNone(sfp.numColumns)
+        self.assertEqual(len(sfp), 0)
+
+        with mockRunLogs.BufferLog() as mock:
+            reportInterface.ReportInterface.reportSFP(sfp)
+            self.assertEqual(len(mock.getStdout()), 0)
+
+        a = makeTestAssembly(1, 1, r=r)
+        sfp.add(a)
+
+        with mockRunLogs.BufferLog() as mock:
+            reportInterface.ReportInterface.reportSFP(sfp)
+            self.assertIn("SpentFuelPool Report", mock.getStdout())
+            self.assertIn("Total SFP fissile", mock.getStdout())
