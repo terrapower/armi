@@ -44,6 +44,8 @@ from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
+SMALLEST_DIR = os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor")
+
 
 class _MockReturnResult:
     """Mocking the subprocess.run() return object."""
@@ -323,7 +325,7 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("Assembly Area Fractions", mock.getStdout())
 
     def test_reportSFP(self):
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         sfp = r.excore["sfp"]
         self.assertIsNone(sfp.numColumns)
         self.assertEqual(len(sfp), 0)
