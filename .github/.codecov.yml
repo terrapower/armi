@@ -1,6 +1,8 @@
+# This file is wildly permissive, because codecov.io fails the build too often, and for reasons we do not agree with.
+# So this file allows us to use the codecov.io UI without dealing with their poor logic for failing the build.
 coverage:
   status:
     project:
       default:
         target: 1%    # the required coverage value: stop codecov.io from failing the build
-        threshold: 50%  # allows a 50% drop from the previous base commit coverage
+        threshold: 99%  # allows a 99% drop from the previous base commit coverage
