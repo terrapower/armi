@@ -26,11 +26,8 @@ from armi.utils import directoryChangers
 
 class Reactor(composites.Composite):
     """
-    Top level of the composite structure, potentially representing all components in a reactor.
-
-    This class contains the core and any ex-core structures that are to be represented in the ARMI model. Historically,
-    the ``Reactor`` contained only the core. To support better representation of ex-core structures, the old ``Reactor``
-    functionality was moved to the newer `Core` class, which has a ``Reactor`` parent.
+    Top level of the composite structure, potentially representing all components in a reactor. This class contains the
+    core and any ex-core structures that are to be represented in the ARMI model.
 
     .. impl:: The user-specified reactor.
         :id: I_ARMI_R
