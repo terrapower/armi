@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Install PIP Packages
@@ -31,7 +31,7 @@ jobs:
           pip wheel . -w dist/
           chmod 664 dist/armi*.whl
       - name: Archive PIP wheel artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: armi-wheels
           path: |
