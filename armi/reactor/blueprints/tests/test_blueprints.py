@@ -30,13 +30,13 @@ from armi.reactor.blueprints.gridBlueprint import saveToStream
 from armi.reactor.blueprints.isotopicOptions import CustomIsotopics, NuclideFlags
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers, textProcessors
 
 
 class TestBlueprints(unittest.TestCase):
-    """Test that the basic functionality of faithfully receiving user input to construct ARMI data
-    model objects works as expected.
+    """Test that the basic functionality of faithfully receiving user input to construct ARMI data model objects works
+    as expected.
 
     Try to ensure you test for ideas and not exact matches here, to make the tests more robust.
     """
@@ -44,16 +44,12 @@ class TestBlueprints(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cs = settings.Settings()
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
-        cls.directoryChanger.open()
 
-        y = textProcessors.resolveMarkupInclusions(pathlib.Path(os.getcwd()) / "refSmallReactor.yaml")
+        y = textProcessors.resolveMarkupInclusions(
+            pathlib.Path(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "refSmallReactor.yaml"))
+        )
         cls.blueprints = blueprints.Blueprints.load(y)
         cls.blueprints._prepConstruction(cls.cs)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.directoryChanger.close()
 
     @staticmethod
     def __stubify(latticeMap):

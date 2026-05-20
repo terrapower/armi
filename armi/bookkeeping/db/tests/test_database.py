@@ -38,8 +38,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -269,9 +268,9 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
         self.o, self.r = loadTestReactor(
-            TEST_ROOT,
+            TESTING_ROOT,
             customSettings={"reloadDBName": "reloadingDB.h5"},
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
         )
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
@@ -652,9 +651,9 @@ class TestDatabaseSmaller(unittest.TestCase):
 
     def test_prepRestartRun(self):
         """
-        This test is based on the armiRun.yaml case that is loaded during the `setUp` above. In that cs, `reloadDBName`
-        is set to 'reloadingDB.h5', `startCycle` = 1, and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first
-        be created here for this test.
+        This test is based on the sodiumHexReactor case in armi.testing. In that cs, `reloadDBName` is set to
+        'reloadingDB.h5', `startCycle` = 1, and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be created
+        here for this test.
 
         .. test:: Runs can be restarted from a snapshot.
             :id: T_ARMI_SNAPSHOT_RESTART
@@ -848,9 +847,9 @@ grids:
 
         # copy these test files over, so we can edit them
         thisDir = self.td.destination
-        yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+        yamls = glob(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor", "*.yaml"))
         for yam in yamls:
-            safeCopy(os.path.join(TEST_ROOT, "smallestTestReactor", yam), thisDir)
+            safeCopy(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor", yam), thisDir)
 
         # Add an EVST to this reactor
         with open("refSmallestReactor.yaml", "w") as f:

@@ -22,7 +22,7 @@ from armi.physics.neutronics.macroXSGenerationInterface import (
     MacroXSGenerationInterface,
 )
 from armi.settings import Settings
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -35,7 +35,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
             :tests: R_ARMI_MACRO_XS
         """
         cs = Settings()
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         # Before: verify there are no macro XS on each block
         for b in r.core.iterBlocks():

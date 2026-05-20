@@ -24,6 +24,7 @@ from armi.bookkeeping.db import Database
 from armi.bookkeeping.visualization import utils, vtk, xdmf
 from armi.reactor import blocks, components
 from armi.reactor.tests import test_reactors
+from armi.testing import TESTING_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -63,7 +64,9 @@ class TestVisDump(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
-        _, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _, cls.r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         cls.hexBlock = next(cls.r.core.iterBlocks())
 

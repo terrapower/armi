@@ -16,6 +16,7 @@
 
 # ruff: noqa: F405
 import collections
+import functools
 import getpass
 import hashlib
 import math
@@ -745,3 +746,22 @@ def safeMove(src: str, dst: str) -> None:
 
     runLog.extra(f"Moved {src} -> {dst}")
     return dst
+
+
+def onlyRunOnce(method):
+    """A decorator to ensure a method is only run once."""
+
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        if wrapper.hasRun:
+            return
+        wrapper.hasRun = True
+        return method(*args, **kwargs)
+
+    wrapper.hasRun = False
+
+    def reset():
+        wrapper.hasRun = False
+
+    wrapper.reset_onlyRunOnce = reset
+    return wrapper

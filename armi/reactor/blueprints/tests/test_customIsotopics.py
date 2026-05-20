@@ -30,7 +30,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
-from armi.tests import mockRunLogs
+from armi.testing import mockRunLogs
 from armi.utils.customExceptions import InputError
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

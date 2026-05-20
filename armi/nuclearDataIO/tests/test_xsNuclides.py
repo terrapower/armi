@@ -19,7 +19,8 @@ from copy import copy
 
 from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import isotxs, xsLibraries, xsNuclides
-from armi.tests import ISOAA_PATH, mockRunLogs
+from armi.testing import mockRunLogs
+from armi.tests import ISOAA_PATH
 
 
 class NuclideTests(unittest.TestCase):

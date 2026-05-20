@@ -35,8 +35,8 @@ from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.utils import onlyRunOnce
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -68,6 +68,7 @@ class BeforeReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
+    @onlyRunOnce
     def beforeReactorConstruction(cs) -> None:
         cs.beforeReactorConstructionFlag = True
 
@@ -139,21 +140,39 @@ class TestPluginRegistration(unittest.TestCase):
 
     def test_beforeReactorConstructionHook(self):
         """Test that plugin hook successfully injects code before reactor initialization."""
-        pm = getPluginManagerOrFail()
-        pm.register(BeforeReactorPlugin)
         try:
-            o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml", useCache=False)
-            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+            # Load a test reactor to save to DB. This should be loaded before the `BeforeReactorPlugin` is registered,
+            # because we aren't testing that functionality just yet
+            o, r = loadTestReactor(
+                TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml", useCache=False
+            )
 
-            # Check that hook is called for database loading
+            # Now, register the plugin before `loadOperator` is called
+            pm = getPluginManagerOrFail()
+            pm.register(BeforeReactorPlugin)
+
             with TemporaryDirectoryChanger():
+                # Save loaded reactor to DB
                 dbi = DatabaseInterface(r, o.cs)
                 dbi.initDB(fName=self._testMethodName + ".h5")
                 db = dbi.database
                 db.writeToDB(r)
                 db.close()
-                o = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True)
-            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+                # Call `loadOperator`, which will trigger the plugin hook we are testing
+                o1 = loadOperator(self._testMethodName + ".h5", 0, 0)
+                # Assert to prove that the plugin hook code ran
+                self.assertTrue(o1.cs.beforeReactorConstructionFlag)
+                # Run `loadOperator` a second time
+                o2 = loadOperator(self._testMethodName + ".h5", 0, 0)
+                # Assert to prove that the plugin hook code did not run
+                with self.assertRaisesRegex(
+                    AttributeError, "'Settings' object has no attribute 'beforeReactorConstructionFlag'"
+                ):
+                    o2.cs.beforeReactorConstructionFlag
+                # Reset the decorator wrapper, and run `loadOperator` a third time
+                BeforeReactorPlugin.beforeReactorConstruction.reset_onlyRunOnce()
+                o3 = loadOperator(self._testMethodName + ".h5", 0, 0)
+                self.assertTrue(o3.cs.beforeReactorConstructionFlag)
         finally:
             pm.unregister(BeforeReactorPlugin)
 
@@ -218,7 +237,7 @@ class TestPluginBasics(unittest.TestCase):
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         # generate a test operator, with a full set of interfaces from plugsin
-        o = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")[0]
+        o = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")[0]
         pm = getPluginManagerOrFail()
 
         # test the plugins were generated

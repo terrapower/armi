@@ -21,7 +21,7 @@ import unittest
 from armi import context, settings
 from armi.cli import entryPoint
 from armi.settings import setting, settingsIO
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
@@ -71,7 +71,7 @@ class SettingsReaderTests(unittest.TestCase):
             :tests: R_ARMI_SETTINGS_IO_TXT
         """
         with directoryChangers.TemporaryDirectoryChanger():
-            inPath = os.path.join(TEST_ROOT, "armiRun.yaml")
+            inPath = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml")
             outPath = "test_readFromFile.yaml"
 
             txt = open(inPath, "r").read()

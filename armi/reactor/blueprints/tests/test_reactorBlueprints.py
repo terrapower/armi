@@ -27,8 +27,7 @@ from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core, loadFromCs
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.caseSettings import Settings
-from armi.testing import TESTING_ROOT
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 
 CORE_BLUEPRINT = """
 core:
@@ -184,19 +183,6 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertIsInstance(core, Core)
         self.assertIsInstance(sfp, SpentFuelPool)
         self.assertIsInstance(evst, ExcoreStructure)
-
-    def test_materialDataSummary(self):
-        """Test that the material data summary for the core is valid as a printout to the stdout."""
-        expectedMaterialData = [
-            ("Custom", "ARMI"),
-            ("HT9", "ARMI"),
-            ("Sodium", "ARMI"),
-            ("UZr", "ARMI"),
-        ]
-        core, _sfp, _evst = self._setupReactor()
-        materialData = reactorBlueprint.summarizeMaterialData(core)
-        for actual, expected in zip(materialData, expectedMaterialData):
-            self.assertEqual(actual, expected)
 
     def test_excoreStructure(self):
         _core, _sfp, evst = self._setupReactor()

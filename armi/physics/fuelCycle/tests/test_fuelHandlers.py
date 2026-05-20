@@ -14,8 +14,8 @@
 """
 Tests some capabilities of the fuel handling machine.
 
-This test is high enough level that it requires input files to be present. The ones to use
-are called armiRun.yaml which is located in armi.tests
+This test is high enough level that it requires input files to be present. The ones to use are called armiRun.yaml which
+is located in armi/testing/reactors/
 """
 
 import collections
@@ -47,8 +47,8 @@ from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
-from armi.testing import TESTING_ROOT
-from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.tests import ArmiTestHelper
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import InputError
 
@@ -161,9 +161,9 @@ class TestReadMovesYamlFeatures(unittest.TestCase):
 class FuelHandlerTestHelper(ArmiTestHelper):
     @classmethod
     def setUpClass(cls):
-        # prepare the input files. This is important so the unit tests run from wherever
-        # they need to run from.
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT, dumpOnException=False)
+        # prepare the input files. This is important so the unit tests run from wherever they need to run from.
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        cls.directoryChanger = directoryChangers.DirectoryChanger(root, dumpOnException=False)
         cls.directoryChanger.open()
 
     @classmethod

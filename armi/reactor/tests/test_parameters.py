@@ -21,8 +21,7 @@ from shutil import copyfile
 
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -584,7 +583,7 @@ class TestMakeParametersReadOnly(unittest.TestCase):
     def test_makeParametersReadOnly(self):
         with TemporaryDirectoryChanger():
             # copy test reactor to local
-            yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+            yamls = glob(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor", "*.yaml"))
             for yamlFile in yamls:
                 copyfile(yamlFile, os.path.basename(yamlFile))
 

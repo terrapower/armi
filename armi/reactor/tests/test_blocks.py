@@ -33,7 +33,6 @@ from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.physics.neutronics.settings import (
-    CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
 from armi.reactor import blocks, blueprints, components, geometry, grids
@@ -41,9 +40,9 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.testing import getEmptyCartesianReactor, loadTestReactor
+from armi.testing import TESTING_ROOT, getEmptyCartesianReactor, loadTestReactor, mockRunLogs
 from armi.testing.singleMixedAssembly import buildMixedPinAssembly
-from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
+from armi.tests import ISOAA_PATH
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import (
@@ -391,7 +390,7 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
         """Validate the spatial grid for a new SFP is None if it was not provided."""
         # copy the inputs, so we can modify them
         with TemporaryDirectoryChanger() as newDir:
-            oldDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+            oldDir = os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor")
             newDir2 = os.path.join(newDir.destination, "smallestTestReactor")
             shutil.copytree(oldDir, newDir2)
 
@@ -407,11 +406,15 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
     def test_SFPSpatialGridExists(self):
         """Validate the spatial grid for a new SFP is not None if it was provided."""
-        _o, r = loadTestReactor(os.path.join(TEST_ROOT, "smallestTestReactor"), inputFileName="armiRunSmallest.yaml")
+        _o, r = loadTestReactor(
+            os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor"), inputFileName="armiRunSmallest.yaml"
+        )
         self.assertIsNotNone(r.excore.sfp.spatialGrid)
 
     def test_orientationBOL(self):
-        _o, r = loadTestReactor(os.path.join(TEST_ROOT, "smallestTestReactor"), inputFileName="armiRunSmallest.yaml")
+        _o, r = loadTestReactor(
+            os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor"), inputFileName="armiRunSmallest.yaml"
+        )
 
         # Test the null-case; these should all be zero.
         for a in r.core.iterChildren():
@@ -754,8 +757,6 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getXsType(self):
         self.cs = settings.Settings()
-        newSettings = {CONF_LOADING_FILE: os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
-        self.cs = self.cs.modified(newSettings=newSettings)
 
         self.block.p.xsType = "B"
         cur = self.block.p.xsType
@@ -3066,7 +3067,7 @@ class TestHexBlockOrientation(unittest.TestCase):
         """Validate the spatial grid for a corners up HexBlock and its children."""
         # load a corners up reactor
         _o, r = loadTestReactor(
-            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor"),
             inputFileName="armiRunSmallest.yaml",
         )
 
@@ -3084,7 +3085,7 @@ class TestHexBlockOrientation(unittest.TestCase):
     def test_validateReactorFlatsUp(self):
         """Validate the spatial grid for a flats up HexBlock and its children."""
         # copy the files over
-        inDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+        inDir = os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor")
         for filePath in glob(os.path.join(inDir, "*.yaml")):
             outPath = os.path.join(self.td.destination, os.path.basename(filePath))
             shutil.copyfile(filePath, outPath)
