@@ -37,7 +37,6 @@ from armi.physics.neutronics.settings import (
 )
 from armi.settings import caseSettings, settingsValidation
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
-from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers
 
@@ -96,17 +95,6 @@ class TestNeutronicsPlugin(TestPlugin):
 
 
 class NeutronicsReactorTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # prepare the input files. This is important so the unit tests run from wherever
-        # they need to run from.
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
-        cls.directoryChanger.open()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.directoryChanger.close()
-
     @staticmethod
     def __getModifiedSettings(customSettings):
         cs = settings.Settings()
@@ -124,15 +112,9 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
 
-        # Test that the group-wise beta and decay constants are assigned
-        # together given that they are the same length.
+        # Test that the group-wise beta and decay constants are assigned together given that they are the same length.
         r = tests.getEmptyHexReactor()
-        cs = self.__getModifiedSettings(
-            customSettings={
-                "beta": [0.0] * 6,
-                "decayConstants": [1.0] * 6,
-            }
-        )
+        cs = self.__getModifiedSettings(customSettings={"beta": [0.0] * 6, "decayConstants": [1.0] * 6})
         dbLoad = False
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         r.core.setOptionsFromCs(cs)
@@ -142,30 +124,26 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         # Test the assignment of total beta as a float
         r = tests.getEmptyHexReactor()
-        cs = self.__getModifiedSettings(
-            customSettings={"beta": 0.00670},
-        )
+        cs = self.__getModifiedSettings(customSettings={"beta": 0.00670})
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
 
-        # Test that nothing is assigned if the beta is specified as a list
-        # without a corresponding decay constants list.
+        # Test that nothing is assigned if the beta is specified as a list without a corresponding decay constants list.
         r = tests.getEmptyHexReactor()
         cs = self.__getModifiedSettings(
             customSettings={
                 "beta": [0.0] * 6,
-            },
+            }
         )
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
 
-        # Test that 1 group beta components and decay constants can be assigned.
-        # Since beta is a list, ensure that it's assigned to the `betaComponents`
-        # parameter.
+        # Test that 1 group beta components and decay constants can be assigned. Since beta is a list, ensure that it's
+        # assigned to the `betaComponents` parameter.
         r = tests.getEmptyHexReactor()
         cs = self.__getModifiedSettings(
             customSettings={"beta": [0.0], "decayConstants": [1.0]},
@@ -175,20 +153,16 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
         self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
 
-        # Test that decay constants are not assigned without a corresponding
-        # group-wise beta input.
+        # Test that decay constants are not assigned without a corresponding group-wise beta input.
         r = tests.getEmptyHexReactor()
-        cs = self.__getModifiedSettings(
-            customSettings={"decayConstants": [1.0] * 6},
-        )
+        cs = self.__getModifiedSettings(customSettings={"decayConstants": [1.0] * 6})
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
 
-        # Test that decay constants are not assigned without a corresponding
-        # group-wise beta input. This also demonstrates that the total beta
-        # is still assigned.
+        # Test that decay constants are not assigned without a corresponding group-wise beta input. This also
+        # demonstrates that the total beta is still assigned.
         r = tests.getEmptyHexReactor()
         cs = self.__getModifiedSettings(
             customSettings={"decayConstants": [1.0] * 6, "beta": 0.0},
@@ -198,8 +172,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
 
-        # Test the demonstrates that None values are acceptable
-        # and that nothing is assigned.
+        # Test the demonstrates that None values are acceptable and that nothing is assigned.
         r = tests.getEmptyHexReactor()
         cs = self.__getModifiedSettings(
             customSettings={"decayConstants": None, "beta": None},
@@ -209,8 +182,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
 
-        # Test that an error is raised if the decay constants
-        # and group-wise beta are inconsistent sizes
+        # Test that an error is raised if the decay constants and group-wise beta are inconsistent sizes
         with self.assertRaises(ValueError):
             r = tests.getEmptyHexReactor()
             cs = self.__getModifiedSettings(
@@ -218,13 +190,10 @@ class NeutronicsReactorTests(unittest.TestCase):
             )
             getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
 
-        # Test that an error is raised if the decay constants
-        # and group-wise beta are inconsistent sizes
+        # Test that an error is raised if the decay constants and group-wise beta are inconsistent sizes
         with self.assertRaises(ValueError):
             r = tests.getEmptyHexReactor()
-            cs = self.__getModifiedSettings(
-                customSettings={"decayConstants": [1.0] * 6, "beta": [0.0] * 5},
-            )
+            cs = self.__getModifiedSettings(customSettings={"decayConstants": [1.0] * 6, "beta": [0.0] * 5})
             getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
 
     @staticmethod
@@ -312,12 +281,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.__autoCorrectAllQueries(sv)
         self.assertEqual(inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol")
 
-        cs = cs.modified(
-            newSettings={
-                CONF_RUN_TYPE: "Snapshots",
-                CONF_LATTICE_PHYSICS_FREQUENCY: "BOC",
-            }
-        )
+        cs = cs.modified(newSettings={CONF_RUN_TYPE: "Snapshots", CONF_LATTICE_PHYSICS_FREQUENCY: "BOC"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 

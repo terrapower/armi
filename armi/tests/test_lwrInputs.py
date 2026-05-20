@@ -20,8 +20,7 @@ from logging import WARNING
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
 TEST_INPUT_TITLE = "c5g7-settings.yaml"

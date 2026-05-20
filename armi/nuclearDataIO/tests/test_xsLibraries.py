@@ -26,7 +26,7 @@ import numpy as np
 from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
-from armi.tests import mockRunLogs
+from armi.testing import mockRunLogs
 from armi.utils import properties
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

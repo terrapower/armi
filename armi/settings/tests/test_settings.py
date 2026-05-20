@@ -29,7 +29,8 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings, setting
 from armi.settings.settingsValidation import Inspector, validateVersion
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.tests import ARMI_RUN_PATH
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 
@@ -144,7 +145,7 @@ class TestAddingOptions(unittest.TestCase):
 
     def test_addingOptions(self):
         # modify the default/text settings YAML file to include neutronicsKernel
-        fin = os.path.join(TEST_ROOT, "armiRun.yaml")
+        fin = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml")
         txt = open(fin, "r").read()
         txt = txt.replace("\n  nCycles:", "\n  neutronicsKernel: MCNP\n  nCycles:")
         fout = "test_addingOptions.yaml"
@@ -325,8 +326,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
     def test_getSettingsSetByUser(self):
         cs = caseSettings.Settings()
         settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
-        # This test is dependent on the current setup of armiRun.yaml, which includes
-        # some default settings values
+        # This test is dependent on the current setup of armiRun.yaml, which includes some default settings values
         for sett in ["availabilityFactor", "db"]:
             self.assertIn(sett, settingsList)
         self.assertNotIn("nTasks", settingsList)

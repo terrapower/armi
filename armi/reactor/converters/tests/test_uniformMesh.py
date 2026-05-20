@@ -29,7 +29,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies, test_blocks
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.testing import TESTING_ROOT, loadTestReactor, reduceTestReactorRings
-from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.tests import ISOAA_PATH
 
 _ISOTXS_CACHE = None
 
@@ -77,7 +77,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+        cls.o, cls.r = loadTestReactor(inputFilePath=os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"))
 
         cls.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=cls.o.cs)
         cls.converter._sourceReactor = cls.r
@@ -448,7 +448,8 @@ class TestUniformMeshLargeReactor(unittest.TestCase):
         # random seed to support random mesh in unit tests below
         random.seed(987324987234)
 
-        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        cls.o, cls.r = loadTestReactor(root, customSettings={CONF_XS_KERNEL: "MC2v2"})
         reduceTestReactorRings(cls.r, cls.o.cs, 2)
         cls.r.core.lib = _getIsotxsLibrary()
         cls.r.core.p.keff = 1.0

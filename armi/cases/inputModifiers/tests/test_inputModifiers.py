@@ -34,7 +34,7 @@ from armi.physics.neutronics.settings import (
     CONF_EPS_FSPOINT,
 )
 from armi.reactor import blueprints
-from armi.reactor.tests import test_reactors
+from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers
 
 FLAGS_INPUT = """nuclide flags:
@@ -228,7 +228,7 @@ class TestFullCoreModifier(unittest.TestCase):
     """Ensure full core conversion works."""
 
     def test_fullCoreConversion(self):
-        cs = settings.Settings(os.path.join(test_reactors.TEST_ROOT, "armiRun.yaml"))
+        cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
         case = cases.Case(cs=cs)
         mod = inputModifiers.FullCoreModifier()
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
@@ -237,7 +237,7 @@ class TestFullCoreModifier(unittest.TestCase):
 
     def test_fullCoreConversionWithOrientation(self):
         """Tests modifying a reactor to full core that includes beginning of life orientations."""
-        cs = settings.Settings(os.path.join(test_reactors.TEST_ROOT, "armiRun.yaml"))
+        cs = settings.Settings(os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml"))
         case = cases.Case(cs=cs)
         mod = inputModifiers.FullCoreModifier()
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")

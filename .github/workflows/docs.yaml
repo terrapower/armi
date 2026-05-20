@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.13
       - name: Update package index
@@ -62,7 +62,7 @@ jobs:
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
         if: github.ref == 'refs/heads/main'
-        uses: JamesIves/github-pages-deploy-action@v4.6.1
+        uses: JamesIves/github-pages-deploy-action@v4.8.0
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           repository-name: ${{ github.repository_owner }}/terrapower.github.io
@@ -71,13 +71,13 @@ jobs:
           target-folder: armi
       - name: Archive HTML Docs
         if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: html-docs
           path: doc/_build/html
           retention-days: 5
       - name: Archive PDF Docs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pdf-docs
           path: doc/_build/latex/ARMI.pdf

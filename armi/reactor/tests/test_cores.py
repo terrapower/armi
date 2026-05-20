@@ -22,10 +22,9 @@ from armi.nuclearDataIO.xsLibraries import IsotxsLibrary
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import Block
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.testing import TESTING_ROOT
 from armi.tests import ISOAA_PATH
-from armi.utils import directoryChangers
 
 
 class HexCoreTests(unittest.TestCase):
@@ -33,8 +32,6 @@ class HexCoreTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
-        cls.directoryChanger.open()
         r = loadTestReactor(
             inputFilePath=TESTING_ROOT, inputFileName="reactors/thirdSmallHexReactor/thirdSmallHexReactor.yaml"
         )[1]
@@ -44,10 +41,6 @@ class HexCoreTests(unittest.TestCase):
         """Assert that all items in two iterables are the same objects."""
         for actual, expected in itertools.zip_longest(actuals, expecteds, fillvalue=fill):
             self.assertIs(actual, expected)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.directoryChanger.close()
 
     def test_getAllAssem(self):
         """Test the ability to produce all assemblies."""

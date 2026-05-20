@@ -22,8 +22,7 @@ import numpy as np
 
 from armi import utils
 from armi.settings.caseSettings import Settings
-from armi.testing import loadTestReactor
-from armi.tests import mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import (
     codeTiming,
     directoryChangers,
@@ -41,6 +40,7 @@ from armi.utils import (
     getPreviousTimeNode,
     getStepLengths,
     hasBurnup,
+    onlyRunOnce,
     safeCopy,
     safeMove,
 )
@@ -164,7 +164,7 @@ class TestGeneralUtils(unittest.TestCase):
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -263,6 +263,49 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("dir1", mock.getStdout())
                 self.assertIn("dir2", mock.getStdout())
             self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_onlyRunOnce(self):
+        # 1. Test basic functionality
+        calls = []
+
+        @onlyRunOnce
+        def f(x):
+            calls.append(x)
+
+        # Test a specific use case first: calling the reset before the decorator has been used
+        f.reset_onlyRunOnce()
+        # Call it 3x then test it only ran once
+        f(1)
+        f(2)
+        f(3)
+        self.assertEqual(calls, [1])
+        # Reset then try other calls
+        f.reset_onlyRunOnce()
+        f(4)
+        f(5)
+        self.assertEqual(calls, [1, 4])
+
+        # 2. Test with args/kwargs
+        calls = []
+
+        @onlyRunOnce
+        def f(req, opt=0, **kw):
+            calls.append((req, opt, kw))
+
+        # Call it twice and ensure the first values prevail
+        f(1, opt=2, hello=3)
+        f(99, hello=999)
+        self.assertEqual(calls, [(1, 2, {"hello": 3})])
+
+        # 3. Since @wraps was needed to get the decorator to work, test that functionality too
+        def f(x):
+            """Docstring."""
+            return x
+
+        wrapped = onlyRunOnce(f)
+        self.assertEqual(wrapped.__name__, "f")
+        self.assertEqual(wrapped.__doc__, "Docstring.")
+        self.assertIs(wrapped.__wrapped__, f)
 
 
 class CyclesSettingsTests(unittest.TestCase):

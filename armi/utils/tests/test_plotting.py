@@ -29,7 +29,7 @@ from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.testing import TESTING_ROOT
-from armi.tests import ISOAA_PATH, TEST_ROOT, getEmptyHexReactor
+from armi.tests import ISOAA_PATH, getEmptyHexReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -46,7 +46,9 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
 
     def test_plotDepthMap(self):
         """Indirectly tests plot face map."""
@@ -211,7 +213,7 @@ class TestPatches(unittest.TestCase):
     @patch("armi.utils.plotting.plt.savefig")
     def test_makeAssemPatches(self, mockSavefig, mockFigure):
         # mock up a flats-up version of the smallest test reactor
-        for fPath in glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml")):
+        for fPath in glob(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor", "*.yaml")):
             fName = os.path.basename(fPath)
             shutil.copyfile(fPath, fName)
 
@@ -240,7 +242,9 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][1], 0)
 
         # this one is corners-up, with only a single assembly
-        _, rHexCornersUp = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _, rHexCornersUp = test_reactors.loadTestReactor(
+            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         nAssems = len(rHexCornersUp.core)
         self.assertEqual(nAssems, 1)
@@ -253,7 +257,9 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][0], 0)
 
         # this one is cartestian, with many assemblies in the core
-        _, rCartesian = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml")
+        _, rCartesian = test_reactors.loadTestReactor(
+            os.path.join(TESTING_ROOT, "reactors", "smallCartesian"), inputFileName="refTestCartesian.yaml"
+        )
 
         nAssems = len(rCartesian.core)
         self.assertGreater(nAssems, 1)

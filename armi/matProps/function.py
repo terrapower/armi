@@ -104,10 +104,14 @@ class Function:
         # input sanity checking
         if not self.independentVars.keys() <= data.keys():
             raise KeyError(
-                f"Specified point {data} does contain the correct independent variables: {self.independentVars}"
+                f"Material {self.material.name}, Property {self.property.name}: Specified point {data} does contain the"
+                f" correct independent variables: {self.independentVars}"
             )
         elif not self.inRange(data):
-            raise ValueError(f"Requested calculation point, {data} is not in the valid range of the function")
+            raise ValueError(
+                f"Material {self.material.name}, Property {self.property.name}: Requested calculation point, {data} is "
+                "not in the valid range of the function"
+            )
 
         return self._calcSpecific(data)
 
@@ -149,7 +153,9 @@ class Function:
         # If this statement below is true, either the reference temperature was not provided in the material YAML file
         # or was a non-physical value.
         if self._referenceTemperature < -273.15:
-            raise ValueError("Reference temperature is undefined or set to less than absolute zero.")
+            raise ValueError(
+                f"Material {self.material.name}: Reference temperature is undefined or set to less than absolute zero."
+            )
 
         return self._referenceTemperature
 

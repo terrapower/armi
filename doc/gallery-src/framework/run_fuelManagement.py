@@ -29,17 +29,21 @@ demonstration purposes.
 """
 
 import math
+import os
 
 from armi import configure
 from armi.physics.fuelCycle import fuelHandlers
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
+from armi.testing import TESTING_ROOT
 from armi.utils import plotting
 
 # configure ARMI
 configure(permissive=True)
 
-o, reactor = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml")
+o, reactor = test_reactors.loadTestReactor(
+    os.path.join(TESTING_ROOT, "reactors", "smallCartesian"), inputFileName="refTestCartesian.yaml"
+)
 
 # Apply a dummy burnup distribution roughly in a cosine
 for b in reactor.core.getBlocks(Flags.FUEL):
