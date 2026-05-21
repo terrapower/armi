@@ -337,14 +337,10 @@ assemblies:
         material modifications:
             ZR_wt_frac: [1]
             class1_wt_frac: [1]
-            class1_custom_isotopics: [dummy]
-            class2_custom_isotopics: [dummy]
             by component:
                 fuel2:
                     ZR_wt_frac: [0]
                     class1_wt_frac: [1]
-                    class1_custom_isotopics: [dummy]
-                    class2_custom_isotopics: [dummy]
 custom isotopics:
     dummy:
         input format: mass fractions
@@ -359,14 +355,10 @@ custom isotopics:
         material modifications:
             ZR_wt_frac: [1]
             klass1_wt_frac: [1]
-            klass1_custom_isotopics: [dummy]
-            klass2_custom_isotopics: [dummy]
             by component:
                 fuel2:
                     ZR_wt_frac: [0]
                     klass1_wt_frac: [1]
-                    klass1_custom_isotopics: [dummy]
-                    klass2_custom_isotopics: [dummy]
 custom isotopics:
     dummy:
         input format: mass fractions

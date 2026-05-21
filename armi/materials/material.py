@@ -24,7 +24,6 @@ from armi import runLog
 from armi.matProps.material import MatPropsMaterial
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
-from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
 
 # Setting this to False will globally allow you to access material properties outside their defined bounds. This only
@@ -182,10 +181,6 @@ class Material(MatPropsMaterial):
         # handle some special cases for subclasses, like fuels
         if hasattr(self, "class1_wt_frac"):
             m.class1_wt_frac = self.class1_wt_frac
-        if hasattr(self, "class1_custom_isotopics"):
-            m.class1_custom_isotopics = self.class1_custom_isotopics
-        if hasattr(self, "class2_custom_isotopics"):
-            m.class2_custom_isotopics = self.class2_custom_isotopics
 
         return m
 
@@ -686,15 +681,10 @@ class FuelMaterial(Material):
     def __init__(self):
         Material.__init__(self)
         self.class1_wt_frac = None
-        self.class1_custom_isotopics = None
-        self.class2_custom_isotopics = None
 
     def applyInputParams(
         self,
-        class1_custom_isotopics=None,
-        class2_custom_isotopics=None,
         class1_wt_frac=None,
-        customIsotopics=None,
         *args,
         **kwargs,
     ):
@@ -714,35 +704,6 @@ class FuelMaterial(Material):
                     f"class1_wt_frac must be between 0 and 1 (inclusive). Right now it is {class1_wt_frac}."
                 )
 
-            validIsotopics = customIsotopics.keys()
-            errMsg = "{} '{}' not found in the defined custom isotopics."
-            if class1_custom_isotopics not in validIsotopics:
-                raise KeyError(errMsg.format("class1_custom_isotopics", class1_custom_isotopics))
-            if class2_custom_isotopics not in validIsotopics:
-                raise KeyError(errMsg.format("class2_custom_isotopics", class2_custom_isotopics))
-            if class1_custom_isotopics == class2_custom_isotopics:
-                runLog.warning(
-                    "The custom isotopics specified for the class1/class2 materials are both "
-                    f"'{class1_custom_isotopics}'. You are not actually blending anything!"
-                )
-
             self.class1_wt_frac = class1_wt_frac
-            self.class1_custom_isotopics = class1_custom_isotopics
-            self.class2_custom_isotopics = class2_custom_isotopics
-
-            self._applyIsotopicsMixFromCustomIsotopicsInput(customIsotopics)
 
         Material.applyInputParams(self, *args, **kwargs)
-
-    def _applyIsotopicsMixFromCustomIsotopicsInput(self, customIsotopics):
-        """
-        Apply a Class 1/Class 2 mixture of custom isotopics at input.
-
-        Only adjust heavy metal.
-
-        This may also be needed for building charge assemblies during reprocessing, but will take input from the SFP
-        rather than from the input external feeds.
-        """
-        class1Isotopics = customIsotopics[self.class1_custom_isotopics]
-        class2Isotopics = customIsotopics[self.class2_custom_isotopics]
-        densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)

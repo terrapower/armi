@@ -1446,41 +1446,6 @@ assemblies:
         design._prepConstruction(settings.Settings())
         return design.assemblies["fuel a"]
 
-    def test_class1Class2Class1WtFrac(self):
-        # should error because class1_wt_frac not in (0,1)
-        with self.assertRaises(ValueError):
-            _a = self.loadAssembly(
-                """
-        material modifications:
-            class1_wt_frac: [2.0]
-            class1_custom_isotopics: [customIsotopic1]
-            class2_custom_isotopics: [customIsotopic2]
-        """
-            )
-
-    def test_class1Class2ClassXCustomIsotopics(self):
-        # should error because class1_custom_isotopics does not exist
-        with self.assertRaises(KeyError):
-            _a = self.loadAssembly(
-                """
-        material modifications:
-            class1_wt_frac: [0.5]
-            class1_custom_isotopics: [fakeIsotopic]
-            class2_custom_isotopics: [customIsotopic2]
-        """
-            )
-
-        # should error because class2_custom_isotopics does not exist
-        with self.assertRaises(KeyError):
-            _a = self.loadAssembly(
-                """
-        material modifications:
-            class1_wt_frac: [0.5]
-            class1_custom_isotopics: [customIsotopic1]
-            class2_custom_isotopics: [fakeIsotopic]
-        """
-            )
-
 
 class PickledMaterialsTests(unittest.TestCase):
     def test_simpleReload(self):
