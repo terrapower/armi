@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: 3.13
+          persist-credentials: false
       - name: Update package index
         run: sudo apt-get update
       - name: Install apt-get libs
