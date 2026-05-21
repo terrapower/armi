@@ -1,5 +1,8 @@
 name: Documentation
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -22,6 +25,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.13
+          persist-credentials: false
       - name: Update package index
         run: sudo apt-get update
       - name: Install apt-get libs
@@ -71,13 +75,13 @@ jobs:
           target-folder: armi
       - name: Archive HTML Docs
         if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: html-docs
           path: doc/_build/html
           retention-days: 5
       - name: Archive PDF Docs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pdf-docs
           path: doc/_build/latex/ARMI.pdf
