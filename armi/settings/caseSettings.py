@@ -13,13 +13,12 @@
 # limitations under the License.
 
 """
-This defines a Settings object that acts mostly like a dictionary. It
-is meant so that each ARMI run has one-and-only-one Settings object. It records
-user settings like the core power level, the input file names, the number of cycles to
-run, the run type, the environment setup, and hundreds of other things.
+This defines a Settings object that acts mostly like a dictionary. It is meant so that each ARMI run has
+one-and-only-one Settings object. It records user settings like the core power level, the input file names, the number
+of cycles to run, the run type, the environment setup, and hundreds of other things.
 
-A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
-create this settings file, which is then loaded by an ARMI process on the cluster.
+A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to create this settings file,
+which is then loaded by an ARMI process on the cluster.
 """
 
 import io
@@ -53,19 +52,17 @@ class Settings:
         :id: I_ARMI_SETTING0
         :implements: R_ARMI_SETTING
 
-        The Settings object is accessible to most ARMI objects through self.cs
-        (for 'case settings'). It acts largely as a dictionary, and setting values
-        are accessed by keys.
+        The Settings object is accessible to most ARMI objects through self.cs (for 'case settings'). It acts largely as
+        a dictionary, and setting values are accessed by keys.
 
-        The Settings object has a 1-to-1 correspondence with the ARMI settings
-        input file. This file may be created by hand or by a GUI.
+        The Settings object has a 1-to-1 correspondence with the ARMI settings input file. This file may be created by
+        hand or by a GUI.
 
     Notes
     -----
-    While it is possible to modify case settings during the course of a run, this
-    is highly discouraged because there will be no record of this happening in your
-    results or in the database produced from your run. There is no guarantee that
-    doing so will not cause unexpected problems with your calculation.
+    While it is possible to modify case settings during the course of a run, this is highly discouraged because there
+    will be no record of this happening in your results or in the database produced from your run. There is no guarantee
+    that doing so will not cause unexpected problems with your calculation.
     """
 
     defaultCaseTitle = "armi"
@@ -85,11 +82,10 @@ class Settings:
         self._failOnLoad = False
         """This is state information.
 
-        The command line can take settings, which override a value in the current
-        settings file; however, if the settings file is listed after a setting value,
-        the setting from the settings file will be used rather than the one explicitly
-        provided by the user on the command line.  Therefore, _failOnLoad is used to
-        prevent this from happening.
+        The command line can take settings, which override a value in the current settings file; however, if the
+        settings file is listed after a setting value, the setting from the settings file will be used rather than the
+        one explicitly provided by the user on the command line.  Therefore, _failOnLoad is used to prevent this from
+        happening.
         """
         from armi import getApp
 
@@ -118,14 +114,11 @@ class Settings:
             :id: I_ARMI_SETTINGS_META0
             :implements: R_ARMI_SETTINGS_META
 
-            Every Settings object has a "case title"; a string for users to
-            help identify their run. This case title is used in log file
-            names, it is printed during a run, it is frequently used to
-            name the settings file. It is designed to be an easy-to-use
-            and easy-to-understand way to keep track of simulations. The
-            general idea here is that the average analyst that is using
-            ARMI will run many ARMI-based simulations, and there needs
-            to be an easy to identify them all.
+            Every Settings object has a "case title"; a string for users to help identify their run. This case title is
+            used in log file names, it is printed during a run, it is frequently used to name the settings file. It is
+            designed to be an easy-to-use and easy-to-understand way to keep track of simulations. The general idea here
+            is that the average analyst that is using ARMI will run many ARMI-based simulations, and there needs to be
+            an easy to identify them all.
         """
         if not self.path:
             return self.defaultCaseTitle
@@ -150,7 +143,13 @@ class Settings:
         isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
-        return "<{} name:{} total:{} altered:{}>".format(self.__class__.__name__, self.caseTitle, total, altered)
+        return f"<{self.__class__.__name__} name:{self.caseTitle} total:{total} altered:{altered}>"
+
+    def __eq__(self, other): # TODO
+        if type(self) is not type(other):
+            return False
+        
+        TODOreturn self.__members() == other.__members()
 
     def _directAccessOfSettingAllowed(self, key):
         """
@@ -171,9 +170,9 @@ class Settings:
 
         if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
             err = ValueError(
-                "Cannot grab simple cycles information from the case settings when detailed cycles "
-                "information is also entered. In general cycles information should be pulled off "
-                "the operator or parsed using the appropriate getter in the utils."
+                "Cannot grab simple cycles information from the case settings when detailed cycles information is also "
+                "entered. In general cycles information should be pulled off the operator or parsed using the "
+                "appropriate getter in the utils."
             )
 
             return False, err
@@ -217,8 +216,7 @@ class Settings:
         """
         Rebuild schema upon unpickling since schema is unpickleable.
 
-        Pickling happens during mpi broadcasts and also during testing where the test reactor is
-        cached.
+        Pickling happens during mpi broadcasts and also during testing where the test reactor is cached.
 
         See Also
         --------
@@ -276,8 +274,8 @@ class Settings:
         """
         Read in settings from an input YAML file.
 
-        Passes the reader back out in case you want to know something about how the reading went
-        like for knowing if a file contained deprecated settings, etc.
+        Passes the reader back out in case you want to know something about how the reading went like for knowing if a
+        file contained deprecated settings, etc.
         """
         reader, path = self._prepToRead(fName)
         reader.readFromFile(fName, handleInvalids)
@@ -336,8 +334,7 @@ class Settings:
 
         Notes
         -----
-        This means that creating a Settings object sets the global logging level of the entire code
-        base.
+        This means that creating a Settings object sets the global logging level of the entire code base.
         """
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])

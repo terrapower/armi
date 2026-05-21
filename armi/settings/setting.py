@@ -315,6 +315,27 @@ class Setting:
         setting._value = copy.deepcopy(self._value)
         return setting
 
+    def __members(self):
+        """Utility to help test for equality."""
+        return (
+            self.name,
+            self.description,
+            self.label,
+            self.options,
+            self.enforcedOptions,
+            self.subLabels,
+            self.isEnvironment,
+            self.oldNames,
+            self._default,
+            self._value,
+        )
+
+    def __eq__(self, other):
+        if type(self) is type(other):
+            return self.__members() == other.__members()
+        else:
+            return False
+
 
 class FlagListSetting(Setting):
     """Subclass of :py:class:`Setting <armi.settings.Setting>` convert settings between flags and strings."""

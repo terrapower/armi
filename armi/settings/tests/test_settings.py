@@ -535,3 +535,19 @@ class TestSettingsValidationUtils(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             validateVersion("1.2.3", "zzz")
+
+
+class TestSettingEquality(unittest.TestCase):
+    def test_setting(self):
+        s1 = setting.Setting("testSetting", 897, description="whatever")
+        self.assertEqual(s1, s1)
+
+        s1Copy = copy.deepcopy(s1)
+        self.assertEqual(s1, s1Copy)
+
+        s1Same = setting.Setting("testSetting", 897, description="whatever")
+        self.assertEqual(s1Same, s1)
+        self.assertEqual(s1Same, s1Copy)
+
+        s2 = setting.Setting("testSettingDiff", 654, description="whatever")
+        self.assertNotEqual(s1, s2)
