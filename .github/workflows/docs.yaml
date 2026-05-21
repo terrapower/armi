@@ -1,5 +1,8 @@
 name: Documentation
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -17,11 +20,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: 3.13
+          persist-credentials: false
       - name: Update package index
         run: sudo apt-get update
       - name: Install apt-get libs
@@ -62,7 +66,7 @@ jobs:
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
         if: github.ref == 'refs/heads/main'
-        uses: JamesIves/github-pages-deploy-action@v4.8.0
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           repository-name: ${{ github.repository_owner }}/terrapower.github.io
