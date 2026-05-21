@@ -199,7 +199,7 @@ class CustomIsotopic(yamlize.Map):
         return self
 
     def __init__(self, name, inputFormat, density):
-        # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
+        # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
         self._name = None
         self.name = name
         self._inputFormat = None

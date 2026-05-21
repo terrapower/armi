@@ -18,8 +18,7 @@ Some original nuclide directory code.
 Notes
 -----
 This may be deprecated. Consider using the appropriate instance methods available through the
-:py:class:`armi.nucDirectory.nuclideBases.INuclide` objects and/or the
-:py:mod:`armi.nucDirectory.nuclideBases` module.
+:py:class:`armi.nucDirectory.nuclideBases.INuclide` objects and/or the :py:mod:`armi.nucDirectory.nuclideBases` module.
 """
 
 import re
