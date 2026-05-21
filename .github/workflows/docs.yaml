@@ -65,7 +65,7 @@ jobs:
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
-        #if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
