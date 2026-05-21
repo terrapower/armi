@@ -551,3 +551,21 @@ class TestSettingEquality(unittest.TestCase):
 
         s2 = setting.Setting("testSettingDiff", 654, description="whatever")
         self.assertNotEqual(s1, s2)
+        self.assertNotEqual(s1Copy, s2)
+        self.assertNotEqual(s1Same, s2)
+
+    def test_settings(self):
+        cs = caseSettings.Settings()
+        self.assertEqual(cs, cs)
+
+        csCopy = copy.deepcopy(cs)
+        self.assertEqual(cs, csCopy)
+
+        cs2 = caseSettings.Settings()
+        self.assertEqual(cs, cs2)
+        self.assertEqual(cs2, csCopy)
+
+        csMod = cs.modified(newSettings={"power": 7.7})
+        self.assertNotEqual(cs, csMod)
+        self.assertNotEqual(cs2, csMod)
+        self.assertNotEqual(csCopy, csMod)

@@ -336,6 +336,9 @@ class Setting:
         else:
             return False
 
+    def __hash__(self):
+        return hash(str(self.__members()))
+
 
 class FlagListSetting(Setting):
     """Subclass of :py:class:`Setting <armi.settings.Setting>` convert settings between flags and strings."""

@@ -145,11 +145,17 @@ class Settings:
 
         return f"<{self.__class__.__name__} name:{self.caseTitle} total:{total} altered:{altered}>"
 
-    def __eq__(self, other): # TODO
+    def __eq__(self, other):
         if type(self) is not type(other):
             return False
-        
-        TODOreturn self.__members() == other.__members()
+        elif self.keys() != other.keys():
+            return False
+
+        for key in self.keys():  # noqa: SIM110
+            if self[key] != other[key]:
+                return False
+
+        return True
 
     def _directAccessOfSettingAllowed(self, key):
         """
@@ -159,11 +165,10 @@ class Settings:
 
         Notes
         -----
-        Checking the validity of grabbing specific settings at this point, as is done for the
-        SIMPLE_CYCLES_INPUT's, feels a bit intrusive and out of place. In particular, the fact that
-        the check is done every time that a setting is reached for, no matter if it is the setting
-        in question, is quite clunky. In the future, it would be desirable if the settings system
-        were more flexible to control this type of thing at a deeper level.
+        Checking the validity of grabbing specific settings at this point, as is done for the SIMPLE_CYCLES_INPUT's,
+        feels a bit intrusive and out of place. In particular, the fact that the check is done every time that a setting
+        is reached for, no matter if it is the setting in question, is quite clunky. In the future, it would be
+        desirable if the settings system were more flexible to control this type of thing at a deeper level.
         """
         if key not in self.__settings:
             return False, NonexistentSetting(key)
