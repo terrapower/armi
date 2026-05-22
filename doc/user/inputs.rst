@@ -1475,14 +1475,14 @@ Below is an example material data file containing all the basic ``matProps`` con
 The only required entries in a material file are ``file format``, ``composition``, and ``material type``.
 
 File Format 
-"""""""""""
+-----------
 The ``file format: version`` field defines the file format version. This is a required field. This version string is
 verified to see if it is supported for use by ``matProps``.
 
 .. _ref_matType:
 
 Material Type 
-"""""""""""""
+-------------
 The ``material type`` field defines the type of material. Valid values for this key include Metal, Fuel, Fluid, Ceramic,
 ASME2015, ASME2017, SimpleSolid, and Composite. This is a required field. This field is meant to provide information to
 the user and is not used by ``matProps``, though it may be used by downstream codes.
@@ -1490,7 +1490,7 @@ the user and is not used by ``matProps``, though it may be used by downstream co
 .. _ref_comp:
 
 Composition
-"""""""""""
+-----------
 The ``composition`` field defines the chemical composition of the material. This is a required field. The value for this
 field is a collection of key-value pairs, as denoted by indentation. The key is an element name, and the value is a list
 of length 2 that defines the minimum percent composition then the maximum percent composition for the element. There
@@ -1506,7 +1506,7 @@ Composition Requirements:
   shall not exceed 100.
 
 Properties
-""""""""""
+----------
 The ``property`` field defines a property of the material. This is usually a temperature-dependent curve describing the
 material, like density. The value for this field is a collection consisting of several required and optional keywords. A
 summary of the keywords, their relevant status and appropriate section can be found below.
@@ -1644,7 +1644,7 @@ other property.
     armi.matProps.loadSafe("/pop/six/squish/uhuh/cicero/lipschitz")
 
 Tabulated Data
-""""""""""""""
+--------------
 A material property can be defined not just by math, but by tabulated data. This is flexible, easy to use, and can
 better match laboratory measurements. Currently, ``matProps`` supports one dimensional and two dimensional tables of
 data, as shown in the example at the beginning of this section. Notice that the ``type`` field is used to make this
@@ -1654,7 +1654,7 @@ These tables of data can be large and inconvienent to duplicate. So you can tag 
 elsewhere in the YAML file. (Look for ``"tabulated data: &tagged_data"`` in the example file above.)
 
 Functions
-"""""""""
+---------
 The ``function`` field allows the developer to define a mathematical curve for a material property. For instance, in the
 example file above, a function is used to represent the "Young's modulus" of the material. The independent variable "T"
 is defined to represent Temperature in degrees C, and the min and max values of 0 and 700 are given. This defines the
@@ -1672,7 +1672,7 @@ references to properly attribute the source of the data.
 
 
 Symbolic
-========
+--------
 A symbolic function is defined by supplying value ``symbolic`` for the key ``type``. Symbolic functions may use any
 number of independent variables. The ``equation`` node must be supplied which contains a string with the equation
 function. The ``symbolicOperators`` field defines the set of operators that may be used in the symbolic equation
@@ -1725,14 +1725,14 @@ the table might function in ``matProps``, they are untested and may not be used 
 
 
 Table
-=====
+-----
 Providing ``table`` for the ``type`` key indicates a one dimensional tables that uses interpolation. This function type
 requires a set of tabulated data to be defined in the collection. The set of tabulated data is a list of lists of length
 2 with the first element being the independent variable, and the second element being the property value at that
 independent variable value. 
 
 Piecewise
-=========
+---------
 Using the ``piecewise`` keyword allows multiple functions to be defined for different ranges of independent variable
 values. As in the density example above, the field ``functions`` is used to define a list of functions, one for each
 range defined.
@@ -1745,7 +1745,7 @@ range defined.
     function that is defined first in the input file will be used. 
 
 Two Dimensional Table
-=====================
+---------------------
 The ``two dimensional table`` field defines a two-dimensional table, that needs to be supplied a specially formatted
 data set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to
 share data with other fields, see ``"&tagged_data"`` in the above example file.
