@@ -18,7 +18,8 @@ Fuel management file
     Describes how fuel moves around during a simulation
 
 
-Depending on the type of analysis, developers may create other input files for things like: control logic, ex-core models for transients and shielding, etc.
+Depending on the type of analysis, developers may create other input files for things like: control logic, ex-core
+models for transients and shielding, etc.
 
 
 YAML Files
