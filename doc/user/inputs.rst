@@ -18,7 +18,8 @@ Fuel management file
     Describes how fuel moves around during a simulation
 
 
-Depending on the type of analysis, developers may create other input files for things like: control logic, ex-core models for transients and shielding, etc.
+Depending on the type of analysis, developers may create other input files for things like: control logic, ex-core
+models for transients and shielding, etc.
 
 
 YAML Files
@@ -96,14 +97,13 @@ Detail assemblies are specified by the user in a variety of ways, through the GU
 .. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush for serious multiphysics calculations with each plugin treating them differently. It is likely that this feature will be extended to be more flexible and less surprising in the future.
 
 Detail Assembly Locations BOL
-    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings
-    (e.g. ``004-003`` for ring 4, position 3). Assemblies that are in these locations at the
-    beginning-of-life will be activated as detail assemblies.
+    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings (e.g. ``004-003`` for ring 4,
+    position 3). Assemblies that are in these locations at the beginning-of-life will be activated as detail assemblies.
 
 Detail assembly numbers
-    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous
-    case and specified, regardless of when the assemblies enter the core. This is useful for
-    activating detailed treatment of assemblies that enter the core at a later cycle.
+    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous case and
+    specified, regardless of when the assemblies enter the core. This is useful for activating detailed treatment of
+    assemblies that enter the core at a later cycle.
 
 Detail all assemblies
     The ``detailAllAssems`` setting makes all assemblies in the problem detail assemblies
@@ -116,27 +116,22 @@ In reactor physics analyses it is standard practice to represent reactivity in e
 
 These settings come with a few caveats:
 
-    1. The ``beta`` setting supports two different meanings depending on
-       the type that is provided. If a single value is given, then this setting
-       is interpreted as the effective delayed neutron fraction for the
-       system. If a list of values is provided, then this setting is interpreted
-       as the group-wise (precursor family) delayed neutron fractions (useful for
-       reactor kinetics simulations).
+    1. The ``beta`` setting supports two different meanings depending on the type that is provided. If a single value is
+       given, then this setting is interpreted as the effective delayed neutron fraction for the system. If a list of
+       values is provided, then this setting is interpreted as the group-wise (precursor family) delayed neutron
+       fractions (useful for reactor kinetics simulations).
 
-    2. The ``decayConstants`` setting is used to define the precursor
-       decay constants for each group. When set, it must be
-       provided with a corresponding ``beta`` setting that has the
-       same number of groups. For example, if six-group delayed neutron
-       fractions are provided, the decay constants must also be provided
-       in the same six-group structure.
+    2. The ``decayConstants`` setting is used to define the precursor decay constants for each group. When set, it must
+       be provided with a corresponding ``beta`` setting that has the same number of groups. For example, if six-group
+       delayed neutron fractions are provided, the decay constants must also be provided in the same six-group
+       structure.
 
-    3. If ``beta`` is interpreted as the effective delayed neutron fraction for
-       the system, then the ``decayConstants`` setting will not be utilized.
+    3. If ``beta`` is interpreted as the effective delayed neutron fraction for the system, then the ``decayConstants``
+       setting will not be utilized.
 
-    4. If both the group-wise ``beta`` and ``decayConstants`` are provided
-       and their number of groups are consistent, then the effective delayed
-       neutron fraction for the system is calculated as the summation of the
-       group-wise delayed neutron fractions.
+    4. If both the group-wise ``beta`` and ``decayConstants`` are provided and their number of groups are consistent,
+       then the effective delayed neutron fraction for the system is calculated as the summation of the group-wise
+       delayed neutron fractions.
 
 .. _cycle-history:
 
@@ -233,8 +228,9 @@ As can be seen, the detailed cycle history option provides much flexibility for 
 
 Restart cases
 ^^^^^^^^^^^^^
-Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run.
-In these cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following options:
+Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run. In these
+cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following
+options:
 
     1. Snapshot, where the reactor state is loaded from a database and just a single time node is run.
 
@@ -437,8 +433,8 @@ A cascade that loads an assembly from the SFP may look like::
              ringPosCycle: [3, 5, 4]
 
 This example retrieves the assembly that resided at ring 3, position 5 during cycle 4 from the spent fuel pool and
-places it in location ``005-003`` (ring 5, position 3) while sending the previous occupant of ``005-003`` to the
-spent fuel pool.
+places it in location ``005-003`` (ring 5, position 3) while sending the previous occupant of ``005-003`` to the spent
+fuel pool.
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 
@@ -473,8 +469,8 @@ Users can define these zones with the ``zonesFile`` setting. It must point to YA
       004-001: fuel z1
       004-002: secondary control
 
-The ``location`` keys are the ARMI ring-position assembly identifier. It is not required to have every assembly
-be inside a zone. But assemblies not listed will not be added to any zone, i.e., there is no default zone.
+The ``location`` keys are the ARMI ring-position assembly identifier. It is not required to have every assembly be
+inside a zone. But assemblies not listed will not be added to any zone, i.e., there is no default zone.
 
 This example would produce four zones:
 
@@ -525,9 +521,9 @@ ARMI models are built hierarchically, first by defining components, and then by 
 
 Blueprint sections
 ------------------
-The **blueprints** input file has several sections that corresponds to different levels of the reactor
-hierarchy. You will generally build inputs "bottoms up", first by defining elementary pieces (like pins)
-and then collecting them into the core and reactor.
+The **blueprints** input file has several sections that corresponds to different levels of the reactor hierarchy. You
+will generally build inputs "bottoms up", first by defining elementary pieces (like pins) and then collecting them into
+the core and reactor.
 
 The ARMI data model is represented schematically below, and the blueprints are defined accordingly:
 
@@ -552,9 +548,9 @@ The ARMI data model is represented schematically below, and the blueprints are d
 
 :ref:`nuclide flags <nuclide-flags>`:
     Special setting: Specifies nuclide modeling options, whether a nuclide is being modeled for cross sections and/or
-    depletion. For instance, it allows you to ignore nuclides above Curium for depletion speed.
-    This also allows you to expand elements to a subset of nuclides. For example, you can
-    choose to expand Oxygen to just Oxygen-16 and neglect Oxygen-17 and 18.
+    depletion. For instance, it allows you to ignore nuclides above Curium for depletion speed. This also allows you to
+    expand elements to a subset of nuclides. For example, you can choose to expand Oxygen to just Oxygen-16 and neglect
+    Oxygen-17 and 18.
 
 :ref:`custom isotopics <custom-isotopics>`:
     Special setting: defines user-specified isotopic compositions.
@@ -610,22 +606,21 @@ An component may be defined as::
 Here we have provided the following information:
 
 Component name
-    The component name (``fuel``) is specified at the top. Some physics kernels interpret names specially, so
-    pay attention to any naming conventions. As a general rule, you can expect that people will be doing regex
-    on your name, so you should not use any of these characters in your component names:
-    ``. ^ $ * + ? { } [ ] \ | ( ) :``.
+    The component name (``fuel``) is specified at the top. Some physics kernels interpret names specially, so pay
+    attention to any naming conventions. As a general rule, you can expect that people will be doing regex on your name,
+    so you should not use any of these characters in your component names: ``. ^ $ * + ? { } [ ] \ | ( ) :``.
 
 shape
-    The shape will be extruded to the length specified in the ``assemblies`` input section below. ARMI contains
-    a variety of built-in simple shapes, and plugins can define their own design-specific/proprietary shapes.
+    The shape will be extruded to the length specified in the ``assemblies`` input section below. ARMI contains a
+    variety of built-in simple shapes, and plugins can define their own design-specific/proprietary shapes.
 
 material
     The material links the component to a certain set of thermo-physical properties (e.g. temperature-dependent thermal
     expansion coefficients, density, thermal conductivity, etc., which are used in the various physics kernels.
     Natural isotopic composition is determined from this material specification as well (unless custom isotopics are
     supplied). The entry here should either be a class name of a valid material (``UZr``) or a ``module:className`` pair
-    for specifying specific material (e.g. ``armi.materials.uZr:UZr``).
-    Materials are handled through the :py:mod:`material library <armi.materials>`.
+    for specifying specific material (e.g. ``armi.materials.uZr:UZr``). Materials are handled through the
+    :py:mod:`material library <armi.materials>`.
 
 |Tinput|
     The temperature (in C) that corresponds to the input dimensions given here. This facilitates automatic thermal
@@ -706,23 +701,20 @@ dimension names are available in the table above.
                 mult: fuel.mult
                 od: 1.045
 
-Linked component dimensions (such as ``bond.id`` being linked to ``fuel.od``) remain linked
-as dimensions change. For example when the above defined fuel is expanded from cold temperature of
-25 to the hot temperature of 600 the ``bond.id`` will still be whatever the ``fuel.od`` is. This can
-result in the displacement of material. For example, in the above case, if the fuel expansion
-removes more cross sectional area than the clad expansion creates, the amount of thermal bond will be
-reduced. This is physical since, in reality, the fluid would be displaced as dimensions
-change.
+Linked component dimensions (such as ``bond.id`` being linked to ``fuel.od``) remain linked as dimensions change. For
+example when the above defined fuel is expanded from cold temperature of 25 to the hot temperature of 600 the
+``bond.id`` will still be whatever the ``fuel.od`` is. This can result in the displacement of material. For example, in
+the above case, if the fuel expansion removes more cross sectional area than the clad expansion creates, the amount of
+thermal bond will be reduced. This is physical since, in reality, the fluid would be displaced as dimensions change.
 
 Pin lattices
 ^^^^^^^^^^^^
 Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input section. A
 block may assigned a grid name, and then each component may be assigned one or more grid specifiers.
 
-For example, the following input section specifies that fuel pins will occupy all grid positions
-marked with a ``1`` and cladding components will occupy all grid positions marked with either
-a ``1`` or a ``2``. This situation may be desirable when some burnable poison pins use the same
-cladding as the fuel pins. ::
+For example, the following input section specifies that fuel pins will occupy all grid positions marked with a ``1`` and
+cladding components will occupy all grid positions marked with either a ``1`` or a ``2``. This situation may be
+desirable when some burnable poison pins use the same cladding as the fuel pins. ::
 
     blocks:
         fuel: &block_fuel
@@ -755,33 +747,27 @@ cladding as the fuel pins. ::
 Flags and naming
 ----------------
 
-All objects in the ARMI Reactor Model possess a set of
-:py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the
-various physics kernels treat each object. Most flags are named after common reactor
-components, like ``FUEL``, or ``CLAD``, and are used to declare `what something is` in the
-reactor model. Various physics or other framework operations can then be
-parameterized to target specific types of things. For instance, the fuel handling code
-can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and
-not move them with the rest of the block stack in an assembly.
+All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
+``FUEL``, or ``CLAD``, and are used to declare `what something is` in the reactor model. Various physics or other
+framework operations can then be parameterized to target specific types of things. For instance, the fuel handling code
+can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and not move them with the rest of
+the block stack in an assembly.
 
-Historically, flags have also been used to describe directly `what should be done` with
-an object in the reactor model. For instance, an object with the ``DEPLETABLE`` flag set
-will participate in isotopic depletion analysis, whereas objects without the
-``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of
-various flags is buried deep within the code, and can conflict from place to place. We
-are trying to align around a `what something is` interpretation, and bind those to
-specific behaviors with settings. For more details, see :py:mod:`armi.reactor.flags`.
+Historically, flags have also been used to describe directly `what should be done` with an object in the reactor model.
+For instance, an object with the ``DEPLETABLE`` flag set will participate in isotopic depletion analysis, whereas
+objects without the ``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of various flags
+is buried deep within the code, and can conflict from place to place. We are trying to align around a `what something
+is` interpretation, and bind those to specific behaviors with settings. For more details, see
+:py:mod:`armi.reactor.flags`.
 
-The set of specific flags that should be set on an object can be specified in one of two
-ways for each object defined in the blueprints. The most precise way is to use include a
-``flags:`` entry for the object blueprint in question. In the example above, the
-``fuel`` component sets the ``FUEL`` and ``TEST`` flags. When specifying flags in this
-way, the value specified must be completely and unambiguously convertible into valid
-Flags. If it cannot, it will lead to an error when constructing the object.
+The set of specific flags that should be set on an object can be specified in one of two ways for each object defined in
+the blueprints. The most precise way is to use include a ``flags:`` entry for the object blueprint in question. In the
+example above, the ``fuel`` component sets the ``FUEL`` and ``TEST`` flags. When specifying flags in this way, the value
+specified must be completely and unambiguously convertible into valid Flags. If it cannot, it will lead to an error when
+constructing the object.
 
-If ``flags:`` is empty, or not specified, then the name of the object blueprint will be
-used to infer as many flags as possible. In the above example, the ``clad`` component
-will get the ``CLAD`` flag from its name.
+If ``flags:`` is empty, or not specified, then the name of the object blueprint will be used to infer as many flags as
+possible. In the above example, the ``clad`` component will get the ``CLAD`` flag from its name.
 
 .. note::
     Additional flags may be specified from plugins, but this should be done with care; see the
@@ -816,56 +802,53 @@ A complete definition of an inner-core assembly may be seen below::
                 xs types: [A, B, C, D, E, F]
 
 .. note::
-        While component dimensions are entered as cold dimensions, axial heights may be entered as
-        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights
-        in the hot dimension (this behavior is preserved by setting `inputHeightsConsideredHot: True`).
-        However, with the
+        While component dimensions are entered as cold dimensions, axial heights may be entered as either cold or hot
+        dimensions. In older versions of ARMI, it was required to enter heights in the hot dimension (this behavior is
+        preserved by setting `inputHeightsConsideredHot: True`). However, with the
         :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`,
-        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then
-        be expanded to its hot dimensions upon construction.
+        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then be
+        expanded to its hot dimensions upon construction.
 
 For many cases, a shared height and axial mesh point definition is sufficient. These can be included globally as shown
 above and linked with anchors, or specified explicitly.
 
 
 specifier
-   The Geometry Assembly Specifier, which is a two-letter ID, such as "IC" (for inner core), "SH"
-   (for shield), etc. correspond with labels in the geometry input file that is created by the GUI
-   hex dragger.
+   The Geometry Assembly Specifier, which is a two-letter ID, such as "IC" (for inner core), "SH" (for shield), etc.
+   correspond with labels in the geometry input file that is created by the GUI hex dragger.
 
 xs types
-  The **cross-section type** is usually a single capital letter that identifies which cross section
-  (XS) set will be applied to the block. Each cross section set must be defined for at least one
-  block with fissile fuel. When the lattice physics code executes in ARMI, it determines the
-  representative blocks from each cross section type and burnup group and runs it to create the
-  cross section set for all blocks of the same type and in the same burnup group. Generally, it is
-  best to set blocks that have much different compositions to have separate cross section types. The
+  The **cross-section type** is usually a single capital letter that identifies which cross section (XS) set will be
+  applied to the block. Each cross section set must be defined for at least one block with fissile fuel. When the
+  lattice physics code executes in ARMI, it determines the representative blocks from each cross section type and burnup
+  group and runs it to create the cross section set for all blocks of the same type and in the same burnup group.
+  Generally, it is best to set blocks that have much different compositions to have separate cross section types. The
   tradeoff is that the more XS types you define, the more CPU time the case will take to run.
 
-  Representing xsType by a single capital letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
-  will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
+  Representing xsType by a single capital letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI will allow
+  2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined).
+  This is useful for high-fidelity XS modeling.
 
-  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this
-  should only be done when working on a case-sensitive file system. On a case-insensitive file system
-  (Windows, and some MacOS systems) this could cause unpredictable errors.
+  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this should only be done
+  when working on a case-sensitive file system. On a case-insensitive file system (Windows, and some MacOS systems) this
+  could cause unpredictable errors.
 
 axial mesh points
-  Blocks will be broken up into this many uniform mesh points in the deterministic neutronics
-  solvers (e.g. DIF3D). This allows you to define large blocks that have multiple flux points within
-  them. You have to keep the neutronic mesh somewhat uniform in order to maintain numerical
-  stability of the solvers. It is important to note that the axial mesh must be uniform throughout
-  the core for many physics kernels, so be sure all block interfaces are consistent among all
-  assemblies in the core. Blocks deplete and get most state variables on the block mesh defined by
-  the height specification. Provisions for multiple meshes for different physics are being planned.
+  Blocks will be broken up into this many uniform mesh points in the deterministic neutronics solvers (e.g. DIF3D). This
+  allows you to define large blocks that have multiple flux points within them. You have to keep the neutronic mesh
+  somewhat uniform in order to maintain numerical stability of the solvers. It is important to note that the axial mesh
+  must be uniform throughout the core for many physics kernels, so be sure all block interfaces are consistent among all
+  assemblies in the core. Blocks deplete and get most state variables on the block mesh defined by the height
+  specification. Provisions for multiple meshes for different physics are being planned.
 
 hotChannelFactors
-  A label to define which set of hot channel factors (HCFs) get applied to
-  this block in the thermal/hydraulic calculations. There are various valid sets included with ARMI.
+  A label to define which set of hot channel factors (HCFs) get applied to this block in the thermal/hydraulic
+  calculations. There are various valid sets included with ARMI.
 
 nozzleType
-  This is a string that identifies what type of inlet nozzle an assembly has. This parameter could
-  be used in an implementation of a thermal-hydraulics solver with flow orificing to apply
-  different pressure loss coefficients and/or flow rates to different types of assemblies.
+  This is a string that identifies what type of inlet nozzle an assembly has. This parameter could be used in an
+  implementation of a thermal-hydraulics solver with flow orificing to apply different pressure loss coefficients and/or
+  flow rates to different types of assemblies.
 
 material modifications
   There are a variety of material modifications available for each material. The most common material modifications are
@@ -885,8 +868,8 @@ material modifications
   depletable fuel-type fuels.
 
   A popular class of material modifications is adjusting the theoretical density of a material. The modification name
-  for this is usually "TD_frac" as a soft convention. This is popular for solids when the actual density of the
-  material is slightly different than the theoretical density due to the manufacturing process.
+  for this is usually "TD_frac" as a soft convention. This is popular for solids when the actual density of the material
+  is slightly different than the theoretical density due to the manufacturing process.
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of custom isotopics labels for
   input scenarios where there is a blend of a high-reactivity feed with a low-reactivity feed. This is often useful for
@@ -894,8 +877,8 @@ material modifications
   uranium at various weight fractions. Note that this input style only adjusts the heavy metal.
 
   Users can specify material modications on a by-component basis. This is useful, for instance, when two pins within an
-  assembly are made of the same base material but have different fuel enrichments. This is done   using the
-  ``by component`` attribute to the material modifications. For example::
+  assembly are made of the same base material but have different fuel enrichments. This is done using the ``by
+  component`` attribute to the material modifications. For example::
 
         blocks:
             fuel: &block_fuel
@@ -932,12 +915,12 @@ material modifications
 
   Material modifications specified on the ``material modifications`` level are referred to as "block default" values
   and apply to all components on the block not associated with a by-component value. The example above would apply an
-  enrichment of 20% to the ``fuel1`` component and an enrichment of 30% to all other components in the block that
-  accept the ``U235_wt_frac`` material modification.
+  enrichment of 20% to the ``fuel1`` component and an enrichment of 30% to all other components in the block that accept
+  the ``U235_wt_frac`` material modification.
 
   All by-component material modifications override any block default material modifications of the same type. In
-  addition, any by-component entries omitted for a given axial block will revert to the block default (or material
-  class default, if no block default value is provided and a material class default exists) value::
+  addition, any by-component entries omitted for a given axial block will revert to the block default (or material class
+  default, if no block default value is provided and a material class default exists) value::
 
         blocks:
             fuel: &block_fuel
@@ -1022,11 +1005,10 @@ Plugins are able to provide a superset (e.g., ``core``, ``excore``, and ``sfp``)
 
 Grids
 -----
-Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
-define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
-you to specify spacing between objects that is different from tight packing. This input is required
-in mixed geometry cases, for example if Hexagonal assemblies are to be loaded into a Cartesian
-arrangement. The contents of a grid may defined using one of the following:
+Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to define arrangements in
+Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows you to specify spacing between objects that is
+different from tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies are to
+be loaded into a Cartesian arrangement. The contents of a grid may defined using one of the following:
 
 ``lattice map:``
     A ASCII map representing the grid contents
@@ -1071,12 +1053,11 @@ Example grid definitions are shown below::
             [0,1]: MC
             [1,1]: MC
 
-.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
-    input and it may improve in the future.
+.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this input and it may
+    improve in the future.
 
-You may set up some kinds of grids (e.g. 1/3 and full core hex or Cartesian core
-loadings) using our interactive graphical grid editor described more in
-:py:mod:`armi.utils.gridEditor`.
+You may set up some kinds of grids (e.g. 1/3 and full core hex or Cartesian core loadings) using our interactive
+graphical grid editor described more in :py:mod:`armi.utils.gridEditor`.
 
 .. figure:: /.static/gridEditor.png
     :align: center
@@ -1087,11 +1068,10 @@ loadings) using our interactive graphical grid editor described more in
 
 Custom Isotopics
 ----------------
-In some cases (such as benchmarking a previous reactor), the default mass fractions from the
-material library are not what you want to model. In these cases, you may override the isotopic
-composition provided by the material library in this section. There are three ways to specify
-the isotopics: ``mass fractions`` (sum to 1.0), ``number densities`` (in atoms/barn-cm), or
-``number fractions`` (sum to 1.0). For example::
+In some cases (such as benchmarking a previous reactor), the default mass fractions from the material library are not
+what you want to model. In these cases, you may override the isotopic composition provided by the material library in
+this section. There are three ways to specify the isotopics: ``mass fractions`` (sum to 1.0), ``number densities`` (in
+atoms/barn-cm), or ``number fractions`` (sum to 1.0). For example::
 
     custom isotopics:
         LABEL1:
@@ -1106,71 +1086,64 @@ the isotopics: ``mass fractions`` (sum to 1.0), ``number densities`` (in atoms/b
             NI: 0.0831976890804466
             SI: 0.00566266993741259
 
-See the :py:mod:`List of Nuclides <armi.nucDirectory.nuclideBases>` for all valid entries. Note that
-ARMI will expand elemental nuclides to their natural isotopics in most cases (to correspond with the
-nuclear data library).
+See the :py:mod:`List of Nuclides <armi.nucDirectory.nuclideBases>` for all valid entries. Note that ARMI will expand
+elemental nuclides to their natural isotopics in most cases (to correspond with the nuclear data library).
 
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
 
-Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input
-format (shown above) or implicitly with ``number densities``. This is fairly straightforward for the
-``Custom`` material, as it has no baseline density. Density may also be specified for components using
-materials which have entries in the materials library. Users should be aware of the following interactions
-when specifying a custom density for components using a library material:
+Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input format (shown
+above) or implicitly with ``number densities``. This is fairly straightforward for the ``Custom`` material, as it has no
+baseline density. Density may also be specified for components using materials which have entries in the materials
+library. Users should be aware of the following interactions when specifying a custom density for components using a
+library material:
 
-    1. The library material density will not be changed. Only the component(s) with the custom isotopics
-    entry will have the density modification.
+    1. The library material density will not be changed. Only the component(s) with the custom isotopics entry will have
+    the density modification.
 
-    2. Density specified by custom isotopics will override all other density modifications in the component
-    construction phase (e.g. ``TD_frac`` entries).
+    2. Density specified by custom isotopics will override all other density modifications in the component construction
+    phase (e.g. ``TD_frac`` entries).
 
-    3. Only the component density is changed, not other material properties are altered to account for the
-    change in composition/density.
+    3. Only the component density is changed, not other material properties are altered to account for the change in
+    composition/density.
 
     4. Density can only be specified using custom isotopics for non- ``Custom`` materials that have some
     initial density. Don't try to make ``Void`` have mass!
 
-Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified
-at the input temperature for the component. Note that when overriding the density of a library material, all
-other properties of that material (e.g. expansion coefficients) will continue to be used as if the component
-consisted of the library material. In other words, ARMI will still think the component is made out of the
-original material!
+Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified at the
+input temperature for the component. Note that when overriding the density of a library material, all other properties
+of that material (e.g. expansion coefficients) will continue to be used as if the component consisted of the library
+material. In other words, ARMI will still think the component is made out of the original material!
 
 Advanced topics
 ---------------
 
 Overlapping shapes
 ^^^^^^^^^^^^^^^^^^
-Solids of different compositions in contact with each other present complications during thermal
-expansion. The ARMI Framework does not perform calculations to see exactly how such
-scenarios will behave mechanically; it instead focuses on conserving mass. To do this, users should
-input a zero-dimension component linking the 2 solid components made of the special ``Void`` material.
-This gap will allow the 2 components to thermally expand
-independently while keeping track of the overlapping area.
+Solids of different compositions in contact with each other present complications during thermal expansion. The ARMI
+Framework does not perform calculations to see exactly how such scenarios will behave mechanically; it instead focuses
+on conserving mass. To do this, users should input a zero-dimension component linking the 2 solid components made of the
+special ``Void`` material. This gap will allow the 2 components to thermally expand independently while keeping track of
+the overlapping area.
 
-It is important to keep track of the areas
-when a DerivedShape is included in a block design because ARMI calculates the
-derived area by taking the full area of the block and subtracting the total area of
-the non-DerivedShapes. If area between thermally-expanding solids was not accounted for, this
-would non-physically add or subtract coolant into these gaps. To model overlapping components
-heterogeneously, it is suggested to use a :py:mod:`block converter
-<armi.reactor.converters.blockConverters>`.
+It is important to keep track of the areas when a DerivedShape is included in a block design because ARMI calculates the
+derived area by taking the full area of the block and subtracting the total area of the non-DerivedShapes. If area
+between thermally-expanding solids was not accounted for, this would non-physically add or subtract coolant into these
+gaps. To model overlapping components heterogeneously, it is suggested to use a
+:py:mod:`block converter <armi.reactor.converters.blockConverters>`.
 
-Additionally, it should be noted that assigning ``mult: fuel.mult`` will be ever-so-slightly slower
-than just defining the actual value. This is because ARMI needs to find the sibling
-component and get the siblings ``mult``. If you are concerned about performance at that level and don't expect
-``mult`` to change much in your case, you can replace the constant link (i.e. it does not change over time)
-with a YAML anchor and alias.
+Additionally, it should be noted that assigning ``mult: fuel.mult`` will be ever-so-slightly slower than just defining
+the actual value. This is because ARMI needs to find the sibling component and get the siblings ``mult``. If you are
+concerned about performance at that level and don't expect ``mult`` to change much in your case, you can replace the
+constant link (i.e. it does not change over time) with a YAML anchor and alias.
 
 Component area modifications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In some scenarios, it is desired to have one component's area be subtracted or added to another. For
-example, the area of the skids in a skid duct design needs to be subtracted from the interstitial
-coolant. The mechanism to handle this involves adding a parameter to the component to be
-modified after all the required ones in the form of ``<componentName>.add`` or
-``<componentName>.sub``. The component to be added or subtracted must be defined before the
-component that is being modified. This allows fairly complicated configurations to be modeled
-without explicitly defining new components.
+In some scenarios, it is desired to have one component's area be subtracted or added to another. For example, the area
+of the skids in a skid duct design needs to be subtracted from the interstitial coolant. The mechanism to handle this
+involves adding a parameter to the component to be modified after all the required ones in the form of
+``<componentName>.add`` or ``<componentName>.sub``. The component to be added or subtracted must be defined before the
+component that is being modified. This allows fairly complicated configurations to be modeled without explicitly
+defining new components.
 
 ::
 
@@ -1189,7 +1162,7 @@ without explicitly defining new components.
                 Tinput: 25.0
                 Thot: 600.0
                 widthOuter: 3.0
-                modArea: holes.sub      # "holes" is the name of the other component
+                modArea: holes.sub  # "holes" is the name of the other component
 
 Putting it all together to make a Block
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1258,17 +1231,14 @@ Here is a complete fuel block definition::
 
 Making blocks with unshaped components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Sometimes you will want to make a homogeneous block,  which is a mixture of multiple
-materials, and will not want to define an exact shape for each of the components in
-the block. In this case unshaped components can be used, but ARMI still requires there
-to be at least one component with shape to define the pitch of the block.
+Sometimes you will want to make a homogeneous block, which is a mixture of multiple materials, and will not want to
+define an exact shape for each of the components in the block. In this case unshaped components can be used, but ARMI
+still requires there to be at least one component with shape to define the pitch of the block.
 
-In the example below, the block is a rectangular pitch so one of the
-components is defined as a rectangle to indicate this. Its outer dimensions determine
-the pitch of the block. The inner dimensions can be whatever is necessary to
-preserve the area fraction. Note that rectangular blocks have pitch defined by two
-numbers, since they may not be a square. In this case the rectangle component is half
-the area fraction and the other two components are one quarter::
+In the example below, the block is a rectangular pitch so one of the components is defined as a rectangle to indicate
+this. Its outer dimensions determine the pitch of the block. The inner dimensions can be whatever is necessary to
+preserve the area fraction. Note that rectangular blocks have pitch defined by two numbers, since they may not be a
+square. In this case the rectangle component is half the area fraction and the other two components are one quarter::
 
         blocks:
             fuel:
@@ -1295,13 +1265,13 @@ the area fraction and the other two components are one quarter::
                     Thot: 25.0
                     area = 1.5
 
-.. warning:: When using this method avoid thermal expansion by setting TInput=THot, or
-   your pitch component dimensions might change, thus changing your pitch.
+.. warning:: When using this method avoid thermal expansion by setting TInput=THot, or your pitch component dimensions
+   might change, thus changing your pitch.
 
 
-Alternatively, a void (empty) component with zero area can be added for defining the
-pitch, and then all three components can be defined as unshaped. The downside, is there
-are now four components, but only three that have actual area and composition::
+Alternatively, a void (empty) component with zero area can be added for defining the pitch, and then all three
+components can be defined as unshaped. The downside, is there are now four components, but only three that have actual
+area and composition::
 
         blocks:
             fuel:
@@ -1335,34 +1305,30 @@ are now four components, but only three that have actual area and composition::
 
 This can similarly be done for hex geometry and and a hexagon with Outer Pitch (``op``).
 
-.. warning:: The rest of the input described below are scheduled to be moved into the settings input file, since their nature is that of a setting.
+.. warning:: The rest of the input described below are scheduled to be moved into the settings input file, since their
+   nature is that of a setting.
 
 .. _nuclide-flags:
 
 Nuclide Flags
 -------------
-The ``nuclide flags`` setting allows the user to choose which nuclides they
-would like to consider in the problem, and whether or not each nuclide should
-transmute and decay. For example, sometimes you may not want to deplete trace
-elements in structural materials, but in other analysis you might. If the
-nuclide should deplete, it must have ``burn: true``. If it is to be included
-in the problem at all, it must be have ``xs: true`` All nuclides that will be
-produced via transmutation/decay  must also have ``burn: true``, so if you add
-Thorium, make sure to add all other actinides in its chain. You can use the
-``expandTo:`` section to list a subset of natural nuclides to expand
-into. If you leave this section out, a default set of nuclide flags will be
-applied to your problem. Remember this
-section when you start changing which nuclides are modeled and which ones
-deplete.::
+The ``nuclide flags`` setting allows the user to choose which nuclides they would like to consider in the problem, and
+whether or not each nuclide should transmute and decay. For example, sometimes you may not want to deplete trace
+elements in structural materials, but in other analysis you might. If the nuclide should deplete, it must have
+``burn: true``. If it is to be included in the problem at all, it must be have ``xs: true`` All nuclides that will be
+produced via transmutation/decay  must also have ``burn: true``, so if you add Thorium, make sure to add all other
+actinides in its chain. You can use the ``expandTo:`` section to list a subset of natural nuclides to expand into. If
+you leave this section out, a default set of nuclide flags will be applied to your problem. Remember this section when
+you start changing which nuclides are modeled and which ones deplete.::
 
     # this is a YAML comment
     nuclide flags:
         AL: {burn: false, xs: true}
         AM241: {burn: true, xs: true}
-        C: &carbon_flags {burn: false, xs: true}    # an anchor to "carbon_flags"
+        C: &carbon_flags {burn: false, xs: true}  # an anchor to "carbon_flags"
         CA: *carbon_flags
         CL: *carbon_flags
-        CO: *carbon_flags                           # the alias back to "carbon_flags"
+        CO: *carbon_flags                         # the alias back to "carbon_flags"
         CR: *carbon_flags
         CU: *carbon_flags
         FE: *carbon_flags
@@ -1386,15 +1352,15 @@ deplete.::
         U236: {burn: true, xs: true}
         U238: {burn: true, xs: true}
 
-The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in
-``nuclide flags``. A failure can also occur if the burn chain is missing a nuclide.
+The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in ``nuclide flags``.
+A failure can also occur if the burn chain is missing a nuclide.
 
 .. tip::
-    We plan to upgrade the default behavior of this to inherit from all defined materials
-    in a problem to reduce the user-input burden.
+    We plan to upgrade the default behavior of this to inherit from all defined materials in a problem to reduce the
+    user-input burden.
 
-.. These following are rst substitutions. They're useful for keeping the plaintext readable
-   while getting subscripted text.
+.. These following are rst substitutions. They're useful for keeping the plaintext readable while getting subscripted
+   text.
 
 .. |Tinput| replace:: T\ :sub:`input`
 .. |Thot| replace:: T\ :sub:`hot`
@@ -1410,8 +1376,8 @@ You can find example YAML material files under ``armi/resources/materials/`` and
 ``armi/materials/``.
 
 This YAML material file format is human readable, hierarchical, and compact. The base name of the YAML filename (the
-file name without the file path or extension suffix) is interpreted by ``matProps`` as the case-sensitive material name. The
-extension for the material data file must be one of these: ``.yaml``, ``.yml``, ``.YAML``, or ``.YML``.
+file name without the file path or extension suffix) is interpreted by ``matProps`` as the case-sensitive material name.
+The extension for the material data file must be one of these: ``.yaml``, ``.yml``, ``.YAML``, or ``.YML``.
 
 Below is an example material data file containing all the basic ``matProps`` concepts, discussed in the following sections.
 
@@ -1509,14 +1475,14 @@ Below is an example material data file containing all the basic ``matProps`` con
 The only required entries in a material file are ``file format``, ``composition``, and ``material type``.
 
 File Format 
-"""""""""""
+-----------
 The ``file format: version`` field defines the file format version. This is a required field. This version string is
 verified to see if it is supported for use by ``matProps``.
 
 .. _ref_matType:
 
 Material Type 
-"""""""""""""
+-------------
 The ``material type`` field defines the type of material. Valid values for this key include Metal, Fuel, Fluid, Ceramic,
 ASME2015, ASME2017, SimpleSolid, and Composite. This is a required field. This field is meant to provide information to
 the user and is not used by ``matProps``, though it may be used by downstream codes.
@@ -1524,12 +1490,12 @@ the user and is not used by ``matProps``, though it may be used by downstream co
 .. _ref_comp:
 
 Composition
-"""""""""""
+-----------
 The ``composition`` field defines the chemical composition of the material. This is a required field. The value for this
-field is a collection of key-value pairs, as denoted by indentation. The key is an element name,
-and the value is a list of length 2 that defines the minimum percent composition then the maximum percent composition
-for the element. There must be one and only one element listed as "balance" instead of a pair of minimum and maximum values. The "balance"  element will fill any remaining fraction of the elements composition, to get the total to
-100 percent.
+field is a collection of key-value pairs, as denoted by indentation. The key is an element name, and the value is a list
+of length 2 that defines the minimum percent composition then the maximum percent composition for the element. There
+must be one and only one element listed as "balance" instead of a pair of minimum and maximum values. The "balance"
+element will fill any remaining fraction of the elements composition, to get the total to 100 percent.
 
 Optionally, this data entry can be associated with a references keyword.
 
@@ -1540,7 +1506,7 @@ Composition Requirements:
   shall not exceed 100.
 
 Properties
-""""""""""
+----------
 The ``property`` field defines a property of the material. This is usually a temperature-dependent curve describing the
 material, like density. The value for this field is a collection consisting of several required and optional keywords. A
 summary of the keywords, their relevant status and appropriate section can be found below.
@@ -1558,8 +1524,8 @@ summary of the keywords, their relevant status and appropriate section can be fo
     |                      | Otherwise, it is optional.          |                          |
     +----------------------+-------------------------------------+--------------------------+
 
-The table below lists the default collection of properties that are defined for a material by ``matProps``. 
-Note that these property names are case sensitive.
+The table below lists the default collection of properties that are defined for a material by ``matProps``. Note that
+these property names are case sensitive.
 
 .. table:: Available material properties for YAML definition and corresponding matProps API.
 
@@ -1678,7 +1644,7 @@ other property.
     armi.matProps.loadSafe("/pop/six/squish/uhuh/cicero/lipschitz")
 
 Tabulated Data
-""""""""""""""
+--------------
 A material property can be defined not just by math, but by tabulated data. This is flexible, easy to use, and can
 better match laboratory measurements. Currently, ``matProps`` supports one dimensional and two dimensional tables of
 data, as shown in the example at the beginning of this section. Notice that the ``type`` field is used to make this
@@ -1688,7 +1654,7 @@ These tables of data can be large and inconvienent to duplicate. So you can tag 
 elsewhere in the YAML file. (Look for ``"tabulated data: &tagged_data"`` in the example file above.)
 
 Functions
-"""""""""
+---------
 The ``function`` field allows the developer to define a mathematical curve for a material property. For instance, in the
 example file above, a function is used to represent the "Young's modulus" of the material. The independent variable "T"
 is defined to represent Temperature in degrees C, and the min and max values of 0 and 700 are given. This defines the
@@ -1706,7 +1672,7 @@ references to properly attribute the source of the data.
 
 
 Symbolic
-========
+--------
 A symbolic function is defined by supplying value ``symbolic`` for the key ``type``. Symbolic functions may use any
 number of independent variables. The ``equation`` node must be supplied which contains a string with the equation
 function. The ``symbolicOperators`` field defines the set of operators that may be used in the symbolic equation
@@ -1759,14 +1725,14 @@ the table might function in ``matProps``, they are untested and may not be used 
 
 
 Table
-=====
+-----
 Providing ``table`` for the ``type`` key indicates a one dimensional tables that uses interpolation. This function type
 requires a set of tabulated data to be defined in the collection. The set of tabulated data is a list of lists of length
 2 with the first element being the independent variable, and the second element being the property value at that
 independent variable value. 
 
 Piecewise
-=========
+---------
 Using the ``piecewise`` keyword allows multiple functions to be defined for different ranges of independent variable
 values. As in the density example above, the field ``functions`` is used to define a list of functions, one for each
 range defined.
@@ -1779,7 +1745,7 @@ range defined.
     function that is defined first in the input file will be used. 
 
 Two Dimensional Table
-=====================
+---------------------
 The ``two dimensional table`` field defines a two-dimensional table, that needs to be supplied a specially formatted
 data set. See the "stress to rupture" property in the above example file. This can again use the tagged data system to
 share data with other fields, see ``"&tagged_data"`` in the above example file.
@@ -1816,9 +1782,9 @@ file (or directory) that does not exist or by an attempted overwrite of a materi
 Fuel Management Input
 =====================
 
-Fuel management in ARMI is specified through custom Python scripts or YAML files that often reside
-in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
-ARMI checks for several fuel management settings:
+Fuel management in ARMI is specified through custom Python scripts or YAML files that often reside in the working
+directory of a run (but can be anywhere if you use full paths). During a normal run, ARMI checks for several fuel
+management settings:
 
 ``shuffleLogic``
    The path to the Python source file or dotted import path to a module that contains the user's custom fuel
@@ -1828,19 +1794,19 @@ ARMI checks for several fuel management settings:
    The path to a yaml file containing the user's custom fuel management logic.
 
 ``fuelHandlerName``
-   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input module or file
-   specified by ``shuffleLogic``. Since it's input, it's the user's responsibility
-   to design and place that object in that module or file.
+   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input module or file specified by
+   ``shuffleLogic``. Since it's input, it's the user's responsibility to design and place that object in that module or
+   file.
 
-.. note:: We consider the limited syntax needed to express fuel management in Python
-   code itself to be sufficiently expressive and simple for non-programmers to
-   actually use. Also, fuel management options are available through YAML input files.
+.. note:: We consider the limited syntax needed to express fuel management in Python code itself to be sufficiently
+   expressive and simple for non-programmers to actually use. Also, fuel management options are available through YAML
+   input files.
 
 The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
-search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
-will perform bookkeeping operations, and eventually
-call the user-defined ``chooseSwaps`` method (located in Fuel Management Input). ``chooseSwaps`` will
-generally contain calls to :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`,
+search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method will perform
+bookkeeping operations, and eventually call the user-defined ``chooseSwaps`` method (located in Fuel Management Input).
+``chooseSwaps`` will generally contain calls to
+:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`,
 :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.swapAssemblies` ,
 :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.swapCascade`, and
 :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.dischargeSwap`, which are the primary
@@ -1855,39 +1821,37 @@ shuffling routines get called and at which time.
 
 Fuel Management Operations
 --------------------------
-In the ARMI, the assemblies can be moved as units around the reactor with swapAssemblies,
-dischargeSwap, and swapCascade of a ``FuelHandler`` interface.
+In the ARMI, the assemblies can be moved as units around the reactor with swapAssemblies, dischargeSwap, and swapCascade
+of a ``FuelHandler`` interface.
 
 swapAssemblies
 ^^^^^^^^^^^^^^
-swapAssemblies is the simplest fuel management operation. Given two assembly objects, this method will switch
-their locations. ::
+swapAssemblies is the simplest fuel management operation. Given two assembly objects, this method will switch their
+locations. ::
 
     self.swapAssemblies(a1,a2)
 
 dischargeSwap
 ^^^^^^^^^^^^^
-A discharge swap is a simple operation that puts a new assembly into the reactor while discharging
-an outgoing one. ::
+A discharge swap is a simple operation that puts a new assembly into the reactor while discharging an outgoing one. ::
 
     self.dischargeSwap(newIncoming,oldOutgoing)
 
-This operation keeps track of the outgoing assembly in a SpentFuelPool object that the Reactor
-object has access to so you can see how much of what you discharged.
+This operation keeps track of the outgoing assembly in a SpentFuelPool object that the Reactor object has access to so
+you can see how much of what you discharged.
 
 swapCascade
 ^^^^^^^^^^^
-SwapCascade is a more powerful swapping function that can swap a list of assemblies in a "daisy-chain" type
-of operation. These are useful for doing the main overtone shuffling operations such as convergent shuffling
-and/or convergent-divergent shuffling. If we load up the list of assemblies, the first one will be put in the
-last one's position, and all others will shift accordingly.
+SwapCascade is a more powerful swapping function that can swap a list of assemblies in a "daisy-chain" type of
+operation. These are useful for doing the main overtone shuffling operations such as convergent shuffling and/or
+convergent-divergent shuffling. If we load up the list of assemblies, the first one will be put in the last one's
+position, and all others will shift accordingly.
 
 As an example, consider assemblies 1 through 5 in core positions A through E.::
 
     self.swapCascade([a1,a2,a3,a4,a5])
 
 This table shows the positions of the assemblies before and after the swap cascade.
-
 
 ========    ============================    ===========================
 Assembly    Position Before Swap Cascade    Position After Swap Cascade
@@ -1905,16 +1869,14 @@ Choosing Assemblies to Move
 ---------------------------
 The methods described in the previous section require known assemblies to shuffle. Choosing these assemblies is
 the essence of fuel shuffling design. The single method used for these purposes is the FuelHandler's ``findAssembly``
-method. This method is very general purpose, and ranks in the top 3 most important
-methods of the ARMI altogether.
+method. This method is very general purpose, and ranks in the top 3 most important methods of the ARMI altogether.
 
 To use it, just say::
 
     a = self.findAssembly(param='maxPercentBu',compareTo=20)
 
-This will return the assembly in the reactor that has a maximum burnup closest to 20%.
-Other inputs to findAssembly are summarized in the API docs of
-:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`.
+This will return the assembly in the reactor that has a maximum burnup closest to 20%. Other inputs to findAssembly are
+summarized in the API docs of :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`.
 
 
 Fuel Management Examples
@@ -1922,76 +1884,60 @@ Fuel Management Examples
 
 Convergent-Divergent
 ^^^^^^^^^^^^^^^^^^^^
-Convergent-divergent shuffling is when fresh assemblies march in from the outside until
-they approach the jump ring, at which point they jump to the center and diverge until
-they reach the jump ring again, where they now jump to the outer periphery of the core,
-or become discharged.
+Convergent-divergent shuffling is when fresh assemblies march in from the outside until they approach the jump ring, at
+which point they jump to the center and diverge until they reach the jump ring again, where they now jump to the outer
+periphery of the core, or become discharged.
 
 If the jump ring is 6,  the order of target rings is::
 
     [6, 5, 4, 3, 2, 1, 6, 7, 8, 9, 10, 11, 12, 13]
 
-In this case, assemblies converge from ring 13 to 12, to 11, to 10, ..., to 6, and then
-jump to 1 and diverge until they get back to 6. In a discharging equilibrium case, the
-highest burned assembly in the jumpRing should get discharged and the lowest should
-jump by calling a dischargeSwap on cascade[0] and a fresh feed after this cascade is
-run.
+In this case, assemblies converge from ring 13 to 12, to 11, to 10, ..., to 6, and then jump to 1 and diverge until they
+get back to 6. In a discharging equilibrium case, the highest burned assembly in the jumpRing should get discharged and
+the lowest should jump by calling a dischargeSwap on cascade[0] and a fresh feed after this cascade is run.
 
-The convergent rings in this case are 7 through 13 and the divergent ones are 1
-through 5 are the divergent ones.
+The convergent rings in this case are 7 through 13 and the divergent ones are 1 through 5 are the divergent ones.
 
 
 Fuel Management Tips
 --------------------
 Some mistakes are common. Follow these tips.
 
-    * Always make sure your assembly-level types in the settings file are up to date
-      with the grids in your bluepints file. Otherwise you'll be moving feeds when you
-      want to move igniters, or something.
-    * Use the exclusions list! If you move a cascade and then the next cascade tries
-      to run, it will choose your newly-moved assemblies if they fit your criteria in
-      ``findAssemblies``. This leads to very confusing results. Therefore, once you move
-      assemblies, you should default to adding them to the exclusions list.
-    * Print cascades during debugging. After you've built a cascade to swap, print it
-      out and check the locations and types of each assembly in it. Is it what you want?
-    * Watch ``typeNum`` in the database. You can get good intuition about what is
-      getting moved by viewing this parameter.
+    * Always make sure your assembly-level types in the settings file are up to date with the grids in your bluepints
+      file. Otherwise you'll be moving feeds when you want to move igniters, or something.
+    * Use the exclusions list! If you move a cascade and then the next cascade tries to run, it will choose your
+      newly-moved assemblies if they fit your criteria in ``findAssemblies``. This leads to very confusing results.
+      Therefore, once you move assemblies, you should default to adding them to the exclusions list.
+    * Print cascades during debugging. After you've built a cascade to swap, print it out and check the locations and
+      types of each assembly in it. Is it what you want?
 
 Running a branch search
 -----------------------
-ARMI can perform a branch search where a number of fuel management operations
-are performed in parallel and the preferred one is chosen and proceeded with.
-The key to any branch search is writing a fuel handler that can interpret
+ARMI can perform a branch search where a number of fuel management operations are performed in parallel and the
+preferred one is chosen and proceeded with. The key to any branch search is writing a fuel handler that can interpret
 **fuel management factors**, defined as keyed values between 0 and 1.
 
-As an example, a fuel handler may be written to interpret two factors, ``numDischarges``
-and ``chargeEnrich``. One method in the fuel handler would then take
-the value of ``factors['numDischarges']`` and multiply it by the maximum
-number of discharges (often set by another user setting) and then discharge
-this many assemblies. Similarly, another method would take the ``factors['chargeEnrich']``
-value (between 0 and 1) and multiply it by the maximum allowable enrichment
-(again, usually controlled by a user setting) to determine which enrichment
-should be used to fabricate new assemblies.
+As an example, a fuel handler may be written to interpret two factors, ``numDischarges`` and ``chargeEnrich``. One
+method in the fuel handler would then take the value of ``factors['numDischarges']`` and multiply it by the maximum
+number of discharges (often set by another user setting) and then discharge this many assemblies. Similarly, another
+method would take the ``factors['chargeEnrich']`` value (between 0 and 1) and multiply it by the maximum allowable
+enrichment (again, usually controlled by a user setting) to determine which enrichment should be used to fabricate new
+assemblies.
 
-Given a fuel handler that can thusly interpret factors between 0 and 1, the
-concept of branch searches is simple. They simply build uniformly distributed
-lists between 0 and 1 across however many CPUs are available and cases on all
-of them, passing one of each of the factors to each CPU in parallel. When the cases
-finish, the branch search determines the optimal result and selects the corresponding
-value of the factor to proceed.
+Given a fuel handler that can thusly interpret factors between 0 and 1, the concept of branch searches is simple. They
+simply build uniformly distributed lists between 0 and 1 across however many CPUs are available and cases on all of
+them, passing one of each of the factors to each CPU in parallel. When the cases finish, the branch search determines
+the optimal result and selects the corresponding value of the factor to proceed.
 
-Branch searches are controlled by custom ``getFactorList`` methods specified in the
-``shuffleLogic`` input modules or files. This method should return two things:
+Branch searches are controlled by custom ``getFactorList`` methods specified in the ``shuffleLogic`` input modules or
+files. This method should return two things:
 
-    * A ``defaultFactors``; a dictionary with user-defined keys and values between
-      0 and 1 for each key. These factors will be passed to the ``chooseSwaps``
-      method, which is typically overridden by the user in custom fuel handling code.
-      The fuel handling code should interpret the values and move the fuel
-      according to what is sent.
+    * A ``defaultFactors``; a dictionary with user-defined keys and values between 0 and 1 for each key. These factors
+      will be passed to the ``chooseSwaps`` method, which is typically overridden by the user in custom fuel handling
+      code. The fuel handling code should interpret the values and move the fuel according to what is sent.
 
-    * A ``factorSearchFlags`` list, which lists the keys to be branch searched.
-      The search will optimize the first key first, and then do a second pass
-      on the second key, holding the optimal first value constant, and so on.
+    * A ``factorSearchFlags`` list, which lists the keys to be branch searched. The search will optimize the first key
+      first, and then do a second pass on the second key, holding the optimal first value constant, and so on.
 
 Such a method may look like this::
 
@@ -2011,6 +1957,9 @@ Such a method may look like this::
 
         return defaultFactors,factorSearchFlags
 
-Once a proper ``getFactorList`` method exists and a fuel handler object exists that can interpret the factors, activate a branch search during a regular run by selecting the **Branch Search** option on the GUI.
+Once a proper ``getFactorList`` method exists and a fuel handler object exists that can interpret the factors, activate
+a branch search during a regular run by selecting the **Branch Search** option on the GUI.
 
-The **best** result from the branch search is determined by comparing the *keff* values with the ``targetK`` setting, which is available for setting in the GUI. The branch with *keff* closest to the setting, while still being above 1.0 is chosen.
+The **best** result from the branch search is determined by comparing the *keff* values with the ``targetK`` setting,
+which is available for setting in the GUI. The branch with *keff* closest to the setting, while still being above 1.0 is
+chosen.
