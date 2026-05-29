@@ -260,14 +260,20 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         mod = importlib.import_module(modPath)
         return getattr(mod, clsName)
 
-    # 2. Try to import the material from a namespace defined above
+    # 2. TODO: Check that venv and dir: paths have been imported, if they exist
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
+
+    # 3. Try to import the material from a namespace defined above
     for namespace in namespaceOrder:
-        mod = importlib.import_module(namespace)
-        materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
-        materialsList = [material[0] for material in materialsList]
-        if name in materialsList:
-            return getattr(mod, name)
+        if namespace.startswith("venv:") or namespace.startswith("dir:"):
+            # TODO: check matProps
+            pass
+        else:
+            mod = importlib.import_module(namespace)
+            materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
+            materialsList = [material[0] for material in materialsList]
+            if name in materialsList:
+                return getattr(mod, name)
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "
