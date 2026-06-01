@@ -44,8 +44,10 @@ from typing import List
 
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
-from armi.matProps import addMaterial, clear, loadedRootDirs
+from armi.matProps import MatPropsMaterial, addMaterial, clear, loadedRootDirs
+from armi.matProps import getMaterial as getYamlMaterial
 from armi.matProps import getPaths as getYamlPaths
+from armi.matProps import loadAll as loadAllYamls
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
 # armi.reactor.reactors.factory).
@@ -252,8 +254,6 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     armi.reactor.reactors.factory
         Applies user settings to default namespace order.
     """
-    from armi.matProps import MatPropsMaterial
-
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
         modPath, clsName = name.split(":")
@@ -262,12 +262,25 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
 
     # 2. TODO: Check that venv and dir: paths have been imported, if they exist
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
+    for namespace in namespaceOrder:
+        if namespace.startswith("venv:"):
+            yDir = namespace[5:]
+        elif namespace.startswith("dir:"):
+            yDir = namespace[4:]
+        else:
+            continue
+
+        if yDir not in loadedRootDirs:
+            loadAllYamls(yDir)
 
     # 3. Try to import the material from a namespace defined above
     for namespace in namespaceOrder:
         if namespace.startswith("venv:") or namespace.startswith("dir:"):
             # TODO: check matProps
-            pass
+            try:
+                return getYamlMaterial(name)
+            except KeyError:
+                continue
         else:
             mod = importlib.import_module(namespace)
             materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))

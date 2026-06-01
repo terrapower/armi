@@ -126,7 +126,7 @@ def addMaterial(yamlPath: str, mat):
     mat.save()
 
 
-def loadAll(rootDir: str = None) -> None:
+def loadAll(rootDir: str = None, materialClass=None) -> None:
     """
     Loads all material files from a particular directory. If a materials directory is not provided, this function will
     attempt to find materials in the default location in the virtual environment.
@@ -135,6 +135,8 @@ def loadAll(rootDir: str = None) -> None:
     ----------
     rootDir: str
         Directory whose YAML files will be loaded into matProps. The default is the materials_data location in the venv.
+    materialClass: type
+        MatPropsMaterial or subclass of MatPropsMaterial
 
     Notes
     -----
