@@ -747,30 +747,32 @@ class Block(composites.Composite):
 
         return hmDens
 
-    def setB10VolParam(self, heightHot):
+    def setB10VolParam(self, heightHot: bool):
         """
         Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components.
 
+        For situations where multiple components in a Block contain B10, this method only coniders the component that
+        has the highest B10 density. That is, hopefully, it selects the one component that has non-trace amounts of B10.
+
         Parameters
         ----------
-        heightHot : Boolean
-            True if self.height() is cold height
+        heightHot : bool
+            True if self.height() is hot height.
         """
-        # exclude fuel components since they could have slight B10 impurity and
-        # this metric is not relevant for fuel.
+        # Exclude fuel components since they could have slight B10 impurity and this metric is not relevant for fuel.
         b10Comps = [c for c in self if c.getNumberDensity("B10") and not c.isFuel()]
         if not b10Comps:
             return
 
-        # get the highest density comp dont want to sum all because some comps might have very small
-        # impurities of boron and adding this volume won't be conservative for captures per cc.
+        # Get the highest density comp. We do not want to sum them all because some components might have very small
+        # impurities of Boron and adding their volumes will not be conservative for captures per cc.
         b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
 
         if len(b10Comps) > 1:
-            runLog.warning(
-                f"More than one boron10-containing component found in {self.name}. Only {b10Comp} "
-                f"will be considered for calculation of initialB10ComponentVol Since adding "
-                f"multiple volumes is not conservative for captures. All compos found {b10Comps}",
+            runLog.info(
+                f"More than one boron10-containing component found in {self.name}. Only {b10Comp} will be considered "
+                "for calculation of initialB10ComponentVol Since adding multiple volumes is not conservative for "
+                f"captures. All compos found {b10Comps}",
                 single=True,
             )
         if self.isFuel():
@@ -779,7 +781,7 @@ class Block(composites.Composite):
                 single=True,
             )
 
-        # calc volume of boron components
+        # Calculate volume of Boron components
         coldArea = b10Comp.getArea(cold=True)
         coldFactor = b10Comp.getThermalExpansionFactor() if heightHot else 1
         coldHeight = self.getHeight() / coldFactor
