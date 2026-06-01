@@ -757,7 +757,7 @@ class Block(composites.Composite):
         Parameters
         ----------
         heightHot : bool
-            True if self.height() is cold height.
+            True if self.height() is hot height.
         """
         # Exclude fuel components since they could have slight B10 impurity and this metric is not relevant for fuel.
         b10Comps = [c for c in self if c.getNumberDensity("B10") and not c.isFuel()]
