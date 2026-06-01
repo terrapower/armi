@@ -263,15 +263,15 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     # 2. TODO: Check that venv and dir: paths have been imported, if they exist
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
     for namespace in namespaceOrder:
-        if namespace.startswith("venv:"):
-            yDir = namespace[5:]
-        elif namespace.startswith("dir:"):
+        if namespace.startswith("dir:"):
             yDir = namespace[4:]
+        elif namespace.startswith("venv:"):
+            yDir = os.path.join(sysconfig.get_paths()["purelib"], namespace[5:])
         else:
             continue
 
         if yDir not in loadedRootDirs:
-            loadAllYamls(yDir)
+            loadAllYamls(yDir, materialClass=Material)
 
     # 3. Try to import the material from a namespace defined above
     for namespace in namespaceOrder:

@@ -82,7 +82,6 @@ truth for what materials are.
 """
 
 import os
-import sysconfig
 from glob import glob
 
 from armi.matProps.material import MatPropsMaterial
@@ -126,7 +125,7 @@ def addMaterial(yamlPath: str, mat):
     mat.save()
 
 
-def loadAll(rootDir: str = None, materialClass=None) -> None:
+def loadAll(rootDir: str, materialClass=None) -> None:
     """
     Loads all material files from a particular directory. If a materials directory is not provided, this function will
     attempt to find materials in the default location in the virtual environment.
@@ -134,7 +133,7 @@ def loadAll(rootDir: str = None, materialClass=None) -> None:
     Parameters
     ----------
     rootDir: str
-        Directory whose YAML files will be loaded into matProps. The default is the materials_data location in the venv.
+        Directory whose YAML files will be loaded into matProps.
     materialClass: type
         MatPropsMaterial or subclass of MatPropsMaterial
 
@@ -147,9 +146,7 @@ def loadAll(rootDir: str = None, materialClass=None) -> None:
     global loadedRootDirs
 
     if rootDir is None:
-        rootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
-        if not os.path.exists(rootDir):
-            raise OSError(f"No material directory provided, and default not found: {rootDir}")
+        raise ValueError("No material directory provided.")
 
     paths = getPaths(rootDir)
     for yamlPath in paths:
