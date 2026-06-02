@@ -136,12 +136,6 @@ def loadAll(rootDir: str, materialClass=None) -> None:
         Directory whose YAML files will be loaded into matProps.
     materialClass: type
         MatPropsMaterial or subclass of MatPropsMaterial
-
-    Notes
-    -----
-    Hidden in here is a default directory which you can load your YAML files from. Inside your Python virtual
-    environment, you can create a data directory named "materials_data", and store all your matProps formatted YAML
-    files. This is optional, of course, you can just explicitly pass a directory path into this method.
     """
     global loadedRootDirs
 
@@ -169,7 +163,7 @@ def clear() -> None:
     materials.clear()
 
 
-def loadSafe(rootDir: str = None) -> None:
+def loadSafe(rootDir) -> None:
     """
     Safely load a single directory of matProps materials.
 
@@ -181,7 +175,6 @@ def loadSafe(rootDir: str = None) -> None:
     ----------
     rootDir: str
         Directory whose yaml files will be loaded into matProps.
-        The default is the materials_data location in the venv.
 
     See Also
     --------

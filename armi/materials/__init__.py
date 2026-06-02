@@ -47,7 +47,6 @@ from armi.materials.pureYaml import Void  # noqa: F401
 from armi.matProps import MatPropsMaterial, addMaterial, clear, loadedRootDirs
 from armi.matProps import getMaterial as getYamlMaterial
 from armi.matProps import getPaths as getYamlPaths
-from armi.matProps import loadAll as loadAllYamls
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
 # armi.reactor.reactors.factory).
@@ -71,18 +70,28 @@ def setMaterialNamespaceOrder(order):
         This automatic exploration of an importable package saves the user the tedium have having to import or include
         hundreds of materials manually somehow. But it comes with a caveat; the list is ordered. If two different
         namespaces in the list include a material with the same name, the first one found in the list is chosen, i.e.
-        An ARMI application will need materials. Materials can be imported from
-        any code the application has access to, like plugin packages. This leads to
-        the situation where one ARMI application will want to import multiple
-        collections of materials. To handle this, ARMI keeps a list of material
-        namespaces. This is an ordered list of importable packages that ARMI
-        can search for a particular material by name.
+        An ARMI application will need materials. Materials can be imported from any code the application has access to,
+        like plugin packages. This leads to the situation where one ARMI application will want to import multiple
+        collections of materials. To handle this, ARMI keeps a list of material namespaces. This is an ordered list of
+        importable packages that ARMI can search for a particular material by name.
 
-        This automatic exploration of an importable package saves the user the
-        tedium have having to import or include hundreds of materials manually somehow.
+        This automatic exploration of an importable package saves the user the tedium have having to import or include
+        hundreds of materials manually somehow.
     """
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
+
+    # Check that venv and dir: YAML directories have been imported
+    for namespace in order:
+        if namespace.startswith("dir:"):
+            yDir = namespace[4:]
+        elif namespace.startswith("venv:"):
+            yDir = os.path.join(sysconfig.get_paths()["purelib"], namespace[5:])
+        else:
+            continue
+
+        if yDir not in loadedRootDirs:
+            importYamlMaterialDir(yDir)
 
 
 def addYamlMaterialToThisNamespace(yamlPath: str, overwriteExisting=False):
@@ -107,25 +116,21 @@ def addYamlMaterialToThisNamespace(yamlPath: str, overwriteExisting=False):
     globals()[name] = materialClass
 
 
-def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True):
+def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     """
     Import all Materials defined by YAML files in the defined directory into this package.
 
     Parameters
     ----------
-    dirPath : str, optional
+    dirPath : str
         Path to directory, filled with material YAML files, to be imported.
         If this is left as None, we will look for the "materials_data" directory in the venv.
     overwriteExisting : bool, optional
-        If True, will overwrite existing materials in the namespace. Default False.
+        If True, will overwrite existing materials in the namespace. Default True.
     clearFirst : bool, optional
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
-    if dirPath is None:
-        # If no path is provided, get the default material dir from the venv.
-        dirPath = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
-
     if not os.path.exists(dirPath):
         raise OSError(f"No material directory provided, and default not found: {dirPath}")
 
@@ -260,7 +265,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         mod = importlib.import_module(modPath)
         return getattr(mod, clsName)
 
-    # 2. TODO: Check that venv and dir: paths have been imported, if they exist
+    # 2. Check that venv and dir: paths have been imported, if they exist
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
     for namespace in namespaceOrder:
         if namespace.startswith("dir:"):
@@ -271,12 +276,11 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
             continue
 
         if yDir not in loadedRootDirs:
-            loadAllYamls(yDir, materialClass=Material)
+            importYamlMaterialDir(yDir)
 
     # 3. Try to import the material from a namespace defined above
     for namespace in namespaceOrder:
         if namespace.startswith("venv:") or namespace.startswith("dir:"):
-            # TODO: check matProps
             try:
                 return getYamlMaterial(name)
             except KeyError:
