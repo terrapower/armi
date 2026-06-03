@@ -72,7 +72,7 @@ Repository = "https://github.com/terrapower/armi"
 "Bug Tracker" = "https://github.com/terrapower/armi/issues"
 
 [project.optional-dependencies]
-grids = ["wxpython==4.2.1"]
+grids = ["wxpython"]
 memprof = ["psutil"]
 mpi = ["mpi4py"]
 test = [
