@@ -31,7 +31,8 @@ from armi.utils.units import getTc, getTk
 FAIL_ON_RANGE = True
 
 # Need for an memoization optimization to cache YAML-mased materials
-_YAML_MATERIALS = {}
+_YAML_MATS_BY_PATH = {}
+_YAML_MATS_BY_NAME = {}
 
 
 class Material(MatPropsMaterial):
@@ -91,14 +92,15 @@ class Material(MatPropsMaterial):
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
     def __init__(self):
-        global _YAML_MATERIALS
+        global _YAML_MATS_BY_PATH
+
         if self.YAML_PATH is not None:
-            nameStub = f"{self.__class__.__name__}:{self.YAML_PATH}"
-            if nameStub in _YAML_MATERIALS:
-                self.__dict__.update(_YAML_MATERIALS[nameStub].__dict__)
+            if self.YAML_PATH in _YAML_MATS_BY_PATH:
+                self.__dict__.update(_YAML_MATS_BY_PATH[self.YAML_PATH].__dict__)
             else:
                 mat = MatPropsMaterial(self.YAML_PATH)
-                _YAML_MATERIALS[nameStub] = mat
+                _YAML_MATS_BY_NAME[mat.name] = mat
+                _YAML_MATS_BY_PATH[self.YAML_PATH] = mat
                 self.__dict__.update(mat.__dict__)
         else:
             MatPropsMaterial.__init__(self)

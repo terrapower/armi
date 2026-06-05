@@ -45,7 +45,7 @@ from typing import List
 from armi.materials.material import Material
 from armi.materials.pureYaml import Void  # noqa: F401
 from armi.matProps import MatPropsMaterial, addMaterial, clear, loadedRootDirs
-from armi.matProps import getMaterial as getYamlMaterial
+from armi.matProps import getMaterialClass as getYamlMaterialClass
 from armi.matProps import getPaths as getYamlPaths
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
@@ -282,7 +282,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     for namespace in namespaceOrder:
         if namespace.startswith("venv:") or namespace.startswith("dir:"):
             try:
-                return getYamlMaterial(name)
+                return getYamlMaterialClass(name)  # TODO: Returns instance, we need to fix this.
             except KeyError:
                 continue
         else:
@@ -290,7 +290,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
             materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
             materialsList = [material[0] for material in materialsList]
             if name in materialsList:
-                return getattr(mod, name)
+                return getattr(mod, name)  # TODO: Returns type, this is what we want.
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "
