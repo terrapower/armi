@@ -368,7 +368,7 @@ def getBlockParameterDefinitions():
             "heightBOL",
             units=units.CM,
             description="As-fabricated height of this block (as input). Used in fuel performance. Should be constant.",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.VOLUME_INTEGRATED,
             categories=[parameters.Category.retainOnReplacement],
         )
 
