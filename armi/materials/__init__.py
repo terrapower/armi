@@ -282,7 +282,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     for namespace in namespaceOrder:
         if namespace.startswith("venv:") or namespace.startswith("dir:"):
             try:
-                return getYamlMaterialClass(name)  # TODO: Returns instance, we need to fix this.
+                return getYamlMaterialClass(name)  # TODO: Let's not use matProps collections, but the new ARMI ones.
             except KeyError:
                 continue
         else:
@@ -290,7 +290,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
             materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
             materialsList = [material[0] for material in materialsList]
             if name in materialsList:
-                return getattr(mod, name)  # TODO: Returns type, this is what we want.
+                return getattr(mod, name)
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "

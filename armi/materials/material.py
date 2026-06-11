@@ -35,6 +35,18 @@ _YAML_MATS_BY_PATH = {}
 _YAML_MATS_BY_NAME = {}
 
 
+def getMaterialClassByPath(path):
+    """TODO."""
+    global _YAML_MATS_BY_PATH
+    return _YAML_MATS_BY_PATH[path]
+
+
+def getMaterialClassByName(name):
+    """TODO."""
+    global _YAML_MATS_BY_NAME
+    return _YAML_MATS_BY_NAME[name]
+
+
 class Material(MatPropsMaterial):
     r"""
     A material is made up of elements or isotopes. It has bulk properties like density.

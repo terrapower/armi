@@ -1063,6 +1063,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                 f"Specified tolerance: {self._TOLERANCE}",
                 single=True,
             )
+
+            print("\n\nTODO: JOHN")
+            print(self.material, type(self.material))
+            print(self.material.density(Tc=555))
+            print("TODO: JOHN\n\n")
+
             raise RuntimeError(f"Linear expansion factor may not be implemented in the {self.material} material class.")
         return 1.0 + dLL
 
@@ -1083,15 +1089,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                 break
         if not reportGroup:
             return f"No report group designated for {self.getName()} component."
-        reportGroup.header = [
-            "",
-            f"Tcold ({self.inputTemperatureInC})",
-            f"Thot ({self.temperatureInC})",
-        ]
+        reportGroup.header = ["", f"Tcold ({self.inputTemperatureInC})", f"Thot ({self.temperatureInC})"]
 
+        # py3 cannot format None
         dimensions = {
             k: self.p[k] for k in self.DIMENSION_NAMES if k not in ("modArea", "area") and self.p[k] is not None
-        }  # py3 cannot format None
+        }
         # Set component name and material
         report.setData("Name", [self.getName(), ""], reportGroup)
         report.setData("Material", [self.getProperties().name, ""], reportGroup)
