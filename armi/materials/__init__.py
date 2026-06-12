@@ -42,15 +42,24 @@ import sysconfig
 from pathlib import Path
 from typing import List
 
-from armi.materials.material import Material
+from armi.materials.material import Material, getYamlMaterialClassByName, yamlMatsByName, yamlMatsByPath
 from armi.materials.pureYaml import Void  # noqa: F401
-from armi.matProps import MatPropsMaterial, addMaterial, clear, loadedRootDirs
-from armi.matProps import getMaterialClass as getYamlMaterialClass
+from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
 # armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
+
+loadedRootDirs = []
+
+
+def clear() -> None:
+    """Clears all loaded materials in matProps."""
+    global loadedRootDirs
+    loadedRootDirs.clear()
+    yamlMatsByName.clear()
+    yamlMatsByPath.clear()
 
 
 def setMaterialNamespaceOrder(order):
@@ -131,6 +140,8 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
+    global loadedRootDirs
+
     if not os.path.exists(dirPath):
         raise OSError(f"No material directory provided, and default not found: {dirPath}")
 
@@ -149,8 +160,6 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         except Exception:
             continue
 
-        # add the material to two namespaces, to support different user workflows
-        addMaterial(yamlPath, mat)
         addYamlMaterialToThisNamespace(yamlPath, overwriteExisting=overwriteExisting)
 
 
@@ -259,6 +268,8 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     armi.reactor.reactors.factory
         Applies user settings to default namespace order.
     """
+    global loadedRootDirs
+
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
         modPath, clsName = name.split(":")
@@ -282,7 +293,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     for namespace in namespaceOrder:
         if namespace.startswith("venv:") or namespace.startswith("dir:"):
             try:
-                return getYamlMaterialClass(name)  # TODO: Let's not use matProps collections, but the new ARMI ones.
+                return getYamlMaterialClassByName(name)  # TODO: Let's not use matProps collections
             except KeyError:
                 continue
         else:
