@@ -720,5 +720,7 @@ def getYamlMaterialClassByPath(path):
 def getYamlMaterialClassByName(name):
     """TODO."""
     global yamlMatsByName
+    print("TODO: getYamlMaterialClassByName:")
+    print(sorted(yamlMatsByName.keys()))  # TODO: testing
     mat = yamlMatsByName[name]
     return type(name, (type(mat),), {"YAML_PATH": mat.YAML_PATH})

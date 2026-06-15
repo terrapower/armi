@@ -1057,10 +1057,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLL = self.material.linearExpansionFactor(Tc=Tc, T0=T0)
         if not dLL and abs(Tc - T0) > self._TOLERANCE:
             runLog.error(
-                f"Linear expansion percent may not be implemented in the {self.material} material class.\n"
-                "This method needs to be implemented on the material to allow thermal expansion."
-                f".\nReference temperature: {T0}, Adjusted temperature: {Tc}, Temperature difference: {(Tc - T0)}, "
-                f"Specified tolerance: {self._TOLERANCE}",
+                f"Linear expansion percent may not be implemented in the {self.material} material class.\nThis method "
+                f"needs to be implemented on the material to allow thermal expansion.\nReference temperature: {T0}, "
+                f"Adjusted temperature: {Tc}, Temperature difference: {(Tc - T0)}, Specified tolerance:"
+                f" {self._TOLERANCE}",
                 single=True,
             )
 

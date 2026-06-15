@@ -154,7 +154,9 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
         # tests this is a valid material file AND preps for adding to matProp registry
-        mat = Material()
+        name = MatPropsMaterial.getMatNameFromYamlPath(yamlPath)
+        materialClass = type(name, (Material,), {"YAML_PATH": yamlPath})
+        mat = materialClass()
         try:
             mat.loadFile(yamlPath)
         except Exception:
