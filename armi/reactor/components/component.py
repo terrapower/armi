@@ -528,6 +528,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                     f"Component {self} with {self.material} has cold negative area of {area} cm^2. "
                     "This can be caused by component overlap with component dimension linking or by invalid inputs."
                 )
+                print(type(self.material))  # TODO
+                print(type(self.material).__mro__)  # TODO
                 raise ArithmeticError(negAreaFailure)
 
     def _checkNegativeVolume(self, volume):

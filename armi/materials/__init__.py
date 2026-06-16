@@ -39,7 +39,6 @@ import inspect
 import os
 import pkgutil
 import sysconfig
-from pathlib import Path
 from typing import List
 
 from armi.materials.material import Material, getYamlMaterialClassByName, yamlMatsByName, yamlMatsByPath
@@ -103,28 +102,6 @@ def setMaterialNamespaceOrder(order):
             importYamlMaterialDir(yDir)
 
 
-def addYamlMaterialToThisNamespace(yamlPath: str, overwriteExisting=False):
-    """Given a valid material YAML file, create a class for it and add it to this package.
-
-    Parameters
-    ----------
-    yamlPath : str
-        Path to a valid material YAML file, to be imported.
-    overwriteExisting : bool, optional
-        If True, will overwrite existing materials in the namespace. Default False.
-    """
-    # Get the name of the material from the file name
-    name = Path(yamlPath).stem
-
-    # If a class with this name already exists in the package, continue
-    if not overwriteExisting and name in globals():
-        return
-
-    # Build a custom YAML material class and add it to this package
-    materialClass = type(name, (Material,), {"YAML_PATH": yamlPath})
-    globals()[name] = materialClass
-
-
 def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     """
     Import all Materials defined by YAML files in the defined directory into this package.
@@ -153,7 +130,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     # recursively get all the *.yaml and *.yml files from the provided directory
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
-        # tests this is a valid material file AND preps for adding to matProp registry
+        # tests this is a valid material file AND preps for adding to local materials registry
         name = MatPropsMaterial.getMatNameFromYamlPath(yamlPath)
         materialClass = type(name, (Material,), {"YAML_PATH": yamlPath})
         mat = materialClass()
@@ -162,7 +139,9 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         except Exception:
             continue
 
-        addYamlMaterialToThisNamespace(yamlPath, overwriteExisting=overwriteExisting)
+        # If a class with this name already exists in the package, continue
+        if overwriteExisting or name not in globals():
+            globals()[name] = materialClass
 
 
 def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):

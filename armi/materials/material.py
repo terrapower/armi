@@ -714,13 +714,20 @@ class FuelMaterial(Material):
 def getYamlMaterialClassByPath(path):
     """TODO."""
     global yamlMatsByPath
-    return yamlMatsByPath[path]
+    mat = yamlMatsByPath[path]  # TODO
+    matType = type(mat)
+    if matType == MatPropsMaterial:
+        matType = Material
+    return type(mat.name, (matType,), {"YAML_PATH": mat.YAML_PATH})
 
 
 def getYamlMaterialClassByName(name):
     """TODO."""
     global yamlMatsByName
-    print("TODO: getYamlMaterialClassByName:")
-    print(sorted(yamlMatsByName.keys()))  # TODO: testing
-    mat = yamlMatsByName[name]
-    return type(name, (type(mat),), {"YAML_PATH": mat.YAML_PATH})
+    # print("TODO: getYamlMaterialClassByName:")
+    # print(sorted(yamlMatsByName.keys()))  # TODO: testing
+    mat = yamlMatsByName[name]  # TODO
+    matType = type(mat)
+    if matType == MatPropsMaterial:
+        matType = Material
+    return type(name, (matType,), {"YAML_PATH": mat.YAML_PATH})

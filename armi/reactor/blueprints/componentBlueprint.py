@@ -391,6 +391,9 @@ def expandElementals(mat, blueprint):
     """
     elementExpansionPairs = []
     for elementToExpand in blueprint.elementsToExpand:
+        # if mat.name == "Void":
+        #    print(f"\nTODO: mat: {mat}")
+        #    print(f"TODO: type(mat): {type(mat)}")
         if elementToExpand.symbol not in mat.massFrac:
             continue
         nucFlags = blueprint.nuclideFlags.get(elementToExpand.symbol)
