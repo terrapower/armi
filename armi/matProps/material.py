@@ -81,14 +81,6 @@ class MatPropsMaterial:
         """Provides string representation for MatPropsMaterial class."""
         return f"<MatPropsMaterial {self.name} {str(self.materialType)}>"
 
-    # TODO
-    # def __reduce__(self):
-    #    """Tell pickle how to reconstruct this class.
-    #
-    #    Since we are unpickling in the __new__ constructor, we need this helper to avoid recursion.
-    #    """
-    #    return (object.__new__, (self.__class__,), self.__dict__)
-
     def hash(self) -> str:
         """Returns the SHA1 hash value of a MatPropsMaterial instance."""
         return self._sha1
@@ -175,7 +167,7 @@ class MatPropsMaterial:
 
     @staticmethod
     def getMatNameFromYamlPath(yamlPath):
-        """TODO: Grab the material name from the file name."""
+        """Grab the material name from the file name."""
         n = Path(yamlPath).name
         if n.lower().endswith(".yaml"):
             n = n[:-5]

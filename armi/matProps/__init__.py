@@ -216,14 +216,6 @@ def getMaterial(name: str) -> MatPropsMaterial:
         raise KeyError(msg) from None
 
 
-def getMaterialClass(name: str) -> type:
-    """TODO."""
-    from armi.materials import Material
-
-    mat = getMaterial(name)
-    return type(name, (Material,), {"YAML_PATH": mat.YAML_PATH})
-
-
 def loadMaterial(yamlPath: str, saveMaterial: bool = False) -> MatPropsMaterial:
     """
     Loads an individual material file.
