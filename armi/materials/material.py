@@ -31,9 +31,7 @@ from armi.utils.units import getTc, getTk
 FAIL_ON_RANGE = True
 
 # Need for an memoization optimization to cache YAML-mased materials
-# TODO: JOHN Make these underscore
-yamlMatsByName = {}
-yamlMatsByPath = {}
+_YAML_MATERIALS = {}
 
 
 class Material(MatPropsMaterial):
@@ -93,16 +91,13 @@ class Material(MatPropsMaterial):
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
     def __init__(self):
-        global yamlMatsByName
-        global yamlMatsByPath
-
+        global _YAML_MATERIALS
         if self.YAML_PATH is not None:
-            if self.YAML_PATH in yamlMatsByPath:
-                self.__dict__.update(yamlMatsByPath[self.YAML_PATH][0].__dict__)
+            if self.YAML_PATH in _YAML_MATERIALS:
+                self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
             else:
                 mat = MatPropsMaterial(self.YAML_PATH)
-                yamlMatsByName[mat.name] = (mat, self.__class__)
-                yamlMatsByPath[self.YAML_PATH] = (mat, self.__class__)
+                _YAML_MATERIALS[self.YAML_PATH] = mat
                 self.__dict__.update(mat.__dict__)
         else:
             MatPropsMaterial.__init__(self)
@@ -711,29 +706,3 @@ class FuelMaterial(Material):
             self.class1_wt_frac = class1_wt_frac
 
         Material.applyInputParams(self, *args, **kwargs)
-
-
-def getYamlMaterialClassByPath(path):
-    """TODO."""
-    global yamlMatsByPath
-    mat, matType = yamlMatsByPath[path]  # TODO
-    #matType = type(mat)
-    #if matType == MatPropsMaterial:
-    #    matType = Material
-    return type(mat.name, (matType,), {"YAML_PATH": mat.YAML_PATH})
-
-
-# TODO: the "matType" here needs to be the full path, I guess?
-def getYamlMaterialClassByName(name):
-    """TODO."""
-    global yamlMatsByName
-    # print("TODO: getYamlMaterialClassByName:")
-    # print(sorted(yamlMatsByName.keys()))  # TODO: testing
-    mat, matType = yamlMatsByName[name]  # TODO
-    #matType = type(mat)
-    #if matType == MatPropsMaterial:
-    #    matType = Material
-    ## TODO: JOHN
-    if mat.name == "Void":  # TODO: JOHN
-        print(f"getYamlMaterialClassByName:   {mat}:   {matType}")  # TODO: JOHN
-    return type(name, (matType,), {"YAML_PATH": mat.YAML_PATH})
