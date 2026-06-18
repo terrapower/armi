@@ -20,7 +20,6 @@ import pickle
 import shutil
 import unittest
 from copy import deepcopy
-from random import randint
 
 from numpy import testing
 
@@ -99,24 +98,24 @@ class MaterialFindingTests(unittest.TestCase):
     """Make sure materials are discoverable as designed."""
 
     def test_findMaterial(self):
-        """Test resolveMaterialClassByName() function.
+        """Test createMaterialByName() function.
 
         .. test:: Materials can be grabbed from a list of namespaces.
             :id: T_ARMI_MAT_NAMESPACE0
             :tests: R_ARMI_MAT_NAMESPACE
         """
-        self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.materials"]),
+        self.assertIsInstance(
+            materials.createMaterialByName("Void", namespaceOrder=["armi.materials"]),
             materials.Void,
         )
-        self.assertIs(
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["armi.cli", "armi.materials"]),
+        self.assertIsInstance(
+            materials.createMaterialByName("Void", namespaceOrder=["armi.cli", "armi.materials"]),
             materials.Void,
         )
         with self.assertRaises(ModuleNotFoundError):
-            materials.resolveMaterialClassByName("Void", namespaceOrder=["invalid.namespace", "armi.materials"])
+            materials.createMaterialByName("Void", namespaceOrder=["invalid.namespace", "armi.materials"])
         with self.assertRaises(KeyError):
-            materials.resolveMaterialClassByName("Unobtanium", namespaceOrder=["armi.materials"])
+            materials.createMaterialByName("Unobtanium", namespaceOrder=["armi.materials"])
 
     def __validateMaterialNamespace(self):
         """Helper method to validate the material namespace a little."""
@@ -139,8 +138,8 @@ class MaterialFindingTests(unittest.TestCase):
         """
         # let's do a quick test of getting a material from the default namespace
         setMaterialNamespaceOrder(["armi.materials"])
-        uraniumOxide = materials.resolveMaterialClassByName("UraniumOxide", namespaceOrder=["armi.materials"])
-        self.assertGreater(uraniumOxide().density(500), 0)
+        uraniumOxide = materials.createMaterialByName("UraniumOxide", namespaceOrder=["armi.materials"])
+        self.assertGreater(uraniumOxide.density(500), 0)
 
         # validate the default namespace in ARMI
         self.__validateMaterialNamespace()
@@ -151,12 +150,10 @@ class MaterialFindingTests(unittest.TestCase):
         self.__validateMaterialNamespace()
 
         # In the case of duplicate materials, show that the material namespace determines which material is chosen.
-        uraniumOxideTest = materials.resolveMaterialClassByName(
-            "UraniumOxide", namespaceOrder=[newMats, "armi.materials"]
-        )
+        uraniumOxideTest = materials.createMaterialByName("UraniumOxide", namespaceOrder=[newMats, "armi.materials"])
         for t in range(200, 600):
-            self.assertEqual(uraniumOxideTest().density(t), 0)
-            self.assertEqual(uraniumOxideTest().pseudoDensity(t), 0)
+            self.assertEqual(uraniumOxideTest.density(t), 0)
+            self.assertEqual(uraniumOxideTest.pseudoDensity(t), 0)
 
         # for safety, reset the material namespace list and order
         setMaterialNamespaceOrder(["armi.materials"])
@@ -164,7 +161,7 @@ class MaterialFindingTests(unittest.TestCase):
     @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_importYamlMaterialDir(self):
         testName = "test_importYamlMaterialDir"
-        matName = f"{testName}{randint(0, 9999999999)}"  # random material name, probably unique
+        matName = "materialA"
         with TemporaryDirectoryChanger():
             os.mkdir(testName)
             thisDir = pathlib.Path(__file__).parent.resolve()
@@ -174,12 +171,12 @@ class MaterialFindingTests(unittest.TestCase):
 
             # prove the material does not already exist
             with self.assertRaises(KeyError):
-                materials.resolveMaterialClassByName(matName)
+                materials.createMaterialByName(matName)
 
             importYamlMaterialDir(dirPath=testName, overwriteExisting=True, clearFirst=False)
 
             # get a material back and show it is working
-            mat = materials.resolveMaterialClassByName(matName)()
+            mat = materials.createMaterialByName(matName, namespaceOrder=[f"dir:{testName}", "armi.materials"])
             self.assertIsInstance(mat, materials.Material)
             self.assertGreater(mat.rho(T=400), 500)
 

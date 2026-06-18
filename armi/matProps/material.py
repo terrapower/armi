@@ -82,7 +82,7 @@ class MatPropsMaterial:
         return f"<MatPropsMaterial {self.name} {str(self.materialType)}>"
 
     # TODO
-    #def __reduce__(self):
+    # def __reduce__(self):
     #    """Tell pickle how to reconstruct this class.
     #
     #    Since we are unpickling in the __new__ constructor, we need this helper to avoid recursion.

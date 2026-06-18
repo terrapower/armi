@@ -17,7 +17,7 @@
 import math
 import unittest
 
-from armi.materials import resolveMaterialClassByName
+from armi.materials import createMaterialByName
 from armi.reactor.components.complexShapes import (
     CircleHoledCircle,
     HexHoledCircle,
@@ -32,7 +32,7 @@ class TestComplexShapes(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.material = resolveMaterialClassByName("HT9")()
+        cls.material = createMaterialByName("HT9")
 
     @staticmethod
     def circArea(d):

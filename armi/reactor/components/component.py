@@ -316,7 +316,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setProperties(self, properties):
         """Apply thermo-mechanical properties of a Material."""
         if isinstance(properties, str):
-            mat = materials.resolveMaterialClassByName(properties)()
+            mat = materials.createMaterialByName(properties)
             # note that the material will not be expanded to natural isotopics
             # here because the user-input blueprints information is not available
         else:
