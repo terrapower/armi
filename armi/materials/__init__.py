@@ -41,8 +41,8 @@ import pkgutil
 import sysconfig
 from typing import List
 
-from armi.materials.material import Material, getYamlMaterialClassByName, yamlMatsByName, yamlMatsByPath
-from armi.materials.pureYaml import Void  # noqa: F401
+from armi.materials.material import Material, yamlMatsByName, yamlMatsByPath
+#from armi.materials.pureYaml import Void  # noqa: F401
 from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
 
@@ -52,6 +52,19 @@ _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 loadedRootDirs = []
 
+def getYamlMaterialClassByName(name):
+    """TODO."""
+    global yamlMatsByName
+    # print("TODO: getYamlMaterialClassByName:")
+    # print(sorted(yamlMatsByName.keys()))  # TODO: testing
+    mat, matType = yamlMatsByName[name]  # TODO
+    #matType = type(mat)
+    #if matType == MatPropsMaterial:
+    #    matType = Material
+    ## TODO: JOHN
+    if mat.name == "Void":  # TODO: JOHN
+        print(f"getYamlMaterialClassByName:   {mat}:   {matType}")  # TODO: JOHN
+    return type(name, (matType,), {"YAML_PATH": mat.YAML_PATH})
 
 def clear() -> None:
     """Clears all loaded materials in matProps."""
@@ -133,6 +146,10 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         # tests this is a valid material file AND preps for adding to local materials registry
         name = MatPropsMaterial.getMatNameFromYamlPath(yamlPath)
         materialClass = type(name, (Material,), {"YAML_PATH": yamlPath})
+        # if name == "Void":
+        #    print(f"TODO: importYamlMaterialDir: {mat}:  {materialClass}")
+        # else:
+        #    print(name)
         mat = materialClass()
         try:
             mat.loadFile(yamlPath)
@@ -161,6 +178,7 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
     updateSource : str, optional
         Change DATA_SOURCE on import to a different string. Useful for saying where plugin materials are coming from.
     """
+    print(f"TODO: importMaterialsIntoModuleNamespace: {path}, {modName}")
     # load materials from pure Python files
     for _modImporter, modname, _ispkg in pkgutil.walk_packages(path=path, prefix=modName + "."):
         if "test" in modname:
@@ -168,6 +186,8 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
 
         mod = importlib.import_module(modname)
         for item, obj in mod.__dict__.items():
+            if "void" in item.lower():
+                print(f"void name: {item} {obj}")
             try:
                 if issubclass(obj, Material):
                     namespace[item] = obj
@@ -251,6 +271,9 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     """
     global loadedRootDirs
 
+    #if name == "Void":
+    #    print(f"TODO: resolveMaterialClassByName 1")
+
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
         modPath, clsName = name.split(":")
@@ -278,11 +301,18 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
             except KeyError:
                 continue
         else:
+            #if name == "Void":
+            #    print(f"TODO: resolveMaterialClassByName 5")
             mod = importlib.import_module(namespace)
             materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
             materialsList = [material[0] for material in materialsList]
             if name in materialsList:
+                #if "void" in name.lower():
+                #    print(f"    TODO: {mod}, {name}")
                 return getattr(mod, name)
+
+    #if name == "Void":
+    #    print(f"TODO: resolveMaterialClassByName 99")
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "

@@ -74,12 +74,20 @@ class MatPropsMaterial:
         if self.yamlPath:
             self.loadFile(self.yamlPath)
             if not self.YAML_PATH:
-                # help to cover some edge-cases with how materials can be loaded
+                # handle some edge-cases with how materials can be loaded
                 self.YAML_PATH = self.yamlPath
 
     def __repr__(self):
         """Provides string representation for MatPropsMaterial class."""
         return f"<MatPropsMaterial {self.name} {str(self.materialType)}>"
+
+    # TODO
+    #def __reduce__(self):
+    #    """Tell pickle how to reconstruct this class.
+    #
+    #    Since we are unpickling in the __new__ constructor, we need this helper to avoid recursion.
+    #    """
+    #    return (object.__new__, (self.__class__,), self.__dict__)
 
     def hash(self) -> str:
         """Returns the SHA1 hash value of a MatPropsMaterial instance."""
