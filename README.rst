@@ -238,7 +238,7 @@ A nuclear reactor research scientist, at a national lab or university, may benef
 reduce the time spent on data management. ARMI can handle the tedium so that researchers can better focus on designing
 and testing their research.
 
-For example, if an ARMI input file describing the FFTF reactor is provided, the researcher can start running benchmark
+For example, if an ARMI input file describing the Fast Flux Test Facility (FTFF) reactor is provided, the researcher can start running benchmark
 cases with their new code method very rapidly, rather than spending the time building their own FFTF model.
 
 If someone wants to try varying nuclear cross sections by a percent here and there to compute sensitivities, ARMI is a

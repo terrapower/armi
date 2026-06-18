@@ -8,7 +8,7 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
 --------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :numbered:
 
    inputs

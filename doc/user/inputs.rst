@@ -9,10 +9,10 @@ ARMI input files define the initial state of the reactor model and tell ARMI wha
 There are several input files:
 
 Settings file
-    Contains simulation parameters (like full power, cycle length, and which physics modules to activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+    Contains simulation parameters (like full power, cycle length, and which physics modules to activate) and all kinds of modeling approximation settings (e.g. convergence criteria)
 
 Blueprints file
-    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel pins to heat exchangers
+    Contains dimensions and compositions of the components/blocks/assemblies in your reactor systems, from fuel pins to heat exchangers
 
 Fuel management file
     Describes how fuel moves around during a simulation
@@ -68,7 +68,7 @@ The ARMI GUI may be used to manipulate many common settings (though the GUI can'
 
 Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same Blueprints, Core Map, and Fuel Management inputs.
 
-.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple grid editor GUI is, as described in :ref:`grids`
+.. note:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple grid editor GUI is, as described in :ref:`grids`
 
 The assembly clicker
 ^^^^^^^^^^^^^^^^^^^^
@@ -515,7 +515,7 @@ ARMI adds an ``!include`` YAML tag, which can be used to include the contents of
    grids:
        core: !include path/to/core_grid.yaml
 
-Would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into the main blueprints file. The rules that ARMI uses to handle things like indentation of the included text are usually rather intuitive, but sometimes it can be useful to witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run for testing inputs with !includes.
+would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into the main blueprints file. The rules that ARMI uses to handle things like indentation of the included text are usually rather intuitive, but sometimes it can be useful to witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run for testing inputs with !includes.
 
 ARMI models are built hierarchically, first by defining components, and then by larger and larger collections of the levels of the reactor.
 
