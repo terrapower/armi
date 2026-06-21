@@ -373,7 +373,7 @@ html_theme_options = {
     # Toc options
     "collapse_navigation": True,
     "includehidden": True,
-    "navigation_depth": 5,
+    "navigation_depth": 4,
     "sticky_navigation": True,
     "titles_only": False,
 }
