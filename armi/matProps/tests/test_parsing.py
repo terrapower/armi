@@ -15,6 +15,7 @@
 """Test YAML parsers for all files in the matProps data directory to ensure that there are no parsing errors."""
 
 import os
+import sysconfig
 import tempfile
 import unittest
 from os import path
@@ -75,6 +76,18 @@ class TestParsing(unittest.TestCase):
 
         armi.matProps.clear()
         self.assertEqual(0, len(armi.matProps.loadedMaterials()))
+
+    def test_loadAllBadRootDir(self):
+        defaultRootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
+        tempRootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data_temp")
+        if os.path.exists(defaultRootDir):
+            os.rename(defaultRootDir, tempRootDir)
+
+        with self.assertRaisesRegex(OSError, "No material directory provided"):
+            armi.matProps.loadAll()
+
+        if os.path.exists(tempRootDir):
+            os.rename(tempRootDir, defaultRootDir)
 
     def test_loadSafe(self):
         armi.matProps.clear()
