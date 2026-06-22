@@ -149,7 +149,7 @@ In the case of burnup, the reactor cycle history may be specified using either t
 
 In addition, one may optionally use the ``powerFractions`` setting to change the reactor power between each cycle. With these settings, a user can define a history in which each cycle may vary in power, length, and uptime.
 The "uptime" being the amount of time the reactor is at ``power * powerFractions[i]`` for cycle ``i``.
-The uptime duration is determined by ``cycleLength[i] * availabilityFactor[i]`` days with "downtime" ``cycleLength[i] * (1 - availabilityFactor[i])``.
+The uptime duration is determined by ``cycleLengths[i] * availabilityFactors[i]`` days with "downtime" ``cycleLengths[i] * (1 - availabilityFactors[i])``.
 The cycle length is then the amount of total time (uptime + downtime) between the start of two successive cycles.
 
 The history is restricted, however, to each cycle having a constant power, to each cycle having the same number of burnup nodes, and to those burnup nodes being evenly spaced within each cycle. An example simple cycle history might look like
@@ -174,7 +174,7 @@ The above scheme would represent 3 cycles of operation:
 
 In each cycle, criticality calculations will be performed at 3 (``burnSteps + 1``) nodes evenly-spaced through the uptime portion of the cycle, without option for changing node spacing or frequency.
 
-A more detailed cycle history, may be specified through the use of the ``cycles`` setting.
+A more detailed cycle history may be specified through the use of the ``cycles`` setting.
 For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
 
     * ``name``
