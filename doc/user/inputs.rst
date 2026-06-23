@@ -174,8 +174,7 @@ The above scheme would represent 3 cycles of operation:
 
 In each cycle, criticality calculations will be performed at 3 (``burnSteps + 1``) nodes evenly-spaced through the uptime portion of the cycle, without option for changing node spacing or frequency.
 
-A more detailed cycle history may be specified through the use of the ``cycles`` setting.
-For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
+A more detailed cycle history may be specified using the ``cycles`` setting. For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
 
     * ``name``
     * ``power fractions``
