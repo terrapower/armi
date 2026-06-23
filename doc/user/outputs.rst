@@ -118,19 +118,19 @@ Extracting Settings and Blueprints
 ----------------------------------
 As well as the reactor states for each time node, the database file also stores the
 input files (blueprints and settings files) used to run the case that generated it.
-These can be recovered using the `extract-inputs` ARMI entry point. Use `python -m armi
-extract-inputs --help` for more information.
+These can be recovered using the ``extract-inputs`` ARMI entry point. For more information, see
+:py:class:`armi.cli.database.ExtractInputs`, or use ``python -m armi extract-inputs --help``.
 
 File format
 -----------
 The database file format is built on top of the HDF5 format. There are many tools
 available for viewing, editing, and scripting HDF5 files. The ARMI database uses the
-`h5py` package for interacting with the underlying data and metadata.
+``h5py`` package for interacting with the underlying data and metadata.
 At a high level there are 3 things to know about HDF5:
 
 1. **Groups** - Groups are named collections of datasets. Think of a group as a filesystem folder.
 2. **Datasets** - Datasets are named values. If a group is a folder, a dataset is a file. Values are
-   strongly typed (think `int`, `float`, `double`, but also whether it is big endian, little endian
+   strongly typed (think ``int``, ``float``, ``double``, but also whether it is big endian, little endian
    so that the file is portable across different systems). Values can be scalar, vector, or
    N-dimensional arrays.
 3. **Attributes** - Attributes can exist on a dataset or a group to provide supplemental
