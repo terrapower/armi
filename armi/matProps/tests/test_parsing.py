@@ -19,6 +19,7 @@ import sysconfig
 import tempfile
 import unittest
 from os import path
+from unittest.mock import patch
 
 import armi.matProps
 
@@ -77,17 +78,10 @@ class TestParsing(unittest.TestCase):
         armi.matProps.clear()
         self.assertEqual(0, len(armi.matProps.loadedMaterials()))
 
+    @patch("armi.matProps._DEFAULT_ROOT_DIR", os.path.join(sysconfig.get_paths()["purelib"], "materials_data_temp"))
     def test_loadAllBadRootDir(self):
-        defaultRootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
-        tempRootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data_temp")
-        if os.path.exists(defaultRootDir):
-            os.rename(defaultRootDir, tempRootDir)
-
         with self.assertRaisesRegex(OSError, "No material directory provided"):
             armi.matProps.loadAll()
-
-        if os.path.exists(tempRootDir):
-            os.rename(tempRootDir, defaultRootDir)
 
     def test_loadSafe(self):
         armi.matProps.clear()

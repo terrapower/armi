@@ -90,6 +90,8 @@ from armi.matProps.material import MatPropsMaterial
 loadedRootDirs = []
 materials = {}
 
+_DEFAULT_ROOT_DIR = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
+
 
 def getPaths(rootDir: str) -> list:
     """Get the paths of all the YAML files in a given directory."""
@@ -145,7 +147,7 @@ def loadAll(rootDir: str = None) -> None:
     global loadedRootDirs
 
     if rootDir is None:
-        rootDir = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
+        rootDir = _DEFAULT_ROOT_DIR
         if not os.path.exists(rootDir):
             raise OSError(f"No material directory provided, and default not found: {rootDir}")
 
