@@ -173,12 +173,12 @@ subchannel vs. CFD, etc.).
 
 New analysis and physics capabilities
 *************************************
-The ARMI reactor model is fully accessible via a Python-based API, meaning that power-users and developers have full
+The ARMI reactor model is fully accessible via a Python-based API, meaning that users have full
 access to the details of the plant at all times. Developers adding new physics features can take advantage of the ARMI
 data management structure by simply reading and writing to the Reactor state. Leveraging the infrastructure of ARMI,
 progress can be made rapidly.
 
-Power-user analysts can modify the plant in many ways. For instance, removing all sodium coolant is a one-liner::
+A user can modify the plant in many ways. For instance, removing all sodium coolant is a one-liner::
 
     core.setNumberDensity('NA23',0.0)
 
