@@ -34,7 +34,6 @@ class MaterialType:
         "ASME2019": 64,
         "SimpleSolid": 128,
         "Composite": 256,
-"test": 69,
     }
 
     def __init__(self, value: int = 0):
