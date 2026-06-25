@@ -341,9 +341,8 @@ class HexBlock(Block):
             ductComps = self.getComponents(Flags.DUCT)
             cladComp = self.getComponent(Flags.CLAD, quiet=True)  # Quiet because None case is checked for below
         except ValueError:
-            # silent exit
-            # there is no duct or more that one clad/wire, the logic below cannot
-            # check the dimensions of the block.
+            # Silent Exit
+            # There is no duct or more that one clad/wire, the logic below cannot check the dimensions of the block.
             return
 
         # check wire wrap in contact with clad
