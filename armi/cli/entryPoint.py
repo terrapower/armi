@@ -104,6 +104,7 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
         self.parser = argparse.ArgumentParser(
             prog="{} {}".format(context.APP_NAME, self.name),
             description=self.description or self.__doc__,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         if self.settingsArgument is not None:
             if self.settingsArgument not in ["required", "optional"]:

@@ -9,10 +9,10 @@ ARMI input files define the initial state of the reactor model and tell ARMI wha
 There are several input files:
 
 Settings file
-    Contains simulation parameters (like full power, cycle length, and which physics modules to activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+    Contains simulation parameters (like full power, cycle length, and which physics modules to activate) and all kinds of modeling approximation settings (e.g. convergence criteria)
 
 Blueprints file
-    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel pins to heat exchangers
+    Contains dimensions and compositions of the components/blocks/assemblies in your reactor systems, from fuel pins to heat exchangers
 
 Fuel management file
     Describes how fuel moves around during a simulation
@@ -68,7 +68,7 @@ The ARMI GUI may be used to manipulate many common settings (though the GUI can'
 
 Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same Blueprints, Core Map, and Fuel Management inputs.
 
-.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple grid editor GUI is, as described in :ref:`grids`
+.. note:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple grid editor GUI is, as described in :ref:`grids`
 
 The assembly clicker
 ^^^^^^^^^^^^^^^^^^^^
@@ -147,7 +147,12 @@ In the case of burnup, the reactor cycle history may be specified using either t
     * ``availabilityFactor(s)`` (default = 1.0)
     * ``cycleLength(s)`` (default = 365.2425)
 
-In addition, one may optionally use the ``powerFractions`` setting to change the reactor power between each cycle. With these settings, a user can define a history in which each cycle may vary in power, length, and uptime. The history is restricted, however, to each cycle having a constant power, to each cycle having the same number of burnup nodes, and to those burnup nodes being evenly spaced within each cycle. An example simple cycle history might look like
+In addition, one may optionally use the ``powerFractions`` setting to change the reactor power between each cycle. With these settings, a user can define a history in which each cycle may vary in power, length, and uptime.
+The "uptime" being the amount of time the reactor is at ``power * powerFractions[i]`` for cycle ``i``.
+The uptime duration is determined by ``cycleLengths[i] * availabilityFactors[i]`` days with "downtime" ``cycleLengths[i] * (1 - availabilityFactors[i])``.
+The cycle length is then the amount of total time (uptime + downtime) between the start of two successive cycles.
+
+The history is restricted, however, to each cycle having a constant power, to each cycle having the same number of burnup nodes, and to those burnup nodes being evenly spaced within each cycle. An example simple cycle history might look like
 
 .. code-block:: yaml
 
@@ -164,16 +169,12 @@ Note the use of the special shorthand list notation, where repeated values in a 
 The above scheme would represent 3 cycles of operation:
 
     1. 100% power for 90 days, split into two segments of 45 days each, followed by 10 days shutdown (i.e. 90% capacity)
-
     2. 50% power for 30 days, split into two segments of 15 days each, followed by 70 days shutdown (i.e. 15% capacity)
-
     3. 100% power for 93 days, split into two segments of 46.5 days each, followed by 7 days shutdown (i.e. 93% capacity)
 
-In each cycle, criticality calculations will be performed at 3 nodes evenly-spaced through the uptime portion of the cycle (i.e. ``availabilityFactor``*``powerFraction``), without option for changing node spacing or frequency.
-This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
+In each cycle, criticality calculations will be performed at 3 (``burnSteps + 1``) nodes evenly-spaced through the uptime portion of the cycle, without option for changing node spacing or frequency.
 
-To overcome these limitations, the detailed cycle history, consisting of the ``cycles`` setting may be specified instead.
-For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
+A more detailed cycle history may be specified using the ``cycles`` setting. For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
 
     * ``name``
     * ``power fractions``
@@ -206,13 +207,10 @@ Note that repeated values in a list may be again be entered using the shorthand 
 
 Such a scheme would define the following cycles:
 
-    1. A 2 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle, followed by 900 days of shutdown
-
-    2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 14 days in the cycle
-
-    3. Constant full-power operation for 30 days split into six even increments
-
-    4. Constant full-power operation for 90 days, split into two equal-length 45 day segments, followed by 10 days of downtime
+    1. A 2 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle, followed by 900 days of shutdown,
+    2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 14 days in the cycle,
+    3. Constant full-power operation for 30 days split into six even increments,
+    4. Constant full-power operation for 90 days, split into two equal-length 45 day segments, followed by 10 days of downtime,
 
 As can be seen, the detailed cycle history option provides much flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
 
@@ -515,7 +513,7 @@ ARMI adds an ``!include`` YAML tag, which can be used to include the contents of
    grids:
        core: !include path/to/core_grid.yaml
 
-Would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into the main blueprints file. The rules that ARMI uses to handle things like indentation of the included text are usually rather intuitive, but sometimes it can be useful to witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run for testing inputs with !includes.
+would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into the main blueprints file. The rules that ARMI uses to handle things like indentation of the included text are usually rather intuitive, but sometimes it can be useful to witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run for testing inputs with !includes.
 
 ARMI models are built hierarchically, first by defining components, and then by larger and larger collections of the levels of the reactor.
 

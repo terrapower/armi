@@ -2,10 +2,10 @@
 Accessing Data in ARMI
 **********************
 
-A basic user only needs to know the CLI or GUI and can perform basic analysis and design with just
-that. But a power user will be more interested in programmatically building and manipulating inputs
-and gathering detailed information out of ARMI results. Let's now go into a bit more detail for the
-power user.
+A user only needs to know the CLI or GUI to perform basic analysis and design in ARMI.
+More in-depth analysis and design requires programmatically building and
+manipulating inputs and gathering detailed information from ARMI results.
+Let's now go into a bit more detail on what data can be accessed in ARMI.
 
 Settings and State Variables
 ============================

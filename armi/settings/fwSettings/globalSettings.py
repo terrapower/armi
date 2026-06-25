@@ -796,7 +796,7 @@ def defineSettings() -> List[setting.Setting]:
                 "Ordered list of Python namespaces for finding materials by class name. "
                 "This allows users to choose between different implementations of reactor "
                 "materials. For example, the framework comes with a basic UZr material, "
-                "but power users will want to override it with their own UZr subclass. "
+                "but users will want to override it with their own UZr subclass. "
                 "This allows users to specify to get materials out of a plugin rather "
                 "than from the framework."
             ),

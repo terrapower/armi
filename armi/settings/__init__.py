@@ -97,7 +97,7 @@ def recursivelyLoadSettingsFiles(
     runLog.info("Checking for valid settings files.")
     for possibleSettingsFile in possibleSettings:
         if os.path.getsize(possibleSettingsFile) > 1e6:
-            runLog.info("skipping {} -- looks too big".format(possibleSettingsFile))
+            runLog.extra("skipping {} -- looks too big".format(possibleSettingsFile))
             continue
         try:
             cs = Settings()
@@ -105,9 +105,9 @@ def recursivelyLoadSettingsFiles(
             csFiles.append(cs)
             runLog.extra("loaded {}".format(possibleSettingsFile))
         except InvalidSettingsFileError as ee:
-            runLog.info("skipping {}\n    {}".format(possibleSettingsFile, ee))
+            runLog.extra("skipping {}\n    {}".format(possibleSettingsFile, ee))
         except yaml.composer.ComposerError as ee:
-            runLog.info(
+            runLog.extra(
                 "skipping {}; it appears to be an incomplete YAML snippet\n    {}".format(possibleSettingsFile, ee)
             )
         except Exception as ee:
