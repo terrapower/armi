@@ -111,19 +111,8 @@ def setMaterialNamespaceOrder(order):
 
         An ARMI application will need materials. Materials can be imported from any code the application has access to,
         like plugin packages. This leads to the situation where one ARMI application will want to import multiple
-        collections of materials. To handle this, ARMI keeps a list of material namespaces. This is an ordered list of
-        importable packages that ARMI can search for a particular material by name.
-
-        This automatic exploration of an importable package saves the user the tedium have having to import or include
-        hundreds of materials manually somehow. But it comes with a caveat; the list is ordered. If two different
-        namespaces in the list include a material with the same name, the first one found in the list is chosen, i.e.
-        An ARMI application will need materials. Materials can be imported from any code the application has access to,
-        like plugin packages. This leads to the situation where one ARMI application will want to import multiple
-        collections of materials. To handle this, ARMI keeps a list of material namespaces. This is an ordered list of
-        importable packages that ARMI can search for a particular material by name.
-
-        This automatic exploration of an importable package saves the user the tedium have having to import or include
-        hundreds of materials manually somehow.
+        collections of materials. To handle this, ARMI keeps an ordered list of Python namespaces and directories from
+        which to import materials.
     """
     global _loadedYamlDirs
     global _MATERIAL_NAMESPACE_ORDER
