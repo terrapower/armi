@@ -73,6 +73,9 @@ class MatPropsMaterial:
         # Load the material, if the YAML was provided.
         if self.yamlPath:
             self.loadFile(self.yamlPath)
+            if not self.YAML_PATH:
+                # handle some edge-cases with how materials can be loaded
+                self.YAML_PATH = self.yamlPath
 
     def __repr__(self):
         """Provides string representation for MatPropsMaterial class."""
@@ -162,6 +165,17 @@ class MatPropsMaterial:
                 # Any property not in the input file will be set to None.
                 setattr(self, p.symbol, None)
 
+    @staticmethod
+    def getMatNameFromYamlPath(yamlPath):
+        """Grab the material name from the file name."""
+        n = Path(yamlPath).name
+        if n.lower().endswith(".yaml"):
+            n = n[:-5]
+        elif n.lower().endswith(".yml"):
+            n = n[:-4]
+
+        return n
+
     def loadFile(self, yamlPath: str):
         """
         Loads YAML file and parses information to fill in MatPropsMaterial data members including all relevant Function
@@ -178,12 +192,7 @@ class MatPropsMaterial:
         node = y.load(Path(yamlPath))
 
         # grab the material name from the file name
-        n = Path(yamlPath).name
-        if n.lower().endswith(".yaml"):
-            n = n[:-5]
-        elif n.lower().endswith(".yml"):
-            n = n[:-4]
-        self.name = n
+        self.name = MatPropsMaterial.getMatNameFromYamlPath(yamlPath)
 
         # Generate SHA1 value and set data member
         sha1 = hashlib.sha1()

@@ -93,12 +93,11 @@ class Material(MatPropsMaterial):
     def __init__(self):
         global _YAML_MATERIALS
         if self.YAML_PATH is not None:
-            nameStub = f"{self.__class__.__name__}:{self.YAML_PATH}"
-            if nameStub in _YAML_MATERIALS:
-                self.__dict__.update(_YAML_MATERIALS[nameStub].__dict__)
+            if self.YAML_PATH in _YAML_MATERIALS:
+                self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
             else:
                 mat = MatPropsMaterial(self.YAML_PATH)
-                _YAML_MATERIALS[nameStub] = mat
+                _YAML_MATERIALS[self.YAML_PATH] = mat
                 self.__dict__.update(mat.__dict__)
         else:
             MatPropsMaterial.__init__(self)
