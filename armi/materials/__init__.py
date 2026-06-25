@@ -49,6 +49,7 @@ from armi.matProps import getPaths as getYamlPaths
 # armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
+# dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
 _loadedYamlDirs = {}
 
 
