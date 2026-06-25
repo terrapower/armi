@@ -330,14 +330,20 @@ class HexBlock(Block):
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
     def verifyBlockDims(self):
-        """Perform some checks on this type of block before it is assembled."""
+        """Perform some checks on this type of block before it is assembled.
+
+        This method assumes the HexBlock has at least one DUCT component, at
+        most one WIRE component, and at most one CLAD component. If any of these
+        conditions are not met, the dimensions will not be checked.
+        """
         try:
             wireComp = self.getComponent(Flags.WIRE, quiet=True)  # Quiet because None case is checked for below
             ductComps = self.getComponents(Flags.DUCT)
             cladComp = self.getComponent(Flags.CLAD, quiet=True)  # Quiet because None case is checked for below
         except ValueError:
-            # there are probably more that one clad/wire, so we really dont know what this block looks like
-            runLog.info(f"Block design {self} is too complicated to verify dimensions. Make sure they are correct!")
+            # silent exit
+            # there is no duct or more that one clad/wire, the logic below cannot
+            # check the dimensions of the block.
             return
 
         # check wire wrap in contact with clad
