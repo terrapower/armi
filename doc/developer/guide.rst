@@ -56,7 +56,7 @@ enforces a couple of constraints that can be very useful:
 In many scenarios, one wants to access specific assemblies or blocks from a core. There
 are a few ways to get the objects that you're interested in:
 
-* The `r.core.childrenByLocator` dictionary maps
+* The ``r.core.childrenByLocator`` dictionary maps
   :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
   that location. For example ::
 
@@ -67,7 +67,7 @@ are a few ways to get the objects that you're interested in:
 
       >>> b = a[k]
 
-* `r.core.getAssemblies()` loops through all assemblies in the core for when you
+* ``r.core.getAssemblies()`` loops through all assemblies in the core for when you
   need to do something to all assemblies.
 
 

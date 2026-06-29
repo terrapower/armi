@@ -9,15 +9,7 @@ power user.
 
 Settings and State Variables
 ============================
-The following links contain large tables describing the various global settings and state parameters
-in use across ARMI.
 
-* :ref:`settings-report`
-* :ref:`reactor-parameters-report`
-* :ref:`core-parameters-report`
-* :ref:`component-parameters-report`
-* :ref:`assembly-parameters-report`
-* :ref:`block-parameters-report`
 
 
 Accessing Some Interesting Info
@@ -46,3 +38,25 @@ on the :py:mod:`components <armi.reactor.components>`, and may be accessed as fo
 
 The dimensions available depend on the shape of the component. Hexagons have `op` and `ip` for outer
 and inner pitch. Other options are seen at the source at :py:mod:`armi.reactor.components`.
+
+Settings and Parameters Reports
+===============================
+
+A full list of global settings and state parameters in use across ARMI are available here for lookup.
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+
+   settings_report
+   params_report
+
+.. The following links contain large tables describing the various global settings and state parameters
+.. in use across ARMI.
+
+.. * :ref:`settings-report`
+.. * :ref:`reactor-parameters-report`
+.. * :ref:`core-parameters-report`
+.. * :ref:`component-parameters-report`
+.. * :ref:`assembly-parameters-report`
+.. * :ref:`block-parameters-report`

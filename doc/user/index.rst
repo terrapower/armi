@@ -13,9 +13,9 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
 
    inputs
    outputs
+   manual_data_access
    settings_report
    params_report
-   manual_data_access
    spatial_block_data
    physics_coupling
    accessingEntryPoints
