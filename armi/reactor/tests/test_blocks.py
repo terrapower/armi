@@ -423,7 +423,7 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
             self.assertEqual(a.p.orientation[2], 0.0)
 
 
-class Block_TestCase(unittest.TestCase):
+class TestBlock(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
         self._hotBlock = loadTestBlock(cold=False)
@@ -2234,7 +2234,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(len(linked), 0)
 
 
-class BlockInputHeightsTests(unittest.TestCase):
+class TestBlockInputHeights(unittest.TestCase):
     def test_foundReactor(self):
         """Test the input height is pullable from blueprints."""
         r = loadTestReactor()[1]
@@ -2267,7 +2267,7 @@ class BlockInputHeightsTests(unittest.TestCase):
             b.getInputHeight()
 
 
-class BlockEnergyDepositionConstants(unittest.TestCase):
+class TestBlockEnergyDepositionConstants(unittest.TestCase):
     """Tests the energy deposition methods.
 
     MagicMocks xsCollections.compute*Constants() -- we're not testing those methods specifically
@@ -2806,7 +2806,7 @@ class TestHexBlock(unittest.TestCase):
         self.assertEqual(self.hexBlock.getRotationNum(), 2.0)
 
 
-class MultiPinIndicesTests(unittest.TestCase):
+class TestMultiPinIndices(unittest.TestCase):
     BP_STR = """
 blocks:
     fuel: &fuel_block
@@ -3111,7 +3111,7 @@ class TestHexBlockOrientation(unittest.TestCase):
         self.assertAlmostEqual(ratio, 2 / math.sqrt(3), delta=0.0001)
 
 
-class ThRZBlock_TestCase(unittest.TestCase):
+class TestThRZBlock(unittest.TestCase):
     def setUp(self):
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
         self.ThRZBlock.add(
@@ -3259,7 +3259,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(self.ThRZBlock.getBoronMassEnrich(), 0.0)
 
 
-class CartesianBlockTests(unittest.TestCase):
+class TestCartesianBlock(unittest.TestCase):
     """Tests for blocks with rectangular/square outer shape."""
 
     PITCH = 70
@@ -3426,7 +3426,7 @@ class CartesianBlockTests(unittest.TestCase):
         self.assertEqual(self.cartesianBlock.numRingsToHoldNumCells(65), 5)
 
 
-class MassConservationTests(unittest.TestCase):
+class TestMassConservation(unittest.TestCase):
     """Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
