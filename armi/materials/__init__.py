@@ -41,6 +41,7 @@ import pkgutil
 import sysconfig
 from typing import List
 
+from armi import runLog
 from armi.materials.material import Material
 from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
@@ -76,8 +77,10 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     """
     global _loadedYamlDirs
 
-    if not os.path.exists(dirPath):
-        raise OSError(f"No material directory provided, and default not found: {dirPath}")
+    if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
+        msg = f"No material directory provided, or directory not found: {dirPath}"
+        runLog.error(msg)
+        raise FileNotFoundError(msg)
 
     if clearFirst:
         # clear the loaded materials before loading this new directory
@@ -129,6 +132,32 @@ def setMaterialNamespaceOrder(order):
 
         if yDir not in _loadedYamlDirs:
             importYamlMaterialDir(yDir)
+
+
+def getloadedYamlDirs() -> dict:
+    """
+    Returns the materials yaml directories that are loaded.
+
+    Returns
+    -------
+    dict of dict
+        Dictionary of directories, which are dictionaries of material yaml files
+    """
+    global _loadedYamlDirs
+    return _loadedYamlDirs
+
+
+def getMaterialNamespaceOrder() -> list:
+    """
+    Returns the material namespace order.
+
+    Returns
+    -------
+    list of str
+        Materials namespaces
+    """
+    global _MATERIAL_NAMESPACE_ORDER
+    return _MATERIAL_NAMESPACE_ORDER
 
 
 def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):

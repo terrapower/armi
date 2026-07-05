@@ -40,9 +40,7 @@ class ReactorPlugin(plugins.ArmiPlugin):
         """Just before reactor construction, update the material "registry" with user settings, if it is set. Often it
         is set by the application.
         """
-        from armi.settings.fwSettings.globalSettings import (
-            CONF_MATERIAL_NAMESPACE_ORDER,
-        )
+        from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 
         if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
             materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
