@@ -200,6 +200,9 @@ class MatPropsMaterial:
             sha1.update(materialFile.read())
         self._sha1 = sha1.hexdigest()
 
+        if not self.YAML_PATH:
+            self.YAML_PATH = self.yamlPath
+
         # build the material, from the file
         self.dataCheckMaterialFile(yamlPath, node)
         self.loadNode(node)
