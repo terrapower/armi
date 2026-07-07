@@ -2568,6 +2568,63 @@ class TestHexBlock(unittest.TestCase):
         # all z coords equal to zero
         np.testing.assert_equal(z, 0)
 
+    def test_setPinPowersNoSuffix(self):
+        """Test setting the pin powers."""
+        locs = set(self.hexBlock.getPinLocations())
+        powers = np.arange(0, len(locs))
+
+        # Check that pin powers are set correctly
+        self.hexBlock.setPinPowers(powers)
+        np.testing.assert_array_equal(powers, self.hexBlock.p["linPowByPin"])
+
+    def test_setPinPowersWithSuffix(self):
+        """Test setting the pin powers."""
+        locs = set(self.hexBlock.getPinLocations())
+        powers = np.arange(0, len(locs))
+
+        # Check that a given key works
+        powerKeySuffix = "Neutron"
+        self.hexBlock.setPinPowers(powers, powerKeySuffix=powerKeySuffix)
+        np.testing.assert_array_equal(powers, self.hexBlock.p[f"linPowByPin{powerKeySuffix}"])
+
+    def test_setPinPowersGamma(self):
+        """Test setting the pin powers."""
+        locs = set(self.hexBlock.getPinLocations())
+        powers = np.arange(0, len(locs))
+
+        # Set neutron power
+        powerKeySuffix = "Neutron"
+        self.hexBlock.setPinPowers(powers, powerKeySuffix=powerKeySuffix)
+        # Check Gamma suffix
+        powerKeySuffix = "Gamma"
+        self.hexBlock.setPinPowers(powers, powerKeySuffix=powerKeySuffix)
+        np.testing.assert_array_equal(
+            self.hexBlock.p.linPowByPin, self.hexBlock.p["linPowByPinGamma"] + self.hexBlock.p["linPowByPinNeutron"]
+        )
+
+    def test_setPinPowersGammaNoNeutron(self):
+        locs = set(self.hexBlock.getPinLocations())
+        powers = np.arange(0, len(locs))
+
+        # Check unset neutron power
+        self.hexBlock.p["linPowByPinNeutron"] = None
+        with self.assertRaisesRegex(UnboundLocalError, "Neutron power has not been set yet."):
+            powerKeySuffix = "Gamma"
+            self.hexBlock.setPinPowers(powers, powerKeySuffix=powerKeySuffix)
+
+    @patch.object(blocks.HexBlock, "getNumPins")
+    def test_setPinPowersBadNumPins(self, mock_np):
+        # Check mismatched power data
+        mock_np.return_value = 100
+        powers = np.arange(0, 5)
+        with self.assertRaisesRegex(ValueError, "Invalid power data"):
+            self.hexBlock.setPinPowers(powers)
+
+        # Check unset pins
+        mock_np.return_value = None
+        with self.assertRaisesRegex(ValueError, "Invalid power data"):
+            self.hexBlock.setPinPowers(powers)
+
     def test_getPitchHomogeneousBlock(self):
         """
         Demonstrate how to communicate pitch on a hex block with unshaped components.
