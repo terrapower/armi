@@ -93,7 +93,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     _loadedYamlDirs[dirPath] = {}
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
-        mat = Material()
+        mat = Material(yamlPath=yamlPath)
         try:
             mat.loadFile(yamlPath)
         except Exception:

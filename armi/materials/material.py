@@ -31,6 +31,9 @@ from armi.utils.units import getTc, getTk
 FAIL_ON_RANGE = True
 
 # Need for an memoization optimization to cache YAML-mased materials
+# TODO: After grepping around, I don't see how this is needed
+# (although there's one small use for it downstream I can see).
+# I'm assuming it was needed in a prior form of this work and just wasn't cleaned up?
 _YAML_MATERIALS = {}
 
 
@@ -90,9 +93,10 @@ class Material(MatPropsMaterial):
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
-    def __init__(self):
+    def __init__(self, yamlPath=None):
         global _YAML_MATERIALS
-        if self.YAML_PATH is not None:
+        if yamlPath:
+            self.YAML_PATH = yamlPath
             if self.YAML_PATH in _YAML_MATERIALS:
                 self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
             else:
