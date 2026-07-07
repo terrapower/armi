@@ -74,7 +74,6 @@ class MatPropsMaterial:
         if self.YAML_PATH:
             self.loadFile(self.YAML_PATH)
 
-
     def __repr__(self):
         """Provides string representation for MatPropsMaterial class."""
         return f"<MatPropsMaterial {self.name} {str(self.materialType)}>"
