@@ -132,9 +132,7 @@ class Material(MatPropsMaterial):
         """Duplicate of name property, kept for backwards compatibility."""
         return self.name
 
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
+    def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
         """Return empty list, representing that materials have no children."""
         return []
 
@@ -202,10 +200,7 @@ class Material(MatPropsMaterial):
             return self.alpha_inst(T=Tc)
         else:
             Tk = getTk(Tc, Tk)
-            deltaStrain = (
-                self.linearExpansionPercent(Tk + 1.0) / 100.0
-                - self.linearExpansionPercent(Tk - 1.0) / 100.0
-            )
+            deltaStrain = self.linearExpansionPercent(Tk + 1.0) / 100.0 - self.linearExpansionPercent(Tk - 1.0) / 100.0
             return deltaStrain / 2.0
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
@@ -271,9 +266,7 @@ class Material(MatPropsMaterial):
 
         return (dLLhot - dLLcold) / (100.0 + dLLcold)
 
-    def getThermalExpansionDensityReduction(
-        self, prevTempInC: float, newTempInC: float
-    ) -> float:
+    def getThermalExpansionDensityReduction(self, prevTempInC: float, newTempInC: float) -> float:
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
         return 1.0 / (1 + dLL) ** 2
@@ -298,9 +291,7 @@ class Material(MatPropsMaterial):
                 massFracs[nomen] = (constituent.maxValue + constituent.minValue) / 200.0
 
         if balanceNuc:
-            massFracs[balanceNuc] = 1.0 - sum(
-                v for k, v in massFracs.items() if k != balanceNuc
-            )
+            massFracs[balanceNuc] = 1.0 - sum(v for k, v in massFracs.items() if k != balanceNuc)
 
         for nucName in sorted(massFracs.keys()):
             self.setMassFrac(nucName, massFracs[nucName])
@@ -323,9 +314,7 @@ class Material(MatPropsMaterial):
             )
 
         if massFrac < 0.0 or massFrac > 1.0:
-            raise ValueError(
-                f"Mass fraction of {massFrac} for {nucName} is not between 0 and 1."
-            )
+            raise ValueError(f"Mass fraction of {massFrac} for {nucName} is not between 0 and 1.")
 
         self.massFrac[nucName] = massFrac
 
@@ -377,25 +366,19 @@ class Material(MatPropsMaterial):
             New mass fraction to achieve.
         """
         if massFraction > 1.0 or massFraction < 0.0:
-            raise ValueError(
-                f"Cannot enrich to massFraction of {massFraction}, must be between 0 and 1"
-            )
+            raise ValueError(f"Cannot enrich to massFraction of {massFraction}, must be between 0 and 1")
 
         nucsNames = list(self.massFrac)
 
         # refDens could be zero, but cannot normalize to zero
         density = self.refDens or 1.0
         massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
-        atomicMasses = np.array(
-            [nuclideBases.byName[nuc].weight for nuc in nucsNames]
-        )  # in AMU
+        atomicMasses = np.array([nuclideBases.byName[nuc].weight for nuc in nucsNames])  # in AMU
         molesPerCC = massDensities / atomicMasses  # item-wise division
 
         enrichedIndex = nucsNames.index(nuclideName)
         isoAndEles = nuclideBases.byName[nuclideName].element.nuclides
-        allIndicesUpdated = [
-            nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac
-        ]
+        allIndicesUpdated = [nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac]
 
         if len(allIndicesUpdated) == 1:
             if isinstance(
@@ -415,9 +398,7 @@ class Material(MatPropsMaterial):
             massDensities[allIndicesUpdated] = 0.0
             massDensities[enrichedIndex] = 1.0
         else:
-            balanceWeight = (
-                massDensities[allIndicesUpdated].sum() - massDensities[enrichedIndex]
-            )
+            balanceWeight = massDensities[allIndicesUpdated].sum() - massDensities[enrichedIndex]
             if balanceWeight == 0.0:
                 onlyOneOtherFracToDetermine = len(allIndicesUpdated) == 2
                 if not onlyOneOtherFracToDetermine:
@@ -426,24 +407,16 @@ class Material(MatPropsMaterial):
                         f"{massFraction}. Current mass fractions: {self.massFrac}"
                     )
                 # massDensities get normalized later when conserving atoms; these are just ratios
-                massDensities[allIndicesUpdated] = (
-                    1 - massFraction
-                )  # there is only one other.
+                massDensities[allIndicesUpdated] = 1 - massFraction  # there is only one other.
                 massDensities[enrichedIndex] = massFraction
             else:
                 # derived from solving the following equation for enrchedWeight:
                 # massFraction = enrichedWeight / (enrichedWeight + balanceWeight)
-                massDensities[enrichedIndex] = (
-                    massFraction * balanceWeight / (1 - massFraction)
-                )
+                massDensities[enrichedIndex] = massFraction * balanceWeight / (1 - massFraction)
 
         # ratio is set by here but atoms not conserved yet
-        updatedNucsMolesPerCC = (
-            massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
-        )
-        updatedNucsMolesPerCC *= (
-            molesPerCC[allIndicesUpdated].sum() / updatedNucsMolesPerCC.sum()
-        )  # conserve atoms
+        updatedNucsMolesPerCC = massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
+        updatedNucsMolesPerCC *= molesPerCC[allIndicesUpdated].sum() / updatedNucsMolesPerCC.sum()  # conserve atoms
         molesPerCC[allIndicesUpdated] = updatedNucsMolesPerCC
 
         updatedMassDensities = molesPerCC * atomicMasses
@@ -451,9 +424,7 @@ class Material(MatPropsMaterial):
         massFracs = updatedMassDensities / updatedDensity
 
         if not np.isclose(sum(massFracs), 1.0, atol=1e-10):
-            raise RuntimeError(
-                f"The mass fractions {massFracs} in {self} do not sum to 1.0."
-            )
+            raise RuntimeError(f"The mass fractions {massFracs} in {self} do not sum to 1.0.")
 
         self.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
         if self.refDens != 0.0:
@@ -543,9 +514,7 @@ class Material(MatPropsMaterial):
         Tc = getTc(Tc, Tk)
         return self.k(T=Tc)
 
-    def getProperty(
-        self, propName: str, Tk: float = None, Tc: float = None, **kwargs
-    ) -> float:
+    def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:
         """
         Gets properties in a way that caches them.
 
@@ -644,9 +613,7 @@ class Material(MatPropsMaterial):
                 runLog.error(msg)
                 raise ValueError(msg)
             else:
-                runLog.warning(
-                    msg, single=True, label=f"T out of bounds for {self.name} {label}"
-                )
+                runLog.warning(msg, single=True, label=f"T out of bounds for {self.name} {label}")
 
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""

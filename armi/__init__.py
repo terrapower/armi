@@ -295,9 +295,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
 
     hooks = pm.hook.setMaterialBaseClass.get_hookimpls()
     if len(hooks) > 1:
-        raise RuntimeError(
-            f"Multiple plugins cannot register the setMaterialBaseClass hook. Received: {hooks}"
-        )
+        raise RuntimeError(f"Multiple plugins cannot register the setMaterialBaseClass hook. Received: {hooks}")
 
 
 def applyAsyncioWindowsWorkaround() -> None:
@@ -309,11 +307,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     """
     import asyncio
 
-    if (
-        sys.version_info[0] == 3
-        and sys.version_info[1] >= 8
-        and sys.platform.startswith("win")
-    ):
+    if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith("win"):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
