@@ -208,6 +208,18 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
+    def setMaterialBaseClass(materialType) -> type:
+        """
+        Allows a plugin to define a custom base class for materials that are loaded via directory
+        or via virtual environment path. The material type from the YAML file is provided to allow different
+        classes by type. For example, a fluid material can have a different base class.
+        Only one plugin can define this hook. If it is not defined,
+        then the ARMI Material class will be used as the base class. Any class that is defined by
+        a plugin is expected to inherit from the ARMI Material class.
+        """
+
+    @staticmethod
+    @HOOKSPEC
     def afterConstructionOfAssemblies(assemblies, cs) -> None:
         """
         Function to call after a set of assemblies are constructed.
@@ -687,15 +699,15 @@ class UserPlugin(ArmiPlugin):
         limit how flexible they are, so we can correctly corral their side effects during a run.
         """
         if issubclass(self.__class__, UserPlugin):
-            assert len(self.__class__.defineParameters()) == 0, (
-                "UserPlugins cannot define parameters, consider using an ArmiPlugin."
-            )
-            assert len(self.__class__.defineParameterRenames()) == 0, (
-                "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
-            )
-            assert len(self.__class__.defineSettings()) == 0, (
-                "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
-            )
+            assert (
+                len(self.__class__.defineParameters()) == 0
+            ), "UserPlugins cannot define parameters, consider using an ArmiPlugin."
+            assert (
+                len(self.__class__.defineParameterRenames()) == 0
+            ), "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
+            assert (
+                len(self.__class__.defineSettings()) == 0
+            ), "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
             # NOTE: These are the methods that we are staunchly _not_ allowing people to change in this class. If you
             # need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: {}
@@ -791,7 +803,9 @@ def collectInterfaceDescriptions(mod, cs):
     if val is None:
         return []
     if isinstance(val, list):
-        return [interfaces.InterfaceInfo(mod.ORDER, klass, kwargs) for klass, kwargs in val]
+        return [
+            interfaces.InterfaceInfo(mod.ORDER, klass, kwargs) for klass, kwargs in val
+        ]
 
     klass, kwargs = val
     return [interfaces.InterfaceInfo(mod.ORDER, klass, kwargs)]

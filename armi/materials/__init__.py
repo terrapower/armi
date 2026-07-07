@@ -75,6 +75,9 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
+    # Needs to be a local import to prevent circular imports
+    from armi import getPluginManager
+
     global _loadedYamlDirs
 
     if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
@@ -93,7 +96,18 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     _loadedYamlDirs[dirPath] = {}
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
+        # This makes us load a given YAML twice per material if they have a custom class
+        # but I can't think of a better way to get the type from the material file.
         mat = Material(yamlPath=yamlPath)
+        pm = getPluginManager()
+        if pm:
+            baseClassList = getPluginManager().hook.setMaterialBaseClass(
+                materialType=mat.materialType
+            )
+            if baseClassList:
+                # only one plugin can define this hook
+                baseClass = baseClassList[0]
+                mat = baseClass(yamlPath=yamlPath)
         mat.DATA_SOURCE = dirPath
         # If a class with this name already exists in the package, continue
         _loadedYamlDirs[dirPath][mat.name] = mat
@@ -175,7 +189,9 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
         Change DATA_SOURCE on import to a different string. Useful for saying where plugin materials are coming from.
     """
     # load materials from pure Python files
-    for _modImporter, modname, _ispkg in pkgutil.walk_packages(path=path, prefix=modName + "."):
+    for _modImporter, modname, _ispkg in pkgutil.walk_packages(
+        path=path, prefix=modName + "."
+    ):
         if "test" in modname:
             continue
 
@@ -257,6 +273,9 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     >>> createMaterialByName("UO2", ["something.else.materials", "armi.materials"])
     <Material UO2>
     """
+    # Needs to be a local import to prevent circular imports
+    from armi import getPluginManager
+
     global _loadedYamlDirs
     global _MATERIAL_NAMESPACE_ORDER
 
@@ -286,13 +305,24 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
 
             # grab the global material, and copy it over to a new material to return
             mat0 = _loadedYamlDirs[yDir][name]
-            newMat = Material()
+            pm = getPluginManager()
+            baseClass = Material
+            if pm:
+                baseClassList = getPluginManager().hook.setMaterialBaseClass(
+                    materialType=mat0.materialType
+                )
+                if baseClassList:
+                    baseClass = baseClassList[0]
+
+            newMat = baseClass(updateMassFracs=False)
             newMat.__dict__.update(mat0.__dict__)
             return newMat
         else:
             # check and see if this is an importable material
             mod = importlib.import_module(namespace)
-            materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
+            materialsList = inspect.getmembers(
+                mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial)
+            )
             materialsList = [material[0] for material in materialsList]
             if name in materialsList:
                 return getattr(mod, name)()

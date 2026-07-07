@@ -217,7 +217,10 @@ def getApp() -> Optional[apps.App]:
 
 def _cleanupOnCancel(signum, _frame):
     """Helper function to clean up upon cancellation."""
-    print(f"Caught Cancel signal ({signum}); cleaning temporary files and exiting...", file=sys.stderr)
+    print(
+        f"Caught Cancel signal ({signum}); cleaning temporary files and exiting...",
+        file=sys.stderr,
+    )
     context.cleanFastPathAfterSimulation()
     sys.stdout.flush()
     sys.stderr.flush()
@@ -290,6 +293,12 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     parameters.applyAllParameters()
     _app.registerPluginFlags()
 
+    hooks = pm.hook.setMaterialBaseClass.get_hookimpls()
+    if len(hooks) > 1:
+        raise RuntimeError(
+            f"Multiple plugins cannot register the setMaterialBaseClass hook. Received: {hooks}"
+        )
+
 
 def applyAsyncioWindowsWorkaround() -> None:
     """
@@ -300,7 +309,11 @@ def applyAsyncioWindowsWorkaround() -> None:
     """
     import asyncio
 
-    if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith("win"):
+    if (
+        sys.version_info[0] == 3
+        and sys.version_info[1] >= 8
+        and sys.platform.startswith("win")
+    ):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
