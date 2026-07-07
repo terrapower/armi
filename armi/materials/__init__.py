@@ -94,11 +94,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
         mat = Material(yamlPath=yamlPath)
-        try:
-            mat.loadFile(yamlPath)
-        except Exception:
-            continue
-
+        mat.DATA_SOURCE = dirPath
         # If a class with this name already exists in the package, continue
         _loadedYamlDirs[dirPath][mat.name] = mat
 
