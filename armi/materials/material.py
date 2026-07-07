@@ -30,10 +30,7 @@ from armi.utils.units import getTc, getTk
 # works for material properties defined purely in Python.
 FAIL_ON_RANGE = True
 
-# Need for an memoization optimization to cache YAML-mased materials
-# TODO: After grepping around, I don't see how this is needed
-# (although there's one small use for it downstream I can see).
-# I'm assuming it was needed in a prior form of this work and just wasn't cleaned up?
+# Need for an memoization optimization to cache YAML-based materials
 _YAML_MATERIALS = {}
 
 

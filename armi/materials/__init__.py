@@ -145,7 +145,7 @@ def getloadedYamlDirs() -> dict:
         Dictionary of directories, which are dictionaries of material yaml files
     """
     global _loadedYamlDirs
-    return _loadedYamlDirs
+    return _loadedYamlDirs.copy()
 
 
 def getMaterialNamespaceOrder() -> list:
@@ -158,7 +158,7 @@ def getMaterialNamespaceOrder() -> list:
         Materials namespaces
     """
     global _MATERIAL_NAMESPACE_ORDER
-    return _MATERIAL_NAMESPACE_ORDER
+    return _MATERIAL_NAMESPACE_ORDER.copy()
 
 
 def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):

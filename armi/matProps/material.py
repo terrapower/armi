@@ -183,8 +183,9 @@ class MatPropsMaterial:
         yamlPath: str
             Path containing name of YAML file to parse.
         """
-        # load the file path
+        # Set class attr
         self.YAML_PATH = yamlPath
+        # load the file path
         y = YAML(pure=True)
         node = y.load(Path(yamlPath))
 
