@@ -2,20 +2,22 @@
 Accessing Entry Points 
 **********************
 
-Reports Entry Point
-===================
+**Entry Points** are like the verbs that your App can *do*. The built-in entry
+points in the :py:mod:`cli module<armi.cli>` offer basic functionality, like
+running a case (:py:class:`armi.cli.run.RunEntryPoint`) or opening up the GUI (
+:py:class:`armi.cli.gridGui.GridGuiEntryPoint`), but the real joy of an
+application comes when you add your own project-specific entry points that do
+the actions that you commonly need done.
 
-There are two ways to access the reports entry point in ARMI.
+ARMI comes with some built-in Entry Points that
+can shown by running::
 
-The first way is through a yaml settings file.
-Here, the call is as follows::
+    (venv) $ armi --list-commands
 
-    (venv) $ armi report anl-afci-177.yaml
+Note that not all built-in Entry Points may be used out of the box, and some may
+need to be implemented for your specific application, like the
+:py:class:`armi.cli.reportsEntryPoint.ReportsEntryPoint`)
 
-It is also possible to call this on an h5 file::
+:ref:`The developer doc page on Entry Points <dev-entry-points>` gives a brief
+overview on how to build an entry point for your ARMI application.
 
-    (venv) $ armi report -h5db refTestBase.h5
-
-.. note:: When working with a h5 file, -h5db must be included
-
-Once these are called, a report is generated and outputted as an html file in reportsOutputFiles.
