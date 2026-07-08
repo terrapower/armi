@@ -18,6 +18,8 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
+import inspect
+
 import numpy as np
 
 from armi import runLog
@@ -169,7 +171,14 @@ class Material(MatPropsMaterial):
 
     def duplicate(self):
         """Copy without needing a deepcopy."""
-        m = self.__class__()
+        args = inspect.signature(self.__class__)
+        if "yamlPath" in args.parameters:
+            # This is a YAML based material and needs the file path to reload data
+            m = self.__class__(yamlPath=self.YAML_PATH)
+        else:
+            # This is python material, it's constructor should handle everything automatically
+            # and won't allow a yamlPath argument.
+            m = self.__class__()
 
         m.massFrac = {}
         for key, val in self.massFrac.items():
@@ -278,6 +287,9 @@ class Material(MatPropsMaterial):
         This method pulls the material composition from the material YAML definition file. Alternatively, this method
         can be over-riden by in Python to declare the default mass fractions using some custom logic.
         """
+        # clear mass fracs previously set since we are resetting to the default.
+        self.massFrac = {}
+
         # If there is a YAML file, try to pull the material composition from there.
         massFracs = {}
         balanceNuc = None
@@ -325,10 +337,7 @@ class Material(MatPropsMaterial):
             td = kwargs["TD_frac"]
             if td is not None:
                 if td > 1.0 or td <= 0.0:
-                    runLog.warning(
-                        f"Theoretical density frac for {self} is out of range: {td}",
-                        single=True,
-                    )
+                    runLog.warning(f"Theoretical density frac for {self} is out of range: {td}", single=True)
                 self.adjustTD(td)
 
         # If this material declares an enrichment nuclide, see if we need to enrich this material
@@ -484,11 +493,7 @@ class Material(MatPropsMaterial):
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
         if self.refDens is None:
-            runLog.warning(
-                f"{self} has no reference density",
-                single=True,
-                label=f"No refD {self.getName()}",
-            )
+            runLog.warning(f"{self} has no reference density", single=True, label=f"No refD {self.getName()}")
             return None
 
         f = (1.0 + dLL / 100.0) ** 3

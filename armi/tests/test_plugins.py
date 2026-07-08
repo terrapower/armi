@@ -146,9 +146,7 @@ class TestPluginRegistration(unittest.TestCase):
             # Load a test reactor to save to DB. This should be loaded before the `BeforeReactorPlugin` is registered,
             # because we aren't testing that functionality just yet
             o, r = loadTestReactor(
-                TESTING_ROOT,
-                inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
-                useCache=False,
+                TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml", useCache=False
             )
 
             # Now, register the plugin before `loadOperator` is called
@@ -170,8 +168,7 @@ class TestPluginRegistration(unittest.TestCase):
                 o2 = loadOperator(self._testMethodName + ".h5", 0, 0)
                 # Assert to prove that the plugin hook code did not run
                 with self.assertRaisesRegex(
-                    AttributeError,
-                    "'Settings' object has no attribute 'beforeReactorConstructionFlag'",
+                    AttributeError, "'Settings' object has no attribute 'beforeReactorConstructionFlag'"
                 ):
                     o2.cs.beforeReactorConstructionFlag
                 # Reset the decorator wrapper, and run `loadOperator` a third time
@@ -242,10 +239,7 @@ class TestPluginBasics(unittest.TestCase):
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         # generate a test operator, with a full set of interfaces from plugsin
-        o = loadTestReactor(
-            TESTING_ROOT,
-            inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
-        )[0]
+        o = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")[0]
         pm = getPluginManagerOrFail()
 
         # test the plugins were generated

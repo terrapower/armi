@@ -217,10 +217,7 @@ def getApp() -> Optional[apps.App]:
 
 def _cleanupOnCancel(signum, _frame):
     """Helper function to clean up upon cancellation."""
-    print(
-        f"Caught Cancel signal ({signum}); cleaning temporary files and exiting...",
-        file=sys.stderr,
-    )
+    print(f"Caught Cancel signal ({signum}); cleaning temporary files and exiting...", file=sys.stderr)
     context.cleanFastPathAfterSimulation()
     sys.stdout.flush()
     sys.stderr.flush()

@@ -304,12 +304,21 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
             pm = getPluginManager()
             baseClass = Material
             if pm:
+                # Check to see if a plugin has defined a new material base class
                 baseClassList = getPluginManager().hook.setMaterialBaseClass(materialType=mat0.materialType)
                 if baseClassList:
+                    # if there is one defined, then update to use that class instead of Material.
                     baseClass = baseClassList[0]
 
+            # Don't update mass fractions because YAML defined materials won't have their composition
+            # updated until after the dict update.
             newMat = baseClass(updateMassFracs=False)
             newMat.__dict__.update(mat0.__dict__)
+            # Now set default mass fracs now that the composition has been populated
+            # Although the mass fracs were copied by the dictionary copy, their calculation
+            # may have changed since namespace order setting based on modifications to global
+            # composition variables by other plugins.
+            newMat.setDefaultMassFracs()
             return newMat
         else:
             # check and see if this is an importable material

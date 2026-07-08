@@ -24,8 +24,11 @@ from copy import deepcopy
 from numpy import testing
 
 from armi import context, materials, settings
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, importYamlMaterialDir, setMaterialNamespaceOrder
-from armi.reactor import blueprints
+from armi.materials import (
+    _MATERIAL_NAMESPACE_ORDER,
+    importYamlMaterialDir,
+    setMaterialNamespaceOrder,
+)
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -165,7 +168,15 @@ class MaterialFindingTests(unittest.TestCase):
         with TemporaryDirectoryChanger():
             os.mkdir(testName)
             thisDir = pathlib.Path(__file__).parent.resolve()
-            fromFile = os.path.join(thisDir, "..", "..", "matProps", "tests", "testMaterialsData", "materialA.yaml")
+            fromFile = os.path.join(
+                thisDir,
+                "..",
+                "..",
+                "matProps",
+                "tests",
+                "testMaterialsData",
+                "materialA.yaml",
+            )
             toFile = os.path.join(testName, f"{matName}.yaml")
             shutil.copyfile(fromFile, toFile)
 
@@ -977,7 +988,16 @@ class Inconel600Tests(AbstractMaterialTest, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         massFracNameList = ["NI", "CR", "FE", "C", "MN55", "S", "SI", "CU"]
-        massFracRefValList = [0.7541, 0.1550, 0.0800, 0.0008, 0.0050, 0.0001, 0.0025, 0.0025]
+        massFracRefValList = [
+            0.7541,
+            0.1550,
+            0.0800,
+            0.0008,
+            0.0050,
+            0.0001,
+            0.0025,
+            0.0025,
+        ]
 
         for name, ref in zip(massFracNameList, massFracRefValList):
             cur = self.mat.getMassFrac(name)
@@ -1085,7 +1105,16 @@ class Inconel625Tests(AbstractMaterialTest, unittest.TestCase):
 
     def test_linearExpansionPercent(self):
         temps = [100, 200, 300, 400, 500, 600, 700, 800]
-        refList = [0.099543, 0.227292, 0.365207, 0.513288, 0.671535, 0.839948, 1.018527, 1.207272]
+        refList = [
+            0.099543,
+            0.227292,
+            0.365207,
+            0.513288,
+            0.671535,
+            0.839948,
+            1.018527,
+            1.207272,
+        ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
@@ -1139,7 +1168,20 @@ class InconelX750Tests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.InconelX750
 
     def test_setDefaultMassFracs(self):
-        massFracNameList = ["NI", "CR", "FE", "TI", "AL27", "NB93", "MN55", "SI", "S", "CU", "C", "CO59"]
+        massFracNameList = [
+            "NI",
+            "CR",
+            "FE",
+            "TI",
+            "AL27",
+            "NB93",
+            "MN55",
+            "SI",
+            "S",
+            "CU",
+            "C",
+            "CO59",
+        ]
         massFracRefValList = [
             0.7180,
             0.1550,
@@ -1292,7 +1334,15 @@ class HastelloyNTests(AbstractMaterialTest, unittest.TestCase):
 
     def test_heatCapacity(self):
         temps = [100, 200, 300, 400, 500, 600, 700]
-        refList = [419.183138, 438.728472, 459.630622, 464.218088, 480.092250, 556.547128, 573.450902]
+        refList = [
+            419.183138,
+            438.728472,
+            459.630622,
+            464.218088,
+            480.092250,
+            556.547128,
+            573.450902,
+        ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.heatCapacity(Tc=Tc)
@@ -1352,8 +1402,32 @@ class TZMTests(AbstractMaterialTest, unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_linearExpansionPercent(self):
-        temps = [21.11, 456.11, 574.44, 702.22, 840.56, 846.11, 948.89, 1023.89, 1146.11, 1287.78, 1382.22]
-        refList = [0.0, 0.160, 0.203, 0.253, 0.303, 0.303, 0.342, 0.366, 0.421, 0.468, 0.504]
+        temps = [
+            21.11,
+            456.11,
+            574.44,
+            702.22,
+            840.56,
+            846.11,
+            948.89,
+            1023.89,
+            1146.11,
+            1287.78,
+            1382.22,
+        ]
+        refList = [
+            0.0,
+            0.160,
+            0.203,
+            0.253,
+            0.303,
+            0.303,
+            0.342,
+            0.366,
+            0.421,
+            0.468,
+            0.504,
+        ]
 
         for Tc, ref in zip(temps, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
@@ -1438,6 +1512,8 @@ assemblies:
 """
 
     def loadAssembly(self, materialModifications):
+        from armi.reactor import blueprints
+
         yamlString = self.baseInput + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
         design._prepConstruction(settings.Settings())
