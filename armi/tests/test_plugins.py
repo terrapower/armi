@@ -354,6 +354,8 @@ class TestMaterialBaseClassHook(unittest.TestCase):
         self.app = getApp()
         self._backupApp = deepcopy(self.app)
         armi._app = None
+        self.cache = context.BLUEPRINTS_IMPORTED
+        context.BLUEPRINTS_IMPORTED = False
 
     def tearDown(self):
         """Restore the App to its original state."""
@@ -361,6 +363,7 @@ class TestMaterialBaseClassHook(unittest.TestCase):
 
         armi._app = self._backupApp
         context.APP_NAME = "armi"
+        context.BLUEPRINTS_IMPORTED = self.cache
 
     def test_materialBaseClassHook(self):
         """Verify that only one plugin can be registered with this hook."""
