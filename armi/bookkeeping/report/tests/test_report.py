@@ -17,7 +17,6 @@
 import logging
 import os
 import subprocess
-import sys
 import unittest
 from glob import glob
 from unittest.mock import patch
@@ -40,6 +39,7 @@ from armi.bookkeeping.report.reportingUtils import (
     writeCycleSummary,
     writeWelcomeHeaders,
 )
+from armi.context import PLATFORM, Platform
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -120,7 +120,7 @@ Processor(s):    1 Processor(s) Installed.
         This test should pass if it is run on Window or mainstream Linux distros. But we expect this
         to fail if the test is run on some other OS.
         """
-        if "darwin" in sys.platform:
+        if PLATFORM == Platform.MACOS:
             # too complicated to test MacOS in this method
             return
 

@@ -78,11 +78,31 @@ DOC = os.path.abspath(os.path.join(PROJECT_ROOT, "doc"))
 USER = getpass.getuser()
 START_TIME = time.ctime()
 
+
+class Platform(enum.Enum):
+    """Platform represents the OS ARMI runs on."""
+
+    LINUX = 1
+    MACOS = 2
+    WINDOWS = 3
+
+
+if "linux" in sys.platform:
+    PLATFORM = Platform.LINUX
+elif "darwin" in sys.platform:
+    PLATFORM = Platform.MACOS
+elif "win" in sys.platform:
+    PLATFORM = Platform.WINDOWS
+else:
+    raise OSError(
+        f"Unsupported OS: {sys.platform}. Only Linux, MacOS, and Windows operating systems are currently supported"
+    )
+
+
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file. In this
 # mode you cannot respond to prompts. (This does not work reliably for both Windows and Linux so an
 # os-specific solution is applied.)
-IS_WINDOWS = ("win" in sys.platform) and ("darwin" not in sys.platform)
-isatty = sys.stdout.isatty() if IS_WINDOWS else sys.stdin.isatty()
+isatty = sys.stdout.isatty() if PLATFORM == Platform.WINDOWS else sys.stdin.isatty()
 CURRENT_MODE = Mode.INTERACTIVE if isatty else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
