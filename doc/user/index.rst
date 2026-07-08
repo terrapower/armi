@@ -18,6 +18,5 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
    manual_data_access
    spatial_block_data
    physics_coupling
-   accessingEntryPoints
    radial_and_axial_expansion
    symmetry_handling
