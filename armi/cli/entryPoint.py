@@ -171,7 +171,6 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
         argparse.ArgumentParser.add_argument : Often called from here using
             ``self.parser.add_argument`` to add custom argparse arguments.
         """
-        raise NotImplementedError("Subclasses of EntryPoint must override the .addOptions() method")
 
     def parse_args(self, args):
         self.parser.parse_args(args, namespace=self.args)
