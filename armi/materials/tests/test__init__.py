@@ -16,7 +16,9 @@
 
 import unittest
 
-from armi import materials
+from armi import getPluginManagerOrFail, materials, plugins
+from armi.materials.material import Material
+from armi.materials.pureYaml import _RESOURCES_DIR
 
 
 def betterSubClassCheck(item, superClass):
@@ -33,3 +35,38 @@ class Materials__init__Tests(unittest.TestCase):
 
     def test_packageClassesEqualModuleClasses(self):
         self.assertEqual(materials.Water, materials.water.Water)
+
+
+class TestMaterial(Material):
+    pass
+
+
+class PluginMaterialA(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def setMaterialBaseClass(materialType):
+        """Set material base class."""
+        return TestMaterial
+
+
+class TestMaterialBaseClassHook(unittest.TestCase):
+    def setUp(self):
+        """
+        Manipulate the standard App. We can't just configure our own, since the
+        pytest environment bleeds between tests.
+        """
+        pm = getPluginManagerOrFail()
+        pm.register(PluginMaterialA)
+        self.namespaceOrder = materials.getMaterialNamespaceOrder()
+
+    def tearDown(self):
+        """Restore the App to its original state."""
+        pm = getPluginManagerOrFail()
+        pm.unregister(PluginMaterialA)
+        materials.setMaterialNamespaceOrder(self.namespaceOrder)
+
+    def test_materialBaseClassHook(self):
+        """Verify materials are created with the right base class."""
+        materials.setMaterialNamespaceOrder(["dir:" + _RESOURCES_DIR])
+        mat = materials.createMaterialByName("Air")
+        self.assertIsInstance(mat, TestMaterial)
