@@ -23,6 +23,8 @@ from unittest.mock import patch
 
 import armi.matProps
 
+THIS_DIR = os.path.dirname(__file__)
+
 
 class TestParsing(unittest.TestCase):
     """Class which tests the parsing and material library loading functions of matProps."""
@@ -82,6 +84,11 @@ class TestParsing(unittest.TestCase):
     def test_loadAllBadRootDir(self):
         with self.assertRaisesRegex(OSError, "No material directory provided"):
             armi.matProps.loadAll()
+
+    def test_loadAllBadFiles(self):
+        invalidDir = os.path.join(THIS_DIR, "invalidTestFiles")
+        with self.assertRaises(RuntimeError):
+            armi.matProps.loadAll(rootDir=invalidDir)
 
     def test_loadSafe(self):
         armi.matProps.clear()

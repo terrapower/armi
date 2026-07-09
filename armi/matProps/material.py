@@ -48,10 +48,6 @@ class MatPropsMaterial:
 
     def __init__(self, yamlPath=None):
         """Constructor for MatPropsMaterial class."""
-        # during unpickling, we do not want to reload the YAML file
-        if hasattr(self, "materialType") and self.materialType is not None:
-            return
-
         self._saved = False
         """Boolean denoting whether or not MatPropsMaterial object is saved in materials dict."""
 
