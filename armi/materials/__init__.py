@@ -130,7 +130,7 @@ def setMaterialNamespaceOrder(order):
             importYamlMaterialDir(yDir, clearFirst=False)
 
 
-def getloadedYamlDirs() -> dict:
+def getLoadedYamlDirs() -> dict:
     """
     Returns the materials yaml directories that are loaded. The structure is:
     ``_loadedYamlDirs[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
