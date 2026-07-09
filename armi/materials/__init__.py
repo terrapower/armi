@@ -94,7 +94,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
         mat = Material(yamlPath=yamlPath)
-        mat.DATA_SOURCE = dirPath
+        mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
         # If a class with this name already exists in the package, continue
         _loadedYamlDirs[dirPath][mat.name] = mat
 
