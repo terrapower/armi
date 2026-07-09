@@ -76,8 +76,10 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
         o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
         if o.cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
+            # Reload materials if the current global namespace order doesn't match the case settings namespace order
+            _resetBeforeReactorConstructionHook()
             materials.clear()
-            materials.setMaterialNamespaceOrder(o.cs["materialNamespaceOrder"])
+            getPluginManagerOrFail().hook.beforeReactorConstruction(cs=o.cs)
         return o, r
 
     # Overwrite settings if desired
