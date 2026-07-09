@@ -94,6 +94,9 @@ class Material(MatPropsMaterial):
         global _YAML_MATERIALS
         if yamlPath:
             self.YAML_PATH = yamlPath
+
+        if self.YAML_PATH:
+            # Do caching things while updating or loading a material
             if self.YAML_PATH in _YAML_MATERIALS:
                 self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
             else:
