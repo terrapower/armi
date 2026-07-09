@@ -127,7 +127,7 @@ def setMaterialNamespaceOrder(order):
             continue
 
         if yDir not in _loadedYamlDirs:
-            importYamlMaterialDir(yDir)
+            importYamlMaterialDir(yDir, clearFirst=False)
 
 
 def getloadedYamlDirs() -> dict:
