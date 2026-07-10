@@ -87,6 +87,7 @@ class Platform(enum.Enum):
     WINDOWS = 3
 
 
+PLATFORM = 1
 if "linux" in sys.platform:
     PLATFORM = Platform.LINUX
 elif "darwin" in sys.platform:
@@ -191,7 +192,7 @@ def activateLocalFastPath() -> None:
     global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA
 
     # Try to fix pathing issues in Windows.
-    if os.name == "nt":
+    if PLATFORM == Platform.WINDOWS:
         APP_DATA = APP_DATA.replace("/", "\\")
 
     _FAST_PATH = os.path.join(

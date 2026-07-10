@@ -313,6 +313,6 @@ atexit.register(context.cleanFastPathAfterSimulation)
 
 # register cleanups upon HPC cancellations. Linux clusters will send a different signal. SIGBREAK doesn't exist on
 # non-windows This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
-if os.name == "nt":
+if PLATFORM == Platform.WINDOWS:
     signal.signal(signal.SIGBREAK, _cleanupOnCancel)
 signal.signal(signal.SIGINT, _cleanupOnCancel)

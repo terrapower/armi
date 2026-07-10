@@ -17,7 +17,6 @@ import copy
 import cProfile
 import logging
 import os
-import platform
 import unittest
 
 import h5py
@@ -287,7 +286,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", "c1.h5", False),
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", r"..\1\c1.h5", False),
         ]
-        if platform.system() == "Windows":
+        if context.PLATFORM == context.Platform.WINDOWS:
             # windows-specific case insensitivity
             checks.extend(
                 [
