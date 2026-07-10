@@ -18,6 +18,8 @@ import os
 import shutil
 import unittest
 
+from pytest import MonkeyPatch
+
 from armi import materials
 from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
@@ -46,15 +48,11 @@ class Materials__init__Tests(unittest.TestCase):
 
 
 class YamlMaterialTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.prevOrder = materials.getMaterialNamespaceOrder()
-
-    @classmethod
-    def tearDownClass(cls):
-        materials.setMaterialNamespaceOrder(cls.prevOrder)
-
     def setUp(self):
+        self._monkeypatch = MonkeyPatch()
+        origNamespace = materials._MATERIAL_NAMESPACE_ORDER
+        self._monkeypatch.setattr(materials, "_MATERIAL_NAMESPACE_ORDER", origNamespace)
+
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
 
@@ -64,6 +62,7 @@ class YamlMaterialTests(unittest.TestCase):
 
     def tearDown(self):
         self.td.__exit__(None, None, None)
+        self._monkeypatch.undo()
 
     def test_materialClass(self):
         # Verify the directory HT9 is being used not the HT9 class in ARMI.
