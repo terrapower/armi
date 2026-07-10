@@ -18,6 +18,8 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
+from copy import deepcopy
+
 import numpy as np
 
 from armi import runLog
@@ -98,7 +100,7 @@ class Material(MatPropsMaterial):
         if self.YAML_PATH:
             # Do caching things while updating or loading a material
             if self.YAML_PATH in _YAML_MATERIALS:
-                self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
+                self.__dict__.update(deepcopy(_YAML_MATERIALS[self.YAML_PATH]).__dict__)
             else:
                 mat = MatPropsMaterial(self.YAML_PATH)
                 _YAML_MATERIALS[self.YAML_PATH] = mat
@@ -327,7 +329,10 @@ class Material(MatPropsMaterial):
             td = kwargs["TD_frac"]
             if td is not None:
                 if td > 1.0 or td <= 0.0:
-                    runLog.warning(f"Theoretical density frac for {self} is out of range: {td}", single=True)
+                    runLog.warning(
+                        f"Theoretical density frac for {self} is out of range: {td}",
+                        single=True,
+                    )
                 self.adjustTD(td)
 
         # If this material declares an enrichment nuclide, see if we need to enrich this material
@@ -483,7 +488,11 @@ class Material(MatPropsMaterial):
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
         if self.refDens is None:
-            runLog.warning(f"{self} has no reference density", single=True, label=f"No refD {self.getName()}")
+            runLog.warning(
+                f"{self} has no reference density",
+                single=True,
+                label=f"No refD {self.getName()}",
+            )
             return None
 
         f = (1.0 + dLL / 100.0) ** 3

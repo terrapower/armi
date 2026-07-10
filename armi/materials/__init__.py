@@ -39,6 +39,7 @@ import inspect
 import os
 import pkgutil
 import sysconfig
+from copy import deepcopy
 from typing import List
 
 from armi import runLog
@@ -289,7 +290,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
             # grab the global material, and copy it over to a new material to return
             mat0 = _loadedYamlDirs[yDir][name]
             newMat = Material()
-            newMat.__dict__.update(mat0.__dict__)
+            newMat.__dict__.update(deepcopy(mat0).__dict__)
             return newMat
         else:
             # check and see if this is an importable material
