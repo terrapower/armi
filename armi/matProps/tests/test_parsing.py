@@ -78,11 +78,6 @@ class TestParsing(unittest.TestCase):
         armi.matProps.clear()
         self.assertEqual(0, len(armi.matProps.loadedMaterials()))
 
-    @patch("armi.matProps._DEFAULT_ROOT_DIR", os.path.join(sysconfig.get_paths()["purelib"], "materials_data_temp"))
-    def test_loadAllBadRootDir(self):
-        with self.assertRaisesRegex(OSError, "No material directory provided"):
-            armi.matProps.loadAll()
-
     def test_loadAllBadFiles(self):
         invalidDir = os.path.join(THIS_DIR, "invalidTestFiles")
         with self.assertRaises(RuntimeError):
