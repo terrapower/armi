@@ -71,11 +71,13 @@ from armi.context import (
     MPI_NODENAMES,
     MPI_RANK,
     MPI_SIZE,
+    PLATFORM,
     RES,
     ROOT,
     START_TIME,
     USER,
     Mode,
+    Platform,
 )
 from armi.meta import __version__
 from armi.nucDirectory import nuclideBases
@@ -300,7 +302,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     """
     import asyncio
 
-    if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith("win"):
+    if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and PLATFORM == Platform.WINDOWS:
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
@@ -311,6 +313,6 @@ atexit.register(context.cleanFastPathAfterSimulation)
 
 # register cleanups upon HPC cancellations. Linux clusters will send a different signal. SIGBREAK doesn't exist on
 # non-windows This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
-if os.name == "nt":
+if PLATFORM == Platform.WINDOWS:
     signal.signal(signal.SIGBREAK, _cleanupOnCancel)
 signal.signal(signal.SIGINT, _cleanupOnCancel)

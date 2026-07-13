@@ -56,7 +56,6 @@ import collections
 import copy
 import os
 import string
-import sys
 
 import numpy as np
 
@@ -1429,7 +1428,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             )
 
         # check for lower-case on case-insensitive file system
-        if sys.platform.startswith("win"):
+        if context.PLATFORM == context.Platform.WINDOWS:
             allXSTypes = allocatedXSTypes.union(set(availableXsTypes[:howMany]))
             allCaps = {c.capitalize() for c in allXSTypes}
             if len(allCaps) != len(allXSTypes):

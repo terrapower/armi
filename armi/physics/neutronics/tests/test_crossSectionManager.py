@@ -21,12 +21,12 @@ Test the cross section manager.
 import copy
 import os
 import pickle
-import sys
 import unittest
 from io import BytesIO
 from unittest.mock import MagicMock
 
 from armi import settings
+from armi.context import PLATFORM, Platform
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
@@ -865,7 +865,7 @@ class TestXSGM(unittest.TestCase):
         self.assertEqual("c", xsTypes[-1])
 
         # verify that we can get lowercase letters
-        if sys.platform.startswith("win"):
+        if PLATFORM == Platform.WINDOWS:
             with mockRunLogs.BufferLog() as mock:
                 xsTypes = self.csm.getNextAvailableXsTypes(27)
                 self.assertIn("Mixing upper and lower-case XS", mock.getStdout())

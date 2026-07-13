@@ -302,7 +302,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         try:
             pathTools.cleanPath(self.destination, mpiRank=context.MPI_RANK, forceClean=True)
         except PermissionError:
-            if os.name == "nt":
+            if context.PLATFORM == context.Platform.WINDOWS:
                 runLog.warning(
                     "There is an issue where Windows will not agree to delete private directories."
                     "That is, if you create a directory with a name starting with a period, the "
