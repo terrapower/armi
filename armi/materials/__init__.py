@@ -39,8 +39,10 @@ import inspect
 import os
 import pkgutil
 import sysconfig
+from copy import deepcopy
 from typing import List
 
+from armi import runLog
 from armi.materials.material import Material
 from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
@@ -76,8 +78,10 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     """
     global _loadedYamlDirs
 
-    if not os.path.exists(dirPath):
-        raise OSError(f"No material directory provided, and default not found: {dirPath}")
+    if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
+        msg = f"No material directory provided, or directory not found: {dirPath}"
+        runLog.error(msg)
+        raise FileNotFoundError(msg)
 
     if clearFirst:
         # clear the loaded materials before loading this new directory
@@ -90,12 +94,10 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     _loadedYamlDirs[dirPath] = {}
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
-        mat = Material()
-        try:
-            mat.loadFile(yamlPath)
-        except Exception:
-            continue
-
+        mat = Material(yamlPath=yamlPath)
+        # Data source is used for some downstream table printouts, so we simplify a venv printout for it to look nice.
+        # Not that you can't touch this, but it is this way for a reason.
+        mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
         # If a class with this name already exists in the package, continue
         _loadedYamlDirs[dirPath][mat.name] = mat
 
@@ -128,7 +130,34 @@ def setMaterialNamespaceOrder(order):
             continue
 
         if yDir not in _loadedYamlDirs:
-            importYamlMaterialDir(yDir)
+            importYamlMaterialDir(yDir, clearFirst=False)
+
+
+def getLoadedYamlDirs() -> dict:
+    """
+    Returns the materials yaml directories that are loaded. The structure is:
+    ``_loadedYamlDirs[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
+
+    Returns
+    -------
+    dict of dict
+        Dictionary of directories, which are dictionaries of material yaml files
+    """
+    global _loadedYamlDirs
+    return _loadedYamlDirs.copy()
+
+
+def getMaterialNamespaceOrder() -> list:
+    """
+    Returns the material namespace order.
+
+    Returns
+    -------
+    list of str
+        Materials namespaces
+    """
+    global _MATERIAL_NAMESPACE_ORDER
+    return _MATERIAL_NAMESPACE_ORDER.copy()
 
 
 def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):
@@ -261,7 +290,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
             # grab the global material, and copy it over to a new material to return
             mat0 = _loadedYamlDirs[yDir][name]
             newMat = Material()
-            newMat.__dict__.update(mat0.__dict__)
+            newMat.__dict__.update(deepcopy(mat0).__dict__)
             return newMat
         else:
             # check and see if this is an importable material

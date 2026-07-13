@@ -67,15 +67,12 @@ class MatPropsMaterial:
         self._sha1 = None
         """SHA1 value of parsed material file."""
 
-        self.yamlPath = yamlPath if yamlPath else self.YAML_PATH
-        """Path to the YAML file that was loaded to build this instance."""
+        if yamlPath:
+            self.YAML_PATH = yamlPath
 
         # Load the material, if the YAML was provided.
-        if self.yamlPath:
-            self.loadFile(self.yamlPath)
-            if not self.YAML_PATH:
-                # handle some edge-cases with how materials can be loaded
-                self.YAML_PATH = self.yamlPath
+        if self.YAML_PATH:
+            self.loadFile(self.YAML_PATH)
 
     def __repr__(self):
         """Provides string representation for MatPropsMaterial class."""
@@ -186,8 +183,9 @@ class MatPropsMaterial:
         yamlPath: str
             Path containing name of YAML file to parse.
         """
+        # Set class attr
+        self.YAML_PATH = yamlPath
         # load the file path
-        self.yamlPath = yamlPath
         y = YAML(pure=True)
         node = y.load(Path(yamlPath))
 
