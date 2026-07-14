@@ -51,7 +51,10 @@ from armi.matProps import getPaths as getYamlPaths
 # armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
-# dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
+# Dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
+#
+# NOTE: This is the collection used to cache YAML materials in the usual ARMI workflow. There is something similar in
+# matProps, but that is not typically used in ARMI runs and exists purely for peopel that use matProps without ARMI.
 _loadedYamlMats = {}
 
 
