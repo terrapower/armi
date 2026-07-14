@@ -25,11 +25,11 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
     isDepletable,
 )
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import (
-    buildOperatorOfEmptyHexBlocks,
+from armi.testing import (
+    TESTING_ROOT,
+    buildEmptyOperators,
     loadTestReactor,
 )
-from armi.testing import TESTING_ROOT
 
 
 class TestFPMLumpedFP(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestFPMLumpedFP(unittest.TestCase):
     """
 
     def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
+        o = buildEmptyOperators.buildOperatorOfEmptyHexBlocks()
         o.removeAllInterfaces()
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         o.addInterface(self.fpModel)

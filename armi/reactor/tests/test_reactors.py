@@ -23,11 +23,9 @@ from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
 
-from armi import operators, runLog, settings, tests
-from armi.materials import uZr
+from armi import runLog, settings
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.reactor import assemblies, blocks, geometry, grids, reactors
-from armi.reactor.components import Hexagon, Rectangle
+from armi.reactor import blocks, geometry, grids, reactors
 from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
@@ -38,93 +36,13 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs, reduceTestReactorRings  # noqa: F401
+from armi.testing import TESTING_ROOT, buildEmptyOperators, loadTestReactor, mockRunLogs
+
+# noqa: F401
 from armi.tests import TEST_ROOT  # noqa: F401
 from armi.utils import directoryChangers
 
 _THIS_DIR = os.path.dirname(__file__)
-
-
-def buildOperatorOfEmptyHexBlocks(customSettings=None):
-    """
-    Builds a operator w/ a reactor object with some hex assemblies and blocks, but all are empty.
-
-    Doesn't depend on inputs and loads quickly.
-
-    Parameters
-    ----------
-    customSettings : dict
-        Dictionary of off-default settings to update
-    """
-    cs = settings.Settings()  # fetch new
-    if customSettings is None:
-        customSettings = {}
-
-    customSettings["db"] = False  # stop use of database
-    cs = cs.modified(newSettings=customSettings)
-
-    r = tests.getEmptyHexReactor()
-    r.core.setOptionsFromCs(cs)
-    o = operators.Operator(cs)
-    o.initializeInterfaces(r)
-
-    a = assemblies.HexAssembly("fuel")
-    a.spatialGrid = grids.AxialGrid.fromNCells(1)
-    b = blocks.HexBlock("TestBlock")
-    b.setType("fuel")
-    dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
-    c = Hexagon("fuel", uZr.UZr(), **dims)
-    b.add(c)
-    a.add(b)
-    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
-    o.r.core.add(a)
-    o.r.sort()
-    return o
-
-
-def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
-    """
-    Builds a operator w/ a reactor object with some Cartesian assemblies and blocks, but all are empty.
-
-    Doesn't depend on inputs and loads quickly.
-
-    Parameters
-    ----------
-    customSettings : dict
-        Off-default settings to update
-    """
-    cs = settings.Settings()  # fetch new
-    if customSettings is None:
-        customSettings = {}
-
-    customSettings["db"] = False  # stop use of database
-    cs = cs.modified(newSettings=customSettings)
-
-    r = tests.getEmptyCartesianReactor()
-    r.core.setOptionsFromCs(cs)
-    o = operators.Operator(cs)
-    o.initializeInterfaces(r)
-
-    a = assemblies.CartesianAssembly("fuel")
-    a.spatialGrid = grids.AxialGrid.fromNCells(1)
-    b = blocks.CartesianBlock("TestBlock")
-    b.setType("fuel")
-    dims = {
-        "Tinput": 600,
-        "Thot": 600,
-        "widthOuter": 16.0,
-        "lengthOuter": 10.0,
-        "widthInner": 1,
-        "lengthInner": 1,
-        "mult": 1,
-    }
-    c = Rectangle("fuel", uZr.UZr(), **dims)
-    b.add(c)
-    a.add(b)
-    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
-    o.r.core.add(a)
-    o.r.sort()
-    return o
 
 
 class ReactorTests(unittest.TestCase):
@@ -1291,7 +1209,7 @@ class BigHexReactorTests(ReactorTests):
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
-        self.o = buildOperatorOfEmptyCartesianBlocks()
+        self.o = buildEmptyOperators.buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
 
     def test_add(self):
