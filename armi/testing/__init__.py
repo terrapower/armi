@@ -27,6 +27,10 @@ import pickle
 
 from armi import runLog
 from armi.reactor import geometry, grids, reactors
+from armi.testing.buildEmptyOperators import (
+    buildOperatorOfEmptyCartesianBlocks,  # noqa: F401
+    buildOperatorOfEmptyHexBlocks,  # noqa: F401
+)
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))

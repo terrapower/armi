@@ -36,9 +36,12 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, buildEmptyOperators, loadTestReactor, mockRunLogs
-
-# noqa: F401
+from armi.testing import (
+    TESTING_ROOT,
+    buildOperatorOfEmptyCartesianBlocks,
+    loadTestReactor,
+    mockRunLogs,
+)  # noqa: F401
 from armi.tests import TEST_ROOT  # noqa: F401
 from armi.utils import directoryChangers
 
@@ -1209,7 +1212,7 @@ class BigHexReactorTests(ReactorTests):
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
-        self.o = buildEmptyOperators.buildOperatorOfEmptyCartesianBlocks()
+        self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
 
     def test_add(self):

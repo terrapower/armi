@@ -31,7 +31,7 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
 )
 from armi.reactor.flags import Flags
 from armi.settings import Settings
-from armi.testing.buildEmptyOperators import buildOperatorOfEmptyHexBlocks
+from armi.testing import buildOperatorOfEmptyHexBlocks
 
 LFP_TEXT = """LFP35 GE73   5.9000E-06
 LFP35 GE74    1.4000E-05

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module contains subclasses of the armi.runLog._RunLog class that can be used to determine
-whether or not one of the specific methods were called. These should only be used in testing.
+This module contains herlper functiosn to build Operators of filled with emtpy Hex or Cartesian blocks. These should
+only be used in testing.
 """
 
 from armi import operators, settings, tests
