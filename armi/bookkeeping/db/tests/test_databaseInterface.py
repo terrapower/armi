@@ -582,7 +582,7 @@ class TestDatabaseReading(unittest.TestCase):
     def test_growToFullCoreFromFactoryWithCS(self):
         from armi.bookkeeping.db import databaseFactory
 
-        db = databaseFactory(self.dbName, "r")
+        db = databaseFactory(self.dbName, "r+")
         with db:
             r = db.load(0, 0, allowMissing=True)
 
