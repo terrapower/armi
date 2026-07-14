@@ -52,13 +52,13 @@ from armi.matProps import getPaths as getYamlPaths
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 # dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
-_loadedYamlDirs = {}
+_loadedYamlMats = {}
 
 
 def clear() -> None:
     """Clears all loaded YAML materials in ARMI."""
-    global _loadedYamlDirs
-    _loadedYamlDirs.clear()
+    global _loadedYamlMats
+    _loadedYamlMats.clear()
 
 
 def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
@@ -76,7 +76,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
-    global _loadedYamlDirs
+    global _loadedYamlMats
 
     if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
         msg = f"No material directory provided, or directory not found: {dirPath}"
@@ -87,11 +87,11 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         # clear the loaded materials before loading this new directory
         clear()
 
-    if dirPath in _loadedYamlDirs and not overwriteExisting:
+    if dirPath in _loadedYamlMats and not overwriteExisting:
         return
 
     # recursively get all the *.yaml and *.yml files from the provided directory
-    _loadedYamlDirs[dirPath] = {}
+    _loadedYamlMats[dirPath] = {}
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
         mat = Material(yamlPath=yamlPath)
@@ -99,7 +99,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         # Not that you can't touch this, but it is this way for a reason.
         mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
         # If a class with this name already exists in the package, continue
-        _loadedYamlDirs[dirPath][mat.name] = mat
+        _loadedYamlMats[dirPath][mat.name] = mat
 
 
 def setMaterialNamespaceOrder(order):
@@ -116,7 +116,7 @@ def setMaterialNamespaceOrder(order):
         collections of materials. To handle this, ARMI keeps an ordered list of Python namespaces and directories from
         which to import materials.
     """
-    global _loadedYamlDirs
+    global _loadedYamlMats
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
 
@@ -129,22 +129,22 @@ def setMaterialNamespaceOrder(order):
         else:
             continue
 
-        if yDir not in _loadedYamlDirs:
+        if yDir not in _loadedYamlMats:
             importYamlMaterialDir(yDir, clearFirst=False)
 
 
 def getLoadedYamlDirs() -> dict:
     """
     Returns the materials yaml directories that are loaded. The structure is:
-    ``_loadedYamlDirs[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
+    ``_loadedYamlMats[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
 
     Returns
     -------
     dict of dict
         Dictionary of directories, which are dictionaries of material yaml files
     """
-    global _loadedYamlDirs
-    return _loadedYamlDirs.copy()
+    global _loadedYamlMats
+    return _loadedYamlMats.copy()
 
 
 def getMaterialNamespaceOrder() -> list:
@@ -260,7 +260,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     >>> createMaterialByName("UO2", ["something.else.materials", "armi.materials"])
     <Material UO2>
     """
-    global _loadedYamlDirs
+    global _loadedYamlMats
     global _MATERIAL_NAMESPACE_ORDER
 
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
@@ -282,13 +282,13 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
                 yDir = os.path.join(sysconfig.get_paths()["purelib"], namespace[5:])
 
             # check and see if you can find the material
-            if yDir not in _loadedYamlDirs:
+            if yDir not in _loadedYamlMats:
                 continue
-            elif name not in _loadedYamlDirs[yDir]:
+            elif name not in _loadedYamlMats[yDir]:
                 continue
 
             # grab the global material, and copy it over to a new material to return
-            mat0 = _loadedYamlDirs[yDir][name]
+            mat0 = _loadedYamlMats[yDir][name]
             newMat = Material()
             newMat.__dict__.update(deepcopy(mat0).__dict__)
             return newMat
