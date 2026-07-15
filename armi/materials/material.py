@@ -30,7 +30,7 @@ from armi.utils.units import getTc, getTk
 # works for material properties defined purely in Python.
 FAIL_ON_RANGE = True
 
-# Need for an memoization optimization to cache YAML-mased materials
+# Need for an memoization optimization to cache YAML-based materials
 _YAML_MATERIALS = {}
 
 
@@ -90,15 +90,18 @@ class Material(MatPropsMaterial):
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
-    def __init__(self):
+    def __init__(self, yamlPath=None):
         global _YAML_MATERIALS
-        if self.YAML_PATH is not None:
-            nameStub = f"{self.__class__.__name__}:{self.YAML_PATH}"
-            if nameStub in _YAML_MATERIALS:
-                self.__dict__.update(_YAML_MATERIALS[nameStub].__dict__)
+        if yamlPath:
+            self.YAML_PATH = yamlPath
+
+        if self.YAML_PATH:
+            # Do caching things while updating or loading a material
+            if self.YAML_PATH in _YAML_MATERIALS:
+                self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
             else:
                 mat = MatPropsMaterial(self.YAML_PATH)
-                _YAML_MATERIALS[nameStub] = mat
+                _YAML_MATERIALS[self.YAML_PATH] = mat
                 self.__dict__.update(mat.__dict__)
         else:
             MatPropsMaterial.__init__(self)

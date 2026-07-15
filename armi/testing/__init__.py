@@ -25,7 +25,7 @@ This will not be a catch-all for random unit test functions. Be very sparing her
 import os
 import pickle
 
-from armi import operators, runLog, settings
+from armi import getPluginManagerOrFail, materials, operators, runLog, settings
 from armi.materials import uZr
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
@@ -77,6 +77,11 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
         # return test reactor from cache
         o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
+        if not o.cs["materialNamespaceOrder"] and materials.getMaterialNamespaceOrder != ["armi.materials"]:
+            materials.setMaterialNamespaceOrder(["armi.materials"])
+        elif o.cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
+            # Reload materials if the current global namespace order doesn't match the case settings namespace order
+            materials.setMaterialNamespaceOrder(o.cs["materialNamespaceOrder"])
         return o, r
 
     # Overwrite settings if desired
@@ -87,6 +92,9 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
 
+    # Always want to reset this hook if the namespace has changed unit tests have varying namespace settings
+    if cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
+        _resetBeforeReactorConstructionHook()
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
 
@@ -99,6 +107,22 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
         _TEST_REACTORS[reactorHash] = pickle.dumps((o, o.r), protocol=2)
 
     return o, o.r
+
+
+def _resetBeforeReactorConstructionHook():
+    """
+    Helper function that gathers all the plugins with a `beforeReactorConstruction` hook and resets the `onlyRunOnce`
+    decorator. This is important to do for unit tests because different plugins may have a different namespace order
+    and we need the materials accurate to the test to load.
+    """
+    pm = getPluginManagerOrFail()
+    hook = pm.hook.beforeReactorConstruction
+
+    for hookimpl in hook.get_hookimpls():
+        func = hookimpl.function
+        reset = getattr(func, "reset_onlyRunOnce", None)
+        if callable(reset):
+            reset()
 
 
 def reduceTestReactorRings(r, cs, maxNumRings):

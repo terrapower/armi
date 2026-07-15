@@ -316,7 +316,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setProperties(self, properties):
         """Apply thermo-mechanical properties of a Material."""
         if isinstance(properties, str):
-            mat = materials.resolveMaterialClassByName(properties)()
+            mat = materials.createMaterialByName(properties)
             # note that the material will not be expanded to natural isotopics
             # here because the user-input blueprints information is not available
         else:
@@ -1057,13 +1057,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLL = self.material.linearExpansionFactor(Tc=Tc, T0=T0)
         if not dLL and abs(Tc - T0) > self._TOLERANCE:
             runLog.error(
-                f"Linear expansion percent may not be implemented in the {self.material} material class.\n"
-                "This method needs to be implemented on the material to allow thermal expansion."
-                f".\nReference temperature: {T0}, Adjusted temperature: {Tc}, Temperature difference: {(Tc - T0)}, "
-                f"Specified tolerance: {self._TOLERANCE}",
+                f"Linear expansion percent may not be implemented in the {self.material} material class.\nThis method "
+                f"needs to be implemented on the material to allow thermal expansion.\nReference temperature: {T0}, "
+                f"Adjusted temperature: {Tc}, Temperature difference: {(Tc - T0)}, Specified tolerance:"
+                f" {self._TOLERANCE}",
                 single=True,
             )
             raise RuntimeError(f"Linear expansion factor may not be implemented in the {self.material} material class.")
+
         return 1.0 + dLL
 
     def printContents(self, includeNuclides=True):
@@ -1083,15 +1084,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                 break
         if not reportGroup:
             return f"No report group designated for {self.getName()} component."
-        reportGroup.header = [
-            "",
-            f"Tcold ({self.inputTemperatureInC})",
-            f"Thot ({self.temperatureInC})",
-        ]
+        reportGroup.header = ["", f"Tcold ({self.inputTemperatureInC})", f"Thot ({self.temperatureInC})"]
 
+        # py3 cannot format None
         dimensions = {
             k: self.p[k] for k in self.DIMENSION_NAMES if k not in ("modArea", "area") and self.p[k] is not None
-        }  # py3 cannot format None
+        }
         # Set component name and material
         report.setData("Name", [self.getName(), ""], reportGroup)
         report.setData("Material", [self.getProperties().name, ""], reportGroup)
