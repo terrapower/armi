@@ -39,17 +39,70 @@ import inspect
 import os
 import pkgutil
 import sysconfig
-from pathlib import Path
+from copy import deepcopy
 from typing import List
 
+from armi import runLog
 from armi.materials.material import Material
-from armi.materials.pureYaml import Void  # noqa: F401
-from armi.matProps import addMaterial, clear, loadedRootDirs
+from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
 
 # This can be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting during reactor construction (see
 # armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
+
+# Dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
+#
+# NOTE: This is the collection used to cache YAML materials in the usual ARMI workflow. There is something similar in
+# matProps, but that is not typically used in ARMI runs and exists purely for peopel that use matProps without ARMI.
+_loadedYamlMats = {}
+
+
+def clear() -> None:
+    """Clears all loaded YAML materials in ARMI."""
+    global _loadedYamlMats
+    _loadedYamlMats.clear()
+
+
+def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
+    """
+    Import all Materials defined by YAML files in the defined directory into this package.
+
+    Parameters
+    ----------
+    dirPath : str
+        Path to directory, filled with material YAML files, to be imported.
+        If this is left as None, we will look for the "materials_data" directory in the venv.
+    overwriteExisting : bool, optional
+        If True, will overwrite existing YAML materials loaded from the same location. Default True.
+    clearFirst : bool, optional
+        A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
+        This is particularly popular during unit testing.
+    """
+    global _loadedYamlMats
+
+    if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
+        msg = f"No material directory provided, or directory not found: {dirPath}"
+        runLog.error(msg)
+        raise FileNotFoundError(msg)
+
+    if clearFirst:
+        # clear the loaded materials before loading this new directory
+        clear()
+
+    if dirPath in _loadedYamlMats and not overwriteExisting:
+        return
+
+    # recursively get all the *.yaml and *.yml files from the provided directory
+    _loadedYamlMats[dirPath] = {}
+    paths = getYamlPaths(dirPath)
+    for yamlPath in paths:
+        mat = Material(yamlPath=yamlPath)
+        # Data source is used for some downstream table printouts, so we simplify a venv printout for it to look nice.
+        # Not that you can't touch this, but it is this way for a reason.
+        mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
+        # If a class with this name already exists in the package, continue
+        _loadedYamlMats[dirPath][mat.name] = mat
 
 
 def setMaterialNamespaceOrder(order):
@@ -63,88 +116,51 @@ def setMaterialNamespaceOrder(order):
 
         An ARMI application will need materials. Materials can be imported from any code the application has access to,
         like plugin packages. This leads to the situation where one ARMI application will want to import multiple
-        collections of materials. To handle this, ARMI keeps a list of material namespaces. This is an ordered list of
-        importable packages that ARMI can search for a particular material by name.
-
-        This automatic exploration of an importable package saves the user the tedium have having to import or include
-        hundreds of materials manually somehow. But it comes with a caveat; the list is ordered. If two different
-        namespaces in the list include a material with the same name, the first one found in the list is chosen, i.e.
-        An ARMI application will need materials. Materials can be imported from
-        any code the application has access to, like plugin packages. This leads to
-        the situation where one ARMI application will want to import multiple
-        collections of materials. To handle this, ARMI keeps a list of material
-        namespaces. This is an ordered list of importable packages that ARMI
-        can search for a particular material by name.
-
-        This automatic exploration of an importable package saves the user the
-        tedium have having to import or include hundreds of materials manually somehow.
+        collections of materials. To handle this, ARMI keeps an ordered list of Python namespaces and directories from
+        which to import materials.
     """
+    global _loadedYamlMats
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
 
-
-def addYamlMaterialToThisNamespace(yamlPath: str, overwriteExisting=False):
-    """Given a valid material YAML file, create a class for it and add it to this package.
-
-    Parameters
-    ----------
-    yamlPath : str
-        Path to a valid material YAML file, to be imported.
-    overwriteExisting : bool, optional
-        If True, will overwrite existing materials in the namespace. Default False.
-    """
-    # Get the name of the material from the file name
-    name = Path(yamlPath).stem
-
-    # If a class with this name already exists in the package, continue
-    if not overwriteExisting and name in globals():
-        return
-
-    # Build a custom YAML material class and add it to this package
-    materialClass = type(name, (Material,), {"YAML_PATH": yamlPath})
-    globals()[name] = materialClass
-
-
-def importYamlMaterialDir(dirPath=None, overwriteExisting=False, clearFirst=True):
-    """
-    Import all Materials defined by YAML files in the defined directory into this package.
-
-    Parameters
-    ----------
-    dirPath : str, optional
-        Path to directory, filled with material YAML files, to be imported.
-        If this is left as None, we will look for the "materials_data" directory in the venv.
-    overwriteExisting : bool, optional
-        If True, will overwrite existing materials in the namespace. Default False.
-    clearFirst : bool, optional
-        A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
-        This is particularly popular during unit testing.
-    """
-    if dirPath is None:
-        # If no path is provided, get the default material dir from the venv.
-        dirPath = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
-
-    if not os.path.exists(dirPath):
-        raise OSError(f"No material directory provided, and default not found: {dirPath}")
-
-    if clearFirst:
-        # clear the loaded materials before loading this new directory
-        clear()
-    loadedRootDirs.append(dirPath)
-
-    # recursively get all the *.yaml and *.yml files from the provided directory
-    paths = getYamlPaths(dirPath)
-    for yamlPath in paths:
-        # tests this is a valid material file AND preps for adding to matProp registry
-        mat = Material()
-        try:
-            mat.loadFile(yamlPath)
-        except Exception:
+    # Check that venv and dir: YAML directories have been imported
+    for namespace in order:
+        if namespace.startswith("dir:"):
+            yDir = namespace[4:]
+        elif namespace.startswith("venv:"):
+            yDir = os.path.join(sysconfig.get_paths()["purelib"], namespace[5:])
+        else:
             continue
 
-        # add the material to two namespaces, to support different user workflows
-        addMaterial(yamlPath, mat)
-        addYamlMaterialToThisNamespace(yamlPath, overwriteExisting=overwriteExisting)
+        if yDir not in _loadedYamlMats:
+            importYamlMaterialDir(yDir, clearFirst=False)
+
+
+def getLoadedYamlDirs() -> dict:
+    """
+    Returns the materials yaml directories that are loaded. The structure is:
+    ``_loadedYamlMats[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
+
+    Returns
+    -------
+    dict of dict
+        Dictionary of directories, which are dictionaries of material yaml files
+    """
+    global _loadedYamlMats
+    return _loadedYamlMats.copy()
+
+
+def getMaterialNamespaceOrder() -> list:
+    """
+    Returns the material namespace order.
+
+    Returns
+    -------
+    list of str
+        Materials namespaces
+    """
+    global _MATERIAL_NAMESPACE_ORDER
+    return _MATERIAL_NAMESPACE_ORDER.copy()
 
 
 def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=None):
@@ -198,9 +214,9 @@ def iterAllMaterialClassesInNamespace(namespace):
                 yield obj
 
 
-def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
+def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     """
-    Find the first material class that matches a name in an ordered namespace.
+    Find the first material that matches a name in an ordered namespace.
 
     Names can either be fully resolved class paths (e.g. ``armi.materials.uZr:UZr``) or simple class names (e.g.
     ``UZr``). In the latter case, the ``CONF_MATERIAL_NAMESPACE_ORDER`` setting to allows users to choose which
@@ -234,8 +250,8 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
 
     Returns
     -------
-    matCls : armi.materials.material.Material
-        The material, which will always be of the ARMI Material class, which subclasses the matProps class.
+    armi.materials.material.Material
+        The material, which will always be of the ARMI Material class, which subclasses MatPropsMaterial.
 
     Raises
     ------
@@ -244,30 +260,48 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
 
     Examples
     --------
-    >>> resolveMaterialClassByName("UO2", ["something.else.materials", "armi.materials"])
-    <class 'something.else.materials.UO2'>
-
-    See Also
-    --------
-    armi.reactor.reactors.factory
-        Applies user settings to default namespace order.
+    >>> createMaterialByName("UO2", ["something.else.materials", "armi.materials"])
+    <Material UO2>
     """
-    from armi.matProps import MatPropsMaterial
+    global _loadedYamlMats
+    global _MATERIAL_NAMESPACE_ORDER
 
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
     if ":" in name:
         modPath, clsName = name.split(":")
         mod = importlib.import_module(modPath)
-        return getattr(mod, clsName)
+        return getattr(mod, clsName)()
 
-    # 2. Try to import the material from a namespace defined above
+    # 2. Select your namespace ordering
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
+
+    # 3. Try to import the material from a namespace defined above
     for namespace in namespaceOrder:
-        mod = importlib.import_module(namespace)
-        materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
-        materialsList = [material[0] for material in materialsList]
-        if name in materialsList:
-            return getattr(mod, name)
+        if namespace.startswith("venv:") or namespace.startswith("dir:"):
+            # get the directory in question
+            if namespace.startswith("dir:"):
+                yDir = namespace[4:]
+            elif namespace.startswith("venv:"):
+                yDir = os.path.join(sysconfig.get_paths()["purelib"], namespace[5:])
+
+            # check and see if you can find the material
+            if yDir not in _loadedYamlMats:
+                continue
+            elif name not in _loadedYamlMats[yDir]:
+                continue
+
+            # grab the global material, and copy it over to a new material to return
+            mat0 = _loadedYamlMats[yDir][name]
+            newMat = Material()
+            newMat.__dict__.update(deepcopy(mat0).__dict__)
+            return newMat
+        else:
+            # check and see if this is an importable material
+            mod = importlib.import_module(namespace)
+            materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
+            materialsList = [material[0] for material in materialsList]
+            if name in materialsList:
+                return getattr(mod, name)()
 
     raise KeyError(
         f"Cannot find material named `{name}` in any of: {str(namespaceOrder)}. Please update inputs or plugins. See "
