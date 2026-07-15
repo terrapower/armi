@@ -14,11 +14,21 @@
 
 """This module tests the __init__.py file since it has rather unique behavior."""
 
+import os
+import shutil
 import unittest
 
+from pytest import MonkeyPatch
+
 from armi import getPluginManagerOrFail, materials, plugins
+from armi.bookkeeping.db.database import Database
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.materials.material import Material
-from armi.materials.pureYaml import _RESOURCES_DIR
+from armi.materials.mostlyYaml import _RESOURCES_DIR, HT9
+from armi.reactor.reactors import Reactor
+from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.testing import loadTestReactor
+from armi.utils import directoryChangers
 
 
 def betterSubClassCheck(item, superClass):
@@ -70,3 +80,63 @@ class TestMaterialBaseClassHook(unittest.TestCase):
         materials.setMaterialNamespaceOrder(["dir:" + _RESOURCES_DIR])
         mat = materials.createMaterialByName("Air")
         self.assertIsInstance(mat, TestMaterial)
+
+
+class YamlMaterialTests(unittest.TestCase):
+    def setUp(self):
+        self._monkeypatch = MonkeyPatch()
+        origNamespace = materials._MATERIAL_NAMESPACE_ORDER
+        self._monkeypatch.setattr(materials, "_MATERIAL_NAMESPACE_ORDER", origNamespace)
+
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+        shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", os.getcwd())
+        self.namespaceOrder = [f"dir:{os.getcwd()}", "armi.materials"]
+        materials.setMaterialNamespaceOrder(self.namespaceOrder)
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+        self._monkeypatch.undo()
+
+    def test_materialClass(self):
+        # Verify the directory HT9 is being used not the HT9 class in ARMI.
+        mat = materials.createMaterialByName("HT9")
+        self.assertIsInstance(mat, Material)
+        self.assertNotIsInstance(mat, HT9)
+
+    def test_loadReactor(self):
+        # verifies that a reactor can be loaded from case settings with YAML materials
+        _, r = loadTestReactor(
+            useCache=False,
+            customSettings={CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder},
+        )
+        self.assertIsInstance(r, Reactor)
+
+    def test_loadDB(self):
+        # verifies that a reactor can be loaded from database with YAML materials
+        o, r = loadTestReactor(
+            useCache=False,
+            customSettings={CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder},
+        )
+        self.assertIsInstance(r, Reactor)
+
+        # Write this reactor to a database file.
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName="testDB1.h5")
+        db = dbi.database
+        db.writeToDB(r)
+        db.close()
+
+        with Database("testDB1.h5", "r") as db:
+            cs2 = db.loadCS()
+            r2 = db.load(0, 0, cs=cs2)
+
+        # Verify the reactor loaded successfully
+        self.assertIsInstance(r2, Reactor)
+        for b in r2.core.getBlocks():
+            for c in b:
+                if c.getProperties().name == "HT9":
+                    # Verify the directory HT9 is being used not the HT9 class in ARMI.
+                    self.assertIsInstance(c.getProperties(), Material)
+                    self.assertNotIsInstance(c.getProperties(), HT9)

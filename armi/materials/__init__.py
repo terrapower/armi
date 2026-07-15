@@ -39,9 +39,10 @@ import inspect
 import os
 import pkgutil
 import sysconfig
+from copy import deepcopy
 from typing import List
 
-from armi import runLog
+from armi import getPluginManager, runLog
 from armi.materials.material import Material
 from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
@@ -50,14 +51,17 @@ from armi.matProps import getPaths as getYamlPaths
 # armi.reactor.reactors.factory).
 _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
-# dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
-_loadedYamlDirs = {}
+# Dictionary of loaded materials: d[mat directory][mat name] = instance of Material object
+#
+# NOTE: This is the collection used to cache YAML materials in the usual ARMI workflow. There is something similar in
+# matProps, but that is not typically used in ARMI runs and exists purely for peopel that use matProps without ARMI.
+_loadedYamlMats = {}
 
 
 def clear() -> None:
     """Clears all loaded YAML materials in ARMI."""
-    global _loadedYamlDirs
-    _loadedYamlDirs.clear()
+    global _loadedYamlMats
+    _loadedYamlMats.clear()
 
 
 def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
@@ -75,10 +79,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
-    # Needs to be a local import to prevent circular imports
-    from armi import getPluginManager
-
-    global _loadedYamlDirs
+    global _loadedYamlMats
 
     if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
         msg = f"No material directory provided, or directory not found: {dirPath}"
@@ -89,11 +90,11 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         # clear the loaded materials before loading this new directory
         clear()
 
-    if dirPath in _loadedYamlDirs and not overwriteExisting:
+    if dirPath in _loadedYamlMats and not overwriteExisting:
         return
 
     # recursively get all the *.yaml and *.yml files from the provided directory
-    _loadedYamlDirs[dirPath] = {}
+    _loadedYamlMats[dirPath] = {}
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
         # This makes us load a given YAML twice per material if they have a custom class
@@ -106,9 +107,9 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
                 # only one plugin can define this hook
                 baseClass = baseClassList[0]
                 mat = baseClass(yamlPath=yamlPath)
-        mat.DATA_SOURCE = dirPath
+        mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
         # If a class with this name already exists in the package, continue
-        _loadedYamlDirs[dirPath][mat.name] = mat
+        _loadedYamlMats[dirPath][mat.name] = mat
 
 
 def setMaterialNamespaceOrder(order):
@@ -125,7 +126,7 @@ def setMaterialNamespaceOrder(order):
         collections of materials. To handle this, ARMI keeps an ordered list of Python namespaces and directories from
         which to import materials.
     """
-    global _loadedYamlDirs
+    global _loadedYamlMats
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
 
@@ -138,22 +139,22 @@ def setMaterialNamespaceOrder(order):
         else:
             continue
 
-        if yDir not in _loadedYamlDirs:
-            importYamlMaterialDir(yDir)
+        if yDir not in _loadedYamlMats:
+            importYamlMaterialDir(yDir, clearFirst=False)
 
 
-def getloadedYamlDirs() -> dict:
+def getLoadedYamlDirs() -> dict:
     """
     Returns the materials yaml directories that are loaded. The structure is:
-    ``_loadedYamlDirs[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
+    ``_loadedYamlMats[<MAT DB PATH>][<MAT NAME>] = <MAT OBJ>``.
 
     Returns
     -------
     dict of dict
         Dictionary of directories, which are dictionaries of material yaml files
     """
-    global _loadedYamlDirs
-    return _loadedYamlDirs.copy()
+    global _loadedYamlMats
+    return _loadedYamlMats.copy()
 
 
 def getMaterialNamespaceOrder() -> list:
@@ -272,7 +273,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     # Needs to be a local import to prevent circular imports
     from armi import getPluginManager
 
-    global _loadedYamlDirs
+    global _loadedYamlMats
     global _MATERIAL_NAMESPACE_ORDER
 
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
@@ -294,13 +295,13 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
                 yDir = os.path.join(sysconfig.get_paths()["purelib"], namespace[5:])
 
             # check and see if you can find the material
-            if yDir not in _loadedYamlDirs:
+            if yDir not in _loadedYamlMats:
                 continue
-            elif name not in _loadedYamlDirs[yDir]:
+            elif name not in _loadedYamlMats[yDir]:
                 continue
 
             # grab the global material, and copy it over to a new material to return
-            mat0 = _loadedYamlDirs[yDir][name]
+            mat0 = _loadedYamlMats[yDir][name]
             pm = getPluginManager()
             baseClass = Material
             if pm:
@@ -313,7 +314,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
             # Don't update mass fractions because YAML defined materials won't have their composition
             # updated until after the dict update.
             newMat = baseClass(updateMassFracs=False)
-            newMat.__dict__.update(mat0.__dict__)
+            newMat.__dict__.update(deepcopy(mat0).__dict__)
             # Now set default mass fracs now that the composition has been populated
             # Although the mass fracs were copied by the dictionary copy, their calculation
             # may have changed since namespace order setting based on modifications to global

@@ -181,6 +181,7 @@ class MaterialFindingTests(unittest.TestCase):
             # get a material back and show it is working
             mat = materials.createMaterialByName(matName, namespaceOrder=[f"dir:{testName}", "armi.materials"])
             self.assertIsInstance(mat, materials.Material)
+            self.assertEqual(mat.DATA_SOURCE, testName)
             self.assertGreater(mat.rho(T=400), 500)
 
 

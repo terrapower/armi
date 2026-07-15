@@ -37,7 +37,12 @@ ISOAA_PATH = os.path.join(TESTING_ROOT, "resources", "ISOAA")
 _TEST_REACTORS = {}  # dictionary of pickled string of test reactors (for fast caching)
 
 
-def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
+def loadTestReactor(
+    inputFilePath=_ARMI_RUN_DIR,
+    customSettings=None,
+    inputFileName="armiRun.yaml",
+    useCache=True,
+):
     """
     Loads a test reactor. Can be used in other test modules.
 
@@ -75,11 +80,11 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
         # return test reactor from cache
         o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
-        if o.cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
+        if not o.cs["materialNamespaceOrder"] and materials.getMaterialNamespaceOrder != ["armi.materials"]:
+            materials.setMaterialNamespaceOrder(["armi.materials"])
+        elif o.cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
             # Reload materials if the current global namespace order doesn't match the case settings namespace order
-            _resetBeforeReactorConstructionHook()
-            materials.clear()
-            getPluginManagerOrFail().hook.beforeReactorConstruction(cs=o.cs)
+            materials.setMaterialNamespaceOrder(o.cs["materialNamespaceOrder"])
         return o, r
 
     # Overwrite settings if desired

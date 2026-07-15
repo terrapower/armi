@@ -181,7 +181,7 @@ class Database:
         filePath = self._fileName
         self._openCount += 1
 
-        if self._permission in {"r", "a"}:
+        if self._permission in {"r", "a", "r+"}:
             self._fullPath = os.path.abspath(filePath)
             self.h5db = h5py.File(filePath, self._permission)
             self.version = self.h5db.attrs["databaseVersion"]
