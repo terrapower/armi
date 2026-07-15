@@ -12,7 +12,7 @@ be loaded into a Cartesian arrangement. The contents of a grid may defined using
 ``grid contents:``
     a direct YAML representation of the contents
 
-Example grid definitions are shown below::
+Example grid definitions are shown below
 
 .. code-block:: yaml
 
@@ -78,10 +78,34 @@ Two-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""
 TODO
 
+.. figure:: /.static/lattice_map_two_ring_hex_flats_up.png
+    :align: center
+
+    Two-ring, third-core, flats-up hexagonal lattice map.
+
+TODO
+
+.. figure:: /.static/lattice_map_two_ring_hex_corners_up.png
+    :align: center
+
+    Two-ring, third-core, corners-up hexagonal lattice map.
+
 
 Three-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
 TODO
+
+.. figure:: /.static/lattice_map_three_ring_hex_flats_up.png
+    :align: center
+
+    Three-ring, third-core, flats-up hexagonal lattice map.
+
+TODO
+
+.. figure:: /.static/lattice_map_three_ring_hex_corners_up.png
+    :align: center
+
+    Three-ring, third-core, corners-up hexagonal lattice map.
 
 
 Four-Ring, Third-Core Hex Maps
