@@ -37,12 +37,7 @@ ISOAA_PATH = os.path.join(TESTING_ROOT, "resources", "ISOAA")
 _TEST_REACTORS = {}  # dictionary of pickled string of test reactors (for fast caching)
 
 
-def loadTestReactor(
-    inputFilePath=_ARMI_RUN_DIR,
-    customSettings=None,
-    inputFileName="armiRun.yaml",
-    useCache=True,
-):
+def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
     """
     Loads a test reactor. Can be used in other test modules.
 
