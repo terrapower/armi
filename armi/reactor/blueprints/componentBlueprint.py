@@ -184,7 +184,7 @@ class ComponentBlueprint(yamlize.Object):
             the component blueprint and associated material modifications from the component's block.
 
             Within ``_constructMaterial()``, the material class is resolved into a material object by calling
-            :py:func:`~armi.materials.resolveMaterialClassByName`. The ``applyInputParams()`` method of that material
+            :py:func:`~armi.materials.createMaterialByName`. The ``applyInputParams()`` method of that material
             class is then called, passing in the associated material modifications data, which the material class can
             then use to modify the isotopics as necessary.
 
@@ -259,7 +259,7 @@ class ComponentBlueprint(yamlize.Object):
                 label=f"custom iso + mat mods {self.material} {comp}",
             )
 
-        mat = materials.resolveMaterialClassByName(self.material)()
+        mat = materials.createMaterialByName(self.material)
         if not isinstance(mat, materials.Custom):
             # check for some problem cases
             overSpecs = [k for k in matMods if k.endswith("_frac")]
@@ -337,7 +337,7 @@ class ComponentBlueprint(yamlize.Object):
     def _constructMaterial(self, blueprint, matMods):
         nucsInProblem = blueprint.allNuclidesInProblem
         # make material with defaults
-        mat = materials.resolveMaterialClassByName(self.material)()
+        mat = materials.createMaterialByName(self.material)
 
         if self.isotopics is not None:
             # Apply custom isotopics before processing input mods so

@@ -82,15 +82,16 @@ truth for what materials are.
 """
 
 import os
-import sysconfig
 from glob import glob
 
 from armi.matProps.material import MatPropsMaterial
 
+# NOTE: The two globals below are used exclusively when people use matProps without ARMI. And are not used in ARMI runs.
+#
+# list of all the directories of purely matProps materials that have been loaded
 loadedRootDirs = []
+# dictionary of matProps materials loaded: d[mat name] = instance of MatPropsMaterial object
 materials = {}
-
-_DEFAULT_ROOT_DIR = os.path.join(sysconfig.get_paths()["purelib"], "materials_data")
 
 
 def getPaths(rootDir: str) -> list:
@@ -128,7 +129,7 @@ def addMaterial(yamlPath: str, mat):
     mat.save()
 
 
-def loadAll(rootDir: str = None) -> None:
+def loadAll(rootDir: str) -> None:
     """
     Loads all material files from a particular directory. If a materials directory is not provided, this function will
     attempt to find materials in the default location in the virtual environment.
@@ -136,20 +137,12 @@ def loadAll(rootDir: str = None) -> None:
     Parameters
     ----------
     rootDir: str
-        Directory whose YAML files will be loaded into matProps. The default is the materials_data location in the venv.
-
-    Notes
-    -----
-    Hidden in here is a default directory which you can load your YAML files from. Inside your Python virtual
-    environment, you can create a data directory named "materials_data", and store all your matProps formatted YAML
-    files. This is optional, of course, you can just explicitly pass a directory path into this method.
+        Directory whose YAML files will be loaded into matProps.
     """
     global loadedRootDirs
 
     if rootDir is None:
-        rootDir = _DEFAULT_ROOT_DIR
-        if not os.path.exists(rootDir):
-            raise OSError(f"No material directory provided, and default not found: {rootDir}")
+        raise ValueError("No material directory provided.")
 
     paths = getPaths(rootDir)
     for yamlPath in paths:
@@ -172,7 +165,7 @@ def clear() -> None:
     materials.clear()
 
 
-def loadSafe(rootDir: str = None) -> None:
+def loadSafe(rootDir) -> None:
     """
     Safely load a single directory of matProps materials.
 
@@ -184,7 +177,6 @@ def loadSafe(rootDir: str = None) -> None:
     ----------
     rootDir: str
         Directory whose yaml files will be loaded into matProps.
-        The default is the materials_data location in the venv.
 
     See Also
     --------

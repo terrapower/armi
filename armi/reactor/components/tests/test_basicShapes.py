@@ -17,7 +17,7 @@
 import math
 import unittest
 
-from armi.materials import resolveMaterialClassByName
+from armi.materials import createMaterialByName
 from armi.reactor.components.basicShapes import (
     Circle,
     Hexagon,
@@ -33,7 +33,7 @@ class TestBasicShapes(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.material = resolveMaterialClassByName("HT9")()
+        cls.material = createMaterialByName("HT9")
 
     def test_circleArea(self):
         od = 2.0
