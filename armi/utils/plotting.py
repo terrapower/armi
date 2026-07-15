@@ -385,7 +385,8 @@ def plotFaceMap(
         else:
             pltKwargs = {}
         try:
-            plt.savefig(fName, dpi=150, bbox_inches="tight", **pltKwargs)
+            pltKwargs["bbox_inches"] = "tight"
+            plt.savefig(fName, dpi=150, **pltKwargs)
         except IOError:
             runLog.warning(f"Cannot update facemap at {fName}: IOError. Is the file open?")
         plt.close(fig)
