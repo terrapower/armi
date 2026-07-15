@@ -385,17 +385,16 @@ def plotFaceMap(
         else:
             pltKwargs = {}
         try:
-            plt.savefig(fName, dpi=150, **pltKwargs)
+            plt.savefig(fName, dpi=150, bbox_inches='tight', **pltKwargs)
         except IOError:
-            runLog.warning("Cannot update facemap at {0}: IOError. Is the file open?".format(fName))
+            runLog.warning(f"Cannot update facemap at {fName}: IOError. Is the file open?")
         plt.close(fig)
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
         return fName
     else:
-        # Never close figures after a .show()
-        # because they're being used interactively e.g.
-        # in a live tutorial or by the doc gallery
+        # Never close figures after a .show() because they're being used interactively e.g. in a live tutorial or by the
+        # doc gallery
         plt.show()
 
     return fName
