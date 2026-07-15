@@ -357,7 +357,7 @@ def plotFaceMap(
 
     ax.autoscale_view(tight=True)
 
-    # make it 2-D, for now...
+    # make it 2-D
     shuffleArrows = shuffleArrows or []
     for sourceCoords, destinationCoords in shuffleArrows:
         ax.annotate(

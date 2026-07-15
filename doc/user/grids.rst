@@ -88,7 +88,7 @@ Four-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/four_ring_hex.png
+.. figure:: /.static/lattice_map_four_ring_hex.png
     :align: center
 
     Four-ring, third-core, flats up hexagonal lattice map.
@@ -98,7 +98,7 @@ Five-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/five_ring_hex.png
+.. figure:: /.static/lattice_map_five_ring_hex.png
     :align: center
 
     Five-ring, third-core, flats up hexagonal lattice map.
@@ -108,7 +108,7 @@ Six-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/six_ring_hex.png
+.. figure:: /.static/lattice_map_six_ring_hex.png
     :align: center
 
     Six-ring, third-core, flats up hexagonal lattice map.
@@ -118,7 +118,7 @@ Seven-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/seven_ring_hex.png
+.. figure:: /.static/lattice_map_seven_ring_hex.png
     :align: center
 
     Seven-ring, third-core, flats up hexagonal lattice map.
@@ -128,7 +128,7 @@ Eight-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/eight_ring_hex.png
+.. figure:: /.static/lattice_map_eight_ring_hex.png
     :align: center
 
     Eight-ring, third-core, flats up hexagonal lattice map.
@@ -138,7 +138,7 @@ Nine-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/nine_ring_hex.png
+.. figure:: /.static/lattice_map_nine_ring_hex.png
     :align: center
 
     Nine-ring, third-core, flats up hexagonal lattice map.
@@ -148,7 +148,7 @@ Ten-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/ten_ring_hex.png
+.. figure:: /.static/lattice_map_ten_ring_hex.png
     :align: center
 
     Ten-ring, third-core, flats up hexagonal lattice map.
@@ -158,7 +158,7 @@ Eleven-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""""
 TODO
 
-.. figure:: /.static/lattice_map/eleven_ring_hex.png
+.. figure:: /.static/lattice_map_eleven_ring_hex.png
     :align: center
 
     Eleven-ring, third-core, flats up hexagonal lattice map.
