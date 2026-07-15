@@ -86,6 +86,8 @@ from glob import glob
 
 from armi.matProps.material import MatPropsMaterial
 
+# NOTE: The two globals below are used exclusively when people use matProps without ARMI. And are not used in ARMI runs.
+#
 # list of all the directories of purely matProps materials that have been loaded
 loadedRootDirs = []
 # dictionary of matProps materials loaded: d[mat name] = instance of MatPropsMaterial object
