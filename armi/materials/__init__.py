@@ -110,6 +110,8 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
                 # only one plugin can define this hook
                 baseClass = baseClassList[0]
                 mat = baseClass(yamlPath=yamlPath)
+        # Data source is used for some downstream table printouts, so we simplify a venv printout for it to look nice.
+        # Not that you can't touch this, but it is this way for a reason.
         mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
         # If a class with this name already exists in the package, continue
         _loadedYamlMats[dirPath][mat.name] = mat
