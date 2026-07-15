@@ -100,7 +100,7 @@ class Material(MatPropsMaterial):
         if self.YAML_PATH:
             # Do caching things while updating or loading a material
             if self.YAML_PATH in _YAML_MATERIALS:
-                self.__dict__.update(deepcopy(_YAML_MATERIALS[self.YAML_PATH]).__dict__)
+                self.__dict__.update(_YAML_MATERIALS[self.YAML_PATH].__dict__)
             else:
                 mat = MatPropsMaterial(self.YAML_PATH)
                 _YAML_MATERIALS[self.YAML_PATH] = mat
