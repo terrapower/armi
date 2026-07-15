@@ -18,7 +18,6 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
-
 import numpy as np
 
 from armi import runLog
