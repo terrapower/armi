@@ -42,7 +42,7 @@ import sysconfig
 from copy import deepcopy
 from typing import List
 
-from armi import getPluginManager, runLog
+from armi import runLog
 from armi.materials.material import Material
 from armi.matProps import MatPropsMaterial
 from armi.matProps import getPaths as getYamlPaths
@@ -79,6 +79,9 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
+    # Needs to be a local import to prevent circular imports
+    from armi import getPluginManager
+
     global _loadedYamlMats
 
     if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
@@ -102,12 +105,18 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         mat = Material(yamlPath=yamlPath)
         pm = getPluginManager()
         if pm:
-            baseClassList = getPluginManager().hook.setMaterialBaseClass(materialType=mat.materialType)
+            baseClassList = getPluginManager().hook.setMaterialBaseClass(
+                materialType=mat.materialType
+            )
             if baseClassList:
                 # only one plugin can define this hook
                 baseClass = baseClassList[0]
                 mat = baseClass(yamlPath=yamlPath)
-        mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
+        mat.DATA_SOURCE = (
+            "venv: " + dirPath.split("site-packages")[1][1:]
+            if "site-packages" in dirPath
+            else dirPath
+        )
         # If a class with this name already exists in the package, continue
         _loadedYamlMats[dirPath][mat.name] = mat
 
@@ -188,7 +197,9 @@ def importMaterialsIntoModuleNamespace(path, modName, namespace, updateSource=No
         Change DATA_SOURCE on import to a different string. Useful for saying where plugin materials are coming from.
     """
     # load materials from pure Python files
-    for _modImporter, modname, _ispkg in pkgutil.walk_packages(path=path, prefix=modName + "."):
+    for _modImporter, modname, _ispkg in pkgutil.walk_packages(
+        path=path, prefix=modName + "."
+    ):
         if "test" in modname:
             continue
 
@@ -306,7 +317,9 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
             baseClass = Material
             if pm:
                 # Check to see if a plugin has defined a new material base class
-                baseClassList = getPluginManager().hook.setMaterialBaseClass(materialType=mat0.materialType)
+                baseClassList = getPluginManager().hook.setMaterialBaseClass(
+                    materialType=mat0.materialType
+                )
                 if baseClassList:
                     # if there is one defined, then update to use that class instead of Material.
                     baseClass = baseClassList[0]
@@ -324,7 +337,9 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
         else:
             # check and see if this is an importable material
             mod = importlib.import_module(namespace)
-            materialsList = inspect.getmembers(mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial))
+            materialsList = inspect.getmembers(
+                mod, lambda c: inspect.isclass(c) and issubclass(c, MatPropsMaterial)
+            )
             materialsList = [material[0] for material in materialsList]
             if name in materialsList:
                 return getattr(mod, name)()
