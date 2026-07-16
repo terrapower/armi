@@ -66,10 +66,11 @@ graphical grid editor described more in :py:mod:`armi.utils.gridEditor`.
 
 Lattice Maps
 ^^^^^^^^^^^^
-TODO: Intro (and ASCII map code)
+One of the features of the ARMI blueprints file is that the user can define a lattice layout of parts of the reactor
+using ASCII art (from the :py:mod:`asciimaps module<armi.utils.asciimaps>`). This is meant to help the user define the
+layout of assemblies in a reactor core or pins in a block.
 
-asciimaps.py
-whitespace is important
+The actual syntax is bespoke to ARMI. See the examples below. And note that the whitespace shown is important.
 
 
 Full-Core Cartesian Examples
@@ -166,6 +167,68 @@ The more common of the two is the flat-side up, or "flats-up" map
 
     Five-ring, full-core, flats-up hexagonal lattice map.
 
+and for a larger example
+
+.. code-block:: yaml
+
+      geom: hex
+      symmetry: full
+      lattice map: |
+          -   -   -   -   -   -     LC
+          -   -   -   -   -   -   LC  LC
+            -   -   -   -   -   LC  SH  LC
+          -   -   -   -   -   LC  SH  SH  LC
+            -   -   -   -   LC  SH  RR  SH  LC
+          -   -   -   -   LC  SH  RR  RR  SH  LC
+            -   -   -   LC  SH  RR  IC  RR  SH  LC
+          -   -   -   LC  SH  RR  IC  IC  RR  SH  LC
+            -   -   LC  SH  RR  IC  RR  IC  RR  SH  LC
+          -   -   LC  SH  RR  IC  RR  RR  IC  RR  SH  LC
+            -   LC  SH  RR  IC  RR  SB  RR  IC  RR  SH  LC
+          -   LC  SH  RR  IC  RR  SB  SB  RR  IC  RR  SH  LC
+            LC  SH  RR  IC  RR  SB  CA  SB  RR  IC  RR  SH  LC
+          -   SH  RR  IC  RR  SB  CA  CA  SB  RR  IC  RR  SH
+            LC  RR  IC  RR  SB  CA  SH  CA  SB  RR  IC  RR  LC
+          -   SH  IC  RR  SB  CA  SH  SH  CA  SB  RR  IC  SH
+            LC  RR  RR  SB  CA  SH  IC  SH  CA  SB  RR  RR  LC
+          -   SH  IC  SB  CA  SH  IC  IC  SH  CA  SB  IC  SH
+            LC  RR  RR  CA  SH  IC  LC  IC  SH  CA  RR  RR  LC
+          -   SH  IC  SB  SH  IC  LC  LC  IC  SH  SB  IC  SH
+            LC  RR  RR  CA  IC  LC  SE  LC  IC  CA  RR  RR  LC
+          -   SH  IC  SB  SH  LC  SE  SE  LC  SH  SB  IC  SH
+            LC  RR  RR  CA  IC  SE  SH  SE  IC  CA  RR  RR  LC
+          -   SH  IC  SB  SH  LC  SH  SH  LC  SH  SB  IC  SH
+             LC  RR  RR  CA  IC  SE  RR  SE  IC  CA  RR  RR  LC
+          -   SH  IC  SB  SH  LC  SH  SH  LC  SH  SB  IC  SH
+            LC  RR  RR  CA  IC  SE  SH  SE  IC  CA  RR  RR  LC
+          -   SH  IC  SB  SH  LC  SE  SE  LC  SH  SB  IC  SH
+            LC  RR  RR  CA  IC  LC  SE  LC  IC  CA  RR  RR  LC
+          -   SH  IC  SB  SH  IC  LC  LC  IC  SH  SB  IC  SH
+            LC  RR  RR  CA  SH  IC  LC  IC  SH  CA  RR  RR  LC
+          -   SH  IC  SB  CA  SH  IC  IC  SH  CA  SB  IC  SH
+            LC  RR  RR  SB  CA  SH  IC  SH  CA  SB  RR  RR  LC
+          -   SH  IC  RR  SB  CA  SH  SH  CA  SB  RR  IC  SH
+            LC  RR  IC  RR  SB  CA  SH  CA  SB  RR  IC  RR  LC
+          -   SH  SH  IC  RR  SB  CA  CA  SB  RR  IC  RR  SH
+            LC  SH  RR  IC  RR  SB  CA  SB  RR  IC  RR  SH  LC
+          -   LC  SH  RR  IC  RR  SB  SB  RR  IC  RR  SH  LC
+            -   LC  SH  RR  IC  RR  SB  RR  IC  RR  SH  LC
+              -   LC  SH  RR  IC  RR  RR  IC  RR  SH  LC
+                -   LC  SH  RR  IC  RR  IC  RR  SH  LC
+                  -   LC  SH  RR  IC  IC  RR  SH  LC
+                    -   LC  SH  RR  IC  RR  SH  LC
+                      -   LC  SH  RR  RR  SH  LC
+                        -   LC  SH  RR  SH  LC
+                          -   LC  SH  SH  LC
+                            -   LC  SH  LC
+                              -   LC  LC
+                                -   LC
+
+.. figure:: /.static/lattice_map_full_hex_14ring_flats_up.png
+    :align: center
+
+    Fourteen-ring, full-core, flats-up hexagonal lattice map.
+
 Perhaps the less common version is the corners up lattice. Notice that the main difference here is the location and
 layout of the ``-`` spacers.
 
@@ -185,6 +248,38 @@ layout of the ``-`` spacers.
                  D D D D
 
 .. figure:: /.static/lattice_map_full_hex_5ring_corners_up.png
+    :align: center
+
+    Four-ring, full-core, corners-up hexagonal lattice map.
+
+and a larger example
+
+.. clode-block:: yaml
+
+    geom: hex_corners_up
+    symmetry: full
+    lattice map: |
+       - - - - - - - - - C C C C C C C C C C
+        - - - - - - - - C B B B B B B B B B C
+         - - - - - - - C B A A A A A A A A B C
+          - - - - - - C B A G G G G G G G A B C
+           - - - - - C B A G F F F F F F G A B C
+            - - - - C B A G F E E E E E F G A B C
+             - - - C B A G F E D D D D E F G A B C
+              - - C B A G F E D C C C D E F G A B C
+               - C B A G F E D C B B C D E F G A B C
+                C B A G F E D C B A B C D E F G A B C
+                 C B A G F E D C B B C D E F G A B C
+                  C B A G F E D C C C D E F G A B C
+                   C B A G F E D D D D E F G A B C
+                    C B A G F E E E E E F G A B C
+                     C B A G F F F F F F G A B C
+                      C B A G G G G G G G A B C
+                       C B A A A A A A A A B C
+                        C B B B B B B B B B C
+                         C C C C C C C C C C
+
+.. figure:: /.static/lattice_map_full_hex_10ring_corners_up.png
     :align: center
 
     Four-ring, full-core, corners-up hexagonal lattice map.
