@@ -306,28 +306,29 @@ Figure 10 shows the seven-ring, third-core, flats-up hexagonal lattice map, each
 
 Eight-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
-TODO
+The YAML for an eight-ring third core lattice map looks much the same as the seven-ring above. But notice the new ring
+added has been filled with ``A`` symbols and one more ``-`` spacer was added.
 
 .. code-block:: yaml
 
     geom: hex
     symmetry: third periodic
     lattice map: |
-       -  -   G
-       -    G   G
-          G   F   G
-        G   F   F   G
-          F   E   F   G
-            E   E   F   G
-          E   D   E   F   G
-            D   D   E   F   G
-              C   D   E   F
-            C   C   D   E   G
-              B   C   D   F
-                B   C   E   G
-              G   B   D   F
-                G   C   E   G
-              A   B   D   F
+       -  -   A
+       -    A   A
+          A   G   A
+        A   G   G   A
+          G   F   G   A
+            F   F   G   A
+          F   E   F   G   A
+            E   E   F   G   A
+              D   E   F   G
+            D   D   E   F   A
+              C   D   E   G
+                C   D   F   A
+              B   C   E   G
+                B   D   F   A
+              A   C   E   G
 
 Figure 11 shows the eight-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
@@ -339,30 +340,31 @@ Figure 11 shows the eight-ring, third-core, flats-up hexagonal lattice map, each
 
 Nine-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
-TODO
+The nine-ring lattice map below looks much like the eight ring above. The new ring has been filled with ``B`` symbols
+and one more ``-`` spacer has been added.
 
 .. code-block:: yaml
 
     geom: hex
     symmetry: third periodic
     lattice map: |
-      -  -        G
-      -         G   G
-      -       G   F   G
-            G   F   F   G
-              F   E   F   G
-            F   E   E   F   G
-              E   D   E   F   G
-            D   D   E   F   G
-          D   C   D   E   F   G
-            C   C   D   E   F
-              B   C   D   E   G
-            B   B   C   D   F
-              E   B   C   E   G
-                E   B   D   F
-              F   E   C   E   G
-                F   B   D   F
-              A   E   C   E   G
+      -  -        B
+      -         B   B
+      -       B   A   B
+            B   A   A   B
+              A   G   A   B
+            A   G   G   A   B
+              G   F   G   A   B
+            F   F   G   A   B
+          F   E   F   G   A   B
+            E   E   F   G   A
+              D   E   F   G   B
+            D   D   E   F   A
+              C   D   E   G   B
+                C   D   F   A
+              B   C   E   G   B
+                B   D   F   A
+              A   C   E   G   B
 
 Figure 12 shows the nine-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
@@ -374,7 +376,8 @@ Figure 12 shows the nine-ring, third-core, flats-up hexagonal lattice map, each 
 
 Ten-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""
-TODO
+Below is the YAML representing a ten-ring, third core, hexagonal lattice map. A new ring filled with ``C`` has been
+added to the nine-ring lattice map above and one more ``-`` spacer has been added.
 
 .. code-block:: yaml
 
@@ -411,7 +414,8 @@ Figure 13 shows the 10-ring, third-core, flats-up hexagonal lattice map, each ri
 
 Eleven-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""""
-TODO
+Below is the YAML representing a eleven-ring, third core, hexagonal lattice map. A new ring filled with ``D`` has been
+added to the eleven-ring lattice map above and one more ``-`` spacer has been added.
 
 .. code-block:: yaml
 
@@ -447,4 +451,5 @@ Figure 14 shows the eleven-ring, third-core, flats-up hexagonal lattice map, eac
 
     Figure 14: Eleven-ring, third-core, flats up hexagonal lattice map.
 
-TODO: Gotta stop somewhere...
+This same logic of adding a new ring to the ASCII representation of the lattice map can be used to create arbitrarily
+large third-core, hexagonal lattice maps. However, we will stop at 11 rings because we have to stop somewhere.
