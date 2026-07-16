@@ -19,6 +19,7 @@ import pathlib
 import pickle
 import shutil
 import unittest
+from copy import deepcopy
 
 from numpy import testing
 
@@ -569,6 +570,22 @@ class UraniumOxideTests(AbstractMaterialTest, unittest.TestCase):
         test_density = self.mat.density(Tc=expectedTemperature) * 1000.0
         error = math.fabs((ref_density - test_density) / ref_density)
         self.assertLess(error, 0.005)
+
+    def test_duplicate(self):
+        """Test the material duplication.
+
+        .. test:: Materials shall calc mass fracs at init.
+            :id: T_ARMI_MAT_FRACS4
+            :tests: R_ARMI_MAT_FRACS
+        """
+        duplicateU = self.mat.duplicate()
+
+        for key in self.mat.massFrac:
+            self.assertEqual(duplicateU.massFrac[key], self.mat.massFrac[key])
+
+        duplicateMassFrac = deepcopy(self.mat.massFrac)
+        for key in self.mat.massFrac.keys():
+            self.assertEqual(duplicateMassFrac[key], self.mat.massFrac[key])
 
     def test_applyInputParams(self):
         uo2 = materials.UraniumOxide()

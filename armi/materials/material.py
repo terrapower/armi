@@ -185,6 +185,10 @@ class Material(MatPropsMaterial):
         """
         self.cached[name] = val
 
+    def duplicate(self):
+        """see deepcopy, retained for API compatibility."""
+        return deepcopy(self)
+
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         """
         The instantaneous linear expansion coefficient (dL/L)/dT.
