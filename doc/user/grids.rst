@@ -68,12 +68,126 @@ Lattice Maps
 ^^^^^^^^^^^^
 TODO: Intro (and ASCII map code)
 
+asciimaps.py
+whitespace is important
 
-TODO: Full core cartesian examples
+
+Full-Core Cartesian Examples
+""""""""""""""""""""""""""""
+Probably the easiest lattice map to draw using ARMI's custom ASCII format is a Cartesian grid. Here it is pretty clear
+how to lay our rows and columns of symbols to represent the grid. Here is a small 6x6 Cartesian map
+
+.. code-block:: yaml
+
+    grids:
+      core:
+        geom: cartesian
+        symmetry: full
+        lattice pitch:
+          x: 1.0
+          y: 1.0
+        lattice map: |
+          A B B B B B
+          A B A A A B
+          A B A C A B
+          A B B A A B
+          A B B B B B
+          A A A A A A
 
 
-TODO: Full core hex examples, corners vs flats
+.. figure:: /.static/lattice_map_full_cart_6x6.png
+    :align: center
 
+    Full-core, Cartesian, 6x6 lattice map.
+
+And here is a 
+
+.. code-block:: yaml
+
+    lattice map: |
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  A  A  A  B  A  A  B  A  A  B  A  A  A  A  A
+        A  A  A  B  A  A  A  A  A  A  A  A  A  B  A  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  B  A  A  B  A  A  B  A  A  B  A  A  B  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  B  A  A  B  A  A  C  A  A  B  A  A  B  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  B  A  A  B  A  A  B  A  A  B  A  A  B  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  A  B  A  A  A  A  A  A  A  A  A  B  A  A  A
+        A  A  A  A  A  B  A  A  B  A  A  B  A  A  A  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+
+.. figure:: /.static/lattice_map_full_cart_17x17.png
+    :align: center
+
+    Full-core, Cartesian, 17x17 lattice map.
+
+
+Full-Core Hexagonal Examples
+""""""""""""""""""""""""""""
+ARMI also supports two types of hexagonal lattices: one with the flat sides of the hexagons pointing up, and one with
+the corners of the hexagons pointing up. 
+
+The more common of the two is the flat-side up, or "flats-up" map
+
+.. code-block:: yaml
+
+    grids:
+      core:
+        geom: hex
+        symmetry: full
+        lattice map: |
+            - - E
+             - E E
+            - E D E
+             E D D E
+            E D C D E
+             D C C D
+            E C B C E
+             D B B D
+            E C A C E
+             D B B D
+            E C B C E
+             D C C D
+            E D C D E
+             E D D E
+              E D E
+               E E
+                E
+
+.. figure:: /.static/lattice_map_full_hex_5ring_flats_up.png
+    :align: center
+
+    Five-ring, full-core, flats-up hexagonal lattice map.
+
+Perhaps the less common version is the corners up lattice. Notice that the main difference here is the location and
+layout of the ``-`` spacers.
+
+.. code-block:: yaml
+
+    grids:
+      core:
+        geom: hex_corners_up
+        symmetry: full
+        lattice map: |
+           - - - D D D D
+            - - D C C C D
+             - D C B B C D
+              D C B A B C D
+               D C B B C D
+                D C C C D
+                 D D D D
+
+.. figure:: /.static/lattice_map_full_hex_5ring_corners_up.png
+    :align: center
+
+    Four-ring, full-core, corners-up hexagonal lattice map.
 
 There is another kind of lattice map that ARMI supports; third-core lattice maps. These are a special case of hexagonal
 lattice maps, where instead of drawing out the entire lattice (as above) only one third of the hexagonal lattice is
@@ -103,15 +217,15 @@ lattice is shown below
        B
        C
 
-Figure 3 below shows the third-core map plotted out. Also shown is the full-core plotted to represent what an ARMI
+The figure below shows the third-core map plotted out. Also shown is the full-core plotted to represent what an ARMI
 simulation thinks the entire lattice map looks like, based on the third of the core provided in the ASCII art
 
 .. figure:: /.static/lattice_map_two_ring_hex_flats_up.png
     :align: center
 
-    Figure 3: Two-ring, third-core, flats-up hexagonal lattice map.
+    Two-ring, third-core, flats-up hexagonal lattice map.
 
-There is another possibility not shown above in Figure 3. A hexagonal grid can be represented with flats or corners
+There is another possibility not shown in the example above. A hexagonal grid can be represented with flats or corners
 pointing up on the plot. In ARMI, we represent the "corners up" version by specifying a slight change to the ``geom``
 field: ``hex_corners_up`` as opposed to just ``hex``
 
@@ -124,12 +238,12 @@ field: ``hex_corners_up`` as opposed to just ``hex``
        B
        C
 
-Figure 4 below is a quick plot of the above, corners up version of the two-ring lattice map
+The figure below is a quick plot of the above, corners up version of the two-ring lattice map
 
 .. figure:: /.static/lattice_map_two_ring_hex_corners_up.png
     :align: center
 
-    Figure 4: Two-ring, third-core, corners-up hexagonal lattice map.
+    Two-ring, third-core, corners-up hexagonal lattice map.
 
 Notice that the two ASCII maps above have three items specified: ``A``, ``B``, and ``C``. The center hex is ``C`` and
 the others represent the first ring. The full core map shown has seven elements, the center plus six hexagons in the
@@ -154,12 +268,12 @@ Continuing the logical progression, below is an ASCII map of a three-ring, flats
        B
       C G
 
-Figure 5 shows third-core and full-core plots of the above YAML
+The figure below shows third-core and full-core plots of the above YAML
 
 .. figure:: /.static/lattice_map_three_ring_hex_flats_up.png
     :align: center
 
-    Figure 5: Three-ring, third-core, flats-up hexagonal lattice map.
+    Three-ring, third-core, flats-up hexagonal lattice map.
 
 And just one more time, let us show the YAML for the corners-up version of the above three-ring lattice
 
@@ -174,12 +288,12 @@ And just one more time, let us show the YAML for the corners-up version of the a
        B
       C G
 
-Figure 6 below shows the third-core and full-core plots for the three-ring, corners up lattice
+The figure below shows the third-core and full-core plots for the three-ring, corners up lattice
 
 .. figure:: /.static/lattice_map_three_ring_hex_corners_up.png
     :align: center
 
-    Figure 6: Three-ring, third-core, corners-up hexagonal lattice map.
+    Three-ring, third-core, corners-up hexagonal lattice map.
 
 
 Four-Ring, Third-Core Hex Maps
@@ -202,13 +316,13 @@ The four-ring, third-core lattice map is starting to get larger and more complic
              B   D
            A   C 
 
-Figure 7 shows a plot of the above four-ring example. If you are copying from this example, please note that each ring
-is filled with a different letter. Hopefully this makes your translation easier.
+The figure below shows a plot of the above four-ring example. If you are copying from this example, please note that
+each ring is filled with a different letter. Hopefully this makes your translation easier.
 
 .. figure:: /.static/lattice_map_four_ring_hex.png
     :align: center
 
-    Figure 7: Four-ring, third-core, flats up hexagonal lattice map.
+    Four-ring, third-core, flats up hexagonal lattice map.
 
 
 Five-Ring, Third-Core Hex Maps
@@ -231,13 +345,13 @@ just a piece of cruft to help lay out larger ASCII maps
                B   D
              A   C   E 
 
-Figure 8 shows a plot of the five-ring, third core lattice map above. Again, each hexagonal ring is filled with a
+The next figure shows a plot of the five-ring, third core lattice map above. Again, each hexagonal ring is filled with a
 different letter / symbol, to hopefully help make the map more clear.
 
 .. figure:: /.static/lattice_map_five_ring_hex.png
     :align: center
 
-    Figure 8: Five-ring, third-core, flats up hexagonal lattice map.
+    Five-ring, third-core, flats up hexagonal lattice map.
 
 
 Six-Ring, Third-Core Hex Maps
@@ -262,13 +376,13 @@ pattern emerging that should make it easier to add or remove one hexagonal ring 
                B   D   F
              A   C   E 
 
-Figure 9 shows the six-ring, third-core, flats-up, hexagonal lattice map, with each ring filled with a different symbol
-for clarity.
+The figure below shows the six-ring, third-core, flats-up, hexagonal lattice map, with each ring filled with a different
+symbol for clarity.
 
 .. figure:: /.static/lattice_map_six_ring_hex.png
     :align: center
 
-    Figure 9: Six-ring, third-core, flats up hexagonal lattice map.
+    Six-ring, third-core, flats up hexagonal lattice map.
 
 
 Seven-Ring, Third-Core Hex Maps
@@ -296,12 +410,13 @@ ASCII letters and make them more readable
                B   D   F
              A   C   E   G
 
-Figure 10 shows the seven-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
+The next figure shows the seven-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different
+symbol.
 
 .. figure:: /.static/lattice_map_seven_ring_hex.png
     :align: center
 
-    Figure 10: Seven-ring, third-core, flats up hexagonal lattice map.
+    Seven-ring, third-core, flats up hexagonal lattice map.
 
 
 Eight-Ring, Third-Core Hex Maps
@@ -330,12 +445,13 @@ added has been filled with ``A`` symbols and one more ``-`` spacer was added.
                 B   D   F   A
               A   C   E   G
 
-Figure 11 shows the eight-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
+The figure below shows the eight-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different
+symbol.
 
 .. figure:: /.static/lattice_map_eight_ring_hex.png
     :align: center
 
-    Figure 11: Eight-ring, third-core, flats up hexagonal lattice map.
+    Eight-ring, third-core, flats up hexagonal lattice map.
 
 
 Nine-Ring, Third-Core Hex Maps
@@ -366,12 +482,12 @@ and one more ``-`` spacer has been added.
                 B   D   F   A
               A   C   E   G   B
 
-Figure 12 shows the nine-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
+The figure below shows the nine-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_nine_ring_hex.png
     :align: center
 
-    Figure 12: Nine-ring, third-core, flats up hexagonal lattice map.
+    Nine-ring, third-core, flats up hexagonal lattice map.
 
 
 Ten-Ring, Third-Core Hex Maps
@@ -404,12 +520,12 @@ added to the nine-ring lattice map above and one more ``-`` spacer has been adde
                  B   D   F   A   C
                A   C   E   G   B
 
-Figure 13 shows the 10-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
+The figure below shows the 10-ring, third-core, flats-up hexagonal lattice, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_ten_ring_hex.png
     :align: center
 
-    Figure 13: Ten-ring, third-core, flats up hexagonal lattice map.
+    Ten-ring, third-core, flats up hexagonal lattice map.
 
 
 Eleven-Ring, Third-Core Hex Maps
@@ -444,12 +560,13 @@ added to the eleven-ring lattice map above and one more ``-`` spacer has been ad
                  B   D   F   A   C
                A   C   E   G   B   D
 
-Figure 14 shows the eleven-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
+The figure below shows the eleven-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different
+symbol.
 
 .. figure:: /.static/lattice_map_eleven_ring_hex.png
     :align: center
 
-    Figure 14: Eleven-ring, third-core, flats up hexagonal lattice map.
+    Eleven-ring, third-core, flats up hexagonal lattice map.
 
 This same logic of adding a new ring to the ASCII representation of the lattice map can be used to create arbitrarily
 large third-core, hexagonal lattice maps. However, we will stop at 11 rings because we have to stop somewhere.
