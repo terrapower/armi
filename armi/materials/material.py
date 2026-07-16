@@ -18,7 +18,7 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
-import inspect
+from copy import deepcopy
 
 import numpy as np
 
@@ -123,6 +123,19 @@ class Material(MatPropsMaterial):
             # call subclass implementations
             self.setDefaultMassFracs()
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        result.__dict__.update(self.__dict__)
+
+        for key, value in self.__dict__.items():
+            if not isinstance(value, (str, int, bool, float, tuple)) and not callable(value):
+                setattr(result, key, deepcopy(value, memo))
+
+        return result
+
     def __repr__(self):
         return f"<Material: {self.name}>"
 
@@ -171,31 +184,6 @@ class Material(MatPropsMaterial):
         _getCached : returns a previously-cached value
         """
         self.cached[name] = val
-
-    def duplicate(self):
-        """Copy without needing a deepcopy."""
-        args = inspect.signature(self.__class__)
-        if "yamlPath" in args.parameters:
-            # This is a YAML based material and needs the file path to reload data
-            m = self.__class__(yamlPath=self.YAML_PATH)
-        else:
-            # This is python material, it's constructor should handle everything automatically
-            # and won't allow a yamlPath argument.
-            m = self.__class__()
-
-        m.massFrac = {}
-        for key, val in self.massFrac.items():
-            m.massFrac[key] = val
-
-        m.parent = self.parent
-        m.refDens = self.refDens
-        m.theoreticalDensityFrac = self.theoreticalDensityFrac
-
-        # handle some special cases for subclasses, like fuels
-        if hasattr(self, "class1_wt_frac"):
-            m.class1_wt_frac = self.class1_wt_frac
-
-        return m
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         """
