@@ -131,10 +131,17 @@ Figure 4 below is a quick plot of the above, corners up version of the two-ring 
 
     Figure 4: Two-ring, third-core, corners-up hexagonal lattice map.
 
+Notice that the two ASCII maps above have three items specified: ``A``, ``B``, and ``C``. The center hex is ``C`` and
+the others represent the first ring. The full core map shown has seven elements, the center plus six hexagons in the
+first ring. So, to calculate the number of hexagons in the full core map from the number of hexagons shown in a third-
+core map there is a simple relation
+
+.. math::
+    N_full = 3 * (N_third - 1) + 1
 
 Three-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
-TODO
+Continuing the logical progression, below is an ASCII map of a three-ring, flats-up, third-core hexagonal lattice
 
 .. code-block:: yaml
 
@@ -147,15 +154,14 @@ TODO
        B
       C G
 
-TODO
-
+Figure 5 shows third-core and full-core plots of the above YAML
 
 .. figure:: /.static/lattice_map_three_ring_hex_flats_up.png
     :align: center
 
     Figure 5: Three-ring, third-core, flats-up hexagonal lattice map.
 
-TODO
+And just one more time, let us show the YAML for the corners-up version of the above three-ring lattice
 
 .. code-block:: yaml
 
@@ -168,7 +174,7 @@ TODO
        B
       C G
 
-TODO
+Figure 6 below shows the third-core and full-core plots for the three-ring, corners up lattice
 
 .. figure:: /.static/lattice_map_three_ring_hex_corners_up.png
     :align: center
@@ -178,7 +184,10 @@ TODO
 
 Four-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
-TODO
+From here on out, the examples will only show the "flats-up" versions of the lattice maps and plots, to reduce
+duplication.
+
+The four-ring, third-core lattice map is starting to get larger and more complicated than the above examples
 
 .. code-block:: yaml
 
@@ -193,7 +202,8 @@ TODO
              B   D
            A   C 
 
-TODO
+Figure 7 shows a plot of the above four-ring example. If you are copying from this example, please note that each ring
+is filled with a different letter. Hopefully this makes your translation easier.
 
 .. figure:: /.static/lattice_map_four_ring_hex.png
     :align: center
@@ -203,7 +213,8 @@ TODO
 
 Five-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
-TODO
+Five-ring and above ASCII maps start to require a special ``-`` character. This does not represent a hexagon, but is
+just a piece of cruft to help lay out larger ASCII maps
 
 .. code-block:: yaml
 
@@ -220,7 +231,8 @@ TODO
                B   D
              A   C   E 
 
-TODO
+Figure 8 shows a plot of the five-ring, third core lattice map above. Again, each hexagonal ring is filled with a
+different letter / symbol, to hopefully help make the map more clear.
 
 .. figure:: /.static/lattice_map_five_ring_hex.png
     :align: center
@@ -230,7 +242,8 @@ TODO
 
 Six-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""
-TODO
+From six-rings and up, the third-core lattice maps start to look a lot more similar to each other. There is a noticable
+pattern emerging that should make it easier to add or remove one hexagonal ring from the map
 
 .. code-block:: yaml
 
@@ -249,7 +262,8 @@ TODO
                B   D   F
              A   C   E 
 
-TODO
+Figure 9 shows the six-ring, third-core, flats-up, hexagonal lattice map, with each ring filled with a different symbol
+for clarity.
 
 .. figure:: /.static/lattice_map_six_ring_hex.png
     :align: center
@@ -259,7 +273,9 @@ TODO
 
 Seven-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
-TODO
+The seven-ring map looks much like the six-ring map, exact we have added a new ring filled with ``G`` symbols. And from
+here on out, even extra ring added to the map requires adding exactly one more ``-`` symbol, to correctly space out the
+ASCII letters and make them more readable
 
 .. code-block:: yaml
 
@@ -280,7 +296,7 @@ TODO
                B   D   F
              A   C   E   G
 
-TODO
+Figure 10 shows the seven-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_seven_ring_hex.png
     :align: center
@@ -313,7 +329,7 @@ TODO
                 G   C   E   G
               A   B   D   F
 
-TODO
+Figure 11 shows the eight-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_eight_ring_hex.png
     :align: center
@@ -348,7 +364,7 @@ TODO
                 F   B   D   F
               A   E   C   E   G
 
-TODO
+Figure 12 shows the nine-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_nine_ring_hex.png
     :align: center
@@ -385,7 +401,7 @@ TODO
                  B   D   F   A   C
                A   C   E   G   B
 
-TODO
+Figure 13 shows the 10-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_ten_ring_hex.png
     :align: center
@@ -424,9 +440,11 @@ TODO
                  B   D   F   A   C
                A   C   E   G   B   D
 
-TODO
+Figure 14 shows the eleven-ring, third-core, flats-up hexagonal lattice map, each ring filled with a different symbol.
 
 .. figure:: /.static/lattice_map_eleven_ring_hex.png
     :align: center
 
     Figure 14: Eleven-ring, third-core, flats up hexagonal lattice map.
+
+TODO: Gotta stop somewhere...
