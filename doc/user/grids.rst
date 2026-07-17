@@ -248,7 +248,7 @@ orientation of the outer lattice rings.
                 D C C C D
                  D D D D
 
-.. figure:: /.static/lattice_map_full_hex_5ring_corners_up.png
+.. figure:: /.static/lattice_map_full_hex_4ring_corners_up.png
     :align: center
 
     Four-ring, full-core, corners-up hexagonal lattice map.
