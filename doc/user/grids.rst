@@ -229,9 +229,10 @@ and for a larger example
 
     Fourteen-ring, full-core, flats-up hexagonal lattice map.
 
-The other version is the corners up lattice. Notice how the ``-`` spacers were used differently to have one versus a
-line of hexagonal grid cells in the top row. This is not strictly a function of "flats vs corners", but of the
-orientation of the outer lattice rings.
+The other version is the corners up lattice. Notice how the ``-`` placeholders are used differently in the two plots.
+The ``-`` placeholders are just that; they represent a symbol that we went to skip with empty space. You can put them
+anywhere in the map you want to leave a hole. Primarily the ``-`` placeholders are used at the start of rows to
+create non-rectangular layouts of symbols.
 
 .. code-block:: yaml
 
@@ -423,8 +424,8 @@ each ring is filled with a different letter. Hopefully this makes your translati
 
 Five-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
-Five-ring and above ASCII maps start to require a special ``-`` character. This does not represent a hexagon, but is
-just a piece of cruft to help lay out larger ASCII maps
+Five-ring and above ASCII maps start to require the placeholder ``-`` character. This does not represent a hexagon, but
+is just a piece of cruft to help lay out larger ASCII maps
 
 .. code-block:: yaml
 
@@ -484,8 +485,8 @@ symbol for clarity.
 Seven-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
 The seven-ring map looks much like the six-ring map, exact we have added a new ring filled with ``G`` symbols. And from
-here on out, even extra ring added to the map requires adding exactly one more ``-`` symbol, to correctly space out the
-ASCII letters and make them more readable
+here on out, even extra ring added to the map requires adding exactly one more placeholder ``-`` symbol, to correctly
+space out the ASCII letters and make them more readable
 
 .. code-block:: yaml
 
@@ -518,7 +519,7 @@ symbol.
 Eight-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
 The YAML for an eight-ring third core lattice map looks much the same as the seven-ring above. But notice the new ring
-added has been filled with ``A`` symbols and one more ``-`` spacer was added.
+added has been filled with ``A`` symbols and one more ``-`` placeholder was added.
 
 .. code-block:: yaml
 
@@ -553,7 +554,7 @@ symbol.
 Nine-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""
 The nine-ring lattice map below looks much like the eight ring above. The new ring has been filled with ``B`` symbols
-and one more ``-`` spacer has been added.
+and one more ``-`` placeholder has been added.
 
 .. code-block:: yaml
 
@@ -589,7 +590,7 @@ The figure below shows the nine-ring, third-core, flats-up hexagonal lattice map
 Ten-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""
 Below is the YAML representing a ten-ring, third core, hexagonal lattice map. A new ring filled with ``C`` has been
-added to the nine-ring lattice map above and one more ``-`` spacer has been added.
+added to the nine-ring lattice map above and one more ``-`` placeholder has been added.
 
 .. code-block:: yaml
 
@@ -627,7 +628,7 @@ The figure below shows the 10-ring, third-core, flats-up hexagonal lattice, each
 Eleven-Ring, Third-Core Hex Maps
 """"""""""""""""""""""""""""""""
 Below is the YAML representing a eleven-ring, third core, hexagonal lattice map. A new ring filled with ``D`` has been
-added to the eleven-ring lattice map above and one more ``-`` spacer has been added.
+added to the eleven-ring lattice map above and one more ``-`` placeholder has been added.
 
 .. code-block:: yaml
 
