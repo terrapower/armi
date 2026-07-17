@@ -347,7 +347,7 @@ first ring. So, to calculate the number of hexagons in the full core map from th
 core map there is a simple relation
 
 .. math::
-    N_full = 3 * (N_third - 1) + 1
+    N_\text{full} = 3 * (N_\text{third} - 1) + 1
 
 Three-Ring, Third-Core Hex Maps
 """""""""""""""""""""""""""""""
