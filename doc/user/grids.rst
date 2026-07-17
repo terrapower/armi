@@ -80,20 +80,18 @@ how to lay our rows and columns of symbols to represent the grid. Here is a smal
 
 .. code-block:: yaml
 
-    grids:
-      core:
-        geom: cartesian
-        symmetry: full
-        lattice pitch:
-          x: 1.0
-          y: 1.0
-        lattice map: |
-          A B B B B B
-          A B A A A B
-          A B A C A B
-          A B B A A B
-          A B B B B B
-          A A A A A A
+    geom: cartesian
+    symmetry: full
+    lattice pitch:
+      x: 1.0
+      y: 1.0
+    lattice map: |
+      A B B B B B
+      A B A A A B
+      A B A C A B
+      A B B A A B
+      A B B B B B
+      A A A A A A
 
 
 .. figure:: /.static/lattice_map_full_cart_6x6.png
@@ -139,28 +137,26 @@ The more common of the two is the flat-side up, or "flats-up" map
 
 .. code-block:: yaml
 
-    grids:
-      core:
-        geom: hex
-        symmetry: full
-        lattice map: |
-            - - E
-             - E E
-            - E D E
-             E D D E
-            E D C D E
-             D C C D
-            E C B C E
-             D B B D
-            E C A C E
-             D B B D
-            E C B C E
-             D C C D
-            E D C D E
-             E D D E
-              E D E
-               E E
-                E
+    geom: hex
+    symmetry: full
+    lattice map: |
+        - - E
+         - E E
+        - E D E
+         E D D E
+        E D C D E
+         D C C D
+        E C B C E
+         D B B D
+        E C A C E
+         D B B D
+        E C B C E
+         D C C D
+        E D C D E
+         E D D E
+          E D E
+           E E
+            E
 
 .. figure:: /.static/lattice_map_full_hex_5ring_flats_up.png
     :align: center
@@ -229,25 +225,20 @@ and for a larger example
 
     Fourteen-ring, full-core, flats-up hexagonal lattice map.
 
-The other version is the corners up lattice. Notice how the ``-`` placeholders are used differently in the two plots.
-The ``-`` placeholders are just that; they represent a symbol that we went to skip with empty space. You can put them
-anywhere in the map you want to leave a hole. Primarily the ``-`` placeholders are used at the start of rows to
-create non-rectangular layouts of symbols.
+The other version is the corners up lattice. Notice how the ``-`` placeholders are used differently.
 
 .. code-block:: yaml
 
-    grids:
-      core:
-        geom: hex_corners_up
-        symmetry: full
-        lattice map: |
-           - - - D D D D
-            - - D C C C D
-             - D C B B C D
-              D C B A B C D
-               D C B B C D
-                D C C C D
-                 D D D D
+    geom: hex_corners_up
+    symmetry: full
+    lattice map: |
+       - - - D D D D
+        - - D C C C D
+         - D C B B C D
+          D C B A B C D
+           D C B B C D
+            D C C C D
+             D D D D
 
 .. figure:: /.static/lattice_map_full_hex_4ring_corners_up.png
     :align: center
@@ -286,6 +277,106 @@ and a larger example
 
     Four-ring, full-core, corners-up hexagonal lattice map.
 
+
+Placeholders and Whitespace
+"""""""""""""""""""""""""""
+In lattice maps whitespace is used to separate symbols. The exact count of spaces is not strictly speaking important;
+one space is as good as five. The following to lattice maps yield the same result, though obviously one is easier to
+read than the other
+
+.. clode-block:: yaml
+
+    geom: cartesian
+    symmetry: full
+    lattice pitch:
+      x: 1.0
+      y: 1.0
+    lattice map: |
+     C C C C C
+     C B B B C
+     C B A B C
+     C B B B C
+     C C C C C
+
+.. clode-block:: yaml
+
+    geom: cartesian
+    symmetry: full
+    lattice pitch:
+      x: 1.0
+      y: 1.0
+    lattice map: |
+     C  C      C  C   C
+       C  B   B  B   C
+           C  B   A  B   C
+        C  B   B  B   C
+      C C  C    C    C
+
+
+The ``-`` symbol in a lattice map can be used to replace characters with empty space. For instance, above we saw this
+
+
+.. code-block:: yaml
+
+    geom: hex
+    symmetry: full
+    lattice map: |
+        - - E
+         - E E
+        - E D E
+         E D D E
+        E D C D E
+         D C C D
+        E C B C E
+         D B B D
+        E C A C E
+         D B B D
+        E C B C E
+         D C C D
+        E D C D E
+         E D D E
+          E D E
+           E E
+            E
+
+.. figure:: /.static/lattice_map_full_hex_5ring_flats_up.png
+    :align: center
+
+    Five-ring, full-core, flats-up hexagonal lattice map.
+
+
+But we can replace do some random replacements with ``-`` placeholders and get a different result
+
+    geom: hex
+    symmetry: full
+    lattice map: |
+        B B E
+         B E E
+        B E D E
+         E D D E
+        E D C D E
+         D C C D
+        E C - C E
+         D - - D
+        E C A C E
+         D - - D
+        E C - C E
+         D C C D
+        E D C D E
+         E D D E
+          E D E
+           E E
+            E
+
+.. figure:: /.static/lattice_map_full_hex_5ring_flats_up_placeholders.png
+    :align: center
+
+    Five-ring, full-core, flats-up hexagonal lattice map. Placeholder fun.
+
+
+
+Two-Ring, Third-Core Hex Maps
+"""""""""""""""""""""""""""""
 There is another kind of lattice map that ARMI supports; third-core lattice maps. These are a special case of hexagonal
 lattice maps, where instead of drawing out the entire lattice (as above) only one third of the hexagonal lattice is
 drawn.
@@ -299,9 +390,6 @@ it is not always obvious how to draw the ASCII map to represent these third-core
 examples of third-core hex grids shown from two rings to eleven. So if you need to make such a lattice map yourself, you
 should be able to start by copy/pasting the examples below.
 
-
-Two-Ring, Third-Core Hex Maps
-"""""""""""""""""""""""""""""
 First, let us start with a very simple case; the two-ring hexagonal lattice map. The YAML ASCII map to draw such a
 lattice is shown below
 
