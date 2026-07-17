@@ -18,7 +18,7 @@ Example grid definitions are shown below
 
     grids:
         control:
-            geom: hex
+            geom: hex_corners_up
             symmetry: full
             lattice map: |
                - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
@@ -229,8 +229,9 @@ and for a larger example
 
     Fourteen-ring, full-core, flats-up hexagonal lattice map.
 
-Perhaps the less common version is the corners up lattice. Notice that the main difference here is the location and
-layout of the ``-`` spacers.
+The other version is the corners up lattice. Notice how the ``-`` spacers were used differently to have one versus a
+line of hexagonal grid cells in the top row. This is not strictly a function of "flats vs corners", but of the
+orientation of the outer lattice rings.
 
 .. code-block:: yaml
 
