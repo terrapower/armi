@@ -281,7 +281,7 @@ In lattice maps whitespace is used to separate symbols. The exact count of space
 one space is as good as five. The following to lattice maps yield the same result, though obviously one is easier to
 read than the other
 
-.. clode-block:: yaml
+.. code-block:: yaml
 
     geom: cartesian
     symmetry: full
@@ -295,7 +295,7 @@ read than the other
      C B B B C
      C C C C C
 
-.. clode-block:: yaml
+.. code-block:: yaml
 
     geom: cartesian
     symmetry: full
@@ -343,6 +343,9 @@ The ``-`` symbol in a lattice map can be used to replace characters with empty s
 
 
 But we can replace do some random replacements with ``-`` placeholders and get a different result
+
+
+.. code-block:: yaml
 
     geom: hex
     symmetry: full
