@@ -7,10 +7,16 @@ Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows you to
 different from tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies are to
 be loaded into a Cartesian arrangement. The contents of a grid may defined using one of the following:
 
-``lattice map:``
-    A ASCII map representing the grid contents
+``geom:``
+    Choose a basic geometry for your lattice: catesian, hex, hex_corners_up, or thetarz.
 ``grid contents:``
-    a direct YAML representation of the contents
+    A direct YAML representation of the contents.
+``lattice map:``
+    A ASCII map representing the grid contents.
+``lattice pictch:``
+    The spacing between your lattice point / rows.
+``symmetry:``
+    The default is "full", but for hexagonal lattices, you have the option of "third periodic".
 
 Example grid definitions are shown below
 
@@ -52,16 +58,7 @@ Example grid definitions are shown below
             [0,1]: MC
             [1,1]: MC
 
-.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this input and it may
-    improve in the future.
-
-You may set up some kinds of grids (e.g. 1/3 and full core hex or Cartesian core loadings) using our interactive
-graphical grid editor described more in :py:mod:`armi.utils.gridEditor`.
-
-.. figure:: /.static/gridEditor.png
-    :align: center
-
-    An example of the Grid Editor being used on a FFTF input file
+.. tip:: Both pin and core grid definitions to share this input.
 
 
 Lattice Maps
