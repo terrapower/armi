@@ -73,7 +73,7 @@ def _findOneLineData(lines: list, prNum: str, key: str):
             return line.split(key)[1].strip()
 
     print(f"WARNING: SCR: Could not find {key} in PR#{prNum}.")
-    return "TBD"
+    raise ValueError(f"Problem parsing PR#{prNum} for key {key}")
 
 
 def _buildScrLine(prNum: str, ghUsers: dict):
