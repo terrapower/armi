@@ -25,8 +25,10 @@ This will not be a catch-all for random unit test functions. Be very sparing her
 import os
 import pickle
 
-from armi import getPluginManagerOrFail, materials, runLog
-from armi.reactor import geometry, grids, reactors
+from armi import getPluginManagerOrFail, materials, operators, runLog, settings
+from armi.materials import uZr
+from armi.reactor import assemblies, blocks, geometry, grids, reactors
+from armi.reactor.components import Hexagon, Rectangle
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -175,3 +177,85 @@ def getEmptyCartesianReactor(pitch=(10.0, 16.0), throughCenterAssembly=True):
     reactor.core.spatialGrid.armiObject = reactor.core
 
     return reactor
+
+
+def buildOperatorOfEmptyHexBlocks(customSettings=None):
+    """
+    Builds a operator w/ a reactor object with some hex assemblies and blocks, but all are empty.
+
+    Doesn't depend on inputs and loads quickly.
+
+    Parameters
+    ----------
+    customSettings : dict
+        Dictionary of off-default settings to update
+    """
+    cs = settings.Settings()  # fetch new
+    if customSettings is None:
+        customSettings = {}
+
+    customSettings["db"] = False  # stop use of database
+    cs = cs.modified(newSettings=customSettings)
+
+    r = getEmptyHexReactor()
+    r.core.setOptionsFromCs(cs)
+    o = operators.Operator(cs)
+    o.initializeInterfaces(r)
+
+    a = assemblies.HexAssembly("fuel")
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
+    b = blocks.HexBlock("TestBlock")
+    b.setType("fuel")
+    dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
+    c = Hexagon("fuel", uZr.UZr(), **dims)
+    b.add(c)
+    a.add(b)
+    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
+    o.r.core.add(a)
+    o.r.sort()
+    return o
+
+
+def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
+    """
+    Builds a operator w/ a reactor object with some Cartesian assemblies and blocks, but all are empty.
+
+    Doesn't depend on inputs and loads quickly.
+
+    Parameters
+    ----------
+    customSettings : dict
+        Off-default settings to update
+    """
+    cs = settings.Settings()  # fetch new
+    if customSettings is None:
+        customSettings = {}
+
+    customSettings["db"] = False  # stop use of database
+    cs = cs.modified(newSettings=customSettings)
+
+    r = getEmptyCartesianReactor()
+    r.core.setOptionsFromCs(cs)
+    o = operators.Operator(cs)
+    o.initializeInterfaces(r)
+
+    a = assemblies.CartesianAssembly("fuel")
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
+    b = blocks.CartesianBlock("TestBlock")
+    b.setType("fuel")
+    dims = {
+        "Tinput": 600,
+        "Thot": 600,
+        "widthOuter": 16.0,
+        "lengthOuter": 10.0,
+        "widthInner": 1,
+        "lengthInner": 1,
+        "mult": 1,
+    }
+    c = Rectangle("fuel", uZr.UZr(), **dims)
+    b.add(c)
+    a.add(b)
+    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
+    o.r.core.add(a)
+    o.r.sort()
+    return o
