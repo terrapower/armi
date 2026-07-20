@@ -113,7 +113,7 @@ Though ARMI also supports quarter symmtery, which quadruples the grid
       A B B B B B
       A A A A A A
 
-.. figure:: /.static/doc/.static/lattice_map_full_cart_12x12.png
+.. figure:: /.static/lattice_map_full_cart_12x12.png
     :align: center
 
     Cartesian, 12x12 lattice map, made from quarter symmetry.
