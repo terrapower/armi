@@ -13,7 +13,7 @@ be loaded into a Cartesian arrangement. The contents of a grid may defined using
     A direct YAML representation of the contents.
 ``lattice map:``
     A ASCII map representing the grid contents.
-``lattice pictch:``
+``lattice pitch:``
     The spacing between your lattice point / rows.
 ``symmetry:``
     The default is "full", but for hexagonal lattices, you have the option of "third periodic".
