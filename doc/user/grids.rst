@@ -96,33 +96,27 @@ how to lay our rows and columns of symbols to represent the grid. Here is a smal
 
     Full-core, Cartesian, 6x6 lattice map.
 
-And here is a larger example
+Though ARMI also supports quarter symmtery, which quadruples the grid
 
 .. code-block:: yaml
 
+    geom: cartesian
+    symmetry: quarter
+    lattice pitch:
+      x: 1.0
+      y: 1.0
     lattice map: |
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  A  A  A  B  A  A  B  A  A  B  A  A  A  A  A
-        A  A  A  B  A  A  A  A  A  A  A  A  A  B  A  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  B  A  A  B  A  A  B  A  A  B  A  A  B  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  B  A  A  B  A  A  C  A  A  B  A  A  B  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  B  A  A  B  A  A  B  A  A  B  A  A  B  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  A  B  A  A  A  A  A  A  A  A  A  B  A  A  A
-        A  A  A  A  A  B  A  A  B  A  A  B  A  A  A  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
-        A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A
+      A B B B B B
+      A B A A A B
+      A B A C A B
+      A B B A A B
+      A B B B B B
+      A A A A A A
 
-.. figure:: /.static/lattice_map_full_cart_17x17.png
+.. figure:: /.static/doc/.static/lattice_map_full_cart_12x12.png
     :align: center
 
-    Full-core, Cartesian, 17x17 lattice map.
+    Cartesian, 12x12 lattice map, made from quarter symmetry.
 
 
 Full-Core Hexagonal Examples
