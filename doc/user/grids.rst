@@ -96,7 +96,7 @@ how to lay our rows and columns of symbols to represent the grid. Here is a smal
 
     Full-core, Cartesian, 6x6 lattice map.
 
-And here is a 
+And here is a larger example
 
 .. code-block:: yaml
 
@@ -273,6 +273,8 @@ and a larger example
     :align: center
 
     Four-ring, full-core, corners-up hexagonal lattice map.
+
+.. tip:: If the reactor core is flats-up, then the assembly pins in that core should be corners up. And vice versa.
 
 
 Placeholders and Whitespace
