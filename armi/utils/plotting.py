@@ -357,7 +357,7 @@ def plotFaceMap(
 
     ax.autoscale_view(tight=True)
 
-    # make it 2-D, for now...
+    # make it 2-D
     shuffleArrows = shuffleArrows or []
     for sourceCoords, destinationCoords in shuffleArrows:
         ax.annotate(
@@ -385,17 +385,17 @@ def plotFaceMap(
         else:
             pltKwargs = {}
         try:
+            pltKwargs["bbox_inches"] = "tight"
             plt.savefig(fName, dpi=150, **pltKwargs)
         except IOError:
-            runLog.warning("Cannot update facemap at {0}: IOError. Is the file open?".format(fName))
+            runLog.warning(f"Cannot update facemap at {fName}: IOError. Is the file open?")
         plt.close(fig)
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
         return fName
     else:
-        # Never close figures after a .show()
-        # because they're being used interactively e.g.
-        # in a live tutorial or by the doc gallery
+        # Never close figures after a .show() because they're being used interactively e.g. in a live tutorial or by the
+        # doc gallery
         plt.show()
 
     return fName
