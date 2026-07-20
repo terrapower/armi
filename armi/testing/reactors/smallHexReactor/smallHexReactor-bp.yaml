@@ -572,7 +572,7 @@ grids:
         geom: hex_corners_up
         symmetry: full
         lattice map: |
-          -     MC   MC   MC
+          -   - MC   MC   MC
           -  MC   IC   IC   IC
            IC   IC   IC   IC   IC
              IC   IC   IC   IC
