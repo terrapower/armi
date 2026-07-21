@@ -68,7 +68,7 @@ jobs:
         if: ${{ hashFiles('**/scr_error.txt') != '' }}
         run: |
           echo "SCR build failed"
-          cd ~/
+          cd /home/runner/work/armi/armi
           pwd
           ls
           cat scr_error.txt
