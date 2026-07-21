@@ -113,13 +113,15 @@ def _createHexBlockTemplate(blockType: str):
     if blockType == "hexUZrUTh":
         block.add(fuelUZr)
         block.add(fuelUTh)
-        block.p.molesHmBOL = 1.0
     else:
         block.add(fuelUZrB)
-        block.p.molesHmBOL = 2
     block.add(clad)
     block.add(interSodium)
     block.p.axMesh = 1
+    if blockType == "hexUZrUTh":
+        block.p.molesHmBOL = 1.0
+    else:
+        block.p.molesHmBOL = 2
     block.p.molesHmNow = 1.0
 
     return block
