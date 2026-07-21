@@ -65,7 +65,7 @@ jobs:
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Fail if SCR exists
-        if: ${{ hashFiles('/scr_error.txt') != '' }}
+        if: ${{ hashFiles('**/scr_error.txt') != '' }}
         run: |
           echo "SCR build failed"
           exit 1
