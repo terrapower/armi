@@ -23,7 +23,6 @@ from armi import runLog
 from armi.__main__ import main
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
-from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
 from armi.cli.database import ExtractInputs, InjectInputs
@@ -94,7 +93,7 @@ class TestInitializationEntryPoints(unittest.TestCase):
         entryPoints = getEntireFamilyTree(EntryPoint)
 
         # Comparing to a minimum number of entry points, in case more are added.
-        self.assertGreater(len(entryPoints), 15)
+        self.assertGreater(len(entryPoints), 14)
 
         for e in entryPoints:
             entryPoint = e()
@@ -113,38 +112,6 @@ class TestInitializationEntryPoints(unittest.TestCase):
                         "implementation."
                     ),
                 )
-
-
-class TestCheckInputEntryPoint(unittest.TestCase):
-    def test_checkInputEntryPointBasics(self):
-        ci = CheckInputEntryPoint()
-        ci.addOptions()
-        ci.parse_args(["/path/to/fake.yaml", "-C"])
-
-        self.assertEqual(ci.name, "check-input")
-        self.assertEqual(ci.args.patterns, ["/path/to/fake.yaml"])
-        self.assertEqual(ci.args.skip_checks, True)
-
-    def test_checkInputEntryPointInvoke(self):
-        """Test the "check inputs" entry point.
-
-        .. test:: A working CLI child class, to validate inputs.
-            :id: T_ARMI_CLI_GEN1
-            :tests: R_ARMI_CLI_GEN
-        """
-        ci = CheckInputEntryPoint()
-        ci.addOptions()
-        ci.parse_args([ARMI_RUN_PATH])
-
-        with mockRunLogs.BufferLog() as mock:
-            runLog.LOG.startLog("test_checkInputEntryPointInvoke")
-            runLog.LOG.setVerbosity(logging.INFO)
-            self.assertEqual("", mock.getStdout())
-
-            ci.invoke()
-
-            self.assertIn(ARMI_RUN_PATH, mock.getStdout())
-            self.assertIn("input is self consistent", mock.getStdout())
 
 
 class TestCloneArmiRunCommandBatch(unittest.TestCase):
@@ -245,24 +212,6 @@ class TestCompareSuites(unittest.TestCase):
             self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
             self.assertTrue(cs.args.skip_inspection)
             self.assertIsNone(cs.args.weights)
-
-
-class TestExpandBlueprints(unittest.TestCase):
-    def test_expandBlueprintsBasics(self):
-        ebp = ExpandBlueprints()
-        ebp.addOptions()
-        ebp.parse_args(["/path/to/fake.yaml"])
-
-        self.assertEqual(ebp.name, "expand-bp")
-        self.assertEqual(ebp.args.blueprints, "/path/to/fake.yaml")
-
-        # Since the file is fake, invoke() should exit early.
-        with mockRunLogs.BufferLog() as mock:
-            runLog.LOG.startLog("test_expandBlueprintsBasics")
-            runLog.LOG.setVerbosity(logging.INFO)
-            self.assertEqual("", mock.getStdout())
-            ebp.invoke()
-            self.assertIn("does not exist", mock.getStdout())
 
 
 class TestExtractInputs(unittest.TestCase):
