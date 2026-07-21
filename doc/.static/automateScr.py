@@ -83,7 +83,9 @@ def _findOneLineData(lines: list, prNum: str, key: str):
 
     # handle error reading PR description
     with open(ERROR_FILE, "a") as f:
-        f.write(f"PR#{prNum}: {key}")
+        msg = f"WARNING: SCR: Invalid change type '{key}' for PR#{prNum}"
+        print(msg)
+        f.write(msg)
 
     return "TBD"
 
