@@ -155,8 +155,8 @@ class TestSpatialLocator(unittest.TestCase):
         blockLoc = grids.IndexLocation(0, 0, 3, assemblyGrid)
         block.spatialLocator = blockLoc
 
-        pinIndexLoc = grids.IndexLocation(1, 5, 0, blockGrid)
-        pinFree = grids.CoordinateLocation(1.0, 2.0, 3.0, blockGrid)
+        compIndexLoc = grids.IndexLocation(1, 5, 0, blockGrid)
+        freeComp = grids.CoordinateLocation(1.0, 2.0, 3.0, blockGrid)
 
         assert_allclose(blockLoc.getCompleteIndices(), np.array((2, 3, 3)))
         assert_allclose(blockLoc.getGlobalCoordinates(), (2.0, 3.0, 3.5))
@@ -164,11 +164,11 @@ class TestSpatialLocator(unittest.TestCase):
         assert_allclose(blockLoc.getGlobalCellTop(), (2.5, 3.5, 4))
 
         # check coordinates of pins in block
-        assert_allclose(pinFree.getGlobalCoordinates(), (2.0 + 1.0, 3.0 + 2.0, 3.5 + 3.0))  # epic
-        assert_allclose(pinIndexLoc.getGlobalCoordinates(), (2.0 + 0.1, 3.0 + 0.5, 3.5))  # wow
+        assert_allclose(freeComp.getGlobalCoordinates(), (2.0 + 1.0, 3.0 + 2.0, 3.5 + 3.0))
+        assert_allclose(compIndexLoc.getGlobalCoordinates(), (2.0 + 0.1, 3.0 + 0.5, 3.5))
 
         # pin indices should not combine with the parent indices.
-        assert_allclose(pinIndexLoc.getCompleteIndices(), (1, 5, 0))
+        assert_allclose(compIndexLoc.getCompleteIndices(), (1, 5, 0))
 
     def test_recursionPin(self):
         """Ensure pin the center assem has axial coordinates consistent with a pin in
