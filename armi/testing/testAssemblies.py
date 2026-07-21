@@ -39,8 +39,8 @@ def _createHexBlockTemplate(blockType: str):
         - embedded in a sodium matrix
 
     There are two options for the HexBlock:
-        'hexUZr': A HexBlock filled with all UZr pins.
         'hexUZrUTh': A HexBlock filled with half UZr pins and half UTh pins
+        'hexUZr': A HexBlock filled with all UZr pins.
 
     Parameters
     ----------
@@ -50,13 +50,10 @@ def _createHexBlockTemplate(blockType: str):
     Returns
     -------
     block : armi.reactor.blocks.HexBlock
-        A block object with half UZr pins and half UTh pins.
-    block2 : armi.reactor.blocks.HexBlock
-        A HexBlock object with all UZr pins.
     """
-    if blockType not in ["hexUZr", "hexUZrUTh"]:
+    if blockType not in ["hexUZrUTh", "hexUZr"]:
         raise ValueError(
-            f"Invalid blockType for _createHexBlockTemplate: {blockType}only 'hexUZr' and 'hexUZrUTh' are allowed"
+            f"Invalid blockType for _createHexBlockTemplate: {blockType}only 'hexUZrUTh' and 'hexUZr' are allowed."
         )
     settings.Settings()
 
@@ -154,17 +151,8 @@ def _constructHexAssemblyFromBlockTemplate(blockTemplate: blocks.HexBlock, numBl
     return assembly
 
 
-def buildHexAssemblySingleUZr():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZr` template block (see
-    docstring for the :func:`_createHexBlockTemplate` function.
-    """
-    blockTemplate = _createHexBlockTemplate("hexUZr")
-    numBlocks = 1
-    return _constructHexAssemblyFromBlockTemplate(blockTemplate, numBlocks)
-
-
 def buildHexAssemblySingleUZrUTh():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZrUTh` template block (see
+    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZr` template block (see
     docstring for the :func:`_createHexBlockTemplate` function.
     """
     blockTemplate = _createHexBlockTemplate("hexUZrUTh")
@@ -172,19 +160,28 @@ def buildHexAssemblySingleUZrUTh():
     return _constructHexAssemblyFromBlockTemplate(blockTemplate, numBlocks)
 
 
-def buildHexAssemblyFiveUZr():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with five `hexUZrUTh` template blocks (see
+def buildHexAssemblySingleUZr():
+    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZrUTh` template block (see
     docstring for the :func:`_createHexBlockTemplate` function.
     """
     blockTemplate = _createHexBlockTemplate("hexUZr")
+    numBlocks = 1
+    return _constructHexAssemblyFromBlockTemplate(blockTemplate, numBlocks)
+
+
+def buildHexAssemblyFiveUZrUTh():
+    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with five `hexUZrUTh` template blocks (see
+    docstring for the :func:`_createHexBlockTemplate` function.
+    """
+    blockTemplate = _createHexBlockTemplate("hexUZrUTh")
     numBlocks = 5
     return _constructHexAssemblyFromBlockTemplate(blockTemplate, numBlocks)
 
 
-def buildHexAssemblyFourUZr():
+def buildHexAssemblyFourUZrUTh():
     """Create a :class:`armi.reactor.assemblies.HexAssembly` object with four `hexUZrUTh` template blocks (see
     docstring for the :func:`_createHexBlockTemplate` function.
     """
-    blockTemplate = _createHexBlockTemplate("hexUZr")
+    blockTemplate = _createHexBlockTemplate("hexUZrUTh")
     numBlocks = 4
     return _constructHexAssemblyFromBlockTemplate(blockTemplate, numBlocks)

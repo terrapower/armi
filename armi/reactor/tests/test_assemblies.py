@@ -39,10 +39,10 @@ NUM_BLOCKS = 3
 class MaterialInAssembly_TestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.assembly = testing.buildHexAssemblySingleUZr()
-        cls.assembly2 = testing.buildHexAssemblySingleUZrUTh()
-        cls.assembly3 = testing.buildHexAssemblyFiveUZr()
-        cls.assembly4 = testing.buildHexAssemblyFourUZr()
+        cls.assembly = testing.buildHexAssemblySingleUZrUTh()
+        cls.assembly2 = testing.buildHexAssemblySingleUZr()
+        cls.assembly3 = testing.buildHexAssemblyFiveUZrUTh()
+        cls.assembly4 = testing.buildHexAssemblyFourUZrUTh()
 
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None

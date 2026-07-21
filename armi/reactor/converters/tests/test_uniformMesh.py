@@ -30,8 +30,8 @@ from armi.reactor.tests import test_blocks
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.testing import (
     TESTING_ROOT,
-    buildHexAssemblyFiveUZr,
-    buildHexAssemblyFourUZr,
+    buildHexAssemblyFiveUZrUTh,
+    buildHexAssemblyFourUZrUTh,
     loadTestReactor,
     reduceTestReactorRings,
 )
@@ -648,8 +648,8 @@ class TestParamConversion(unittest.TestCase):
         The source assembly has two blocks, heights 3 and 7 cm. The destination has one big block that's 10 cm. Flux is
         set to 5 and 10 respectively on the two source blocks. They are populated with arbitrary flux and pdens values.
         """
-        self.sourceAssem = buildHexAssemblyFiveUZr()
-        self.destinationAssem = buildHexAssemblyFourUZr()
+        self.sourceAssem = buildHexAssemblyFiveUZrUTh()
+        self.destinationAssem = buildHexAssemblyFourUZrUTh()
         self.height1 = 3.0
         self.height2 = 7.0
         self.sourceAssem[0].setHeight(self.height1)
@@ -767,8 +767,8 @@ class TestParamMapper(unittest.TestCase):
     """Test how the ParamMapper maps params."""
 
     def setUp(self):
-        sourceAssem = buildHexAssemblyFiveUZr()
-        destinationAssem = buildHexAssemblyFourUZr()
+        sourceAssem = buildHexAssemblyFiveUZrUTh()
+        destinationAssem = buildHexAssemblyFourUZrUTh()
 
         self.sourceBlock = sourceAssem.getBlocks()[0]
         self.destinationBlock = destinationAssem.getBlocks()[0]
