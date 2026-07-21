@@ -29,6 +29,7 @@ from armi import getPluginManagerOrFail, materials, operators, runLog, settings
 from armi.materials import uZr
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
+from armi.reactor.testing.testAssemblies import *  # noqa: F403
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))

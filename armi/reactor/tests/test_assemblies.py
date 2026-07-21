@@ -24,117 +24,25 @@ from unittest.mock import patch
 import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings, tests
+from armi import settings, testing
 from armi.physics.neutronics.settings import CONF_LOADING_FILE, CONF_XS_KERNEL
-from armi.reactor import assemblies, blocks, blueprints, components, geometry, parameters, reactors
+from armi.reactor import blocks, blueprints, components, geometry, parameters, reactors
 from armi.reactor.assemblies import Flags, HexAssembly, copy, grids, runLog
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, getEmptyHexReactor, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 
 
-def buildTestAssemblies():
-    """
-    Build some assembly objects that will be used in testing.
-
-    This builds 2 HexBlocks:
-        * One with half UZr pins and half UTh pins
-        * One with all UZr pins
-    """
-    settings.Settings()
-
-    temperature = 273.0
-    fuelID = 0.0
-    fuelOD = 1.0
-    cladOD = 1.1
-    # generate a reactor with assemblies
-    # generate components with materials
-    nPins = 100
-
-    fuelDims = {
-        "Tinput": temperature,
-        "Thot": temperature,
-        "od": fuelOD,
-        "id": fuelID,
-        "mult": nPins,
-    }
-
-    fuelUZr = components.Circle("fuel", "UZr", **fuelDims)
-    fuelUTh = components.Circle("fuel UTh", "ThU", **fuelDims)
-
-    fuelDims2nPins = {
-        "Tinput": temperature,
-        "Thot": temperature,
-        "od": fuelOD,
-        "id": fuelID,
-        "mult": 2 * nPins,
-    }
-
-    fuelUZrB = components.Circle("fuel B", "UZr", **fuelDims2nPins)
-
-    cladDims = {
-        "Tinput": temperature,
-        "Thot": temperature,
-        "od": cladOD,
-        "id": fuelOD,
-        "mult": 2 * nPins,
-    }
-
-    clad = components.Circle("clad", "HT9", **cladDims)
-
-    interDims = {
-        "Tinput": temperature,
-        "Thot": temperature,
-        "op": 16.8,
-        "ip": 16.0,
-        "mult": 1.0,
-    }
-
-    interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
-
-    block = blocks.HexBlock("fuel")
-    block2 = blocks.HexBlock("fuel")
-    block.setType("fuel")
-    block.setHeight(10.0)
-    block.add(fuelUZr)
-    block.add(fuelUTh)
-    block.add(clad)
-    block.add(interSodium)
-    block.p.axMesh = 1
-    block.p.molesHmBOL = 1.0
-    block.p.molesHmNow = 1.0
-
-    block2.setType("fuel")
-    block2.setHeight(10.0)
-    block2.add(fuelUZrB)
-    block2.add(clad)
-    block2.add(interSodium)
-    block2.p.axMesh = 1
-    block2.p.molesHmBOL = 2
-    block2.p.molesHmNow = 1.0
-
-    assemblieObjs = []
-    for numBlocks, blockTemplate in zip([1, 1, 5, 4], [block, block2, block, block]):
-        assembly = assemblies.HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
-        assembly.spatialGrid.armiObject = assembly
-        for _i in range(numBlocks):
-            newBlock = copy.deepcopy(blockTemplate)
-            assembly.add(newBlock)
-        assembly.calculateZCoords()
-        assembly.reestablishBlockOrder()
-        assemblieObjs.append(assembly)
-
-    return assemblieObjs
-
-
 class MaterialInAssembly_TestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.assembly, cls.assembly2, cls.assembly3, cls.assembly4 = buildTestAssemblies()
+        cls.assembly = testing.buildHexAssemblySingleUZr()
+        cls.assembly2 = testing.buildHexAssemblySingleUZrUTh()
+        cls.assembly3 = testing.buildHexAssemblyFiveUZr()
+        cls.assembly4 = testing.buildHexAssemblyFourUZr()
 
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
@@ -177,7 +85,7 @@ class AssemblyReadOnlyTests(unittest.TestCase):
         # Print nothing to the screen that would normally go to the log.
         runLog.setVerbosity("error")
 
-        cls.r = tests.getEmptyHexReactor()
+        cls.r = getEmptyHexReactor()
         cls.r.core.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
 
         cls.assembly = makeTestAssembly(NUM_BLOCKS, cls.assemNum, r=cls.r)
@@ -476,7 +384,7 @@ class AssemblyTests(unittest.TestCase):
         # Print nothing to the screen that would normally go to the log.
         runLog.setVerbosity("error")
 
-        self.r = tests.getEmptyHexReactor()
+        self.r = getEmptyHexReactor()
         self.r.core.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
