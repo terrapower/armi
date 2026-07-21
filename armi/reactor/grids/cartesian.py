@@ -25,30 +25,25 @@ class CartesianGrid(StructuredGrid):
     """
     Grid class representing a conformal Cartesian mesh.
 
-    It is recommended to call :meth:`fromRectangle` to construct,
-    rather than directly constructing with ``__init__``
+    It is recommended to call :meth:`fromRectangle` to construct, rather than directly constructing with ``__init__``
 
     Notes
     -----
-    In Cartesian, (i, j, k) indices map to (x, y, z) coordinates.
-    In an axial plane (i, j) are as follows::
+    In Cartesian, (i, j, k) indices map to (x, y, z) coordinates. In an axial plane (i, j) are as follows::
 
         (-1, 1)(0, 1)(1, 1)
         (-1, 0)(0, 0)(1, 0)
         (-1, -1)(0, -1)(1, -1)
 
-    The concepts of ring and position are a bit tricker in Cartesian grids than in Hex,
-    because unlike in the Hex case, there is no guaranteed center location. For example,
-    when using a CartesianGrid to lay out assemblies in a core, there is only a single
-    central location if the number of assemblies in the core is odd-by-odd; in an
-    even-by-even case, there are four center-most assemblies. Therefore, the number of
-    locations per ring will vary depending on the "through center" nature of
-    ``symmetry``.
+    The concepts of ring and position are a bit tricker in Cartesian grids than in Hex, because unlike in the Hex case,
+    there is no guaranteed center location. For example, when using a CartesianGrid to lay out assemblies in a core,
+    there is only a single central location if the number of assemblies in the core is odd-by-odd; in an even-by-even
+    case, there are four center-most assemblies. Therefore, the number of locations per ring will vary depending on the
+    "through center" nature of ``symmetry``.
 
-    Furthermore, notice that in the "through center" (odd-by-odd) case, the central
-    index location, (0,0) is typically centered at the origin (0.0, 0.0), whereas with
-    the "not through center" (even-by-even) case, the (0,0) index location is offset,
-    away from the origin.
+    Furthermore, notice that in the "through center" (odd-by-odd) case, the central index location, (0,0) is typically
+    centered at the origin (0.0, 0.0), whereas with the "not through center" (even-by-even) case, the (0,0) index
+    location is offset, away from the origin.
 
     These concepts are illustrated in the example drawings below.
 
@@ -56,16 +51,15 @@ class CartesianGrid(StructuredGrid):
         :width: 400px
         :align: center
 
-        Grid example where the axes pass through the "center assembly" (odd-by-odd).
-        Note that ring 1 only has one location in it.
+        Grid example where the axes pass through the "center assembly" (odd-by-odd). Note that ring 1 only has one
+        location in it.
 
     .. figure:: ../.static/not-through-center.png
         :width: 400px
         :align: center
 
-        Grid example where the axes lie between the "center assemblies" (even-by-even).
-        Note that ring 1 has four locations, and that the center of the (0, 0)-index
-        location is offset from the origin.
+        Grid example where the axes lie between the "center assemblies" (even-by-even). Note that ring 1 has four
+        locations, and that the center of the (0, 0)-index location is offset from the origin.
     """
 
     @classmethod
@@ -84,9 +78,8 @@ class CartesianGrid(StructuredGrid):
         symmetry : str
             The symmetry condition (see :py:mod:`armi.reactor.geometry`)
         isOffset : bool
-            If True, the origin of the Grid's coordinate system will be placed at the
-            bottom-left corner of the center-most cell. Otherwise, the origin will be
-            placed at the center of the center-most cell.
+            If True, the origin of the Grid's coordinate system will be placed at the bottom-left corner of the center-
+            most cell. Otherwise, the origin will be placed at the center of the center-most cell.
         armiObject : ArmiObject
             An object in a Composite model that the Grid should be bound to.
         """
@@ -105,8 +98,7 @@ class CartesianGrid(StructuredGrid):
 
         .. warning::
 
-            This is not really implemented, but parts of ARMI need it to
-            not fail, so it always returns None.
+            This is not really implemented, but parts of ARMI need it to not fail, so it always returns None.
 
         """
         return None
@@ -115,9 +107,8 @@ class CartesianGrid(StructuredGrid):
         """
         Return ring and position from indices.
 
-        Ring is the Manhattan distance from (0, 0) to the passed indices. Position
-        counts up around the ring counter-clockwise from the quadrant 1 diagonal, like
-        this::
+        Ring is the Manhattan distance from (0, 0) to the passed indices. Position counts up around the ring counter-
+        clockwise from the quadrant 1 diagonal, like this::
 
             7   6  5  4  3  2  1
             8         |       24
@@ -127,17 +118,16 @@ class CartesianGrid(StructuredGrid):
             12        |       20
             13 14 15 16 17 18 19
 
-        Grids that split the central locations have 1 location in in inner-most ring,
-        whereas grids without split central locations will have 4.
+        Grids that split the central locations have 1 location in in inner-most ring, whereas grids without split
+        central locations will have 4.
 
         Notes
         -----
-        This is needed to support GUI, but should not often be used.
-        i, j (0-based) indices are much more useful. For example:
+        This is needed to support GUI, but should not often be used. i, j (0-based) indices are much more useful. For
+        example:
 
         >>> locator = core.spatialGrid[i, j, 0]  # 3rd index is 0 for assembly
         >>> a = core.childrenByLocator[locator]
-
         >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]]  # one liner
         """
         i, j = indices[0:2]
@@ -170,8 +160,8 @@ class CartesianGrid(StructuredGrid):
     def getIndicesFromRingAndPos(ring: int, pos: int) -> NoReturn:
         """Not implemented for Cartesian-see getRingPos notes."""
         raise NotImplementedError(
-            "Cartesian should not need need ring/pos, use i, j indices."
-            "See getRingPos doc string notes for more information/example."
+            "Cartesian should not need need ring/pos, use i, j indices. See getRingPos doc string notes for more "
+            "information/example."
         )
 
     def getMinimumRings(self, n: int) -> int:
@@ -197,11 +187,8 @@ class CartesianGrid(StructuredGrid):
 
         Notes
         -----
-        The number of positions within a ring will change
-        depending on whether the central position in the
-        grid is at origin, or if origin is the point
-        where 4 positions meet (i.e., the ``_isThroughCenter``
-        method returns True).
+        The number of positions within a ring will change depending on whether the central position in the grid is at
+        origin, or if origin is the point where 4 positions meet (i.e., the ``_isThroughCenter`` method returns True).
         """
         if ring == 1:
             ringPositions = 1 if self._isThroughCenter() else 4
@@ -262,9 +249,8 @@ class CartesianGrid(StructuredGrid):
                     else:
                         return [(-i, j), (-i, -j), (i, -j)]
             else:
-                # most objects have 3 equivalents. the bottom-left corner of Quadrant I
-                # is (0, 0), so to reflect, add one and negate each index in
-                # combination. To rotate, first flip the indices for the Quadrant II and
+                # most objects have 3 equivalents. the bottom-left corner of Quadrant I is (0, 0), so to reflect, add
+                # one and negate each index in combination. To rotate, first flip the indices for the Quadrant II and
                 # Quadrant IV
                 if isRotational:
                     # rotational
@@ -274,13 +260,8 @@ class CartesianGrid(StructuredGrid):
                     # reflective
                     #        QII           QIII          QIV
                     return [(-i - 1, j), (-i - 1, -j - 1), (i, -j - 1)]
-
-        elif symmetry.domain == geometry.DomainType.EIGHTH_CORE:
-            raise NotImplementedError("Eighth-core symmetry isn't fully implemented for grids yet!")
         else:
-            raise NotImplementedError(
-                "Unhandled symmetry condition for {}: {}".format(type(self).__name__, symmetry.domain)
-            )
+            raise NotImplementedError(f"Unhandled symmetry condition for {type(self).__name__}: {symmetry.domain}")
 
     def _isThroughCenter(self):
         """Return whether the central cells are split through the middle for symmetry."""
@@ -296,7 +277,6 @@ class CartesianGrid(StructuredGrid):
             x-pitch (cm)
         float
             y-pitch (cm)
-
         """
         pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
         if pitch[0] == 0:

@@ -25,11 +25,11 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
     isDepletable,
 )
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import (
+from armi.testing import (
+    TESTING_ROOT,
     buildOperatorOfEmptyHexBlocks,
     loadTestReactor,
 )
-from armi.testing import TESTING_ROOT
 
 
 class TestFPMLumpedFP(unittest.TestCase):

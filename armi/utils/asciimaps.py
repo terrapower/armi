@@ -41,7 +41,6 @@ armi.reactor.grids : More powerful, nestable lattices with specific dimensions
     Most input lattices eventually end up as Grid objects.
 armi.reactor.blueprints.latticeBlueprint : user input of generic lattices
 armi.reactor.geometry : a specific usage of lattices, for core maps
-
 """
 
 import re
@@ -286,8 +285,7 @@ class AsciiMapCartesian(AsciiMap):
     def _asciiLinesToIndices(self):
         self.asciiLabelByIndices = {}
 
-        # read from bottom to top to be consistent
-        # with cartesian grid indexing
+        # read from bottom to top to be consistent with cartesian grid indexing
         for li, line in enumerate(reversed(self.asciiLines)):
             for ci, asciiLabel in enumerate(line):
                 ij = self._getIJFromColRow(ci, li)
@@ -302,9 +300,7 @@ class AsciiMapCartesian(AsciiMap):
 
         if iMin > 0 or jMin > 0:
             raise ValueError(
-                "Asciimaps only supports sets of indices that start at less than or equal to zero, got {}, {}".format(
-                    iMin, jMin
-                )
+                f"Asciimaps only supports sets of indices that start at less than or equal to zero, got {iMin}, {jMin}"
             )
 
     def _getIJFromColRow(self, columnNum, lineNum):
@@ -349,23 +345,19 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         """
         Get i,j base (starting point) for a row from bottom.
 
-        These are the indices of the far-left item in a row as a function
-        of line number from the bottom. These are used in the process
-        of computing the indices of items while reading the ascii map.
+        These are the indices of the far-left item in a row as a function of line number from the bottom. These are used
+        in the process of computing the indices of items while reading the ascii map.
 
-        For 1/3 symmetric cases, the base is a constant pattern
-        vs. row number at least until the top section where the hexagon
-        comes off the 1/3 symmetry line.
+        For 1/3 symmetric cases, the base is a constant pattern vs. row number at least until the top section where the
+        hexagon comes off the 1/3 symmetry line.
 
         The base hexes (LHS) as a function of rows from bottom are:
 
         Row:    0      1      2      3        4      5       6       7       8      9       10      11    12
         Base: (0,0), (1,0)  (0,1),  (1,1),  (0,2), (-1,3), (0,3), (-1,4), (-2,5), (-1,5), (-2,6), (-3,7) (-2,7)
 
-        Looking graphically, there are basically 3 rays going up at 120 degrees.
-        So we can find a consistent pattern for each ray and use a modulus to figure
-        out which ray we're on.
-
+        Looking graphically, there are basically 3 rays going up at 120 degrees. So we can find a consistent pattern for
+        each ray and use a modulus to figure out which ray we're on.
         """
         if asciiLineNum == 0:
             return 0, 0
@@ -417,7 +409,6 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         Update some dimension metadata by looking at the ascii lines.
 
         In this case, asciiMaxCol actually represents the max i index.
-
         """
         self._ijMax = self._asciiMaxCol - 1
         self._asciiLinesOffCorner = len(self.asciiLines[-1]) - 1
@@ -428,8 +419,8 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         Used before writing the asciimap from data.
 
-        Add flat-hex specific corner truncation detection that allows some positions to be empty
-        near the corners of the full hex, as is typical for hexagonal core maps.
+        Add flat-hex specific corner truncation detection that allows some positions to be empty near the corners of the
+        full hex, as is typical for hexagonal core maps.
 
         For 1/3 hex, _ijMax represents the outer outline
         """
@@ -449,8 +440,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
             # the jagged edge is lopped off too.
             self._asciiLinesOffCorner += 1
 
-        # now that we understand how many corner positions are truncated,
-        # we can fully determine the size of the ascii map
+        # Now that we know how many corner positions are truncated, we can fully determine the size of the ascii map.
         self._asciiMaxCol = self._ijMax + 1
         self._asciiMaxLine = self._ijMax * 2 + 1 - self._asciiLinesOffCorner
 
