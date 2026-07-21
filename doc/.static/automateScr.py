@@ -31,7 +31,7 @@ PR_TYPES = {
     "trivial": "Code Changes, Maintenance, or Trivial",
 }
 THIS_DIR = os.path.dirname(__file__)
-ERROR_FILE = os.path.join(THIS_DIR, "..", "scr_error.txt")
+ERROR_FILE = os.path.join(THIS_DIR, "..", "..", "scr_error.txt")
 
 
 def main():
