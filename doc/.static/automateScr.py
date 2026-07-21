@@ -30,6 +30,8 @@ PR_TYPES = {
     "fixes": "Code Changes, Bugs and Fixes",
     "trivial": "Code Changes, Maintenance, or Trivial",
 }
+THIS_DIR = os.path.dirname(__file__)
+ERROR_FILE = os.path.join(THIS_DIR, "..", "scr_error.txt")
 
 
 def main():
@@ -47,6 +49,13 @@ def main():
     args = parser.parse_args()
     pastCommit = args.pastCommit
     prNum = int(args.prNum)
+
+    # clean up any old SCR error files
+    if os.path.exists(ERROR_FILE):
+        try:
+            os.remove(ERROR_FILE)
+        except FileNotFoundError:
+            pass
 
     buildScrListing(pastCommit, prNum)
 
@@ -72,7 +81,11 @@ def _findOneLineData(lines: list, prNum: str, key: str):
         if line.startswith(key):
             return line.split(key)[1].strip()
 
-    raise ValueError(f"Problem parsing PR#{prNum} for key {key}")
+    # handle error reading PR description
+    with open(ERROR_FILE, "a") as f:
+        f.write(f"PR#{prNum}: {key}")
+
+    return "TBD"
 
 
 def _buildScrLine(prNum: str, ghUsers: dict):
