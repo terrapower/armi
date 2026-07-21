@@ -170,6 +170,13 @@ class TestSpatialLocator(unittest.TestCase):
         # pin indices should not combine with the parent indices.
         assert_allclose(compIndexLoc.getCompleteIndices(), (1, 5, 0))
 
+        pinLocator = grids.MultiIndexLocation(blockGrid)
+        pinLocator.append(compIndexLoc)
+        single = compIndexLoc.getGlobalCoordinates()
+        fromMulti = pinLocator.getGlobalCoordinates()
+        self.assertTupleEqual(fromMulti.shape, (1, 3))
+        assert_allclose(fromMulti[0], single)
+
     def test_recursionPin(self):
         """Ensure pin the center assem has axial coordinates consistent with a pin in
         an off-center assembly.
