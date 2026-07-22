@@ -152,8 +152,8 @@ def _constructHexAssemblyFromBlockTemplate(blockTemplate: blocks.HexBlock, numBl
 
 
 def buildHexAssemblySingleUZrUTh():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZr` template block (see
-    docstring for the :func:`_createHexBlockTemplate` function.
+    """Create a `HexAssembly` object with a single `hexUZr` template block (see docstring for the
+    :func:`_createHexBlockTemplate` function.
     """
     blockTemplate = _createHexBlockTemplate("hexUZrUTh")
     numBlocks = 1
