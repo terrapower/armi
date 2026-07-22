@@ -69,7 +69,7 @@ class UserPluginFlags4(plugins.UserPlugin):
 
 
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
-    """This is invalid/bad because it implements defineSettings()."""
+    """Invalid/bad because it implements defineSettings()."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -79,7 +79,7 @@ class UserPluginBadDefinesSettings(plugins.UserPlugin):
 
 
 class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
-    """This is invalid/bad because it implements defineParameterRenames()."""
+    """Invalid/bad because it implements defineParameterRenames()."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -90,9 +90,8 @@ class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
 
 class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
     """
-    This plugin flex-tests the onProcessCoreLoading() hook,
-    and arbitrarily adds "1" to the height of every block,
-    after the DB is loaded.
+    Flex-test the onProcessCoreLoading() hook, and arbitrarily adds "1" to the height of every block, after the DB is
+    loaded.
     """
 
     @staticmethod
@@ -106,8 +105,8 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
 class UpInterface(interfaces.Interface):
     """
-    A mostly meaningless little test interface, just to prove that we can affect
-    the reactor state from an interface inside a UserPlugin.
+    A mostly meaningless little test interface, just to prove that we can affect the reactor state from an interface
+    inside a UserPlugin.
     """
 
     name = "UpInterface"
@@ -130,8 +129,8 @@ class UserPluginWithInterface(plugins.UserPlugin):
 class TestUserPlugins(unittest.TestCase):
     def setUp(self):
         """
-        Manipulate the standard App. We can't just configure our own, since the
-        pytest environment bleeds between tests.
+        Manipulate the standard App. We can not just configure our own, since the pytest environment bleeds between
+        tests.
         """
         self._backupApp = copy.deepcopy(getApp())
 

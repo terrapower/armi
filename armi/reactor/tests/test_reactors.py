@@ -62,7 +62,7 @@ class ReactorTests(unittest.TestCase):
 
 class HexReactorTests(ReactorTests):
     """
-    This is meant to pair with the ``HexReactorReadOnlyTests`` unit test class.
+    Base class meant to pair with the ``HexReactorReadOnlyTests`` unit test class.
 
     The tests in this class all modify the Reactor object, so we need to create a new test reactor for each test.
     """
@@ -114,7 +114,7 @@ class HexReactorTests(ReactorTests):
 
     def test_getSetParameters(self):
         """
-        This test works through multiple levels of the data model hierarchy to test ability to modify parameters.
+        Work through multiple levels of the data model hierarchy to test ability to modify parameters.
 
         .. test:: Parameters are accessible throughout the armi tree.
             :id: T_ARMI_PARAM1
@@ -708,7 +708,7 @@ class HexReactorTests(ReactorTests):
 
 class HexReactorReadOnlyTests(unittest.TestCase):
     """
-    This is meant to pair with the ``HexReactorTests`` unit test class.
+    Testing baseclass meant to pair with the ``HexReactorTests`` unit test class.
 
     The tests in this class only READ, and not WRITE to the Reactor object, so we only have to create one test reactor.
     """
@@ -1075,7 +1075,7 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
 class HexReactorSoloTests(ReactorTests):
     """
-    This is meant to pair with the ``HexReactorTests`` unit test class.
+    Base class meant to pair with the ``HexReactorTests`` unit test class.
 
     Each test here creates its own, slightly unique, test reactor.
     """
@@ -1096,7 +1096,7 @@ class HexReactorSoloTests(ReactorTests):
 
 class BigHexReactorTests(ReactorTests):
     """
-    This is meant to pair with the ``HexReactorTests`` unit test class.
+    Base class meant to pair with the ``HexReactorTests`` unit test class.
 
     These tests all need a larger test reactor. Ideally, we will migrate these to smaller test reactors one day.
     """

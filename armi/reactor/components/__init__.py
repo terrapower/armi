@@ -310,17 +310,14 @@ class PositiveOrNegativeVolumeComponent(UnshapedVolumetricComponent):
 
 class DerivedShape(UnshapedComponent):
     """
-    This a component that does have specific dimensions, but they're complicated.
+    A component that does have specific dimensions, but they're complicated.
 
     Notes
     -----
-    - This component type is "derived" through the addition or
-      subtraction of other shaped components (e.g. Coolant)
-    - Because its area and volume are defined by other components,
-      a DerivedShape's area and volume may change as the other
-      components thermally expand. However the DerivedShape cannot
-      drive thermal expansion itself, even if it is a solid component
-      with non-zero thermal expansion coefficient
+    - This component type is "derived" through the addition or subtraction of other shaped components (e.g. Coolant)
+    - Because its area and volume are defined by other components, a DerivedShape's area and volume may change as the
+      other components thermally expand. However the DerivedShape cannot drive thermal expansion itself, even if it is a
+      solid component with non-zero thermal expansion coefficient
     """
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):

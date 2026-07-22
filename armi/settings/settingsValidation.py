@@ -130,7 +130,7 @@ class Query:
 
 class Inspector:
     """
-    This manages queries which assert certain states of the data model, generally presenting themselves to the user,
+    Manages queries which assert certain states of the data model, generally presenting themselves to the user,
     offering information on the potential problem, a question and the action to take on an affirmative and negative
     answer from the user.
 
@@ -185,9 +185,9 @@ class Inspector:
         # the following attribute changes will alter what the queries investigate when resolved
         correctionsMade = False
         self.cs = cs or self.cs
-        runLog.debug("{} executing queries.".format(self.__class__.__name__))
+        runLog.debug(f"{self.__class__.__name__} executing queries.")
         if not any(self.queries):
-            runLog.debug("{} found no problems with the current state.".format(self.__class__.__name__))
+            runLog.debug(f"{self.__class__.__name__} found no problems with the current state.")
         else:
             for query in self.queries:
                 query.resolve()
@@ -197,10 +197,9 @@ class Inspector:
             if any(issues):
                 # something isn't resolved or was unresolved by changes
                 raise RuntimeError(
-                    "The input inspection did not resolve all queries, "
-                    "some issues are creating cyclic resolutions: {}".format(issues)
+                    f"The input inspection did not resolve all queries, some are creating cyclic resolutions: {issues}"
                 )
-            runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+            runLog.debug(f"{self.__class__.__name__} has finished querying.")
 
         if correctionsMade:
             # find unused file path to store original settings as to avoid overwrite
@@ -223,7 +222,7 @@ class Inspector:
     def addQuery(self, condition, statement, question, correction):
         """Convenience method, query must be resolved, else run fails."""
         if not callable(correction):
-            raise ValueError('Query for "{}" malformed. Expecting callable.'.format(statement))
+            raise ValueError(f'Query for "{statement}" malformed. Expecting callable.')
         self.queries.append(Query(condition, statement, question, correction))
 
     def addQueryBadLocationWillLikelyFail(self, settingName):
@@ -277,7 +276,7 @@ class Inspector:
 
         self.addQuery(
             lambda: not self._csRelativePathExists(self.cs[CONF_LOADING_FILE]),
-            "Blueprints file {} not found. Run will fail.".format(self.cs[CONF_LOADING_FILE]),
+            f"Blueprints file {self.cs[CONF_LOADING_FILE]} not found. Run will fail.",
             "",
             self.NO_ACTION,
         )
@@ -374,8 +373,7 @@ class Inspector:
             "Starting from cycle 0, and time node 0 was chosen. Restart runs load from "
             "the time node just before the restart. There is no time node to load from "
             "before cycle 0 node 0. Either switch to the snapshot operator, start from "
-            "a different time step or load from inputs rather than database as "
-            "`loadStyle`.",
+            "a different time step or load from inputs rather than database as `loadStyle`.",
             "",
             self.NO_ACTION,
         )

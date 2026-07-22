@@ -75,7 +75,7 @@ def getTotalJobMemory(nTasks, cpusPerTask):
 
 
 def getCurrentMemoryUsage():
-    """This scavenges the memory profiler in ARMI to get the current memory usage."""
+    """Scavenges the memory profiler in ARMI to get the current memory usage."""
     memUsageAction = PrintSystemMemoryUsageAction()
     memUsageAction.broadcast()
     smpu = SystemAndProcessMemoryUsage()
@@ -415,7 +415,7 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
         self.usages = self.gather(spmu)
 
     def printUsage(self, description=None):
-        """This method prints the usage of all MPI nodes.
+        """Print the usage of all MPI nodes.
 
         The printout looks something like:
 

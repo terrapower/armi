@@ -96,7 +96,7 @@ class TestHistoryTracker(ArmiTestHelper):
 
     def test_calcMGFluence(self):
         """
-        This test confirms that mg flux has many groups when loaded with the history tracker.
+        Confirms that mg flux has many groups when loaded with the history tracker.
 
         .. test:: Demonstrate that a parameter stored at differing time nodes can be recovered.
             :id: T_ARMI_HIST_TRACK0

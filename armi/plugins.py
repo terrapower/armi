@@ -681,7 +681,7 @@ class UserPlugin(ArmiPlugin):
 
     def __enforceLimitations(self):
         """
-        This method enforces that UserPlugins are more limited than regular ArmiPlugins.
+        Enforce that UserPlugins are more limited than regular ArmiPlugins.
 
         UserPlugins are different from regular plugins in that they can be defined during a run, and as such, we want to
         limit how flexible they are, so we can correctly corral their side effects during a run.

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains classes and methods for reading and writing
-:py:class:`~armi.settings.caseSettings.Settings`, and the contained
+"""Classes and methods for reading and writing :py:class:`~armi.settings.caseSettings.Settings`, and the contained
 :py:class:`~armi.settings.setting.Setting`.
 """
 
@@ -29,11 +28,7 @@ from ruamel.yaml import YAML
 from armi import context, runLog
 from armi.meta import __version__ as version
 from armi.settings.setting import Setting
-from armi.utils.customExceptions import (
-    InvalidSettingsFileError,
-    InvalidSettingsStopProcess,
-    SettingException,
-)
+from armi.utils.customExceptions import InvalidSettingsFileError, InvalidSettingsStopProcess, SettingException
 
 # Constants defining valid output styles
 WRITE_SHORT = "short"
@@ -52,10 +47,9 @@ class SettingRenamer:
     """
     Utility class to help with setting rename migrations.
 
-    This class stores a cache of renaming maps, derived from the ``Setting.oldNames`` values of the
-    passed ``settings``. Expired renames are retained, so that meaningful warning messages can be
-    generated if one attempts to use one of them. The renaming logic follows the rules described in
-    :py:meth:`renameSetting`.
+    This class stores a cache of renaming maps, derived from the ``Setting.oldNames`` values of the passed ``settings``.
+    Expired renames are retained, so that meaningful warning messages can be generated if one attempts to use one of
+    them. The renaming logic follows the rules described in :py:meth:`renameSetting`.
     """
 
     def __init__(self, settings: Dict[str, Setting]):
@@ -124,9 +118,8 @@ class SettingsReader:
         :id: I_ARMI_SETTINGS_IO_TXT
         :implements: R_ARMI_SETTINGS_IO_TXT
 
-        ARMI uses the YAML standard for settings files. ARMI uses industry-standard ``ruamel.yaml``
-        Python library to read these files. ARMI does not bend or change the YAML file format
-        standard in any way.
+        ARMI uses the YAML standard for settings files. ARMI uses industry-standard ``ruamel.yaml`` Python library to
+        read these files. ARMI does not bend or change the YAML file format standard in any way.
 
     Parameters
     ----------
@@ -141,8 +134,8 @@ class SettingsReader:
         self.settingsAlreadyRead = set()
         self._renamer = SettingRenamer(dict(self.cs.items()))
 
-        # The input version will be overwritten if explicitly stated in input file. Otherwise, it's
-        # assumed to precede the version inclusion change and should be treated as alright.
+        # The input version will be overwritten if explicitly stated in input file. Otherwise, it's assumed to precede
+        # the version inclusion change and should be treated as alright.
         self.inputVersion = version
         self.liveVersion = version
 
@@ -385,8 +378,8 @@ class RunLogPromptCancel(Exception):
 
 class RunLogPromptUnresolvable(Exception):
     """
-    An error that occurs when the current mode enum in armi.__init__ suggests the user cannot be
-    communicated with from the current process.
+    An error that occurs when the current mode enum in armi.__init__ suggests the user cannot be communicated with from
+    the current process.
     """
 
     pass

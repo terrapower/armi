@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This package contains the settings that control the base/framework-level ARMI functionality."""
+"""Settings that control the base/framework-level ARMI functionality."""
 
 from typing import List
 
@@ -22,10 +22,7 @@ from armi.settings.fwSettings import databaseSettings, globalSettings, reportSet
 
 def getFrameworkSettings() -> List[setting.Setting]:
     settings = []
-    for mod in (
-        globalSettings,
-        databaseSettings,
-        reportSettings,
-    ):
+    for mod in (globalSettings, databaseSettings, reportSettings):
         settings.extend(mod.defineSettings())
+
     return settings

@@ -616,7 +616,7 @@ class Stream:
         self._stream.close()
 
     def readWrite(self):
-        """This method should be implemented on any sub-classes to specify the order of records."""
+        """Needs to be implemented on any sub-classes to specify the order of records."""
         raise NotImplementedError()
 
     def createRecord(self, hasRecordBoundaries=True):

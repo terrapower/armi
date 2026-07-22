@@ -13,10 +13,9 @@
 # limitations under the License.
 
 """
-This interface serves the reporting needs of ARMI.
+Interfac for reporting needs of ARMI.
 
-If there is any information that a user desires to show in PDF form to
-others this is the place to do it.
+If there is any information that a user desires to show in PDF form to others this is the place to do it.
 """
 
 import re

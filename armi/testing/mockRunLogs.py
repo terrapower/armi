@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module contains subclasses of the armi.runLog._RunLog class that can be used to determine
-whether or not one of the specific methods were called. These should only be used in testing.
+Subclasses of the armi.runLog._RunLog class that can be used to determine whether or not one of the specific methods
+were called. These should only be used in testing.
 """
 
 import io
@@ -26,8 +26,7 @@ from armi import runLog
 class BufferLog(runLog._RunLog):
     """Log which captures the output in attributes instead of emitting them.
 
-    Used mostly in testing to ensure certain things get output, or to prevent any output from
-    showing.
+    Used mostly in testing to ensure certain things get output, or to prevent any output from showing.
     """
 
     def __init__(self, *args, **kwargs):
@@ -51,8 +50,8 @@ class BufferLog(runLog._RunLog):
         """
         Add formatting to a message and handle its singleness, if applicable.
 
-        This is a wrapper around logger.log() that does most of the work and is
-        used by all message passers (e.g. info, warning, etc.).
+        This is a wrapper around logger.log() that does most of the work and is used by all message passers (e.g. info,
+        warning, etc.).
         """
         # the message label is only used to determine unique for single-print warnings
         if label is None:
@@ -89,7 +88,7 @@ class BufferLog(runLog._RunLog):
 
 
 class LogCounter(BufferLog):
-    """This mock log is used to count the number of times a method was called.
+    """A mock log is used to count the number of times a method was called.
 
     It can be used in testing to make sure a warning was issued, without checking the content of the message.
     """

@@ -13,15 +13,14 @@
 # limitations under the License.
 
 """
-This module contains the definition of :py:class:`~Transmutation` and :py:class:`~Decay` classes.
+The definition of :py:class:`~Transmutation` and :py:class:`~Decay` classes.
 
 .. inheritance-diagram::
     Transmutation DecayMode
 
-The mappings between active nuclides during transmutation and decay are described in a
-``burn-chain.yaml`` file pointed to by the ``burnChainFileName``
-setting. This file contains one entry per nuclide that can transmute or decay that
-look similar to the example below::
+The mappings between active nuclides during transmutation and decay are described in a ``burn-chain.yaml`` file pointed
+to by the ``burnChainFileName`` setting. This file contains one entry per nuclide that can transmute or decay that look
+similar to the example below::
 
     U238:
     - nuSF: 2.0000
@@ -48,25 +47,24 @@ look similar to the example below::
         - LFP38
         type: sf
 
-This example defines 3 transmutations (an ``(n,2n)`` reaction, an ``(n,fission)`` reaction, an
-``(n,gamma``)`` reaction), and a spontaneous fission decay reaction with a very low branching
-ratio. Valid reaction ``type`` values are listed in :py:class:`~armi.nucDirectory.transmutations.Transmutation`
-and :py:class:`~armi.nucDirectory.transmutations.DecayMode`.
+This example defines 3 transmutations (an ``(n,2n)`` reaction, an ``(n,fission)`` reaction, an ``(n,gamma``)``
+reaction), and a spontaneous fission decay reaction with a very low branching ratio. Valid reaction ``type`` values are
+listed in :py:class:`~armi.nucDirectory.transmutations.Transmutation` and
+:py:class:`~armi.nucDirectory.transmutations.DecayMode`.
 
-The ``branch`` entry determines the fraction of the products of a given reaction that will end up
-in a particular product. The branches must never sum up to anything other than 1.0.
+The ``branch`` entry determines the fraction of the products of a given reaction that will end up in a particular
+product. The branches must never sum up to anything other than 1.0.
 
-The ``products`` entry is a list, but only one entry will be the actual product. The list defines
-a preference order. For example, if ``NP239`` is being tracked as an active nuclide in the problem
-it will be the product of the ``nGamma`` reaction above. Otherwise, ``U238`` will transmute directly
-to the alternate product, ``PU239``.
+The ``products`` entry is a list, but only one entry will be the actual product. The list defines a preference order.
+For example, if ``NP239`` is being tracked as an active nuclide in the problem it will be the product of the ``nGamma``
+reaction above. Otherwise, ``U238`` will transmute directly to the alternate product, ``PU239``.
 
-.. warning:: If you track very short-lived decays explicitly then the burn matrix becomes very
-             ill-conditioned and numerical solver issues can result. Specialized matrix
-             exponential solvers (e.g. CRAM [1]) are required to get adequate solutions in these cases [2].
+.. warning:: If you track very short-lived decays explicitly then the burn matrix becomes very ill-conditioned and
+             numerical solver issues can result. Specialized matrix exponential solvers (e.g. CRAM [1]) are required to
+             get adequate solutions in these cases [2].
 
-The example above also defines a ``nuSF`` item, which is how many neutrons are emitted per spontaneous
-fission. This is used for intrinsic source term calculations.
+The example above also defines a ``nuSF`` item, which is how many neutrons are emitted per spontaneous fission. This is
+used for intrinsic source term calculations.
 
 [1] Pusa, Maria, and Jaakko Leppanen. "Computing the matrix exponential in burnup calculations."
     Nuclear science and engineering 164.2 (2010): 140-150.

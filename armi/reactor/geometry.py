@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains constants and enumerations that are useful for describing system
-geometry.
-"""
+"""Constants and enumerations that are useful for describing system geometry."""
 
 import enum
 from typing import Optional, Union
@@ -87,9 +84,8 @@ class GeomType(enum.Enum):
         elif canonical == RZ:
             return cls.RZ
 
-        # use the original geomStr with preserved capitalization for better
-        # error-finding.
-        errorMsg = "Unrecognized geometry type {}. Valid geometry options are: ".format(geomStr)
+        # use the original geomStr with preserved capitalization for better error-finding.
+        errorMsg = f"Unrecognized geometry type {geomStr}. Valid geometry options are: "
         errorMsg += ", ".join([f"{geom}" for geom in geomTypes])
         raise ValueError(errorMsg)
 
@@ -134,7 +130,7 @@ class DomainType(enum.Enum):
         elif isinstance(source, str):
             return cls.fromStr(source)
         else:
-            raise TypeError("Expected str or DomainType; got {}".format(type(source)))
+            raise TypeError(f"Expected str or DomainType; got {type(source)}")
 
     @classmethod
     def fromStr(cls, shapeStr: str) -> "DomainType":
@@ -153,7 +149,7 @@ class DomainType(enum.Enum):
         elif canonical == "":
             return cls.NULL
 
-        errorMsg = "{} is not a valid domain option. Valid domain options are:".format(str(canonical))
+        errorMsg = f"{str(canonical)} is not a valid domain option. Valid domain options are:"
         errorMsg += ", ".join([f"{sym}" for sym in domainTypes])
         raise ValueError(errorMsg)
 
@@ -202,7 +198,7 @@ class DomainType(enum.Enum):
         elif self == self.SIXTEENTH_CORE:
             return 16.0
         else:
-            raise ValueError("Could not calculate symmetry factor for domain size {}. update logic.".format(self.label))
+            raise ValueError(f"Could not calculate symmetry factor for domain size {self.label}. update logic.")
 
 
 class BoundaryType(enum.Enum):
@@ -219,7 +215,7 @@ class BoundaryType(enum.Enum):
         elif isinstance(source, str):
             return cls.fromStr(source)
         else:
-            raise TypeError("Expected str or BoundaryType; got {}".format(type(source)))
+            raise TypeError(f"Expected str or BoundaryType; got {type(source)}")
 
     @classmethod
     def fromStr(cls, symmetryStr: str) -> "BoundaryType":
@@ -232,7 +228,7 @@ class BoundaryType(enum.Enum):
         elif canonical == REFLECTIVE:
             return cls.REFLECTIVE
 
-        errorMsg = "{} is not a valid boundary option. Valid boundary options are:".format(str(canonical))
+        errorMsg = f"{str(canonical)} is not a valid boundary option. Valid boundary options are:"
         errorMsg += ", ".join([f"{sym}" for sym in boundaryTypes])
         raise ValueError(errorMsg)
 
@@ -263,10 +259,9 @@ class SymmetryType:
     """
     A wrapper for DomainType and BoundaryType enumerations.
 
-    The goal of this class is to provide simple functions for storing these options
-    in enumerations and using them to check symmetry conditions, while also providing
-    a standard string representation of the options that facilitates interfacing with
-    yaml and/or the database nicely.
+    The goal of this class is to provide simple functions for storing these options in enumerations and using them to
+    check symmetry conditions, while also providing a standard string representation of the options that facilitates
+    interfacing with yaml and/or the database nicely.
     """
 
     VALID_SYMMETRY = {
@@ -300,7 +295,7 @@ class SymmetryType:
         self.isThroughCenterAssembly = throughCenterAssembly
 
         if not self.checkValidSymmetry():
-            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are: ".format(str(self))
+            errorMsg = f"{str(self)} is not a valid symmetry option. Valid symmetry options are: "
             errorMsg += ", ".join([f"{sym}" for sym in self.createValidSymmetryStrings()])
             raise ValueError(errorMsg)
 
@@ -345,7 +340,7 @@ class SymmetryType:
         elif isinstance(source, str):
             return cls.fromStr(source)
         else:
-            raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
+            raise TypeError(f"Expected str or SymmetryType; got {type(source)}")
 
     def __str__(self):
         """Combined string of domain and boundary symmetry type."""
@@ -395,16 +390,14 @@ def checkValidGeomSymmetryCombo(
     symmetryInput: Union[str, "SymmetryType"],
 ) -> bool:
     """
-    Check if the given combination of GeomType and SymmetryType is valid.
-    Return a boolean indicating the outcome of the check.
+    Check if the given combination of GeomType and SymmetryType is valid. Return a boolean indicating the outcome of the
+    check.
     """
     symmetry = SymmetryType.fromAny(symmetryInput)
     if (symmetry.domain, symmetry.boundary) in VALID_GEOM_SYMMETRY[GeomType.fromAny(geomType)]:
         return True
     else:
-        raise ValueError(
-            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(str(geomType), str(symmetry))
-        )
+        raise ValueError(f"GeomType: {str(geomType)} and SymmetryType: {str(symmetry)} is not a valid combination!")
 
 
 SYSTEMS = "systems"

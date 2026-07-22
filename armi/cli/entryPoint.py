@@ -24,10 +24,7 @@ from armi import context, runLog, settings
 
 
 class _EntryPointEnforcer(type):
-    """
-    Simple metaclass used for the EntryPoint abstract base class to enforce class
-    attributes.
-    """
+    """Simple metaclass used for the EntryPoint abstract base class to enforce class attributes."""
 
     def __new__(mcs, name, bases, attrs):
         if "name" not in attrs:
@@ -296,9 +293,7 @@ def storeBool(boolDefault, ep):
 
 def setSetting(ep):
     class _SetSettingAction(argparse.Action):
-        """This class loads the command line supplied setting values into the
-        :py:data:`armi.settings.cs`.
-        """
+        """Loads the command line supplied setting values into the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, values, option_string=None):
             # correctly converts type
@@ -314,9 +309,7 @@ def setSetting(ep):
 # A: Because caseTitle is no longer an actual cs setting. It's a instance attr.
 def setCaseTitle(cs):
     class _SetCaseTitleAction(argparse.Action):
-        """This class sets the case title to the supplied value of the
-        :py:data:`armi.settings.cs`.
-        """
+        """Sets the case title to the supplied value of the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, value, option_string=None):
             cs.caseTitle = value
@@ -327,13 +320,10 @@ def setCaseTitle(cs):
 # Careful, this is used by physicalProgramming
 def loadSettings(cs):
     class LoadSettingsAction(argparse.Action):
-        """This class loads the command line supplied settings file into the
-        :py:data:`armi.settings.cs`.
-        """
+        """Loads the command line supplied settings file into the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, values, option_string=None):
-            # since this is a positional argument, it can be called with values is
-            # None (i.e. default)
+            # since this is a positional argument, it can be called with values is None (i.e. default)
             if values is not None:
                 cs.loadFromInputFile(values)
 

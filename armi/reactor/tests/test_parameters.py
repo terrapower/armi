@@ -72,10 +72,9 @@ class ParameterTests(unittest.TestCase):
 
     def test_writeSomeParamsToDB(self):
         """
-        This tests the ability to specify which parameters should be
-        written to the database. It assumes that the list returned by
-        ParameterDefinitionCollection.toWriteToDB() is used to filter for which
-        parameters to include in the database.
+        Test the ability to specify which parameters should be written to the database. It assumes that the list
+        returned by ParameterDefinitionCollection.toWriteToDB() is used to filter for which parameters to include in the
+        database.
 
         .. test:: Restrict parameters from DB write.
             :id: T_ARMI_PARAM_DB
@@ -102,9 +101,8 @@ class ParameterTests(unittest.TestCase):
 
     def test_serializer_pack_unpack(self):
         """
-        This tests the ability to add a serializer to a parameter instantiation line.
-        It assumes that if this parameter is not None, that the pack and unpack methods
-        will be called during storage to and reading from the database. See
+        Test the ability to add a serializer to a parameter instantiation line. It assumes that if this parameter is not
+        None, that the pack and unpack methods will be called during storage to and reading from the database. See
         database._writeParams for an example use of this functionality.
 
         .. test:: Custom parameter serializer

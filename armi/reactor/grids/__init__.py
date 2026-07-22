@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 r"""
-This contains structured meshes in multiple geometries and spatial locators (i.e. locations).
+Structured meshes in multiple geometries and spatial locators (i.e. locations).
 
 :py:class:`Grids <Grid>` are objects that map indices (i, j, k) to spatial locations
 (x,y,z) or (t,r,z).  They are useful for arranging things in reactors, such as:

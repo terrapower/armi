@@ -40,7 +40,7 @@ from armi.utils.dynamicImporter import getEntireFamilyTree
 
 
 def buildTestDB(fileName, numNodes=1, numCycles=1):
-    """This function builds a (super) simple test DB.
+    """Build a (super) simple test DB.
 
     Notes
     -----

@@ -896,7 +896,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     """Verify thermal expansion for process loading of core."""
 
     def setUp(self):
-        """This test uses a different armiRun.yaml than the default."""
+        """Use a different armiRun.yaml than the default."""
         o, r = loadTestReactor(
             os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
@@ -924,9 +924,8 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
 
         Notes
         -----
-        For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
-        construction, specifically in
-        :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+        For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core construction,
+        specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
 
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
@@ -1120,9 +1119,8 @@ class FakeMatException(FakeMat):
 
     Notes
     -----
-    - the only difference between this and `class FakeMat(HT9)` above is that the thermal expansion
-      factor is higher to ensure that a negative block height is caught in
-      TestExceptions:test_assemblyAxialExpansionException.
+    - the only difference between this and `class FakeMat(HT9)` above is that the thermal expansion factor is higher to
+      ensure that a negative block height is caught in TestExceptions:test_assemblyAxialExpansionException.
     """
 
     def __init__(self):

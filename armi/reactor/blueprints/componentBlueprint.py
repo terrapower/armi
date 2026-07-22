@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
+Define the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
 
 Special logic is required for handling component links.
 """
@@ -112,8 +112,8 @@ class ComponentDimension(yamlize.Object):
 
 class ComponentBlueprint(yamlize.Object):
     """
-    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization
-    to and from YAML.
+    Define the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization to and from
+    YAML.
 
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
@@ -303,7 +303,7 @@ class ComponentBlueprint(yamlize.Object):
             )
 
     def _conformKwargs(self, blueprint, matMods):
-        """This method gets the relevant kwargs to construct the component."""
+        """Get the relevant kwargs to construct the component."""
         kwargs = {"mergeWith": self.mergeWith or "", "isotopics": self.isotopics or ""}
 
         for attr in self.attributes:  # yamlize magic

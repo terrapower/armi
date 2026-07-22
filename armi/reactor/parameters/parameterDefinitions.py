@@ -13,13 +13,13 @@
 # limitations under the License.
 
 r"""
-This module contains the code necessary to represent parameter definitions.
+The code necessary to represent parameter definitions.
 
-``ParameterDefinition``\ s are the metadata that describe specific parameters, and aid in enforcing
-certain rules upon the parameters themselves and the parameter collections that contain them.
+``ParameterDefinition``\ s are the metadata that describe specific parameters, and aid in enforcing certain rules upon
+the parameters themselves and the parameter collections that contain them.
 
-This module also describes the ``ParameterDefinitionCollection`` class, which serves as a
-specialized container to manage related parameter definitions.
+This module also describes the ``ParameterDefinitionCollection`` class, which serves as a specialized container to
+manage related parameter definitions.
 
 See Also
 --------
@@ -346,17 +346,15 @@ class Parameter:
         self._backup = state[0]  # a tuple of 1 element.
 
     def __set__(self, obj, val):
-        """This is a property setter, see Python documentation for "descriptor"."""
         self._setter(obj, val)
 
     def __get__(self, obj, cls=None):
-        """This is a property getter, see Python documentation for "descriptor".
+        """A property getter, see Python documentation for "descriptor".
 
         Notes
         -----
-        We do not check to see if ``cls != None``. This is an optimization choice, that someone may
-        deem unnecessary. As a result, unlike Python's ``property`` class, a subclass cannot
-        override the getter method.
+        We do not check to see if ``cls != None``. This is an optimization choice, that someone may deem unnecessary. As
+        a result, unlike Python's ``property`` class, a subclass cannot override the getter method.
         """
         return self._getter(obj)
 
