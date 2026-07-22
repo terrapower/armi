@@ -79,6 +79,9 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
         A popular safety option is to first clear out the YAML materials loaded into memory before loading new ones.
         This is particularly popular during unit testing.
     """
+    # Needs to be a local import to prevent circular imports
+    from armi import getPluginManager
+
     global _loadedYamlMats
 
     if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
@@ -97,7 +100,16 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     _loadedYamlMats[dirPath] = {}
     paths = getYamlPaths(dirPath)
     for yamlPath in paths:
+        # This makes us load a given YAML twice per material if they have a custom class
+        # but I can't think of a better way to get the type from the material file.
         mat = Material(yamlPath=yamlPath)
+        pm = getPluginManager()
+        if pm:
+            baseClassList = getPluginManager().hook.setMaterialBaseClass(materialType=mat.materialType)
+            if baseClassList:
+                # only one plugin can define this hook
+                baseClass = baseClassList[0]
+                mat = baseClass(yamlPath=yamlPath)
         # Data source is used for some downstream table printouts, so we simplify a venv printout for it to look nice.
         # Not that you can't touch this, but it is this way for a reason.
         mat.DATA_SOURCE = "venv: " + dirPath.split("site-packages")[1][1:] if "site-packages" in dirPath else dirPath
@@ -263,6 +275,9 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     >>> createMaterialByName("UO2", ["something.else.materials", "armi.materials"])
     <Material UO2>
     """
+    # Needs to be a local import to prevent circular imports
+    from armi import getPluginManager
+
     global _loadedYamlMats
     global _MATERIAL_NAMESPACE_ORDER
 
@@ -292,8 +307,24 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
 
             # grab the global material, and copy it over to a new material to return
             mat0 = _loadedYamlMats[yDir][name]
-            newMat = Material()
+            pm = getPluginManager()
+            baseClass = Material
+            if pm:
+                # Check to see if a plugin has defined a new material base class
+                baseClassList = getPluginManager().hook.setMaterialBaseClass(materialType=mat0.materialType)
+                if baseClassList:
+                    # if there is one defined, then update to use that class instead of Material.
+                    baseClass = baseClassList[0]
+
+            # Don't update mass fractions because YAML defined materials won't have their composition
+            # updated until after the dict update.
+            newMat = baseClass(updateMassFracs=False)
             newMat.__dict__.update(deepcopy(mat0).__dict__)
+            # Now set default mass fracs now that the composition has been populated
+            # Although the mass fracs were copied by the dictionary copy, their calculation
+            # may have changed since namespace order setting based on modifications to global
+            # composition variables by other plugins.
+            newMat.setDefaultMassFracs()
             return newMat
         else:
             # check and see if this is an importable material

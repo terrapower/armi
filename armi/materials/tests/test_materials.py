@@ -24,8 +24,11 @@ from copy import deepcopy
 from numpy import testing
 
 from armi import context, materials, settings
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, importYamlMaterialDir, setMaterialNamespaceOrder
-from armi.reactor import blueprints
+from armi.materials import (
+    _MATERIAL_NAMESPACE_ORDER,
+    importYamlMaterialDir,
+    setMaterialNamespaceOrder,
+)
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -1439,6 +1442,9 @@ assemblies:
 """
 
     def loadAssembly(self, materialModifications):
+        # Prevent circular import. Not all uses of AbstractMaterialTest will have a configured app.
+        from armi.reactor import blueprints
+
         yamlString = self.baseInput + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
         design._prepConstruction(settings.Settings())

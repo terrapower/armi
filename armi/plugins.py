@@ -208,6 +208,18 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
+    def setMaterialBaseClass(materialType) -> type:
+        """
+        Allows a plugin to define a custom base class for materials that are loaded via directory
+        or via virtual environment path. The material type from the YAML file is provided to allow different
+        classes by type. For example, a fluid material can have a different base class.
+        Only one plugin can define this hook. If it is not defined,
+        then the ARMI Material class will be used as the base class. Any class that is defined by
+        a plugin is expected to inherit from the ARMI Material class.
+        """
+
+    @staticmethod
+    @HOOKSPEC
     def afterConstructionOfAssemblies(assemblies, cs) -> None:
         """
         Function to call after a set of assemblies are constructed.

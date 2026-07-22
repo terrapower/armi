@@ -18,6 +18,8 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 
+from copy import deepcopy
+
 import numpy as np
 
 from armi import runLog
@@ -90,7 +92,7 @@ class Material(MatPropsMaterial):
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
-    def __init__(self, yamlPath=None):
+    def __init__(self, yamlPath=None, updateMassFracs=True):
         global _YAML_MATERIALS
         if yamlPath:
             self.YAML_PATH = yamlPath
@@ -117,8 +119,22 @@ class Material(MatPropsMaterial):
             # This material does not have a YAML file to pull the name from.
             self.name = self.__class__.__name__
 
-        # call subclass implementations
-        self.setDefaultMassFracs()
+        if updateMassFracs:
+            # call subclass implementations
+            self.setDefaultMassFracs()
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        result.__dict__.update(self.__dict__)
+
+        for key, value in self.__dict__.items():
+            if not isinstance(value, (str, int, bool, float, tuple)) and not callable(value):
+                setattr(result, key, deepcopy(value, memo))
+
+        return result
 
     def __repr__(self):
         return f"<Material: {self.name}>"
@@ -170,22 +186,8 @@ class Material(MatPropsMaterial):
         self.cached[name] = val
 
     def duplicate(self):
-        """Copy without needing a deepcopy."""
-        m = self.__class__()
-
-        m.massFrac = {}
-        for key, val in self.massFrac.items():
-            m.massFrac[key] = val
-
-        m.parent = self.parent
-        m.refDens = self.refDens
-        m.theoreticalDensityFrac = self.theoreticalDensityFrac
-
-        # handle some special cases for subclasses, like fuels
-        if hasattr(self, "class1_wt_frac"):
-            m.class1_wt_frac = self.class1_wt_frac
-
-        return m
+        """See deepcopy, retained for API compatibility."""
+        return deepcopy(self)
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -280,6 +282,9 @@ class Material(MatPropsMaterial):
         This method pulls the material composition from the material YAML definition file. Alternatively, this method
         can be over-riden by in Python to declare the default mass fractions using some custom logic.
         """
+        # clear mass fracs previously set since we are resetting to the default.
+        self.massFrac = {}
+
         # If there is a YAML file, try to pull the material composition from there.
         massFracs = {}
         balanceNuc = None
