@@ -30,7 +30,7 @@ from armi.reactor.components import Circle, Hexagon
 
 def _createHexBlockTemplate(blockType: str):
     """
-    This builds a simple :class:`armi.reactor.blocks.HexBlock` object.
+    This builds a simple :py:class:`armi.reactor.blocks.HexBlock` object.
 
     The HexBlock object has the following dimensions:
         - 200 pins with an OD of 1.0
@@ -161,7 +161,7 @@ def buildHexAssemblySingleUZrUTh():
 
 
 def buildHexAssemblySingleUZr():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZrUTh` template block (see
+    """Create a :py:class:`armi.reactor.assemblies.HexAssembly` object with a single `hexUZrUTh` template block (see
     docstring for the :func:`_createHexBlockTemplate` function.
     """
     blockTemplate = _createHexBlockTemplate("hexUZr")
@@ -170,7 +170,7 @@ def buildHexAssemblySingleUZr():
 
 
 def buildHexAssemblyFiveUZrUTh():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with five `hexUZrUTh` template blocks (see
+    """Create a :py:class:`armi.reactor.assemblies.HexAssembly` object with five `hexUZrUTh` template blocks (see
     docstring for the :func:`_createHexBlockTemplate` function.
     """
     blockTemplate = _createHexBlockTemplate("hexUZrUTh")
@@ -179,7 +179,7 @@ def buildHexAssemblyFiveUZrUTh():
 
 
 def buildHexAssemblyFourUZrUTh():
-    """Create a :class:`armi.reactor.assemblies.HexAssembly` object with four `hexUZrUTh` template blocks (see
+    """Create a :py:class:`armi.reactor.assemblies.HexAssembly` object with four `hexUZrUTh` template blocks (see
     docstring for the :func:`_createHexBlockTemplate` function.
     """
     blockTemplate = _createHexBlockTemplate("hexUZrUTh")
