@@ -170,6 +170,7 @@ class TestSpatialLocator(unittest.TestCase):
         # pin indices should not combine with the parent indices.
         assert_allclose(compIndexLoc.getCompleteIndices(), (1, 5, 0))
 
+        # test MultiIndexLocation.getLocalCoordinates
         pinLocator = grids.MultiIndexLocation(blockGrid)
         pinLocator.append(compIndexLoc)
         single = compIndexLoc.getGlobalCoordinates()
