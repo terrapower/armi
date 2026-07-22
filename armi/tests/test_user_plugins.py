@@ -105,7 +105,7 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
 class UpInterface(interfaces.Interface):
     """
-    A mostly meaningless little test interface, just to prove that we can affect the reactor state from an interface
+    Simple test interface to prove that we can affect the reactor state from an interface
     inside a UserPlugin.
     """
 

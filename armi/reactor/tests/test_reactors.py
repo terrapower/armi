@@ -708,7 +708,7 @@ class HexReactorTests(ReactorTests):
 
 class HexReactorReadOnlyTests(unittest.TestCase):
     """
-    Testing baseclass meant to pair with the ``HexReactorTests`` unit test class.
+    Testing base class meant to pair with the ``HexReactorTests`` unit test class.
 
     The tests in this class only READ, and not WRITE to the Reactor object, so we only have to create one test reactor.
     """

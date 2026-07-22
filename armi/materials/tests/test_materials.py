@@ -663,7 +663,7 @@ class VoidTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
-        """Void has a no pseudo-density."""
+        """Void has no pseudo-density."""
         self.mat.setDefaultMassFracs()
         for t in range(0, 1000, 100):
             cur = self.mat.pseudoDensity(Tc=t)

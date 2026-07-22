@@ -323,7 +323,6 @@ def loadSettings(cs):
         """Loads the command line supplied settings file into the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, values, option_string=None):
-            # since this is a positional argument, it can be called with values is None (i.e. default)
             if values is not None:
                 cs.loadFromInputFile(values)
 

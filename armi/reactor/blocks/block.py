@@ -1301,8 +1301,8 @@ class Block(composites.Composite):
 
     def getBlocks(self):
         """
-        Return all the block(s) included in this block its implemented so that methods could iterate over reactors,
-        assemblies or single blocks without checking to see what the type of the reactor-family object is.
+        Return all the block(s) included in this block it has implemented so that methods could iterate over reactors,
+        assemblies, or single blocks without checking to see what the type of the reactor-family object is.
         """
         return [self]
 

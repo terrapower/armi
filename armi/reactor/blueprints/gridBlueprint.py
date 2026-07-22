@@ -292,7 +292,7 @@ class GridBlueprint(yamlize.Object):
     @property
     def readFromLatticeMap(self):
         """
-        A property because a Yamlize object, ``__init__`` is not always called and we have to lazily evaluate its
+        Decorated as a property because a Yamlize object, ``__init__`` is not always called and we have to lazily evaluate its
         default value.
         """
         return getattr(self, "_readFromLatticeMap", False)

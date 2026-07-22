@@ -36,7 +36,7 @@ armi.operators :  Operations that ARMI will perform on a reactor model.
 armi : Fundamental entry point that calls this package.
 """
 
-# Importing each module causes the any EntryPoints defined in the module that are decorated with @armi.command to be
+# Importing each module causes any EntryPoints defined in the module that are decorated with @armi.command to be
 # added to the collection of registered classes.
 
 import argparse

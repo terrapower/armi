@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-The magic that makes the Parameter system and ARMI composite model play nicely together.
+Machinery that makes the Parameter system and ARMI composite model play nicely together.
 
 The contained metaclass is useful for maintaining a hierarchy of ``ParameterCollection`` classes, which mimic the
 hierarchy of ``ArmiObject`` s to which they apply. Some ``ArmiObject`` subclasses define their own parameters, while

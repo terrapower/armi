@@ -460,7 +460,7 @@ def runActionsInSerial(o, r, cs, actions):
 
 class DistributionAction(MpiAction):
     """
-    Ccatters the workload of multiple actions to available resources.
+    Scatters the workload of multiple actions to available resources.
 
     Notes
     -----

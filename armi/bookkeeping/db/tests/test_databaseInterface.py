@@ -78,7 +78,7 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     """Test the DatabaseInterface class at the BOL."""
 
     def test_interactBOL(self):
-        """Because of temporary directory issues, this test is in its own class."""
+        """Because of versions of this test ran into temporary directory issues, this test is in its own class."""
         with directoryChangers.TemporaryDirectoryChanger():
             self.o, self.r = loadTestReactor(
                 TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
