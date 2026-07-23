@@ -30,7 +30,7 @@ from armi.reactor.converters.axialExpansionChanger.redistributeMass import Redis
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
 from armi.settings.caseSettings import Settings
-from armi.testing.singleAssemblies import BLOCK_DEFINITIONS_2PIN, GRID_DEFINITION, buildMixedPinAssembly
+from armi.testing import BLOCK_DEFINITIONS_2PIN, GRID_DEFINITION, buildMixedPinAssembly
 
 if TYPE_CHECKING:
     from armi.reactor.assemblies import HexAssembly
