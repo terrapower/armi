@@ -27,7 +27,8 @@ from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
-from armi.testing import TESTING_ROOT, buildMixedThreePinAssembly, loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.testing.singleAssemblies import buildMixedThreePinAssembly
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

@@ -30,16 +30,10 @@ from armi.materials import uZr
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.testing.singleAssemblies import (  # noqa: F401
-    BLOCK_DEFINITIONS_2PIN,
-    BLOCK_DEFINITIONS_3PIN,
-    GRID_DEFINITION,
-    REGULAR_ASSEMBLY_DEF,
     buildHexAssemblyFiveUZrUTh,
     buildHexAssemblyFourUZrUTh,
     buildHexAssemblySingleUZr,
     buildHexAssemblySingleUZrUTh,
-    buildMixedPinAssembly,
-    buildMixedThreePinAssembly,
 )
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
