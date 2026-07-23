@@ -29,7 +29,7 @@ from armi import getPluginManagerOrFail, materials, operators, runLog, settings
 from armi.materials import uZr
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
-from armi.testing.testAssemblies import (  # noqa: F401
+from armi.testing.singleAssemblies import (  # noqa: F401
     buildHexAssemblyFiveUZrUTh,
     buildHexAssemblyFourUZrUTh,
     buildHexAssemblySingleUZr,
