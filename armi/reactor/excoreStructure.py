@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This module provides the simplest base-class tools for representing reactor objects that are
-outside the reactor core.
+"""Provide the simplest base-class tools for representing reactor objects that are outside the reactor core.
 
-The idea here is that all ex-core objects will be represented first as a spatial grid, and then
-arbitrary ArmiObjects can be added to that grid.
+The idea here is that all ex-core objects will be represented first as a spatial grid, and then arbitrary ArmiObjects
+can be added to that grid.
 """
 
 import copy
@@ -24,7 +23,7 @@ from armi.reactor.composites import Composite
 
 
 class ExcoreStructure(Composite):
-    """This is meant as the simplest baseclass needed to represent an ex-core reactor thing.
+    """The simplest baseclass needed to represent an ex-core reactor thing.
 
     An ex-core structure is expected to:
 
@@ -39,7 +38,7 @@ class ExcoreStructure(Composite):
         self.spatialGrid = None
 
     def __repr__(self):
-        return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
+        return f"<{self.__class__.__name__}: {self.name} id:{id(self)}>"
 
     @property
     def r(self):
@@ -146,4 +145,4 @@ class ExcoreCollection(dict):
         return newE
 
     def __repr__(self):
-        return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
+        return f"<{self.__class__.__name__}: {self.name} id:{id(self)}>"

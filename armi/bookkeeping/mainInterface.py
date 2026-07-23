@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module performs some file manipulations, cleanups, state loads, etc.
+Perform some file manipulations, cleanups, state loads, etc.
 
 It's a bit of a catch-all interface, and it's name is admittedly not very descriptive.
 """

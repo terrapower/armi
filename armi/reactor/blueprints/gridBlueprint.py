@@ -14,13 +14,11 @@
 """
 Input definitions for Grids.
 
-Grids are given names which can be referred to on other input structures (like core maps and pin
-maps).
+Grids are given names which can be referred to on other input structures (like core maps and pin maps).
 
 These are in turn interpreted into concrete things at lower levels. For example:
 
-* Core map lattices get turned into :py:mod:`armi.reactor.grids`, which get set to
-  ``core.spatialGrid``.
+* Core map lattices get turned into :py:mod:`armi.reactor.grids`, which get set to ``core.spatialGrid``.
 * Block pin map lattices get applied to the components to provide some subassembly spatial details.
 
 Lattice inputs here are floating in space. Specific dimensions and anchor points are handled by the
@@ -294,8 +292,8 @@ class GridBlueprint(yamlize.Object):
     @property
     def readFromLatticeMap(self):
         """
-        This is implemented as a property, since as a Yamlize object, ``__init__`` is not always
-        called and we have to lazily evaluate its default value.
+        Decorated as a property because a Yamlize object, ``__init__`` is not always called and we have to lazily
+        evaluate its default value.
         """
         return getattr(self, "_readFromLatticeMap", False)
 
@@ -322,8 +320,8 @@ class GridBlueprint(yamlize.Object):
         runLog.extra(f"Creating the spatial grid {self.name}", single=True)
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
-                # This check is regrettably late. It would be nice if we could validate that bounds
-                # are provided if R-Theta mesh is being used.
+                # This check is regrettably late. It would be nice if we could validate that bounds are provided if
+                # R-Theta mesh is being used.
                 raise InputError(
                     f"Grid bounds must be provided for `{self.name}` to specify a grid with r-theta components."
                 )

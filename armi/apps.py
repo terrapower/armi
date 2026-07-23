@@ -63,12 +63,11 @@ class App:
 
     def __init__(self):
         """
-        This mostly initializes the default plugin manager. Subclasses are free to adopt
-        this plugin manager and register more plugins of their own, or to throw it away
-        and start from scratch if they do not wish to use the default Framework plugins.
+        Initialize the default plugin manager. Subclasses are free to adopt this plugin manager and register more
+        plugins of their own, or to throw it away and start from scratch if they do not wish to use the default
+        Framework plugins.
 
-        For a description of the things that an ARMI plugin can do, see the
-        :py:mod:`armi.plugins` module.
+        For a description of the things that an ARMI plugin can do, see the :py:mod:`armi.plugins` module.
         """
         self._pluginFlagsRegistered: bool = False
         self._pm: Optional[pluginManager.ArmiPluginManager] = None

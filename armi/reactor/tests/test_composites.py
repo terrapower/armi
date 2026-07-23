@@ -780,8 +780,8 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getFuelMass(self):
         """
-        This test creates a dummy assembly and ensures that the assembly, block, and fuel component
-        masses are consistent. `getFuelMass` ensures that the fuel component is used to `getMass`.
+        Create a dummy assembly and ensures that the assembly, block, and fuel component masses are consistent.
+        `getFuelMass` ensures that the fuel component is used to `getMass`.
         """
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)

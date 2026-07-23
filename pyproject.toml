@@ -183,7 +183,6 @@ select = ["D", "E", "F", "I", "N801", "SIM", "TID"]
 # D103 - Missing docstring in public function
 # D106 - Missing docstring in public nested class
 # D401 - First line of docstring should be in imperative mood
-# D404 - First word of the docstring should not be "This"
 # SIM102 - Use a single if statement instead of nested if statements
 # SIM105 - Use contextlib.suppress({exception}) instead of try-except-pass
 # SIM108 - Use ternary operator {contents} instead of if-else-block
@@ -199,7 +198,7 @@ select = ["D", "E", "F", "I", "N801", "SIM", "TID"]
 # RUF100 - no unused noqa statements (not consistent enough yet)
 # SIM118 - this does not work where we overload the .keys() method
 #
-ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
+ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
 
 [tool.ruff.lint.per-file-ignores]
 # D1XX - enforces writing docstrings

@@ -666,14 +666,14 @@ class VoidTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
-        """This material has a no pseudo-density."""
+        """Void has no pseudo-density."""
         self.mat.setDefaultMassFracs()
         for t in range(0, 1000, 100):
             cur = self.mat.pseudoDensity(Tc=t)
             self.assertEqual(cur, 0.0)
 
     def test_density(self):
-        """This material has no density."""
+        """Void has no density."""
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
@@ -682,7 +682,7 @@ class VoidTests(AbstractMaterialTest, unittest.TestCase):
             self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
-        """This material does not expand linearly."""
+        """Void does not expand linearly."""
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
@@ -692,7 +692,7 @@ class MixtureTests(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials._Mixture
 
     def test_density(self):
-        """This material has no density function."""
+        """No density function."""
         self.assertEqual(self.mat.density(500), 0)
 
     def test_setDefaultMassFracs(self):

@@ -272,7 +272,7 @@ class TestPluginBasics(unittest.TestCase):
 
 
 class TestPlugin(unittest.TestCase):
-    """This contains some sanity tests that can be used by implementing plugins."""
+    """Some sanity tests that can be used by implementing plugins."""
 
     plugin: Optional[plugins.ArmiPlugin] = None
 

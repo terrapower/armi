@@ -13,9 +13,9 @@
 # limitations under the License.
 
 r"""
-This module contains cross section nuclides, which are a wrapper around the
-:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects contain cross section
-information from a specific calculation (e.g. neutron, or gamma cross sections).
+Contains cross section nuclides, which are a wrapper around the :py:class:`~armi.nucDirectory.nuclideBases.INuclide`
+objects. The cross section nuclide objects contain cross section information from a specific calculation (e.g. neutron,
+or gamma cross sections).
 
 :py:class:`XSNuclide` objects also contain meta data from the original file, so that another file can be reconstructed.
 
@@ -34,7 +34,7 @@ from armi.utils.plotting import plotScatterMatrix  # noqa: F401
 
 @warn_when_root
 def NuclideLabelDoesNotMatchNuclideLabel(nuclide, label, xsID):
-    return "The label {} (xsID:{}) for nuclide {}, does not match the nucDirectory label.".format(label, xsID, nuclide)
+    return f"The label {label} (xsID:{xsID}) for nuclide {nuclide}, does not match the nucDirectory label."
 
 
 class XSNuclide(nuclideBases.NuclideWrapper):
@@ -69,9 +69,8 @@ class XSNuclide(nuclideBases.NuclideWrapper):
 
         Notes
         -----
-        During instantiation, not everything is available, only they user-supplied nuclide label,
-        i.e. :py:class:`~armi.nucDirectory.nuclideBases.NuclideWrapper.containerKey`.
-        During the read operation,
+        During instantiation, not everything is available, only they user-supplied nuclide label, i.e.
+        :py:class:`~armi.nucDirectory.nuclideBases.NuclideWrapper.containerKey`. During the read operation,
         """
         if self._base is not None:
             return
@@ -94,9 +93,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             try:
                 return self.micros[interaction][group]
             except IndexError:
-                raise IndexError(
-                    "Group {0} not found in interaction {1} of nuclide {2}".format(group, interaction, self.name)
-                )
+                raise IndexError(f"Group {group} not found in interaction {interaction} of nuclide {self.name}")
         else:
             return 0
 
@@ -113,15 +110,14 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         """
         Build normalized columns of a scatter matrix.
 
-        the vectors represent all scattering out of each group.
-        The rows of the scatter matrix represent in-scatter and the columns
-        represent out-scatter. So this sums up the columns.
+        the vectors represent all scattering out of each group. The rows of the scatter matrix represent in-scatter and
+        the columns represent out-scatter. So this sums up the columns.
 
         Returns
         -------
         scatterWeights : dict
-            keys are fromG indices, values are sparse matrix columns (size: Gx1)
-            containing normalized columns of the scatter matrix.
+            keys are fromG indices, values are sparse matrix columns (size: Gx1) containing normalized columns of the
+            scatter matrix.
         """
         scatter = self.micros[scatterMatrixKey]
         scatterWeights = {}
@@ -204,8 +200,7 @@ def _mergeAttributes(this, other, attrName):
     attr2 = getattr(other, attrName)
     if attr1 is not None and attr2 is not None:
         raise AttributeError(
-            "Cannot merge {} and {}, the attribute `{}` has been assigned on bothinstances.".format(
-                this, other, attrName
-            )
+            f"Cannot merge {this} and {other}, the attribute `{attrName}` has been assigned on bothinstances."
         )
+
     return attr1 if attr1 is not None else attr2

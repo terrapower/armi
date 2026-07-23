@@ -31,7 +31,7 @@ from armi.nucDirectory import nucDir
 
 class CrossSectionTable(collections.OrderedDict):
     """
-    This is a set of one group cross sections for use with isotopicDepletion analysis.
+    A set of one group cross sections for use with isotopicDepletion analysis.
 
     It can also double as a reaction rate table.
 

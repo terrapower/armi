@@ -31,7 +31,7 @@ from armi.reactor.flags import Flags
 
 
 class TestPlugin1(plugins.ArmiPlugin):
-    """This should be fine on its own."""
+    """A working solo test."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -40,7 +40,7 @@ class TestPlugin1(plugins.ArmiPlugin):
 
 
 class TestPlugin2(plugins.ArmiPlugin):
-    """This should lead to an error if it coexists with Plugin1."""
+    """Coexists with Plugin1, and leads to an error."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -49,7 +49,7 @@ class TestPlugin2(plugins.ArmiPlugin):
 
 
 class TestPlugin3(plugins.ArmiPlugin):
-    """This should lead to errors, since it collides with the framework `type` param."""
+    """Leads to errors, since it collides with the framework `type` param."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -58,7 +58,7 @@ class TestPlugin3(plugins.ArmiPlugin):
 
 
 class TestPlugin4(plugins.ArmiPlugin):
-    """This should be fine on its own, and safe to merge with TestPlugin1."""
+    """Works on its own, and safe to merge with TestPlugin1."""
 
     @staticmethod
     @plugins.HOOKIMPL

@@ -20,10 +20,10 @@ from armi.operators import operatorMPI
 
 class OperatorSnapshots(operatorMPI.OperatorMPI):
     """
-    This operator just loops over the requested snapshots and computes at them.
+    Loops over the requested snapshots and computes at them.
 
-    These may add CR worth curves, rx coefficients, transient runs etc at these snapshots.
-    This operator can be run as a restart, adding new physics to a previous run.
+    These may add CR worth curves, rx coefficients, transient runs etc at these snapshots. This operator can be run as a
+    restart, adding new physics to a previous run.
     """
 
     def __init__(self, cs):
@@ -53,8 +53,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         """
         runLog.important("---- Beginning Snapshot (restart) ARMI Operator Loop ------")
 
-        # run things that happen before a calculation.
-        # setups, etc.
+        # run things that happen before a calculation. setups, etc.
         self.interactAllBOL()
 
         # figure out which snapshots to run in. Parse the CCCNNN settings

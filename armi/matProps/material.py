@@ -92,7 +92,7 @@ class MatPropsMaterial:
     @staticmethod
     def dataCheckMaterialFile(filePath, rootNode):
         """
-        This is a partial data check of the material data file.
+        A partial data check of the material data file.
 
         Checks the first level of data keywords and also check that the file format is a valid version.
 

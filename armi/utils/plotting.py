@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """
+Generic plottting tools, used throughout ARMI.
+
 This module makes heavy use of matplotlib. Beware that plots generated with matplotlib may not free their memory, even
 after the plot is closed, and excessive use of plotting functions may gobble up all of your machine's memory.
 

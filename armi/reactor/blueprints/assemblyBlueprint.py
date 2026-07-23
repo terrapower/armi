@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """
-This module defines the blueprints input object for assemblies.
+Define the blueprints input object for assemblies.
 
-In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible for
-constructing ``Assembly`` objects. An attempt has been made to decouple ``Assembly`` construction
-from the rest of ARMI as much as possible. For example, an assembly does not require a reactor to be
-constructed, or a geometry file (but uses contained Block geometry type as a surrogate).
+In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible for constructing ``Assembly``
+objects. An attempt has been made to decouple ``Assembly`` construction from the rest of ARMI as much as possible. For
+example, an assembly does not require a reactor to be constructed, or a geometry file (but uses contained Block geometry
+type as a surrogate).
 """
 
 import yamlize
@@ -41,10 +41,7 @@ def _configureAssemblyTypes():
 
 
 class Modifications(yamlize.Map):
-    """
-    The names of material modifications and lists of the modification values for each block in the
-    assembly.
-    """
+    """The names of material modifications and lists of the modification values for each block in the assembly."""
 
     key_type = yamlize.Typed(str)
     value_type = yamlize.Sequence
