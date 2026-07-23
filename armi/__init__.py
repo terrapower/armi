@@ -288,6 +288,11 @@ def configure(app: Optional[apps.App] = None, permissive=False):
         cli.splash()
 
     pm = app.pluginManager
+
+    hooks = pm.hook.setMaterialBaseClass.get_hookimpls()
+    if len(hooks) > 1:
+        raise RuntimeError(f"Multiple plugins cannot register the setMaterialBaseClass hook. Received: {hooks}")
+
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
     _app.registerPluginFlags()

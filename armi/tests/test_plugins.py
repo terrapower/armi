@@ -21,6 +21,7 @@ from typing import Optional
 import yamlize
 
 from armi import (
+    configure,
     context,
     getApp,
     getPluginManagerOrFail,
@@ -31,6 +32,7 @@ from armi import (
 )
 from armi.bookkeeping.db import loadOperator
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.materials.material import Material
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
@@ -317,3 +319,51 @@ class TestPlugin(unittest.TestCase):
             self.assertIsInstance(order, (int, float))
             self.assertTrue(issubclass(interface, interfaces.Interface))
             self.assertIsInstance(kwargs, dict)
+
+
+class PluginMaterialA(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def setMaterialBaseClass(materialType):
+        """Set material base class."""
+        return Material
+
+
+class PluginMaterialB(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def setMaterialBaseClass(materialType):
+        """Set material base class."""
+        return Material
+
+
+class TestMaterialBaseClassHook(unittest.TestCase):
+    def setUp(self):
+        """
+        Manipulate the standard App. We can't just configure our own, since the
+        pytest environment bleeds between tests.
+        """
+        import armi
+
+        self.app = getApp()
+        self._backupApp = deepcopy(self.app)
+        armi._app = None
+        self.cache = context.BLUEPRINTS_IMPORTED
+        context.BLUEPRINTS_IMPORTED = False
+
+    def tearDown(self):
+        """Restore the App to its original state."""
+        import armi
+
+        armi._app = self._backupApp
+        context.APP_NAME = "armi"
+        context.BLUEPRINTS_IMPORTED = self.cache
+
+    def test_materialBaseClassHook(self):
+        """Verify that only one plugin can be registered with this hook."""
+        pm = self.app.pluginManager
+        pm.register(PluginMaterialA)
+        pm.register(PluginMaterialB)
+
+        with self.assertRaises(RuntimeError):
+            configure(app=self.app, permissive=True)
