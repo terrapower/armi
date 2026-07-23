@@ -74,7 +74,7 @@ class BlockBlueprint(yamlize.KeyedList):
     gridName = yamlize.Attribute(key="grid name", type=str, default=None)
     flags = yamlize.Attribute(type=str, default=None)
     axialExpTargetComponent = yamlize.Attribute(key="axial expansion target component", type=str, default=None)
-    _geomOptions = _configureGeomOptions()
+    _geomOptions = None
 
     def _getBlockClass(self, outerComponent):
         """
@@ -85,6 +85,9 @@ class BlockBlueprint(yamlize.KeyedList):
         outerComponent : Component
             Largest component in block.
         """
+        if BlockBlueprint._geomOptions is None:
+            BlockBlueprint._configureGeomOptions()
+
         for compCls, blockCls in self._geomOptions.items():
             if isinstance(outerComponent, compCls):
                 return blockCls
