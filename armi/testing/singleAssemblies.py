@@ -26,7 +26,6 @@ import io
 
 from armi.reactor import assemblies, blocks, grids
 from armi.reactor.assemblies import copy
-from armi.reactor.blueprints import Blueprints
 from armi.reactor.components import Circle, Hexagon
 from armi.settings import Settings
 
@@ -574,6 +573,8 @@ def buildMixedPinAssembly(
     """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 2 pin types
     arranged as specified in the lattice map.
     """
+    from armi.reactor.blueprints import Blueprints
+
     completeBlueprints = blockDefs + assemDef + gridDef
     cs = Settings()
     with io.StringIO(completeBlueprints) as stream:
@@ -591,6 +592,8 @@ def buildMixedThreePinAssembly(
     """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 3 pin types
     arranged as specified in the lattice map.
     """
+    from armi.reactor.blueprints import Blueprints
+
     completeBlueprints = blockDefs + assemDef + gridDef
     cs = Settings()
     with io.StringIO(completeBlueprints) as stream:
