@@ -163,7 +163,12 @@ class TestBlueprints(unittest.TestCase):
 
 class TestRuamelYamlBug(unittest.TestCase):
     def test_ruamelYamlBug(self):
-        """TODO."""
+        """Testing that we are correctly fixing a bug in ruamel.yaml.
+
+
+        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
+        values incorrectly for the zero values to zero strings: '0.0'.
+        """
         with TemporaryDirectoryChanger() as tmpDir:
             # copy the test reactor over so we can modify it
             oldDir = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
