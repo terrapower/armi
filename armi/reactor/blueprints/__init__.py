@@ -533,9 +533,30 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     """
 
     @classmethod
+    def dump(cls, data, stream=None):
+        """TODO: ruamel.yaml 0.19.1 bug."""
+        super().dump(data, stream=stream)
+
+        if stream is None or isinstance(stream, io.TextIOWrapper):
+            return
+
+        stream.seek(0)
+        txt = stream.read()
+        txt = txt.replace("'0.0'", "0.0")
+        txt = txt.replace('"0.0"', "0.0")
+        stream.seek(0)
+        stream.truncate(0)
+
+        # Loop through the entire text file, to attempt to do the cleaning
+        stream.write(txt)
+
+    @classmethod
     def dumpTODO(cls, data, stream=None):
         """TODO: ruamel.yaml 0.19.1 bug."""
         super().dump(data, stream=stream)
+
+        if stream is None:  # or isinstance(stream, io.TextIOWrapper):
+            return
         stream.seek(0)
 
         # Loop through the entire text file, to attempt to do the cleaning
