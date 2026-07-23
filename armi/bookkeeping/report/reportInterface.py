@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Interface for ARMI reporting needs of ARMI, including PDF format.
-
-"""
+"""Interface for ARMI reporting needs of ARMI, including PDF format."""
 
 import re
 
