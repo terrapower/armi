@@ -17,9 +17,11 @@
 import io
 import os
 import pathlib
+import shutil
 import unittest
 
 import yamlize
+from ruamel.yaml import YAML
 
 from armi import settings
 from armi.nucDirectory.nuclideBases import NuclideBases
@@ -32,6 +34,7 @@ from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers, textProcessors
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestBlueprints(unittest.TestCase):
@@ -156,6 +159,44 @@ class TestBlueprints(unittest.TestCase):
         )
         self.assertIn("AM241", fuel.getNuclides())
         self.assertLess(fuel.getNumberDensity("AM241"), 1e-5)
+
+
+class TestRuamelYamlBug(unittest.TestCase):
+    def test_ruamelYamlBug(self):
+        """Testing that we are correctly fixing a bug in ruamel.yaml.
+
+
+        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
+        values incorrectly for the zero values to zero strings: '0.0'.
+        """
+        with TemporaryDirectoryChanger() as tmpDir:
+            # copy the test reactor over so we can modify it
+            oldDir = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+            newDir = os.path.join(tmpDir.destination, "sodiumHexReactor")
+            shutil.copytree(oldDir, newDir)
+
+            # modify the test reactor to have the zeros problem that ruamel.yaml is chocking on
+            bpFile = os.path.join(newDir, "refSmallReactorBase.yaml")
+            txt = open(bpFile, "r").read()
+
+            testIn = '      ZR_wt_frac: &igniter_fuel_zr_wt_frac ["", 0.06, 0.06, 0.06, ""]'
+            testOut = '      ZR_wt_frac: &igniter_fuel_zr_wt_frac ["", 0.0, 0.0, 0.0, ""]'
+            txt = txt.replace(testIn, testOut)
+
+            # load the Blueprints into a string buffer
+            bp = blueprints.Blueprints.load(txt)
+            buffer = io.StringIO()
+            bp.dump(bp, buffer)
+            buffer.seek(0)
+
+            # load that string buffer into a dictionary
+            rawy = YAML().load(buffer)
+            lst = rawy["assemblies"]["igniter fuel"]["material modifications"]["ZR_wt_frac"]
+
+            # ensure the zeros are floats, not strings
+            self.assertEqual(lst[1], 0.0)
+            self.assertEqual(lst[2], 0.0)
+            self.assertEqual(lst[3], 0.0)
 
 
 class TestBlueprintsSchema(unittest.TestCase):
