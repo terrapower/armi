@@ -29,14 +29,6 @@ from armi import getPluginManagerOrFail, materials, operators, runLog, settings
 from armi.materials import uZr
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
-from armi.testing.singleAssemblies import (  # noqa: F401
-    BLOCK_DEFINITIONS_2PIN,
-    BLOCK_DEFINITIONS_3PIN,
-    GRID_DEFINITION,
-    REGULAR_ASSEMBLY_DEF,
-    buildMixedPinAssembly,
-    buildMixedThreePinAssembly,
-)
 from armi.testing.testAssemblies import (  # noqa: F401
     buildHexAssemblyFiveUZrUTh,
     buildHexAssemblyFourUZrUTh,
