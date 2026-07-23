@@ -384,8 +384,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         for nucBase in nuclideBases.instances:
             isAlreadyIsotopic = not isinstance(nucBase, nuclideBases.NaturalNuclideBase)
             if isAlreadyIsotopic:
-                # `elemental` may be a NaturalNuclideBase or a NuclideBase
-                # skip all NuclideBases (isotopics)
+                # `elemental` may be a NaturalNuclideBase or a NuclideBase skip all NuclideBases (isotopics)
                 continue
 
             # we now know its an elemental
@@ -514,14 +513,59 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 inp = mig.apply()
         return inp
 
+    """
+    # TODO: JOHN
+    lst = [line]
+    while i < maxI:
+        # attempt to capture the entire list
+        i += 1
+        line = lines[i]
+        if line.lstrip().startswith("-")::
+            lst.append(line)
+        else:
+            break
+
+    # determine if is a list of interest (zero strings and nones)
+    if len(lst) > 1:
+        [l.strip() for l in lst]
+
+    return "\n".join(new_lines)
+    """
+
+    @classmethod
+    def dumpTODO(cls, data, stream=None):
+        """TODO: ruamel.yaml 0.19.1 bug."""
+        super().dump(data, stream=stream)
+        stream.seek(0)
+
+        # Loop through the entire text file, to attempt to do the cleaning
+        lines = stream.read().split("\n")
+        new_lines = []
+        i = 0
+        maxI = len(lines)
+        while i < maxI:
+            line = lines[i]
+            if line.lstrip().startswith("-"):
+                # this line IS part of a list
+                if line.strip() == "- '0.0'":
+                    # This is an offending line, fix it.
+                    line = line.replace("'0.0'", "0.0")
+
+            new_lines.append(line)
+            i += 1
+
+        # write back out to stream
+        stream.seek(0)
+        stream.truncate(0)
+        stream.write("\n".join(new_lines))
+
     @classmethod
     def load(cls, stream, roundTrip=False):
         """This method is a wrapper around the `yamlize.Object.load()` method."""
         # With the release of ruamel.yaml 0.19.1, we began getting the following error:
         # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
         # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
-        # to side step the issue entirely. This occurs because of the way `yamlize` works when it calls
-        # `get_single_node`.
+        # to side step the issue entirely. This occurs because of the way `yamlize` calls `get_single_node`.
         RoundTripLoader.max_depth = None
         return super().load(stream, Loader=RoundTripLoader)
 
