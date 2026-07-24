@@ -1075,7 +1075,7 @@ class HexReactorReadOnlyTests(unittest.TestCase):
 
 class HexReactorSoloTests(ReactorTests):
     """
-    Base class meant to pair with the ``HexReactorTests`` unit test class.
+    Testing base class meant to pair with the ``HexReactorTests`` unit test class.
 
     Each test here creates its own, slightly unique, test reactor.
     """
@@ -1096,7 +1096,7 @@ class HexReactorSoloTests(ReactorTests):
 
 class BigHexReactorTests(ReactorTests):
     """
-    Base class meant to pair with the ``HexReactorTests`` unit test class.
+    Testing base class meant to pair with the ``HexReactorTests`` unit test class.
 
     These tests all need a larger test reactor. Ideally, we will migrate these to smaller test reactors one day.
     """

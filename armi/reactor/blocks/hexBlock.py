@@ -76,7 +76,6 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
-    # TODO: Needs Unit Test
     def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
@@ -230,7 +229,6 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    # TODO: Needs unit test
     def rotate(self, rad: float):
         """
         Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise direction.
@@ -331,7 +329,6 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    # TODO: Needs unit test
     def verifyBlockDims(self):
         """Perform some checks on this type of block before it is assembled.
 
