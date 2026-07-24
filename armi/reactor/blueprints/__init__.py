@@ -278,15 +278,13 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     def _prepConstruction(self, cs):
         """
-        This method initializes a bunch of information within a Blueprints object such as assigning
-        assembly and block type numbers, resolving the nuclides in the problem, and pre-populating
-        assemblies.
+        Initialize a bunch of information within a Blueprints object such as assigning assembly and block type numbers,
+        resolving the nuclides in the problem, and pre-populating assemblies.
 
-        Ideally, it would not be necessary at all, but the ``cs`` currently contains a bunch of
-        information necessary to create the applicable model. If it were possible, it would be
-        terrific to override the Yamlizable.from_yaml method to run this code after the instance has
-        been created, but we need additional information in order to build the assemblies that is
-        not within the YAML file.
+        Ideally, it would not be necessary at all, but the ``cs`` currently contains a bunch of information necessary to
+        create the applicable model. If it were possible, it would be terrific to override the Yamlizable.from_yaml
+        method to run this code after the instance has been created, but we need additional information in order to
+        build the assemblies that is not within the YAML file.
 
         This method should not be called directly, but it is used in testing.
         """
@@ -516,7 +514,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     @classmethod
     def load(cls, stream, roundTrip=False):
-        """This method is a wrapper around the `yamlize.Object.load()` method."""
+        """A wrapper around the `yamlize.Object.load()` method."""
         # With the release of ruamel.yaml 0.19.1, we began getting the following error:
         # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
         # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading

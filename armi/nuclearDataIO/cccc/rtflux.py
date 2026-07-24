@@ -166,9 +166,9 @@ class RtfluxStream(cccc.StreamWithDataContainer):
 
 
 class AtfluxStream(RtfluxStream):
-    r"""
-    This is a subclass for the ATFLUX file, which is identical in format to the RTFLUX file except
-    that it contains the adjoint flux and has reversed energy group ordering.
+    """
+    A subclass for the ATFLUX file, which is identical in format to the RTFLUX file except that it contains the adjoint
+    flux and has reversed energy group ordering.
     """
 
     def getEnergyGroupIndex(self, g):
@@ -182,10 +182,7 @@ class AtfluxStream(RtfluxStream):
 
 
 def getFDFluxReader(adjointFlag):
-    r"""
-    Returns the appropriate DIF3D FD flux binary file reader class,
-    either RTFLUX (real) or ATFLUX (adjoint).
-    """
+    """Returns the appropriate DIF3D FD flux binary file reader class, either RTFLUX (real) or ATFLUX (adjoint)."""
     if adjointFlag:
         return AtfluxStream
     else:

@@ -631,7 +631,7 @@ class XSModelingOptions:
 
     def setDefaults(self, blockRepresentation, validBlockTypes):
         """
-        This sets the defaults based on some recommended values based on the geometry type.
+        Sets the defaults based on some recommended values based on the geometry type.
 
         Parameters
         ----------

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module provides fundamental element information to be used throughout the framework and applications.
+Provide fundamental element information to be used throughout the framework and applications.
 
 .. impl:: A tool for querying basic data for elements of the periodic table.
     :id: I_ARMI_ND_ELEMENTS0

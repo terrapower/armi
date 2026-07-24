@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module tests the __init__.py file since it has rather unique behavior."""
+"""Tests the __init__.py file since it has rather unique behavior."""
 
 import os
 import shutil

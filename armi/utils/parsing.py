@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This file contains tools for common tasks in parsing in python strings into non-string values."""
+"""Tools for common tasks in parsing in python strings into non-string values."""
 
 import ast
 import copy
@@ -27,14 +27,13 @@ def tryLiteralEval(source):
     return source
 
 
-# the following dict helps avoid the need for an eval() statement
-# Is there no better way to go 'bool' -> bool !?
+# The following dict helps avoid the need for an eval() statement. Is there no better way to go 'bool' -> bool !?
 _str_types = {tp.__name__: tp for tp in (type(None), bool, int, complex, float, str, bytes, list, tuple, dict)}
 _type_strs = {v: k for k, v in _str_types.items()}
 
 
-# python's matching truth evaluations of Nones in different primitive types
-# str's and unicodes omitted because parseValue denies their use.
+# python's matching truth evaluations of Nones in different primitive types str's and unicodes omitted because
+# parseValue denies their use.
 _none_types = {
     type(None): None,
     bool: False,

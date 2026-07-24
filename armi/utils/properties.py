@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains methods for adding properties with custom behaviors to classes."""
+"""Methods for adding properties with custom behaviors to classes."""
 
 import numpy as np
 
@@ -32,11 +32,13 @@ def numpyHackForEqual(val1, val2):
             return False
 
     notEqual = val1 != val2
-    try:  # should work for everything but numpy arrays
+    try:
+        # should work for everything but numpy arrays
         if isinstance(notEqual, np.ndarray) and notEqual.size == 0:
             return True
         return not notEqual.__bool__()
-    except (AttributeError, ValueError):  # from comparing 2 numpy arrays
+    except (AttributeError, ValueError):
+        # from comparing 2 numpy arrays
         return not notEqual.any()
 
 

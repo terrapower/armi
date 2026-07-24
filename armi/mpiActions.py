@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module provides an abstract class to be used to implement "MPI actions.".
+An abstract class to be used to implement "MPI actions.".
 
 MPI actions are tasks, activities, or work that can be executed on the worker nodes. The standard
 workflow is essentially that the primary node creates an :py:class:`~armi.mpiActions.MpiAction`,
@@ -206,8 +206,7 @@ class MpiAction:
 
     def invoke(self, o, r, cs):
         """
-        This method is called by worker nodes, and passed the worker node's operator, reactor and
-        settings file.
+        Called by worker nodes, and passed the worker node's operator, reactor and settings file.
 
         Parameters
         ----------
@@ -271,7 +270,7 @@ class MpiAction:
             yield objectsForAllCoresToIter[objIndex]
 
     def invokeHook(self):
-        """This method must be overridden in sub-clases.
+        """Must be overridden in sub-clases.
 
         This method is called by worker nodes, and has access to the worker node's operator, reactor, and settings
         (through :code:`self.o`, :code:`self.r`, and :code:`self.cs`). It must return a boolean value of :code:`True` or
@@ -461,7 +460,7 @@ def runActionsInSerial(o, r, cs, actions):
 
 class DistributionAction(MpiAction):
     """
-    This MpiAction scatters the workload of multiple actions to available resources.
+    Scatters the workload of multiple actions to available resources.
 
     Notes
     -----

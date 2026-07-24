@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module provides tests for the generic Executers."""
+"""Provide tests for the generic Executers."""
 
 import os
 import subprocess
@@ -46,10 +46,7 @@ class MockReactor:
 
 class TestExecutionOptions(unittest.TestCase):
     def test_runningDirectoryPath(self):
-        """
-        Test that the running directory path is set up correctly
-        based on the case title and label provided.
-        """
+        """Test that the running directory path is set up correctly based on the case title and label provided."""
         e = executers.ExecutionOptions(label=None)
         e.setRunDirFromCaseTitle(caseTitle="test")
         self.assertEqual(os.path.basename(e.runDir), "508bc04f-0")

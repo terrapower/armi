@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module reads and writes ISOTXS files.
+Read and write ISOTXS files.
 
 ISOTXS is a binary file that contains multigroup microscopic cross sections.
 ISOTXS stands for  *Isotope Cross Sections*.
@@ -123,7 +123,7 @@ def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False, nucName=""):
 
 def addDummyNuclidesToLibrary(lib, dummyNuclides):
     """
-    This method adds DUMMY nuclides to the current ISOTXS library.
+    Add DUMMY nuclides to the current ISOTXS library.
 
     Parameters
     ----------

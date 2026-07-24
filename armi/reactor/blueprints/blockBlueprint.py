@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
+"""Define the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 
 import collections
 from inspect import signature
@@ -64,8 +64,7 @@ class BlockBlueprint(yamlize.KeyedList):
         larger :py:class:`~armi.reactor.blueprints.Blueprints` class.
 
         Includes a ``construct`` method, which instantiates an instance of
-        :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the
-        blueprints.
+        :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the blueprints.
     """
 
     item_type = componentBlueprint.ComponentBlueprint
@@ -332,8 +331,8 @@ class BlockBlueprint(yamlize.KeyedList):
         """
         Get the appropriate grid design.
 
-        This happens when a lattice input is provided on the block. Otherwise all
-        components are ambiguously defined in the block.
+        This happens when a lattice input is provided on the block. Otherwise all components are ambiguously defined in
+        the block.
         """
         if self.gridName:
             if self.gridName not in blueprint.gridDesigns:

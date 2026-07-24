@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This package provides various operations users can ask ARMI to do with their inputs.
+Various operations users can ask ARMI to do with their inputs.
 
 An Entry Point might run a simulation, migrate inputs, build a suite of related inputs
 and submit them in a parameter sweep, validate inputs, open the GUI, run a test suite,
@@ -36,9 +36,8 @@ armi.operators :  Operations that ARMI will perform on a reactor model.
 armi : Fundamental entry point that calls this package.
 """
 
-# importing each module causes the any EntryPoints defined in the module that
-# are decorated with @armi.command to be added to the collection of registered
-# classes
+# Importing each module causes any EntryPoints defined in the module that are decorated with @armi.command to be
+# added to the collection of registered classes.
 
 import argparse
 import re

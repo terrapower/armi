@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This subpackage reads and writes CCCC standard interface files for reactor physics codes.
+Read and write CCCC standard interface files for reactor physics codes.
 
 Starting in the late 1960s, the computational nuclear analysis community recognized a need to
 establish some standard file formats to exchange reactor descriptions and reactor physics
