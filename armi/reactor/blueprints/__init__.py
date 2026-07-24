@@ -525,14 +525,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         if stream is None or isinstance(stream, io.TextIOWrapper):
             return
 
-        stream.seek(0)
+        # Loop through the entire text file, to attempt to do the cleaning
+        stream.seek(0)  # must rewind to be able to read the entire stream
         txt = stream.read()
         txt = txt.replace("'0.0'", "0.0")
         txt = txt.replace('"0.0"', "0.0")
+
+        # wipe out the stream and then over-write it
         stream.seek(0)
         stream.truncate(0)
-
-        # Loop through the entire text file, to attempt to do the cleaning
         stream.write(txt)
 
     @classmethod
