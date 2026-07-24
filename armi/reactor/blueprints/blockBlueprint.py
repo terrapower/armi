@@ -85,8 +85,8 @@ class BlockBlueprint(yamlize.KeyedList):
         outerComponent : Component
             Largest component in block.
         """
-        if self._geomOptions is None:
-            self._configureGeomOptions()
+        if BlockBlueprint._geomOptions is None:
+            BlockBlueprint._geomOptions = _configureGeomOptions()
 
         for compCls, blockCls in self._geomOptions.items():
             if isinstance(outerComponent, compCls):
