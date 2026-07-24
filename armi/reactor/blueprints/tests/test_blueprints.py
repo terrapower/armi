@@ -190,12 +190,12 @@ class TestRuamelYamlBug(unittest.TestCase):
 
             # load that string buffer into a dictionary
             rawy = YAML().load(buffer)
-            lst = rawy["assemblies"]["igniter fuel"]["material modifications"]["ZR_wt_frac"]
+            modFracs = rawy["assemblies"]["igniter fuel"]["material modifications"]["ZR_wt_frac"]
 
             # ensure the zeros are floats, not strings
-            self.assertEqual(lst[1], 0.0)
-            self.assertEqual(lst[2], 0.0)
-            self.assertEqual(lst[3], 0.0)
+            self.assertEqual(modFracs[1], 0.0)
+            self.assertEqual(modFracs[2], 0.0)
+            self.assertEqual(modFracs[3], 0.0)
 
 
 class TestBlueprintsSchema(unittest.TestCase):
