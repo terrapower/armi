@@ -165,7 +165,6 @@ class TestRuamelYamlBug(unittest.TestCase):
     def test_ruamelYamlBug(self):
         """Testing that we are correctly fixing a bug in ruamel.yaml.
 
-
         With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
         values incorrectly for the zero values to zero strings: '0.0'.
         """
