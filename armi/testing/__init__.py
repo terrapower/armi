@@ -43,7 +43,7 @@ from armi.testing.singleAssemblies import (  # noqa: F401
     buildMixedThreePinAssembly,
 )
 from armi.testing.singleBlocks import (  # noqa: F401
-    NUM_PINS_IN_TEST_BLOCK,
+    NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     applyDummyData,
     buildComplexHexBlock,
     buildLinkedFuelHexBlock,

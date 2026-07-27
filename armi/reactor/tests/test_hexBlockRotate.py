@@ -18,7 +18,7 @@ import math
 import unittest
 
 import numpy as np
-from testing import NUM_PINS_IN_TEST_BLOCK, buildComplexHexBlock
+from testing import NUM_PINS_IN_COMPLEX_HEX_BLOCK, buildComplexHexBlock
 
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
@@ -45,7 +45,7 @@ class HexBlockRotateTests(unittest.TestCase):
         "linPowByPin",
     ]
 
-    PIN_DATA = np.arange(NUM_PINS_IN_TEST_BLOCK, dtype=float)
+    PIN_DATA = np.arange(NUM_PINS_IN_COMPLEX_HEX_BLOCK, dtype=float)
 
     def setUp(self):
         self.baseBlock = buildComplexHexBlock()

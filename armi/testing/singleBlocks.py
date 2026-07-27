@@ -28,8 +28,6 @@ from armi.reactor import blocks
 from armi.reactor.components import Circle, DerivedShape, Helix, Hexagon
 from armi.reactor.flags import Flags
 
-NUM_PINS_IN_TEST_BLOCK = 217
-
 
 def _buildSimpleFuelHexBlockHelper(linkedBond=False):
     """Returns a simple hex block containing fuel, clad, duct, and coolant, with an optional
@@ -92,32 +90,34 @@ def _buildSimpleFuelHexBlockHelper(linkedBond=False):
     return b
 
 
-# formerly buildSimpleFuelBlock
 def buildSimpleFuelHexBlock():
     """Return a simple hex block containing fuel, clad, duct, and coolant."""
     return _buildSimpleFuelHexBlockHelper()
 
 
-# formerly buildLinkedFuelBlock
 def buildLinkedFuelHexBlock():
     """Return a simple hex block containing containing fuel, clad, duct, linked bond, and coolant."""
     return _buildSimpleFuelHexBlockHelper(linkedBond=True)
 
 
-## formerly loadTestBlock
+NUM_PINS_IN_COMPLEX_HEX_BLOCK = 217
+
+
 def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
-    """Build an annular test block for evaluating unit tests.
+    """Build an annular hex block representing a more realistic SFR fuel pin structure, including an anulus and
+    voids/gaps between fuel, liner, and cladding. Use for evaluating unit tests.
 
     Parameters
     ----------
     cold : bool
-        ...
-    depeltable : bool
-        ...
+        Whether or not the block is cold.
+    depeletable : bool
+        Whether or not the block is depletable.
 
     Returns
     -------
-    block :
+    block : :py:class:`armi.reactor.blocks.HexBlock`
+        Annular hex block.
 
     """
     from armi.testing import buildEmptyHexAssembly, getEmptyHexReactor
@@ -129,9 +129,10 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
     r = getEmptyHexReactor()
 
     assemNum = 3
-    block = blocks.HexBlock("TestHexBlock")
+    # name was formerly TestHexBlock
+    block = blocks.HexBlock("ComplexHexBlock")
     block.setType("defaultType")
-    block.p.nPins = NUM_PINS_IN_TEST_BLOCK
+    block.p.nPins = NUM_PINS_IN_COMPLEX_HEX_BLOCK
     assembly = buildEmptyHexAssembly(assemNum, 1, r=r)
 
     # NOTE: temperatures are supposed to be in C
@@ -145,7 +146,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempFuel,
         "od": 0.84,
         "id": 0.6,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     fuel = Circle("fuel", "UZr", **fuelDims)
     if depletable:
@@ -156,7 +157,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempCoolant,
         "od": "fuel.id",
         "id": 0.3,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     bondDims["components"] = {"fuel": fuel}
     bond = Circle("bond", "Sodium", **bondDims)
@@ -166,7 +167,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": "bond.id",
         "id": 0.0,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     annularVoidDims["components"] = {"bond": bond}
     annularVoid = Circle("annular void", "Void", **annularVoidDims)
@@ -176,7 +177,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": 0.90,
         "id": 0.85,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     innerLiner = Circle("inner liner", "Graphite", **innerLinerDims)
 
@@ -185,7 +186,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": "inner liner.id",
         "id": "fuel.od",
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     fuelLinerGapDims["components"] = {"inner liner": innerLiner, "fuel": fuel}
     fuelLinerGap = Circle("gap1", "Void", **fuelLinerGapDims)
@@ -195,7 +196,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": 0.95,
         "id": 0.90,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     outerLiner = Circle("outer liner", "HT9", **outerLinerDims)
 
@@ -204,7 +205,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": "outer liner.id",
         "id": "inner liner.od",
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     linerLinerGapDims["components"] = {
         "outer liner": outerLiner,
@@ -217,7 +218,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": 1.05,
         "id": 0.95,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     cladding = Circle("clad", "HT9", **claddingDims)
     if depletable:
@@ -228,7 +229,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "Thot": hotTempStructure,
         "od": "clad.id",
         "id": "outer liner.od",
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     linerCladGapDims["components"] = {"clad": cladding, "outer liner": outerLiner}
     linerCladGap = Circle("gap3", "Void", **linerCladGapDims)
@@ -240,7 +241,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
         "id": 0.0,
         "axialPitch": 30.0,
         "helixDiameter": 1.1,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
+        "mult": NUM_PINS_IN_COMPLEX_HEX_BLOCK,
     }
     wire = Helix("wire", "HT9", **wireDims)
     if depletable:

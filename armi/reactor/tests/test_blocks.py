@@ -57,8 +57,6 @@ from armi.utils.units import (
     ASCII_LETTER_a,
 )
 
-NUM_PINS_IN_TEST_BLOCK = 217
-
 
 def getComponentData(component):
     density = 0.0

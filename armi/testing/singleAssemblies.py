@@ -574,11 +574,15 @@ def buildEmptyHexAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPit
         Number of blocks
     assemNum : int
         Assembly ID
-    spatialGrid : ...
-    r : armi.reactor
+    spatialGrid : :py:class:`armi.reactors.grids.HexGrid`
+        HexGrid used for assembly.
+    r : :py:class:`armi.reactors.Reactor`
+        Optional reactor object that may be passed. This objects `self.core.spatialGrid` is used instead of the
+        `spatialGrid` argument.
 
     Returns
     -------
+    a : :py:class:`armi.reactor.assemblies.HexAssembly`
     ...
     """
     from armi.reactor.assemblies import HexAssembly
