@@ -196,6 +196,10 @@ class TestRuamelYamlBug(unittest.TestCase):
             self.assertEqual(modFracs[2], 0.0)
             self.assertEqual(modFracs[3], 0.0)
 
+            # test an edge case: mandatory stream argument
+            with self.assertRaises(TypeError):
+                bp.dump(bp)
+
 
 class TestBlueprintsSchema(unittest.TestCase):
     """Test the blueprint schema checks."""
