@@ -991,11 +991,11 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         db = Database(dbPath, "w")
         db.close()
         keys = ["c00n00", "c00n01", "c01n00", "c01n01"]
-        db.h5db = {k:"fake" for k in keys}
+        db.h5db = {k: "fake" for k in keys}
 
         steps = list(db.genTimeSteps())
         print(steps)
-        
+
         # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
         db.h5db = None
         assert False
