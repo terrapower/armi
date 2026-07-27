@@ -512,7 +512,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return inp
 
     @classmethod
-    def dump(cls, data, stream=None):
+    def dump(cls, data, stream) -> None:
         """A wrapper around the yamlize.Object.dump.
 
         With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
