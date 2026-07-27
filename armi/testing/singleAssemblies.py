@@ -14,8 +14,7 @@
 """
 Importable testing utilities for assembly-related machinery.
 
-This is a very limited set of ARMI block testing tools, meant to be importable as part of the ARMI API. The goal is to
-provide a small set of high quality assembly-related tools to help downstream ARMI developers write tests.
+This is a small set of high quality assembly-related tools to help downstream ARMI developers write tests.
 
 Notes
 -----
