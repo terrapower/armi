@@ -34,6 +34,7 @@ from armi.testing.singleAssemblies import (  # noqa: F401
     BLOCK_DEFINITIONS_3PIN,
     GRID_DEFINITION,
     REGULAR_ASSEMBLY_DEF,
+    buildEmptyHexAssembly,
     buildHexAssemblyFiveUZrUTh,
     buildHexAssemblyFourUZrUTh,
     buildHexAssemblySingleUZr,

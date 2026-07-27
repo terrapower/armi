@@ -36,11 +36,11 @@ from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
-from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import (
     TESTING_ROOT,
     applyDummyData,
     buildComplexHexBlock,
+    buildEmptyHexAssembly,
     buildMixedPinAssembly,
     buildSimpleFuelHexBlock,
     getEmptyCartesianReactor,
@@ -81,7 +81,7 @@ class TestDetailedNDensUpdate(unittest.TestCase):
             bps._prepConstruction(cs)
             self.r = tests.getEmptyHexReactor()
             self.r.blueprints = bps
-            a = makeTestAssembly(numBlocks=1, assemNum=0)
+            a = buildEmptyHexAssembly(numBlocks=1, assemNum=0)
             a.add(buildSimpleFuelHexBlock())
             self.r.core.add(a)
 
@@ -1914,7 +1914,7 @@ class TestBlock(unittest.TestCase):
         block.p.xsType = "A"
 
         r = tests.getEmptyHexReactor()
-        assembly = makeTestAssembly(1, 1, r=r)
+        assembly = buildEmptyHexAssembly(1, 1, r=r)
         assembly.add(block)
         r.core.add(assembly)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
@@ -2096,7 +2096,7 @@ class TestHexBlock(unittest.TestCase):
         self.hexBlock.add(components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0))
         self.r = tests.getEmptyHexReactor()
         self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
-        a = makeTestAssembly(1, 1)
+        a = buildEmptyHexAssembly(1, 1)
         a.add(self.hexBlock)
         loc1 = self.r.core.spatialGrid[0, 1, 0]
         self.r.core.add(a, loc1)

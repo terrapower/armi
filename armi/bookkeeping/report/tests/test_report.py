@@ -40,8 +40,7 @@ from armi.bookkeeping.report.reportingUtils import (
     writeWelcomeHeaders,
 )
 from armi.context import PLATFORM, Platform
-from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
+from armi.testing import TESTING_ROOT, buildEmptyHexAssembly, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 SMALLEST_DIR = os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor")
@@ -334,7 +333,7 @@ class TestReportInterface(unittest.TestCase):
             reportInterface.ReportInterface.reportSFP(sfp)
             self.assertEqual(len(mock.getStdout()), 0)
 
-        a = makeTestAssembly(1, 1, r=r)
+        a = buildEmptyHexAssembly(1, 1, r=r)
         sfp.add(a)
 
         with mockRunLogs.BufferLog() as mock:
