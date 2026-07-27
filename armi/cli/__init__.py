@@ -52,8 +52,6 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineEntryPoints():
         from armi.cli import (
-            checkInputs,
-            # testing
             cleanTemps,
             clone,
             compareCases,
@@ -66,8 +64,6 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
         )
 
         entryPoints = []
-        entryPoints.append(checkInputs.CheckInputEntryPoint)
-        entryPoints.append(checkInputs.ExpandBlueprints)
         entryPoints.append(clone.CloneArmiRunCommandBatch)
         entryPoints.append(clone.CloneArmiRunCommandInteractive)
         entryPoints.append(clone.CloneSuiteCommand)
