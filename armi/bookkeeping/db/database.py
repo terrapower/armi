@@ -120,7 +120,7 @@ class Database:
     """
 
     # Allows matching for, e.g., c01n02EOL
-    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
+    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d[A-Z]{0,3})$")
 
     def __init__(self, fileName: os.PathLike, permission: str = "r"):
         """
@@ -563,14 +563,17 @@ class Database:
 
         return Layout(version, self.h5db[timeGroupName])
 
-    def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
+    def genTimeSteps(self) -> Generator[Tuple[int, Any], None, None]:
         """Returns a generator of (cycle, node) tuples that are present in the DB."""
         assert self.h5db is not None, "Must open the database before calling genTimeSteps"
         for groupName in sorted(self.h5db.keys()):
             match = self.timeNodeGroupPattern.match(groupName)
             if match:
                 cycle = int(match.groups()[0])
-                node = int(match.groups()[1])
+                try:
+                    node = int(match.groups()[1])
+                except ValueError:
+                    node = match.groups()[1].lstrip("0")
                 yield (cycle, node)
 
     def genAuxiliaryData(self, ts: Tuple[int, int]) -> Generator[str, None, None]:

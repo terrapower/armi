@@ -987,18 +987,27 @@ class TestSimplestDatabaseItems(unittest.TestCase):
             db.open()
 
     def test_genTimeSteps(self):
+        # mock up a test DB
         dbPath = "test_genTimeSteps.h5"
         db = Database(dbPath, "w")
         db.close()
+
+        # test a simple case
         keys = ["c00n00", "c00n01", "c01n00", "c01n01"]
         db.h5db = {k: "fake" for k in keys}
 
         steps = list(db.genTimeSteps())
-        print(steps)
+        self.assertListEqual(steps, [(0, 0), (0, 1), (1, 0), (1, 1)])
+
+        # test a case with an EOL time step
+        keys = ["c00n00", "c00n01", "c01n00", "c01n01", "c01n01EOL"]
+        db.h5db = {k: "fake" for k in keys}
+
+        steps = list(db.genTimeSteps())
+        self.assertListEqual(steps, [(0, 0), (0, 1), (1, 0), (1, 1), (1, "1EOL")])
 
         # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
         db.h5db = None
-        assert False
 
 
 class TestStaticDatabaseItems(unittest.TestCase):
