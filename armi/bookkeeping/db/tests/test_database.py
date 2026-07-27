@@ -986,6 +986,20 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         with self.assertRaises(ValueError):
             db.open()
 
+    def test_genTimeSteps(self):
+        dbPath = "test_genTimeSteps.h5"
+        db = Database(dbPath, "w")
+        db.close()
+        keys = ["c00n00", "c00n01", "c01n00", "c01n01"]
+        db.h5db = {k:"fake" for k in keys}
+
+        steps = list(db.genTimeSteps())
+        print(steps)
+        
+        # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
+        db.h5db = None
+        assert False
+
 
 class TestStaticDatabaseItems(unittest.TestCase):
     def test_applyComponentNumberDensitiesMigration(self):
