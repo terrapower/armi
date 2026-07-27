@@ -226,8 +226,7 @@ class ComponentMerger(BlockConverter):
 
     Notes
     -----
-    It is the job of the developer to determine if merging a Block into one Component
-    will yield valid or sane results.
+    It is the job of the developer to determine if merging a Block into one Component will yield valid or sane results.
     """
 
     def __init__(self, sourceBlock, soluteName, solventName):
@@ -315,15 +314,14 @@ class MultipleComponentMerger(BlockConverter):
 class MixedPinComponentMerger(MultipleComponentMerger):
     def __init__(self, sourceBlock, soluteNames, solventName, pin, specifiedMinID=0.0):
         """
-        This BlockConverter handles mixed blocks with multiple pin types.
-        A pin is a list of circular components that share a common spatial locator and thus
-        make up a "pin", which is a physical construct but not a formal ARMI construct.
+        Handles mixed blocks with multiple pin types. A pin is a list of circular components that share a common spatial
+        locator and thus make up a "pin", which is a physical construct but not a formal ARMI construct.
 
-        This class can merge multiple components at a time within a single pin. To perform
-        conversions on multiple pins within a mixed block, a new instance of this class
-        must be constructed for each pin, and then the :py:meth:`convert` method must be called in a
-        waterfall fashion -- that is, the block returned from :py:meth:`convert` should be passed
-        into the constructor of the next instance to perform a chain of component merges.
+        This class can merge multiple components at a time within a single pin. To perform conversions on multiple pins
+        within a mixed block, a new instance of this class must be constructed for each pin, and then the
+        :py:meth:`convert` method must be called in a waterfall fashion -- that is, the block returned from
+        :py:meth:`convert` should be passed into the constructor of the next instance to perform a chain of component
+        merges.
 
         .. impl:: Homogenize multiple components into one in a single pin within a mixed pin assembly.
             :id: I_ARMI_BLOCKCONV2
@@ -404,8 +402,7 @@ class BlockAvgToCylConverter(BlockConverter):
 
     See Also
     --------
-    HexComponentsToCylConverter: This converter is more useful if the pin lattice is in a
-    hex lattice.
+    HexComponentsToCylConverter: This converter is more useful if the pin lattice is in a hex lattice.
     """
 
     def __init__(

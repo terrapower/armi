@@ -651,7 +651,7 @@ class TestDatabaseSmaller(unittest.TestCase):
 
     def test_prepRestartRun(self):
         """
-        This test is based on the sodiumHexReactor case in armi.testing. In that cs, `reloadDBName` is set to
+        A test based on the sodiumHexReactor case in armi.testing. In that cs, `reloadDBName` is set to
         'reloadingDB.h5', `startCycle` = 1, and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be created
         here for this test.
 

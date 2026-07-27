@@ -72,7 +72,7 @@ def compareNuclideXS(nuc1, nuc2):
 
 def addDummyNuclidesToLibrary(lib, dummyNuclides):
     """
-    This method adds DUMMY nuclides to the current PMATRX library.
+    Adds DUMMY nuclides to the current PMATRX library.
 
     Parameters
     ----------

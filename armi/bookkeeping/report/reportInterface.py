@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This interface serves the reporting needs of ARMI.
-
-If there is any information that a user desires to show in PDF form to
-others this is the place to do it.
-"""
+"""Interface for ARMI reporting needs of ARMI, including PDF format."""
 
 import re
 

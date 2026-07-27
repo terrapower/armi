@@ -432,7 +432,7 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
-        """This works by rotating the indices by 120 degrees twice, counterclockwise."""
+        """Rotates the indices by 120 degrees twice, counterclockwise."""
         i, j = indices[:2]
         if i == 0 and j == 0:
             return []
