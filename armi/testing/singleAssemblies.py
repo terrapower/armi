@@ -604,7 +604,7 @@ def buildMixedThreePinAssembly(
 
 def _createHexBlockTemplate(blockType: str):
     """
-    This builds a simple :py:class:`armi.reactor.blocks.HexBlock` object.
+    Builds a simple :py:class:`armi.reactor.blocks.HexBlock` object.
 
     The HexBlock object has the following dimensions:
         - 200 pins with an OD of 1.0
