@@ -47,7 +47,9 @@ from armi.testing.singleBlocks import (  # noqa: F401
     applyDummyData,
     buildComplexHexBlock,
     buildLinkedFuelHexBlock,
+    buildLinkedFuelHexBlockNegativeArea,
     buildSimpleFuelHexBlock,
+    buildSimpleFuelHexBlockNegativeArea,
 )
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))

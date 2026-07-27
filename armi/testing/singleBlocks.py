@@ -51,6 +51,7 @@ def _buildSimpleFuelHexBlockHelper(linkedBond=False):
     b = blocks.HexBlock(name, height=10.0)
 
     fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    # only used if linkedBond is True
     bondDims = {
         "Tinput": 25.0,
         "Thot": 450,
@@ -88,6 +89,94 @@ def _buildSimpleFuelHexBlockHelper(linkedBond=False):
     b.add(coolant)
     b.add(intercoolant)
     return b
+
+
+def _buildSimpleFuelHexBlockNegativeAreaHelper(linkedBond=False):
+    """Returns a simple hex block containing fuel, clad, duct, and coolant, with an optional
+    linked bond.
+
+    If linkedBond is True, the block has a negative-area bond between fuel and cladding for testing. Otherwise the block
+    has a negative-area gap between fuel and cladding for testing.
+
+    Parameters
+    ----------
+    linkedBond : bool
+        Whether or not to include the linked bond in the returned block.
+
+    Returns
+    -------
+    b : :py:class:`armi.reactor.blocks.HexBlock`
+        The simple fuel hex block.
+    """
+    if linkedBond:
+        name = "simple-fuel-negative-linked"
+    else:
+        name = "simple-fuel-negative"
+
+    # name was formerly "fuel"
+    b = blocks.HexBlock(name, height=10.0)
+
+    fuelDims = {"Tinput": 25, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    cladDims = {"Tinput": 25, "Thot": 600, "od": 0.80, "id": 0.76, "mult": 127.0}
+    ductDims = {"Tinput": 25, "Thot": 600, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    fuel = Circle("fuel", "UZr", **fuelDims)
+    clad = Circle("clad", "HT9", **cladDims)
+    negativeDims = {
+        "Tinput": 25,
+        "Thot": 600,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
+    negativeDims["components"] = {"fuel": fuel, "clad": clad}
+    if linkedBond:
+        bond = Circle("bond", "Sodium", **negativeDims)
+    else:
+        gap = Circle("gap", "Void", **negativeDims)
+    duct = Hexagon("duct", "HT9", **ductDims)
+    coolant = DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(fuel)
+    if linkedBond:
+        b.add(bond)
+    else:
+        b.add(gap)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    b.getVolumeFractions()
+
+    return b
+
+
+def buildSimpleFuelHexBlockNegativeArea():
+    """
+    Return a simple block containing fuel, clad, duct, and coolant.
+
+    The block has a negative-area gap between fuel and cladding for testing.
+    """
+    return _buildSimpleFuelHexBlockNegativeAreaHelper()
+
+
+def buildLinkedFuelHexBlockNegativeArea():
+    """
+    Return a simple block containing fuel, clad, duct, and coolant.
+
+    The block has a negative-area bond between fuel and cladding for testing.
+    """
+    return _buildSimpleFuelHexBlockNegativeAreaHelper(linkedBond=True)
 
 
 def buildSimpleFuelHexBlock():
