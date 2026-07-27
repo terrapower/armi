@@ -94,7 +94,6 @@ class TestBlueprints(unittest.TestCase):
         # save the blueprint to a stream
         stream = io.StringIO()
         stream.seek(0)
-        self.blueprints.dump(self.blueprints)
         saveToStream(stream, self.blueprints, True, True)
         stream.seek(0)
 
