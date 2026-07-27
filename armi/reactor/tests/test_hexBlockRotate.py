@@ -18,11 +18,11 @@ import math
 import unittest
 
 import numpy as np
-from testing import NUM_PINS_IN_COMPLEX_HEX_BLOCK, buildComplexHexBlock
 
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
 from armi.reactor.grids import CoordinateLocation, HexGrid, IndexLocation, MultiIndexLocation
+from armi.testing import NUM_PINS_IN_COMPLEX_HEX_BLOCK, buildComplexHexBlock
 from armi.utils import iterables
 
 
