@@ -302,7 +302,7 @@ class Database:
             newPath = safeMove(self._fullPath, self._fileName)
             self._fullPath = os.path.abspath(newPath)
 
-    def splitDatabase(self, keepTimeSteps: Sequence[Tuple[int, int]], label: str) -> str:
+    def splitDatabase(self, keepTimeSteps: Sequence[Tuple[int, Any]], label: str) -> str:
         """
         Discard all data except for specific time steps, retaining old data in a separate file.
 
@@ -346,7 +346,12 @@ class Database:
             for groupName, _ in dbIn.items():
                 m = self.timeNodeGroupPattern.match(groupName)
                 if m:
-                    timeSteps.add((int(m.group(1)), int(m.group(2))))
+                    try:
+                        timeStep = (int(m.group(1)), int(m.group(2)))
+                    except ValueError:
+                        # handle the EOL time steps like c0102EOL
+                        timeStep = (int(m.group(1)), m.group(2))
+                    timeSteps.add(timeStep)
                 else:
                     dbIn.copy(groupName, dbOut)
 
@@ -573,6 +578,7 @@ class Database:
                 try:
                     node = int(match.groups()[1])
                 except ValueError:
+                    # handle the EOL time steps like c0102EOL
                     node = match.groups()[1].lstrip("0")
                 yield (cycle, node)
 
