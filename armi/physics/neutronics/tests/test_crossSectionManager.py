@@ -44,8 +44,7 @@ from armi.physics.neutronics.settings import (
 )
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks, test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor, mockRunLogs
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -149,7 +148,7 @@ class TestBlockCollAvg(unittest.TestCase):
     def test_checkBlockSimilarity(self):
         """Check the block similarity test."""
         self.assertTrue(self.bc._checkBlockSimilarity())
-        self.bc.append(test_blocks.loadTestBlock())
+        self.bc.append(buildComplexHexBlock())
         self.assertFalse(self.bc._checkBlockSimilarity())
 
     def test_createRepresentativeBlock(self):
@@ -182,7 +181,7 @@ class TestBlockCollAvg(unittest.TestCase):
 
     def test_createRepresentativeBlockDissimilar(self):
         """Test creation of a representative block from a collection with dissimilar blocks."""
-        uniqueBlock = test_blocks.loadTestBlock()
+        uniqueBlock = buildComplexHexBlock()
         uniqueBlock.p.percentBu = 50.0
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
         uniqueBlock.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
@@ -326,9 +325,7 @@ class TestBlockCollCompAvg(unittest.TestCase):
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
-        self.o, self.r = test_reactors.loadTestReactor(
-            os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml"
-        )
+        self.o, self.r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml")
 
         #                    ndrawer1  lenFuelTypeD1  ndrawer2  lenFuelTypeD2
         EuWeight = float(1 * 60 + 3 * 15)
@@ -415,7 +412,7 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
         has expected values for component isotopic atom density and component area.
         """
         root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
-        self.o, self.r = test_reactors.loadTestReactor(root)
+        self.o, self.r = loadTestReactor(root)
 
         sodiumDensity = {"NA23": 0.022166571826233578}
         steelDensity = {
@@ -878,7 +875,7 @@ class TestXSGM(unittest.TestCase):
             :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
         """
         root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
-        _o, r = test_reactors.loadTestReactor(root)
+        _o, r = loadTestReactor(root)
         self.csm.r = r
 
         # Assumption: All sodium in fuel blocks for this test is 450 C and this is the expected sodium temperature.
@@ -944,9 +941,7 @@ class TestXSGM(unittest.TestCase):
 
     def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
         """Reusable code used in multiple unit tests."""
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         # set a few random non-default settings on AA to be copied to the new BA group
         o.cs[CONF_CROSS_SECTION].update(
             {
@@ -1104,9 +1099,7 @@ class TestXSGM(unittest.TestCase):
         Tests copying pre-generated cross section and flux files using reactor that is built from a
         case settings file.
         """
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         # Need to overwrite the relative paths with absolute
         o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [os.path.join(THIS_DIR, "ISOXA")]
         o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(THIS_DIR, "rzmflxYA")
@@ -1218,6 +1211,6 @@ class TestXSNumberConverters(unittest.TestCase):
 
 def makeBlocks(howMany=20):
     root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
-    _o, r = test_reactors.loadTestReactor(root)
+    _o, r = loadTestReactor(root)
     # shift y 3 to skip central assemblies 1/3 volume
     return r.core.getBlocks(Flags.FUEL)[3 : howMany + 3]

@@ -52,7 +52,7 @@ from armi.reactor.components import (
     materials,
 )
 from armi.reactor.reactors import Reactor
-from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.testing import TESTING_ROOT, buildSimpleFuelHexBlock, loadTestReactor
 from armi.utils.units import getTc
 
 
@@ -538,10 +538,8 @@ class TestDerivedShape(TestShapedComponent):
             :id: T_ARMI_COMP_FLUID
             :tests: R_ARMI_COMP_FLUID
         """
-        from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-
         # Calculate the total volume of the block
-        b = buildSimpleFuelBlock()
+        b = buildSimpleFuelHexBlock()
         totalVolume = b.getVolume()
 
         # calculate the total volume by adding up all the components

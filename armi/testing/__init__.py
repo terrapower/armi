@@ -41,6 +41,13 @@ from armi.testing.singleAssemblies import (  # noqa: F401
     buildMixedPinAssembly,
     buildMixedThreePinAssembly,
 )
+from armi.testing.singleBlocks import (  # noqa: F401
+    NUM_PINS_IN_TEST_BLOCK,
+    applyDummyData,
+    buildComplexHexBlock,
+    buildLinkedFuelHexBlock,
+    buildSimpleFuelHexBlock,
+)
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))

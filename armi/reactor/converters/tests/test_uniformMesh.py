@@ -26,10 +26,11 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.testing import (
     TESTING_ROOT,
+    applyDummyData,
+    buildComplexHexBlock,
     buildHexAssemblyFiveUZrUTh,
     buildHexAssemblyFourUZrUTh,
     loadTestReactor,
@@ -538,8 +539,8 @@ class TestCalcReationRates(unittest.TestCase):
             :id: T_ARMI_FLUX_RX_RATES_BY_XS_ID
             :tests: R_ARMI_FLUX_RX_RATES
         """
-        b = test_blocks.loadTestBlock()
-        test_blocks.applyDummyData(b)
+        b = buildComplexHexBlock()
+        applyDummyData(b)
         self.assertAlmostEqual(b.p.rateAbs, 0.0)
         blockList = [copy.deepcopy(b) for _i in range(3)]
         xsID = b.getMicroSuffix()

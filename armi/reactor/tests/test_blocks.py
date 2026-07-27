@@ -32,15 +32,21 @@ from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
-from armi.physics.neutronics.settings import (
-    CONF_XS_KERNEL,
-)
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.testing import TESTING_ROOT, buildMixedPinAssembly, getEmptyCartesianReactor, loadTestReactor, mockRunLogs
+from armi.testing import (
+    TESTING_ROOT,
+    applyDummyData,
+    buildComplexHexBlock,
+    buildMixedPinAssembly,
+    buildSimpleFuelHexBlock,
+    getEmptyCartesianReactor,
+    loadTestReactor,
+    mockRunLogs,
+)
 from armi.tests import ISOAA_PATH
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -52,300 +58,6 @@ from armi.utils.units import (
 )
 
 NUM_PINS_IN_TEST_BLOCK = 217
-
-
-def buildSimpleFuelBlock():
-    """Return a simple hex block containing fuel, clad, duct, and coolant."""
-    b = blocks.HexBlock("fuel", height=10.0)
-
-    fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
-    ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 400,
-        "Thot": 400,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": 400}
-
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    clad = components.Circle("clad", "HT9", **cladDims)
-    duct = components.Hexagon("duct", "HT9", **ductDims)
-    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
-
-    b.add(fuel)
-    b.add(clad)
-    b.add(duct)
-    b.add(coolant)
-    b.add(intercoolant)
-
-    return b
-
-
-def buildLinkedFuelBlock():
-    """Return a simple hex block containing linked bond."""
-    b = blocks.HexBlock("fuel", height=10.0)
-
-    fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
-    bondDims = {
-        "Tinput": 25.0,
-        "Thot": 450,
-        "od": "clad.id",
-        "id": "fuel.od",
-        "mult": 127.0,
-    }
-    cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
-    ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 400,
-        "Thot": 400,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": 400}
-
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    clad = components.Circle("clad", "HT9", **cladDims)
-    bondDims["components"] = {"clad": clad, "fuel": fuel}
-    bond = components.Circle("bond", "HT9", **bondDims)
-    duct = components.Hexagon("duct", "HT9", **ductDims)
-    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
-
-    b.add(fuel)
-    b.add(bond)
-    b.add(clad)
-    b.add(duct)
-    b.add(coolant)
-    b.add(intercoolant)
-
-    return b
-
-
-def loadTestBlock(cold=True, depletable=False) -> blocks.HexBlock:
-    """Build an annular test block for evaluating unit tests."""
-    caseSetting = settings.Settings()
-    caseSetting[CONF_XS_KERNEL] = "MC2v2"
-    runLog.setVerbosity("error")
-    caseSetting["nCycles"] = 1
-    r = tests.getEmptyHexReactor()
-
-    assemNum = 3
-    block = blocks.HexBlock("TestHexBlock")
-    block.setType("defaultType")
-    block.p.nPins = NUM_PINS_IN_TEST_BLOCK
-    assembly = makeTestAssembly(assemNum, 1, r=r)
-
-    # NOTE: temperatures are supposed to be in C
-    coldTemp = 25.0
-    hotTempCoolant = 430.0
-    hotTempStructure = 25.0 if cold else hotTempCoolant
-    hotTempFuel = 25.0 if cold else 600.0
-
-    fuelDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempFuel,
-        "od": 0.84,
-        "id": 0.6,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    if depletable:
-        fuel.p.flags = Flags.fromString("fuel depletable")
-
-    bondDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempCoolant,
-        "od": "fuel.id",
-        "id": 0.3,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    bondDims["components"] = {"fuel": fuel}
-    bond = components.Circle("bond", "Sodium", **bondDims)
-
-    annularVoidDims = {
-        "Tinput": hotTempStructure,
-        "Thot": hotTempStructure,
-        "od": "bond.id",
-        "id": 0.0,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    annularVoidDims["components"] = {"bond": bond}
-    annularVoid = components.Circle("annular void", "Void", **annularVoidDims)
-
-    innerLinerDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempStructure,
-        "od": 0.90,
-        "id": 0.85,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    innerLiner = components.Circle("inner liner", "Graphite", **innerLinerDims)
-
-    fuelLinerGapDims = {
-        "Tinput": hotTempStructure,
-        "Thot": hotTempStructure,
-        "od": "inner liner.id",
-        "id": "fuel.od",
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    fuelLinerGapDims["components"] = {"inner liner": innerLiner, "fuel": fuel}
-    fuelLinerGap = components.Circle("gap1", "Void", **fuelLinerGapDims)
-
-    outerLinerDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempStructure,
-        "od": 0.95,
-        "id": 0.90,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    outerLiner = components.Circle("outer liner", "HT9", **outerLinerDims)
-
-    linerLinerGapDims = {
-        "Tinput": hotTempStructure,
-        "Thot": hotTempStructure,
-        "od": "outer liner.id",
-        "id": "inner liner.od",
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    linerLinerGapDims["components"] = {
-        "outer liner": outerLiner,
-        "inner liner": innerLiner,
-    }
-    linerLinerGap = components.Circle("gap2", "Void", **linerLinerGapDims)
-
-    claddingDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempStructure,
-        "od": 1.05,
-        "id": 0.95,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    cladding = components.Circle("clad", "HT9", **claddingDims)
-    if depletable:
-        cladding.p.flags = Flags.fromString("clad depletable")
-
-    linerCladGapDims = {
-        "Tinput": hotTempStructure,
-        "Thot": hotTempStructure,
-        "od": "clad.id",
-        "id": "outer liner.od",
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    linerCladGapDims["components"] = {"clad": cladding, "outer liner": outerLiner}
-    linerCladGap = components.Circle("gap3", "Void", **linerCladGapDims)
-
-    wireDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempStructure,
-        "od": 0.1,
-        "id": 0.0,
-        "axialPitch": 30.0,
-        "helixDiameter": 1.1,
-        "mult": NUM_PINS_IN_TEST_BLOCK,
-    }
-    wire = components.Helix("wire", "HT9", **wireDims)
-    if depletable:
-        wire.p.flags = Flags.fromString("wire depletable")
-
-    coolantDims = {"Tinput": hotTempCoolant, "Thot": hotTempCoolant}
-    coolant = components.DerivedShape("coolant", "Sodium", **coolantDims)
-
-    ductDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempStructure,
-        "ip": 16.6,
-        "op": 17.3,
-        "mult": 1,
-    }
-    duct = components.Hexagon("duct", "HT9", **ductDims)
-    if depletable:
-        duct.p.flags = Flags.fromString("duct depletable")
-
-    interDims = {
-        "Tinput": hotTempCoolant,
-        "Thot": hotTempCoolant,
-        "op": 17.8,
-        "ip": "duct.op",
-        "mult": 1,
-    }
-    interDims["components"] = {"duct": duct}
-    interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
-
-    block.add(annularVoid)
-    block.add(bond)
-    block.add(fuel)
-    block.add(fuelLinerGap)
-    block.add(innerLiner)
-    block.add(linerLinerGap)
-    block.add(outerLiner)
-    block.add(linerCladGap)
-    block.add(cladding)
-
-    block.add(wire)
-    block.add(coolant)
-    block.add(duct)
-    block.add(interSodium)
-
-    block.setHeight(16.0)
-
-    block.autoCreateSpatialGrids(r.core.spatialGrid)
-    assembly.add(block)
-    r.core.add(assembly)
-    return block
-
-
-def applyDummyData(block):
-    """Add some dummy data to a block for physics-like tests."""
-    # typical SFR-ish flux in 1/cm^2/s
-    flux = [
-        161720716762.12997,
-        2288219224332.647,
-        11068159130271.139,
-        26473095948525.742,
-        45590249703180.945,
-        78780459664094.23,
-        143729928505629.06,
-        224219073208464.06,
-        229677567456769.22,
-        267303906113313.16,
-        220996878365852.22,
-        169895433093246.28,
-        126750484612975.31,
-        143215138794766.53,
-        74813432842005.5,
-        32130372366225.85,
-        21556243034771.582,
-        6297567411518.368,
-        22365198294698.45,
-        12211256796917.86,
-        5236367197121.363,
-        1490736020048.7847,
-        1369603135573.731,
-        285579041041.55945,
-        73955783965.98692,
-        55003146502.73623,
-        18564831886.20426,
-        4955747691.052108,
-        3584030491.076041,
-        884015567.3986057,
-        4298964991.043116,
-        1348809158.0353086,
-        601494405.293505,
-    ]
-    xslib = isotxs.readBinary(ISOAA_PATH)
-    # Slight hack here because the test block was created by hand rather than via blueprints and so
-    # elemental expansion of isotopics did not occur. But, the ISOTXS library being used did go
-    # through an isotopic expansion, so we map nuclides here.
-    xslib._nuclides["NAAA"] = xslib._nuclides["NA23AA"]
-    xslib._nuclides["WAA"] = xslib._nuclides["W184AA"]
-    xslib._nuclides["MNAA"] = xslib._nuclides["MN55AA"]
-    block.p.mgFlux = flux
-    block.core.lib = xslib
 
 
 def getComponentData(component):
@@ -370,7 +82,7 @@ class TestDetailedNDensUpdate(unittest.TestCase):
             self.r = tests.getEmptyHexReactor()
             self.r.blueprints = bps
             a = makeTestAssembly(numBlocks=1, assemNum=0)
-            a.add(buildSimpleFuelBlock())
+            a.add(buildSimpleFuelHexBlock())
             self.r.core.add(a)
 
         # get first block in assembly with 'fuel' key
@@ -424,9 +136,9 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
 class TestBlock(unittest.TestCase):
     def setUp(self):
-        self.block = loadTestBlock()
-        self._hotBlock = loadTestBlock(cold=False)
-        self._deplBlock = loadTestBlock(depletable=True)
+        self.block = buildComplexHexBlock()
+        self._hotBlock = buildComplexHexBlock(cold=False)
+        self._deplBlock = buildComplexHexBlock(depletable=True)
 
     def test_getSmearDensity(self):
         cur = self.block.getSmearDensity()
@@ -812,7 +524,7 @@ class TestBlock(unittest.TestCase):
 
     def test_setZeroHeight(self):
         """Test that demonstrates that a block's height can be set to zero."""
-        b = buildSimpleFuelBlock()
+        b = buildSimpleFuelHexBlock()
 
         # Check for a DerivedShape component
         self.assertEqual(len([c for c in b if c.__class__ is components.DerivedShape]), 1)
@@ -856,7 +568,7 @@ class TestBlock(unittest.TestCase):
 
     def test_getVolumeFractionsWithZeroHeight(self):
         """Tests that the component fractions are the same with a zero height block."""
-        b = buildSimpleFuelBlock()
+        b = buildSimpleFuelHexBlock()
 
         h1 = b.getHeight()
         originalVolFracs = b.getVolumeFractions()
@@ -875,7 +587,7 @@ class TestBlock(unittest.TestCase):
 
     def test_getVolumeFractionWithoutParent(self):
         """Tests that the volume fraction of a block with no parent is zero."""
-        b = buildSimpleFuelBlock()
+        b = buildSimpleFuelHexBlock()
         self.assertIsNone(b.parent)
         with self.assertRaises(ValueError):
             b.getVolumeFraction()
@@ -2157,7 +1869,7 @@ class TestBlock(unittest.TestCase):
     def test_mergeWithBlock(self):
         fuel1 = self.block.getComponent(Flags.FUEL)
         fuel1.setNumberDensity("CM246", 0.0)
-        block2 = loadTestBlock()
+        block2 = buildComplexHexBlock()
         fuel2 = block2.getComponent(Flags.FUEL)
         fuel2.setNumberDensity("CM246", 0.02)
         self.assertEqual(self.block.getNumberDensity("CM246"), 0.0)
@@ -2261,7 +1973,7 @@ class TestBlockInputHeights(unittest.TestCase):
 
     def test_noBlueprints(self):
         """Verify an error is raised if there are no blueprints."""
-        b = buildSimpleFuelBlock()
+        b = buildSimpleFuelHexBlock()
         with self.assertRaisesRegex(AttributeError, "No ancestor.*blueprints"):
             b.getInputHeight()
 
@@ -2275,7 +1987,7 @@ class TestBlockEnergyDepositionConstants(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.block = loadTestBlock()
+        cls.block = buildComplexHexBlock()
 
     def setUp(self):
         self.block.core.lib = MagicMock()
@@ -3486,7 +3198,7 @@ class TestMassConservation(unittest.TestCase):
     """Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
-        self.b = buildSimpleFuelBlock()
+        self.b = buildSimpleFuelHexBlock()
 
     def test_heightExpansionDifferences(self):
         """The point of this test is to determine if the number densities stay the same with two different heights of

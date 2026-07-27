@@ -29,8 +29,7 @@ from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
-from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
+from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor, mockRunLogs
 from armi.tests import ISOAA_PATH
 
 
@@ -526,7 +525,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
 
-        b = loadTestBlock()
+        b = buildComplexHexBlock()
         c = b.getComponents()[0]
         c0 = b.getFirstComponent()
         self.assertIs(c, c0)
@@ -673,7 +672,7 @@ class TestCompositeTree(unittest.TestCase):
         """
 
     def setUp(self):
-        self.block = loadTestBlock()
+        self.block = buildComplexHexBlock()
         self.r = self.block.core.r
         self.block.setHeight(100.0)
         self.refDict = {
@@ -999,7 +998,7 @@ class TestMiscMethods(unittest.TestCase):
     """
 
     def setUp(self):
-        self.obj = loadTestBlock()
+        self.obj = buildComplexHexBlock()
 
     def test_setMass(self):
         """Test setting and retrieving mass.
@@ -1020,12 +1019,12 @@ class TestMiscMethods(unittest.TestCase):
         # make sure it works with groups of groups
         group = composites.Composite("group")
         group.add(self.obj)
-        group.add(loadTestBlock())
+        group.add(buildComplexHexBlock())
         group.setMass("U235", 5)
         self.assertAlmostEqual(group.getMass("U235"), 5)
 
         # ad a second block, and confirm it works
-        group.add(loadTestBlock())
+        group.add(buildComplexHexBlock())
         self.assertGreater(group.getMass("U235"), 5)
         self.assertAlmostEqual(group.getMass("U235"), 1364.28376185)
 
@@ -1122,7 +1121,7 @@ class TestMiscMethods(unittest.TestCase):
             self.assertEqual(child.p.percentBu, self.obj.p.percentBu)
 
     def test_copyParamsFrom(self):
-        obj2 = loadTestBlock()
+        obj2 = buildComplexHexBlock()
         obj2.p.percentBu = 15.2
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
