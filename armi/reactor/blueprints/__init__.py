@@ -382,8 +382,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         for nucBase in nuclideBases.instances:
             isAlreadyIsotopic = not isinstance(nucBase, nuclideBases.NaturalNuclideBase)
             if isAlreadyIsotopic:
-                # `elemental` may be a NaturalNuclideBase or a NuclideBase
-                # skip all NuclideBases (isotopics)
+                # `elemental` may be a NaturalNuclideBase or a NuclideBase skip all NuclideBases (isotopics)
                 continue
 
             # we now know its an elemental
@@ -513,13 +512,37 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return inp
 
     @classmethod
+    def dump(cls, data, stream) -> None:
+        """A wrapper around the yamlize.Object.dump.
+
+        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
+        values incorrectly for the zero values to zero strings: '0.0'.
+        """
+        super().dump(data, stream=stream)
+
+        if stream is None or isinstance(stream, io.TextIOWrapper):
+            return
+
+        # Loop through the entire text file, to attempt to do the cleaning
+        stream.seek(0)  # must rewind to be able to read the entire stream
+        txt = stream.read()
+        txt = txt.replace("'0.0'", "0.0")
+        txt = txt.replace('"0.0"', "0.0")
+
+        # wipe out the stream and then over-write it
+        stream.seek(0)
+        stream.truncate(0)
+        stream.write(txt)
+
+    @classmethod
     def load(cls, stream, roundTrip=False):
-        """A wrapper around the `yamlize.Object.load()` method."""
-        # With the release of ruamel.yaml 0.19.1, we began getting the following error:
-        # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
-        # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
-        # to side step the issue entirely. This occurs because of the way `yamlize` works when it calls
-        # `get_single_node`.
+        """A wrapper around the `yamlize.Object.load()` method.
+
+        With the release of ruamel.yaml 0.19.1, we began getting the following error:
+        AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
+        Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading to
+        side step the issue entirely. This occurs because of the way `yamlize` calls `get_single_node`.
+        """
         RoundTripLoader.max_depth = None
         return super().load(stream, Loader=RoundTripLoader)
 
