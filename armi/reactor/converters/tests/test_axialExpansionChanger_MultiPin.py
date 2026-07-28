@@ -15,11 +15,12 @@
 import collections
 import copy
 import io
-from dataclasses import dataclass
+import itertools
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional
 from unittest.mock import MagicMock
 
-from numpy import array, array_equal, full
+import numpy as np
 
 from armi.materials.material import Fluid
 from armi.reactor.blueprints import Blueprints
@@ -33,7 +34,7 @@ from armi.settings.caseSettings import Settings
 from armi.testing import BLOCK_DEFINITIONS_2PIN, GRID_DEFINITION, buildMixedPinAssembly
 
 if TYPE_CHECKING:
-    from armi.reactor.assemblies import HexAssembly
+    from armi.reactor.assemblies import Assembly
     from armi.reactor.blocks import HexBlock
 
 FINE_ASSEMBLY_DEF = """
@@ -75,6 +76,10 @@ assemblies:
 """  # noqa: E501
 
 
+def isFluidButNotBond(c):
+    return isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND)
+
+
 @dataclass
 class StoreMassAndTemp:
     cType: str
@@ -85,11 +90,58 @@ class StoreMassAndTemp:
     temp: float
 
 
+def assignDetailedNumberDensities(a: "Assembly", flags=Flags.FUEL):
+    """Assign detailed number density to all components in the assembly with the flags.
+
+    Returns
+    -------
+    list
+        Vector of nuclide identifiers that make up the detailed nuclide vector.
+    """
+    foundNucs: set[str] = set()
+    foundComps: list[Component] = []
+    for c in a.iterComponents(flags):
+        foundNucs.update(c.getNuclides())
+        foundComps.append(c)
+    allNucs = sorted(foundNucs)
+    for c in foundComps:
+        detailedND = c.getNuclideNumberDensities(allNucs)
+        c.p.detailedNDens = detailedND
+    return allNucs
+
+
+class AssemblyCompositionBreakdown:
+    def __init__(self, detailedNucs: list[str]):
+        self.massByFlag: dict[TypeSpec, float] = collections.defaultdict(float)
+        self.atomsByNuclide: dict[str, float] = collections.defaultdict(float)
+        self.detailedNucs = detailedNucs
+        self.detailedAtomsByNuclide = np.zeros(len(detailedNucs))
+
+    @classmethod
+    def fromAssembly(cls, a: "Assembly", detailedNucs: list[str]):
+        breakdown = cls(detailedNucs=detailedNucs)
+        for b in a:
+            solids = iterSolidComponents(b)
+            nonBondFluids = filter(isFluidButNotBond, b)
+            for c in itertools.chain(solids, nonBondFluids):
+                breakdown.updateFromComponent(c)
+        return breakdown
+
+    def updateFromComponent(self, c: Component, /):
+        self.massByFlag[c.p.flags] += c.getMass()
+        vol = c.getVolume()
+        for nuc, ndens in c.getNumberDensities().items():
+            self.atomsByNuclide[nuc] += vol * ndens
+        if (dnd := c.p.detailedNDens) is not None:
+            self.detailedAtomsByNuclide += vol * dnd
+
+
 class TestMultiPinConservationBase(AxialExpansionTestBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.aRef = buildMixedPinAssembly()
+        cls.detailedNucKeys = assignDetailedNumberDensities(cls.aRef)
         cls.places = 12
 
     def setUp(self):
@@ -98,40 +150,19 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
         self.axialExpChngr.setAssembly(self.a)
         self.initConservationValues()
 
+    def buildMassCheck(self):
+        return AssemblyCompositionBreakdown.fromAssembly(self.a, detailedNucs=self.detailedNucKeys)
+
     def initConservationValues(self):
         # get original masses for conservation checks
-        self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
         self.initialTotalHMMolesBOL = self.initialTotalHMMassBOL = 0.0
         for _, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL):
                 self.initialTotalHMMolesBOL += c.p.molesHmBOL
                 self.initialTotalHMMassBOL += c.p.massHmBOL
-
-    def getTotalCompMassByFlag(self, a: "HexAssembly") -> dict[TypeSpec, float]:
-        """Get the total mass of all components in the assembly, except Bond components.
-
-        Notes
-        -----
-        The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
-        conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
-        block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures. For multipin assemblies,
-        the former is generally not met for Bond components; however since there is only one coolant and intercoolant
-        component in general, the conservation of mass for these components expected if axially isothermal fluid
-        temperatures are present.
-        """
-        totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
-        for b in a:
-            for c in iterSolidComponents(b):
-                totalCMassByFlags[c.p.flags] += c.getMass()
-            for c in filter(self._isFluidButNotBond, b):
-                totalCMassByFlags[c.p.flags] += c.getMass()
-
-        return totalCMassByFlags
-
-    @staticmethod
-    def _isFluidButNotBond(c):
-        """Determine if a component is a fluid, but not Bond."""
-        return isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND)
+                # Need detailed number density to show conservation of normal and detailed ndens
+                c.p.detailedNDens = c.p.numberDensities.copy()
+        self.initialMassBreakdown = self.buildMassCheck()
 
     def _iterTestFuelCompsOnBlock(self, b: "HexBlock"):
         """Iterate over components in b that exactly contain Flags.FUEL, Flags.TEST, and Flags.DEPLETABLE."""
@@ -147,9 +178,22 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
         """Conservation of axial expansion is measured by ensuring the following is the same post expansion: 1) total
         assembly mass per component flag, 2) total assembly height, and 3) total moles heavy metal at BOL.
         """
-        newTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
-        for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
-            self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
+        newMassBreakdown = self.buildMassCheck()
+        self.assertSetEqual(set(newMassBreakdown.massByFlag), set(self.initialMassBreakdown.massByFlag))
+        for origFlag, origMass in self.initialMassBreakdown.massByFlag.items():
+            newMass = newMassBreakdown.massByFlag[origFlag]
+            self.assertAlmostEqual(newMass, origMass, places=self.places, msg=origFlag)
+
+        self.assertSetEqual(set(newMassBreakdown.atomsByNuclide), set(self.initialMassBreakdown.atomsByNuclide))
+        for nuc, origAtoms in self.initialMassBreakdown.atomsByNuclide.items():
+            newAtoms = newMassBreakdown.atomsByNuclide[nuc]
+            self.assertAlmostEqual(newAtoms, origAtoms, places=self.places, msg=nuc)
+
+        np.testing.assert_allclose(
+            newMassBreakdown.detailedAtomsByNuclide,
+            self.initialMassBreakdown.detailedAtomsByNuclide,
+            err_msg=self.detailedNucKeys,
+        )
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
 
@@ -185,22 +229,22 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         )
         # ensure nucsA and nucsB haven't changed
         self.assertTrue(
-            array_equal(
-                array(nucsA),
-                array(["Zr90", "Zr91", "Zr92", "U235", "U238"]),
+            np.array_equal(
+                np.array(nucsA),
+                np.array(["Zr90", "Zr91", "Zr92", "U235", "U238"]),
             )
         )
         self.assertTrue(
-            array_equal(
-                array(nucsB),
-                array(["Zr90", "Zr91", "Zr92", "U233", "U238", "I131", "XE131", "NP237", "AM242", "AM242M"]),
+            np.array_equal(
+                np.array(nucsB),
+                np.array(["Zr90", "Zr91", "Zr92", "U233", "U238", "I131", "XE131", "NP237", "AM242", "AM242M"]),
             )
         )
         # ensure nucsC is correct
         self.assertTrue(
-            array_equal(
-                array(nucsC),
-                array(["Zr90", "Zr91", "Zr92", "I131", "XE131", "U233", "U235", "NP237", "U238", "AM242", "AM242M"]),
+            np.array_equal(
+                np.array(nucsC),
+                np.array(["Zr90", "Zr91", "Zr92", "I131", "XE131", "U233", "U235", "NP237", "U238", "AM242", "AM242M"]),
             )
         )
 
@@ -576,7 +620,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
             c.setNumberDensity(nucs[i], 1e-3)
 
         # recalcualte the initial mass with the new isotope additions
-        self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+        self.initialMassBreakdown = self.buildMassCheck()
 
         for i, b in self._iterFuelBlocks():
             for c in self._iterTestFuelCompsOnBlock(b):
@@ -619,7 +663,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for _i, b in self._iterFuelBlocks():
             for c in self._iterTestFuelCompsOnBlock(b):
                 cList.append(c)
-        pList = full(len(cList), 1.2)
+        pList = np.full(len(cList), 1.2)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
@@ -635,7 +679,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for _i, b in self._iterFuelBlocks():
             for c in self._iterTestFuelCompsOnBlock(b):
                 cList.append(c)
-        pList = full(len(cList), 0.9)
+        pList = np.full(len(cList), 0.9)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
@@ -681,7 +725,7 @@ class TestExceptionForMultiPin(TestMultiPinConservationBase):
         for _i, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL | Flags.DEPLETABLE, exactMatch=True):
                 cList.append(c)
-        pList = full(len(cList), 1.3)
+        pList = np.full(len(cList), 1.3)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         with self.assertRaisesRegex(ArithmeticError, expected_regex="has a negative height"):
             self.axialExpChngr.axiallyExpandAssembly()

@@ -21,10 +21,11 @@ Notes
 This will not be a catch-all for random unit test functions. Be very sparing here.
 """
 
+import copy
 import io
 
 from armi.reactor import assemblies, blocks, grids
-from armi.reactor.assemblies import copy
+from armi.reactor.assemblies import Assembly
 from armi.reactor.components import Circle, Hexagon
 from armi.settings import Settings
 
@@ -568,9 +569,10 @@ def buildMixedPinAssembly(
     blockDefs: str = BLOCK_DEFINITIONS_2PIN,
     assemDef: str = REGULAR_ASSEMBLY_DEF,
     gridDef: str = GRID_DEFINITION,
-):
-    """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor. This assembly consists of 2 pin types
-    arranged as specified in the lattice map.
+) -> Assembly:
+    """Builds a hex-shaped mixed-pin assembly for a sodium fast reactor.
+
+    This assembly consists of 2 pin types arranged as specified in the lattice map.
     """
     from armi.reactor.blueprints import Blueprints
 
