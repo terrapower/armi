@@ -47,7 +47,6 @@ def _buildSimpleFuelHexBlockHelper(linkedBond=False):
         name = "simple-fuel-linked"
     else:
         name = "simple-fuel"
-    # name was formerly "fuel"
     b = blocks.HexBlock(name, height=10.0)
 
     fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
