@@ -31,8 +31,7 @@ from armi.reactor.assemblies import (
     grids,
 )
 from armi.reactor.reactors import Core, Reactor
-from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-from armi.testing import mockRunLogs
+from armi.testing import buildSimpleFuelHexBlock, mockRunLogs
 from armi.tests import ISOAA_PATH
 
 
@@ -68,7 +67,7 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
         cls.assembly = HexAssembly("testAssembly")
         cls.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         cls.assembly.spatialGrid.armiObject = cls.assembly
-        cls.assembly.add(buildSimpleFuelBlock())
+        cls.assembly.add(buildSimpleFuelHexBlock())
         # init and add interfaces
         cls.xsGroupInterface = CrossSectionGroupManager(cls.o.r, cls.o.cs)
         cls.o.addInterface(cls.xsGroupInterface)

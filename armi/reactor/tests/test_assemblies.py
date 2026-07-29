@@ -29,8 +29,7 @@ from armi.physics.neutronics.settings import CONF_LOADING_FILE, CONF_XS_KERNEL
 from armi.reactor import blocks, blueprints, components, geometry, parameters, reactors
 from armi.reactor.assemblies import Flags, HexAssembly, copy, grids, runLog
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, getEmptyHexReactor, mockRunLogs
+from armi.testing import TESTING_ROOT, buildEmptyHexAssembly, getEmptyHexReactor, loadTestReactor, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
@@ -64,15 +63,6 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(uZrFuel.getMass("U235") / (uZrFuel.getMass("U238") + uZrFuel.getMass("U235")), 0.1)
 
 
-def makeTestAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None):
-    coreGrid = r.core.spatialGrid if r is not None else spatialGrid
-    a = HexAssembly("TestAssem", assemNum=assemNum)
-    a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
-    a.spatialGrid.armiObject = a
-    a.spatialLocator = coreGrid[2, 2, 0]
-    return a
-
-
 class AssemblyReadOnlyTests(unittest.TestCase):
     """These tests of Assemblies do not modify the test assembly, which can be created in a setUpClass method."""
 
@@ -88,7 +78,7 @@ class AssemblyReadOnlyTests(unittest.TestCase):
         cls.r = getEmptyHexReactor()
         cls.r.core.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
 
-        cls.assembly = makeTestAssembly(NUM_BLOCKS, cls.assemNum, r=cls.r)
+        cls.assembly = buildEmptyHexAssembly(NUM_BLOCKS, cls.assemNum, r=cls.r)
 
         # Use these if they are needed
         cls.blockParams = {
@@ -354,7 +344,7 @@ class AssemblyReadOnlyTests(unittest.TestCase):
             :id: T_ARMI_ASSEM_POSI1
             :tests: R_ARMI_ASSEM_POSI
         """
-        a = makeTestAssembly(
+        a = buildEmptyHexAssembly(
             numBlocks=1,
             assemNum=1,
             spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
@@ -387,7 +377,7 @@ class AssemblyTests(unittest.TestCase):
         self.r = getEmptyHexReactor()
         self.r.core.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
 
-        self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
+        self.assembly = buildEmptyHexAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
 
         # Use these if they are needed
         self.blockParams = {
@@ -475,7 +465,7 @@ class AssemblyTests(unittest.TestCase):
             self.assertIs(c.parent, self.assembly)
 
     def test_add(self):
-        a = makeTestAssembly(1, 1)
+        a = buildEmptyHexAssembly(1, 1)
 
         # successfully add some Blocks to an Assembly
         for n in range(3):
@@ -535,7 +525,7 @@ class AssemblyTests(unittest.TestCase):
         # Make a second assembly with 4 times the resolution
         assemNum2 = self.assemNum * 4
         height2 = self.height / 4.0
-        assembly2 = makeTestAssembly(assemNum2, assemNum2)
+        assembly2 = buildEmptyHexAssembly(assemNum2, assemNum2)
 
         # add some blocks with a component
         for _ in range(assemNum2):
@@ -590,7 +580,7 @@ class AssemblyTests(unittest.TestCase):
         # Make a second assembly with 4 times the resolution
         assemNum2 = self.assemNum * 4
         height2 = self.height / 4.0
-        assembly2 = makeTestAssembly(assemNum2, assemNum2)
+        assembly2 = buildEmptyHexAssembly(assemNum2, assemNum2)
 
         # add some blocks with a component
         for _i in range(assemNum2):
@@ -632,7 +622,7 @@ class AssemblyTests(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_updateFromAssembly(self):
-        assembly2 = makeTestAssembly(self.assemNum, self.assemNum)
+        assembly2 = buildEmptyHexAssembly(self.assemNum, self.assemNum)
 
         params = {}
         params["maxPercentBu"] = 30.0
@@ -796,7 +786,7 @@ class AssemblyTests(unittest.TestCase):
 
     def test_calcTotalParam(self):
         # Remake original assembly
-        self.assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.assembly = buildEmptyHexAssembly(self.assemNum, self.assemNum)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -837,7 +827,7 @@ class AssemblyTests(unittest.TestCase):
 
     def test_reattach(self):
         # Remake original assembly
-        self.assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.assembly = buildEmptyHexAssembly(self.assemNum, self.assemNum)
         self.assertEqual(0, len(self.assembly))
 
         # add some blocks with a component
@@ -923,7 +913,7 @@ class AssemblyTests(unittest.TestCase):
     def test_averagePlenumTemperature(self):
         """Test an assembly's average plenum temperature with a single block outlet."""
         averagePlenumTemp = 42.0
-        plenumBlock = makeTestAssembly(1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0))
+        plenumBlock = buildEmptyHexAssembly(1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0))
 
         plenumBlock.setType("plenum", Flags.PLENUM)
         plenumBlock.p.THcoolantOutletT = averagePlenumTemp
@@ -939,7 +929,7 @@ class AssemblyTests(unittest.TestCase):
             :id: T_ARMI_ROTATE_HEX_ASSEM
             :tests: R_ARMI_ROTATE_HEX
         """
-        a = makeTestAssembly(1, 1)
+        a = buildEmptyHexAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")
         b.p.THcornTemp = [400, 450, 500, 550, 600, 650]
         rotTemp = [600, 650, 400, 450, 500, 550]
@@ -1039,7 +1029,7 @@ class AssemblyTests(unittest.TestCase):
 class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
-        self.o, self.r = test_reactors.loadTestReactor(root)
+        self.o, self.r = loadTestReactor(root)
 
     def test_snapAxialMesViaBlockIgn(self):
         """Snap axial mesh to a reference mesh should conserve mass based on Block igniter fuel."""

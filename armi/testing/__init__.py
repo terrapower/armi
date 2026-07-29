@@ -34,12 +34,22 @@ from armi.testing.singleAssemblies import (  # noqa: F401
     BLOCK_DEFINITIONS_3PIN,
     GRID_DEFINITION,
     REGULAR_ASSEMBLY_DEF,
+    buildEmptyHexAssembly,
     buildHexAssemblyFiveUZrUTh,
     buildHexAssemblyFourUZrUTh,
     buildHexAssemblySingleUZr,
     buildHexAssemblySingleUZrUTh,
     buildMixedPinAssembly,
     buildMixedThreePinAssembly,
+)
+from armi.testing.singleBlocks import (  # noqa: F401
+    NUM_PINS_IN_COMPLEX_HEX_BLOCK,
+    applyDummyData,
+    buildComplexHexBlock,
+    buildLinkedFuelHexBlock,
+    buildLinkedFuelHexBlockNegativeArea,
+    buildSimpleFuelHexBlock,
+    buildSimpleFuelHexBlockNegativeArea,
 )
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))

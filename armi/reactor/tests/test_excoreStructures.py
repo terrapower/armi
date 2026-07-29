@@ -21,7 +21,7 @@ from armi.reactor.composites import Composite
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.reactors import Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
-from armi.reactor.tests.test_assemblies import makeTestAssembly
+from armi.testing import buildEmptyHexAssembly
 
 
 class TestExcoreStructure(TestCase):
@@ -104,12 +104,12 @@ class TestSpentFuelPool(TestCase):
         self.assertEqual(len(self.sfp.getChildren()), 0)
 
         # add one assembly object and validate
-        a0 = makeTestAssembly(1, 987, spatialGrid=self.sfp.spatialGrid)
+        a0 = buildEmptyHexAssembly(1, 987, spatialGrid=self.sfp.spatialGrid)
         self.sfp.add(a0)
         self.assertEqual(len(self.sfp.getChildren()), 1)
 
         # add another assembly object and validate
-        a1 = makeTestAssembly(1, 988, spatialGrid=self.sfp.spatialGrid)
+        a1 = buildEmptyHexAssembly(1, 988, spatialGrid=self.sfp.spatialGrid)
         loc = self.sfp.spatialGrid[(1, -4, 0)]
         self.sfp.add(a1, loc)
         self.assertEqual(len(self.sfp.getChildren()), 2)
@@ -119,7 +119,7 @@ class TestSpentFuelPool(TestCase):
         self.assertEqual(len(self.sfp.getChildren()), 1)
 
     def test_getAssembly(self):
-        a0 = makeTestAssembly(1, 678, spatialGrid=self.sfp.spatialGrid)
+        a0 = buildEmptyHexAssembly(1, 678, spatialGrid=self.sfp.spatialGrid)
         self.sfp.add(a0)
 
         aReturn = self.sfp.getAssembly("A0678")
@@ -140,7 +140,7 @@ class TestSpentFuelPool(TestCase):
         self.assertEqual(loc._k, 0)
 
         # test against a non-empty grid
-        a0 = makeTestAssembly(1, 234, spatialGrid=self.sfp.spatialGrid)
+        a0 = buildEmptyHexAssembly(1, 234, spatialGrid=self.sfp.spatialGrid)
         self.sfp.add(a0)
 
     def test_normalizeNames(self):
@@ -149,7 +149,7 @@ class TestSpentFuelPool(TestCase):
         self.assertEqual(self.sfp.normalizeNames(17), 17)
 
         # test against a non-empty grid
-        a0 = makeTestAssembly(1, 456, spatialGrid=self.sfp.spatialGrid)
+        a0 = buildEmptyHexAssembly(1, 456, spatialGrid=self.sfp.spatialGrid)
         self.sfp.add(a0)
         self.assertEqual(self.sfp.normalizeNames(), 1)
         self.assertEqual(self.sfp.normalizeNames(17), 18)

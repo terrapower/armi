@@ -17,13 +17,13 @@ import unittest
 
 from armi.physics.fuelPerformance import utils
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks
+from armi.testing import buildComplexHexBlock
 
 
 class TestFuelPerformanceUtils(unittest.TestCase):
     def test_applyFuelDisplacement(self):
         displacement = 0.01
-        block = test_blocks.loadTestBlock()
+        block = buildComplexHexBlock()
         fuel = block.getComponent(Flags.FUEL)
         originalHotODInCm = fuel.getDimension("od")
         utils.applyFuelDisplacement(block, displacement)
