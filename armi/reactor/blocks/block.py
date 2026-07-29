@@ -134,20 +134,6 @@ class Block(composites.Composite):
 
         return b
 
-    def createHomogenizedCopy(self, pinSpatialLocators=False):
-        """
-        Create a copy of a block.
-
-        Notes
-        -----
-        Used to implement a copy function for specific block types that can be much faster than a
-        deepcopy by glossing over details that may be unnecessary in certain contexts.
-
-        This base class implementation is just a deepcopy of the block, in full detail (not
-        homogenized).
-        """
-        return copy.deepcopy(self)
-
     @property
     def core(self):
         from armi.reactor.reactors import Core

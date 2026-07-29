@@ -739,7 +739,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         heightFrac = h / totalHeight
                         runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
-            block = sourceBlock.createHomogenizedCopy(includePinCoordinates)
+            block = copy.deepcopy(sourceBlock)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
