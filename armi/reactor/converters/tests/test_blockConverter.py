@@ -39,7 +39,6 @@ from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
-# TODO: move to testing
 class TestBlockConverter(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
