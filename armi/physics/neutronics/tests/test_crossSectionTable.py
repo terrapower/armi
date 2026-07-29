@@ -23,9 +23,8 @@ from armi.physics.neutronics.isotopicDepletion import (
     isotopicDepletionInterface as idi,
 )
 from armi.physics.neutronics.latticePhysics import ORDER
-from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.settings import Settings
-from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -37,7 +36,7 @@ class TestCrossSectionTable(unittest.TestCase):
             :id: T_ARMI_DEPL_TABLES
             :tests: R_ARMI_DEPL_TABLES
         """
-        obj = loadTestBlock()
+        obj = buildComplexHexBlock()
         obj.p.mgFlux = range(33)
         core = obj.parent.parent
         core.lib = isotxs.readBinary(ISOAA_PATH)

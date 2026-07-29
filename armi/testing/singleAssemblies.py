@@ -564,6 +564,35 @@ grids:
 """
 
 
+def buildEmptyHexAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None):
+    """Builds an empty hex assembly.
+
+    Parameters
+    ----------
+    numBlocks : int
+        Number of blocks
+    assemNum : int
+        Assembly ID
+    spatialGrid : :py:class:`armi.reactors.grids.HexGrid`
+        HexGrid used for assembly.
+    r : :py:class:`armi.reactors.Reactor`
+        Optional reactor object that may be passed. This objects `self.core.spatialGrid` is used instead of the
+        `spatialGrid` argument.
+
+    Returns
+    -------
+    a : :py:class:`armi.reactor.assemblies.HexAssembly`
+    """
+    from armi.reactor.assemblies import HexAssembly
+
+    coreGrid = r.core.spatialGrid if r is not None else spatialGrid
+    a = HexAssembly("TestAssem", assemNum=assemNum)
+    a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
+    a.spatialGrid.armiObject = a
+    a.spatialLocator = coreGrid[2, 2, 0]
+    return a
+
+
 def buildMixedPinAssembly(
     blockDefs: str = BLOCK_DEFINITIONS_2PIN,
     assemDef: str = REGULAR_ASSEMBLY_DEF,

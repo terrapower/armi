@@ -28,8 +28,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks, test_reactors
-from armi.testing import TESTING_ROOT
+from armi.testing import TESTING_ROOT, applyDummyData, buildComplexHexBlock, loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -166,9 +165,7 @@ class TestGFI(unittest.TestCase):
         """
         cs = settings.Settings()
         cs["burnSteps"] = 2
-        _o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         gfi = MockGlobalFluxInterface(r, cs)
         bocKeff = 1.1
         r.core.p.keffUnc = 1.1
@@ -210,9 +207,7 @@ class TestGFI(unittest.TestCase):
             :tests: R_ARMI_FLUX_CHECK_POWER
         """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         gfi = MockGlobalFluxInterface(r, cs)
         self.assertEqual(gfi.checkEnergyBalance(), None)
 
@@ -228,9 +223,7 @@ class TestGFIWithExecuters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cs = settings.Settings()
-        cls.r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )[1]
+        cls.r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")[1]
 
     def setUp(self):
         self.r.core.p.keff = 1.0
@@ -304,9 +297,7 @@ class TestGFIWithExecutersNonUniform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, cls.r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 
@@ -349,7 +340,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     def test_mapper(self):
         # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible with
         # actually doing some math using the ISOAA test microscopic library
-        o, r = test_reactors.loadTestReactor(
+        o, r = loadTestReactor(
             TESTING_ROOT,
             customSettings={CONF_XS_KERNEL: "MC2v2"},
             inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
@@ -430,8 +421,8 @@ class TestGlobalFluxUtils(unittest.TestCase):
             :id: T_ARMI_FLUX_RX_RATES
             :tests: R_ARMI_FLUX_RX_RATES
         """
-        b = test_blocks.loadTestBlock()
-        test_blocks.applyDummyData(b)
+        b = buildComplexHexBlock()
+        applyDummyData(b)
         self.assertAlmostEqual(b.p.rateAbs, 0.0)
         globalFluxInterface.calcReactionRates(b, 1.01, b.core.lib)
         self.assertGreater(b.p.rateAbs, 0.0)

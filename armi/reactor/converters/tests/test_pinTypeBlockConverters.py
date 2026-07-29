@@ -22,12 +22,12 @@ from armi.reactor.converters.pinTypeBlockConverters import (
     adjustSmearDensity,
 )
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import buildSimpleFuelBlock, loadTestBlock
+from armi.testing import buildComplexHexBlock, buildSimpleFuelHexBlock
 
 
 class TestPinTypeConverters(unittest.TestCase):
     def setUp(self):
-        self.block = loadTestBlock()
+        self.block = buildComplexHexBlock()
 
     def test_adjustCladThicknessByOD(self):
         thickness = 0.05
@@ -54,7 +54,7 @@ class MassConservationTests(unittest.TestCase):
     r"""Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
-        self.b = buildSimpleFuelBlock()
+        self.b = buildSimpleFuelHexBlock()
 
     def test_adjustSmearDensity(self):
         r"""Tests the getting, setting, and getting of smear density functions."""

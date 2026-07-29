@@ -33,12 +33,11 @@ from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
-from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
 )
-from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
+from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -989,7 +988,7 @@ class TestSimplestDatabaseItems(unittest.TestCase):
 
 class TestStaticDatabaseItems(unittest.TestCase):
     def test_applyComponentNumberDensitiesMigration(self):
-        b = loadTestBlock()
+        b = buildComplexHexBlock()
         comps = [b[0], b[1]]
         unpacked = [
             {"U235": 1.23e-3, "U238": 2.34e-3},
