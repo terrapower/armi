@@ -113,7 +113,6 @@ def _buildSimpleFuelHexBlockNegativeAreaHelper(linkedBond=False):
     else:
         name = "simple-fuel-negative"
 
-    # name was formerly "fuel"
     b = blocks.HexBlock(name, height=10.0)
 
     fuelDims = {"Tinput": 25, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -207,7 +206,6 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
     -------
     block : :py:class:`armi.reactor.blocks.HexBlock`
         Annular hex block.
-
     """
     from armi.testing import buildEmptyHexAssembly, getEmptyHexReactor
 
@@ -218,7 +216,6 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
     r = getEmptyHexReactor()
 
     assemNum = 3
-    # name was formerly TestHexBlock
     block = blocks.HexBlock("ComplexHexBlock")
     block.setType("defaultType")
     block.p.nPins = NUM_PINS_IN_COMPLEX_HEX_BLOCK

@@ -564,7 +564,6 @@ grids:
 """
 
 
-# Formerly makeTestAssembly
 def buildEmptyHexAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None):
     """Builds an empty hex assembly.
 
@@ -583,7 +582,6 @@ def buildEmptyHexAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPit
     Returns
     -------
     a : :py:class:`armi.reactor.assemblies.HexAssembly`
-    ...
     """
     from armi.reactor.assemblies import HexAssembly
 
