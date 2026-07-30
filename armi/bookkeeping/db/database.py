@@ -302,7 +302,7 @@ class Database:
             newPath = safeMove(self._fullPath, self._fileName)
             self._fullPath = os.path.abspath(newPath)
 
-    def splitDatabase(self, keepTimeSteps: Sequence[Tuple[int, Any]], label: str) -> str:
+    def splitDatabase(self, keepTimeSteps: Sequence[Tuple], label: str) -> str:
         """
         Discard all data except for specific time steps, retaining old data in a separate file.
 
@@ -569,8 +569,8 @@ class Database:
 
         return Layout(version, self.h5db[timeGroupName])
 
-    def genTimeSteps(self) -> Generator[Tuple[int, Any], None, None]:
-        """Returns a generator of (cycle, node) tuples that are present in the DB.
+    def genTimeSteps(self):
+        """Returns a generator of tuples reflecting statepoints that are present in the DB.
 
         This method relies on a class variable timeNodeGroupPattern, which is a Python regex pattern that matches the
         the Python database time nodes. This method must support all possible Database time nodes.

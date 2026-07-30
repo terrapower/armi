@@ -1006,7 +1006,7 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         steps = list(db.genTimeSteps())
         self.assertListEqual(steps, [(0, 0), (0, 1), (1, 0), (1, 1), (1, 1, "EOL")])
 
-        # test a case with an EOL time step
+        # test a case with an error state
         keys = ["c00n03", "c00n03error"]
         db.h5db = {k: "fake" for k in keys}
 
