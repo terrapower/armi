@@ -75,7 +75,7 @@ import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
-from ruamel.yaml import RoundTripLoader
+from ruamel.yaml import RoundTripDumper, RoundTripLoader
 
 from armi import (
     context,
@@ -512,19 +512,50 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return inp
 
     @classmethod
-    def dump(cls, data, stream) -> None:
-        """A wrapper around the yamlize.Object.dump.
+    def dump(cls, data, stream=None, Dumper=RoundTripDumper):
+        """A modification of yamlize.Object.dump.
 
         With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
         values incorrectly for the zero values to zero strings: '0.0'.
         """
-        super().dump(data, stream=stream)
+        convertToYaml = stream is None
+        stream = stream or io.StringIO()
+        dumper = Dumper(stream)
 
-        if stream is None or isinstance(stream, io.TextIOWrapper):
-            return
+        try:
+            dumper._serializer.open()
+            root_node = cls.to_yaml(dumper, data)
+            dumper.serialize(root_node)
+            dumper._serializer.close()
+        finally:
+            try:
+                dumper._emitter.dispose()
+            except AttributeError:
+                raise
+                dumper.dispose()  # cyaml
 
-        # Loop through the entire text file, to attempt to do the cleaning
-        stream.seek(0)  # must rewind to be able to read the entire stream
+        try:
+            Blueprints.streamCleaner(stream)
+        except io.UnsupportedOperation:
+            # Not all streams are writable.
+            pass
+
+        if convertToYaml:
+            return stream.getvalue()
+
+        return None
+
+    @classmethod
+    def streamCleaner(cls, stream) -> None:
+        """Clean the zero strings into zero floats.
+
+        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
+        values incorrectly for the zero values to zero strings: '0.0'.
+        """
+        # must rewind to be able to read the entire stream
+        stream.seek(0)
+
+        # build the replacement string
         txt = stream.read()
         txt = txt.replace("'0.0'", "0.0")
         txt = txt.replace('"0.0"', "0.0")
