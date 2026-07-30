@@ -985,6 +985,53 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         with self.assertRaises(ValueError):
             db.open()
 
+    def test_genTimeSteps(self):
+        # mock up a test DB
+        dbPath = "test_genTimeSteps.h5"
+        db = Database(dbPath, "w")
+        db.close()
+
+        # test a simple case
+        keys = ["c00n00", "c00n01", "c01n00", "c01n01"]
+        db.h5db = {k: "fake" for k in keys}
+
+        steps = list(db.genTimeSteps())
+        self.assertListEqual(steps, [(0, 0), (0, 1), (1, 0), (1, 1)])
+
+        # test a case with an EOL time step
+        keys = ["c00n00", "c00n01", "c01n00", "c01n01", "c01n01EOL"]
+        db.h5db = {k: "fake" for k in keys}
+
+        steps = list(db.genTimeSteps())
+        self.assertListEqual(steps, [(0, 0), (0, 1), (1, 0), (1, 1), (1, 1, "EOL")])
+
+        # test a case with an error state
+        keys = ["c00n03", "c00n03error"]
+        db.h5db = {k: "fake" for k in keys}
+
+        steps = list(db.genTimeSteps())
+        self.assertListEqual(steps, [(0, 3), (0, 3, "error")])
+
+        # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
+        db.h5db = None
+
+    def test_genTimeStepGroups(self):
+        # mock up a test DB
+        dbPath = "test_genTimeStepGroups.h5"
+        db = Database(dbPath, "w")
+        db.close()
+
+        # test a simple case
+        keys = ["c00n00", "c00n01", "c01n00", "c01n01"]
+        const = "fakeGroup"
+        db.h5db = {k: const for k in keys}
+
+        steps = list(db.genTimeStepGroups())
+        self.assertListEqual(steps, [const] * 4)
+
+        # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
+        db.h5db = None
+
 
 class TestStaticDatabaseItems(unittest.TestCase):
     def test_applyComponentNumberDensitiesMigration(self):
