@@ -84,6 +84,21 @@ class StoreMassAndTemp:
     HMmolesBOL: float
     temp: float
 
+    @classmethod
+    def fromComponent(cls, c: Component):
+        """Initialize from a component.
+
+        Helps because the init signature has lots of fields.
+        """
+        return cls(
+            c.parent.name,
+            c.getMass(),
+            c.getHMMass(),
+            c.p.massHmBOL,
+            c.p.molesHmBOL,
+            c.temperatureInC,
+        )
+
 
 class TestMultiPinConservationBase(AxialExpansionTestBase):
     @classmethod
@@ -369,22 +384,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         """
         # set the original mass and temperature of the components post expansion and pre redistribution
 
-        self.originalC0 = StoreMassAndTemp(
-            self.c0.parent.name,
-            self.c0.getMass(),
-            self.c0.getHMMass(),
-            self.c0.p.massHmBOL,
-            self.c0.p.molesHmBOL,
-            self.c0.temperatureInC,
-        )
-        self.originalC1 = StoreMassAndTemp(
-            self.c1.parent.name,
-            self.c1.getMass(),
-            self.c1.getHMMass(),
-            self.c1.p.massHmBOL,
-            self.c1.p.molesHmBOL,
-            self.c1.temperatureInC,
-        )
+        self.originalC0 = StoreMassAndTemp.fromComponent(self.c0)
+        self.originalC1 = StoreMassAndTemp.fromComponent(self.c1)
 
         # adjust c0 elevations per growFrac
         self.c0.zbottom = self.b0.p.zbottom
