@@ -439,6 +439,25 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._updateToCompElevations(toComp=toComp)
         self._updateFromCompElevations(fromComp=fromComp)
 
+        # Ensure conservation between the two components (e.g., total mass before == total mass after)
+        self.assertAlmostEqual(
+            toComp.getMass() + fromComp.getMass(),
+            toCompRefData.mass + fromCompRefData.mass,
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            toComp.getHMMass() + fromComp.getHMMass(), toCompRefData.HMmass + fromCompRefData.HMmass, places=self.places
+        )
+        self.assertAlmostEqual(
+            toComp.p.molesHmBOL + fromComp.p.molesHmBOL,
+            toCompRefData.HMmolesBOL + fromCompRefData.HMmolesBOL,
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            toComp.p.massHmBOL + fromComp.p.massHmBOL,
+            toCompRefData.HMmassBOL + fromCompRefData.HMmassBOL,
+        )
+
         # ensure the toComp mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
             toComp.getMass(),
