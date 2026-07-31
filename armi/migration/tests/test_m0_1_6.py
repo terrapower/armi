@@ -38,3 +38,20 @@ class TestMigration(unittest.TestCase):
         reader = SettingsReader(newCs)
         reader.readFromStream(converter.apply())
         self.assertEqual(newCs["detailAssemLocationsBOL"][0], "011-012")
+
+    def test_noMigrationIfVersion(self):
+        """Ensure that no migration happens if the version of the DB is new than the migration 'toVersion'."""
+        cs = caseSettings.Settings()
+        newSettings = {"detailAssemLocationsBOL": ["B1012"]}
+        cs = cs.modified(newSettings=newSettings)
+
+        writer = SettingsWriter(cs)
+        stream = io.StringIO()
+        writer.writeYaml(stream)
+        stream.seek(0)
+
+        converter = ConvertAlphanumLocationSettingsToNum(stream=stream)
+        newCs = caseSettings.Settings()
+        reader = SettingsReader(newCs)
+        reader.readFromStream(converter.apply(version="0.6.4"))
+        self.assertEqual(newCs["detailAssemLocationsBOL"][0], "B1012")

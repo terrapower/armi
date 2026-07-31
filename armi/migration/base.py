@@ -20,6 +20,7 @@ migration class defined here chooses this behavior based on whether the ``stream
 the constructor.
 """
 
+import io
 import os
 import shutil
 
@@ -58,19 +59,28 @@ class Migration:
         version : str
             Optional DB version string, for example: 1.2.3
         """
-        # TODO: Compare self.toVersion to version of DB or whatever...
+        skip = False
+        # Compare self.toVersion to the version of the DB.
         if version is not None:
-            if versionToNumber(self.toVersion) >= versionToNumber(version):
+            if versionToNumber(version) >= versionToNumber(self.toVersion):
                 # this migration is not necessary, because the DB is newer than that.
-                return
+                skip = True
 
-        runLog.info(f"Applying {self}")
+        if not skip:
+            runLog.info(f"Applying {self}")
+
         if self.path:
             self._loadStreamFromPath()
-        newStream = self._applyToStream()
-        if self.path:
-            self._backupOriginal()
-            self._writeNewFile(newStream)
+
+        if not skip:
+            newStream = self._applyToStream()
+
+            if self.path:
+                self._backupOriginal()
+                self._writeNewFile(newStream)
+        else:
+            newStream = io.StringIO(self.stream.read())
+
         return newStream
 
     def _loadStreamFromPath(self):
