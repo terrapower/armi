@@ -61,7 +61,7 @@ class Migration:
         """
         skip = False
         # Compare self.toVersion to the version of the DB.
-        if version is not None:
+        if version is not None or version != "uncontrolled":
             if versionToNumber(version) >= versionToNumber(self.toVersion):
                 # this migration is not necessary, because the DB is newer than that.
                 skip = True
