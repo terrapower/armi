@@ -17,6 +17,7 @@ import typing
 from math import isclose
 from textwrap import dedent
 
+import numpy as np
 from scipy.optimize import brentq
 
 from armi import runLog
@@ -240,6 +241,49 @@ class RedistributeMass:
                 self.toComp.p[paramName] = self.toComp.p[paramName] + amountMoved
                 self.fromComp.p[paramName] = self.fromComp.p[paramName] - amountMoved
 
+    def _updateNumberDensityParameters(self, paramName: str):
+        """Update some number density parameter.
+
+        If one of the components :attr:`toComp` or :attr:`fromComp` does not have this parameter, no update will be
+        performed. This can lead to loss of conservation but is consistent with the approach of performing mass
+        redistribution between similar components.
+
+        Performs a volume-weighted average between number density parameters:
+        ``rho' = (rho_f * v_f + rho_t * v_t) / (v_f + v_t)`` where ``_f` is the "from" component and ``_t`` is the
+        "to" component.
+
+        Parameters
+        ----------
+        paramName
+            Name of the parameter to update
+
+        Returns
+        -------
+        bool
+            If the update was performed.
+        """
+        fromData: typing.Optional[np.ndarray] = getattr(self.fromComp.p, paramName, None)
+        if fromData is None:
+            return False
+        toData: typing.Optional[np.ndarray] = getattr(self.toComp.p, paramName, None)
+        if toData is None:
+            return False
+        # array * scalar gives us a new array, not a copy. So we can do in-place mutations later
+        try:
+            toData = toData * self.toCompVolume
+            fromData = fromData * self.fromCompVolume
+            toData += fromData
+            toData /= self.newVolume
+        except Exception:
+            msg = (
+                f"Error updating {paramName} on {self.assemblyName} : toComp={self.toComp} : fromComp={self.fromComp}\n"
+                f"Shape fromData {toData.shape}\nShape toData {toData.shape}"
+            )
+            runLog.error(msg)
+            raise
+        setattr(self.toComp.p, paramName, toData)
+        return True
+
     def _adjustPinNDens(self):
         """Update pin number density parameter.
 
@@ -248,13 +292,7 @@ class RedistributeMass:
         bool
             If the update was performed.
         """
-        toPinNDens = self.toComp.p.pinNDens
-        fromPinNDens = self.fromComp.p.pinNDens
-        if toPinNDens is None or fromPinNDens is None:
-            return False
-        updated = (toPinNDens * self.toCompVolume + fromPinNDens * self.fromCompVolume) / (self.newVolume)
-        self.toComp.p.pinNDens = updated
-        return True
+        return self._updateNumberDensityParameters("pinNDens")
 
     def _adjustDetailedNDens(self):
         """Update the detailed number density parameter.
@@ -264,10 +302,4 @@ class RedistributeMass:
         bool
             If the update was performed.
         """
-        toDetailedNDens = self.toComp.p.detailedNDens
-        fromDetailedNDens = self.fromComp.p.detailedNDens
-        if toDetailedNDens is None or fromDetailedNDens is None:
-            return False
-        updated = (toDetailedNDens * self.toCompVolume + fromDetailedNDens * self.fromCompVolume) / (self.newVolume)
-        self.toComp.p.detailedNDens = updated
-        return True
+        return self._updateNumberDensityParameters("detailedNDens")
