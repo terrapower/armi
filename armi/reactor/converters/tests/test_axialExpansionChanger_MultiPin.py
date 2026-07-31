@@ -16,10 +16,11 @@ import collections
 import copy
 import io
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
 from unittest.mock import MagicMock
 
-from numpy import array, array_equal, full
+from numpy import array, array_equal, dtype, float32, full, ndarray
+from numpy.testing import assert_allclose
 
 from armi.materials.material import Fluid
 from armi.reactor.blueprints import Blueprints
@@ -83,6 +84,8 @@ class StoreMassAndTemp:
     HMmassBOL: float
     HMmolesBOL: float
     temp: float
+    volume: float
+    pinNDens: Optional[ndarray[Tuple[int, int], dtype[float32]]]
 
     @classmethod
     def fromComponent(cls, c: Component):
@@ -90,6 +93,9 @@ class StoreMassAndTemp:
 
         Helps because the init signature has lots of fields.
         """
+        if (pinNDens := c.p.pinNDens) is not None:
+            # copy so scaling operations like component.changeNDensByFactor don't mutate original data
+            pinNDens = pinNDens.copy()
         return cls(
             c.parent.name,
             c.getMass(),
@@ -97,6 +103,8 @@ class StoreMassAndTemp:
             c.p.massHmBOL,
             c.p.molesHmBOL,
             c.temperatureInC,
+            c.getVolume(),
+            pinNDens,
         )
 
 
@@ -191,6 +199,11 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.b1 = self.axialExpChngr.linked.linkedBlocks[self.b0].upper
         self.c0 = next(filter(lambda c: c.getType() == "fuel test", self.b0))
         self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
+
+        nPins = self.c0.getDimension("mult")
+        nPinNuclides = 7  # arbitrary
+        self.c0.p.pinNDens = full((nPins, nPinNuclides), 1.0, dtype=float32)
+        self.c1.p.pinNDens = full((nPins, nPinNuclides), 20.0, dtype=float32)
 
     def test_getAllNucs(self):
         nucsA = ["Zr90", "Zr91", "Zr92", "U235", "U238"]
@@ -507,6 +520,15 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             fromComp.p.molesHmBOL,
             fromCompRefData.HMmolesBOL - self.redistributedBOLMoles,
             places=self.places,
+        )
+        # pin number density check
+        # from component number density should be unchanged as we've only lopped a portion off
+        assert_allclose(fromComp.p.pinNDens, fromCompRefData.pinNDens)
+        # conservation of total number of pin atoms through expansion
+        assert_allclose(
+            fromComp.p.pinNDens * fromComp.getVolume() + toComp.p.pinNDens * toComp.getVolume(),
+            fromCompRefData.pinNDens * fromCompRefData.volume + toCompRefData.pinNDens * toCompRefData.volume,
+            rtol=1e-5,
         )
 
 
