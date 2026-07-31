@@ -79,8 +79,7 @@ def getIndicesFromDIF3DStyleLocatorLabel(label):
     """Convert a ring-based label like A2003B into 1-based ring, location indices."""
     locMatch = re.search(r"([A-Z]\d)(\d\d\d)([A-Z]?)", label)
     if locMatch:
-        # we have a valid location label. Process it and set parameters
-        # convert A4 to 04, B2 to 12, etc.
+        # we have a valid location label. Process it and set parameters convert A4 to 04, B2 to 12, etc.
         ring = locMatch.group(1)
         posLabel = locMatch.group(2)
         axLabel = locMatch.group(3)
@@ -88,7 +87,7 @@ def getIndicesFromDIF3DStyleLocatorLabel(label):
         if firstDigit < 10:
             i = int("{0}{1}".format(firstDigit, ring[1]))
         else:
-            raise RuntimeError("invalid label {0}. 1st character too large.".format(label))
+            raise RuntimeError(f"invalid label {label}. 1st character too large.")
         j = int(posLabel)
         if axLabel:
             k = AXIAL_CHARS.index(axLabel)
@@ -96,4 +95,4 @@ def getIndicesFromDIF3DStyleLocatorLabel(label):
             k = None
         return i, j, k
 
-    raise RuntimeError("No Indices found for DIF3D-style label: {0}".format(label))
+    raise RuntimeError(f"No Indices found for DIF3D-style label: {label}")

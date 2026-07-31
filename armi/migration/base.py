@@ -14,12 +14,10 @@
 """
 Base migration classes.
 
-A classic migration takes a file name, read the files, migrates the
-data, and re-writes the file. Some migrations need to happen live
-on a stream. For example, if an old/invalid input file is being read
-in from an old database. The migration class defined here
-chooses this behavior based on whether the ``stream`` or ``path``
-variables are given in the constructor.
+A classic migration takes a file name, read the files, migrates the data, and re-writes the file. Some migrations need
+to happen live on a stream. For example, if an old/invalid input file is being read in from an old database. The
+migration class defined here chooses this behavior based on whether the ``stream`` or ``path`` variables are given in
+the constructor.
 """
 
 import os
@@ -27,13 +25,13 @@ import shutil
 
 from armi import runLog
 from armi.settings import caseSettings
+from armi.settings.settingsValidation import versionToNumber
 
 
 class Migration:
     """Generic migration.
 
-    To implement a concrete Migration, one must often only
-    implement the ``_applyToStream`` method.
+    To implement a concrete Migration, one must often only implement the ``_applyToStream`` method.
     """
 
     fromVersion = "x.x.x"
@@ -49,12 +47,23 @@ class Migration:
     def __repr__(self):
         return f"<Migration from {self.fromVersion}: {self.__doc__[:40]}..."
 
-    def apply(self):
+    def apply(self, version: str = None):
         """
         Apply migration.
 
         This is generally called from a subclass.
+
+        Parameters
+        ----------
+        version : str
+            Optional DB version string, for example: 1.2.3
         """
+        # TODO: Compare self.toVersion to version of DB or whatever...
+        if version is not None:
+            if versionToNumber(self.toVersion) >= versionToNumber(version):
+                # this migration is not necessary, because the DB is newer than that.
+                return
+
         runLog.info(f"Applying {self}")
         if self.path:
             self._loadStreamFromPath()
