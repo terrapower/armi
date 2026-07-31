@@ -294,7 +294,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         """
         growFrac = 1.10
         self._initializeTest(growFrac, fromComp=self.c0)
-        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
+        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False, growFrac=growFrac)
 
     def test_addMassToCompNonTargetCompNoTherm(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
@@ -308,7 +308,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         """
         growFrac = 0.9
         self._initializeTest(growFrac, fromComp=self.c1)
-        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
+        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False, growFrac=growFrac)
 
     def test_addMassToCompNonTargetComprYesTherm(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
@@ -328,7 +328,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
 
         self._initializeTest(growFrac, fromComp=self.c1)
-        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True)
+        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True, growFrac=growFrac)
 
     def test_addMassToCompNonTargetExpanYesTherm(self):
         """Increase c0 by 100 deg C and and show that c0 mass is moved to c1.
@@ -347,7 +347,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
 
         self._initializeTest(growFrac, fromComp=self.c0)
-        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
+        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True, growFrac=growFrac)
 
     def _updateToCompElevations(self, toComp: Component):
         """Shift ``toComp`` based on expansion or contraction of ``fromComp``, as indicated by ``self.deltaZTop``.
@@ -437,7 +437,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             toCompRefData = self.originalC0 if toComp.parent.name == self.originalC0.cType else self.originalC1
         return fromCompRefData, toCompRefData
 
-    def _redistributeMassWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
+    def _redistributeMassWithTempAssert(
+        self, fromComp: Component, toComp: Component, thermalExp: bool, growFrac: float
+    ):
         """Perform the mass redistribution from ``fromComp`` to ``toComp``.
 
         Notes
@@ -522,8 +524,14 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             places=self.places,
         )
         # pin number density check
-        # from component number density should be unchanged as we've only lopped a portion off
-        assert_allclose(fromComp.p.pinNDens, fromCompRefData.pinNDens)
+        if fromComp is self.c1:
+            # if we contracted and are moving nuclides from the upper component, the number
+            # density in the from component is unchanged. it has not undergone any expansion or
+            # other changes in this test
+            assert_allclose(fromComp.p.pinNDens, fromCompRefData.pinNDens)
+        else:
+            # fromComp ndens should only change due to the thermal expansion in the lower component
+            assert_allclose(fromComp.p.pinNDens, fromCompRefData.pinNDens / growFrac)
         # conservation of total number of pin atoms through expansion
         assert_allclose(
             fromComp.p.pinNDens * fromComp.getVolume() + toComp.p.pinNDens * toComp.getVolume(),
