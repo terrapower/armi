@@ -66,6 +66,7 @@ class RedistributeMass:
         self.setNewToCompTemperature()
         if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
             self._adjustMassParams()
+        self._adjustPinNDens()
 
     @property
     def fromCompVolume(self):
@@ -237,3 +238,19 @@ class RedistributeMass:
                 amountMoved = removalFrac * self.fromComp.p[paramName]
                 self.toComp.p[paramName] = self.toComp.p[paramName] + amountMoved
                 self.fromComp.p[paramName] = self.fromComp.p[paramName] - amountMoved
+
+    def _adjustPinNDens(self):
+        """Update pin number density parameter.
+
+        Returns
+        -------
+        bool
+            If the update was performed.
+        """
+        toPinNDens = self.toComp.p.pinNDens
+        fromPinNDens = self.fromComp.p.pinNDens
+        if toPinNDens is None or fromPinNDens is None:
+            return False
+        updated = (toPinNDens * self.toCompVolume + fromPinNDens * self.fromCompVolume) / (self.newVolume)
+        self.toComp.p.pinNDens = updated
+        return True
