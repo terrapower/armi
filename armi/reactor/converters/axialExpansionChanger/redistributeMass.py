@@ -56,12 +56,16 @@ class RedistributeMass:
             self.performRedistribution()
 
     def performRedistribution(self):
-        """Perform the mass redistribution between two compatible components."""
+        """Perform the mass redistribution after checking compatibility."""
         if self.compatabilityCheck():
-            self.setNewToCompNDens()
-            self.setNewToCompTemperature()
-            if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
-                self._adjustMassParams()
+            self._performRedistribution()
+
+    def _performRedistribution(self):
+        """Perform the mass redistribution between compatible components."""
+        self.setNewToCompNDens()
+        self.setNewToCompTemperature()
+        if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
+            self._adjustMassParams()
 
     @property
     def fromCompVolume(self):
