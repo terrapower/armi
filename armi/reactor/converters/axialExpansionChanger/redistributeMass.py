@@ -67,6 +67,7 @@ class RedistributeMass:
         if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
             self._adjustMassParams()
         self._adjustPinNDens()
+        self._adjustDetailedNDens()
 
     @property
     def fromCompVolume(self):
@@ -253,4 +254,20 @@ class RedistributeMass:
             return False
         updated = (toPinNDens * self.toCompVolume + fromPinNDens * self.fromCompVolume) / (self.newVolume)
         self.toComp.p.pinNDens = updated
+        return True
+
+    def _adjustDetailedNDens(self):
+        """Update the detailed number density parameter.
+
+        Returns
+        -------
+        bool
+            If the update was performed.
+        """
+        toDetailedNDens = self.toComp.p.detailedNDens
+        fromDetailedNDens = self.fromComp.p.detailedNDens
+        if toDetailedNDens is None or fromDetailedNDens is None:
+            return False
+        updated = (toDetailedNDens * self.toCompVolume + fromDetailedNDens * self.fromCompVolume) / (self.newVolume)
+        self.toComp.p.detailedNDens = updated
         return True

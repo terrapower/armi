@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, Tuple
 from unittest.mock import MagicMock
 
-from numpy import array, array_equal, dtype, float32, full, ndarray
+from numpy import array, array_equal, dtype, float32, float64, full, ndarray
 from numpy.testing import assert_allclose
 
 from armi.materials.material import Fluid
@@ -86,6 +86,7 @@ class StoreMassAndTemp:
     temp: float
     volume: float
     pinNDens: Optional[ndarray[Tuple[int, int], dtype[float32]]]
+    detailedNDens: Optional[ndarray[Tuple[int], dtype[float64]]]
 
     @classmethod
     def fromComponent(cls, c: Component):
@@ -96,6 +97,8 @@ class StoreMassAndTemp:
         if (pinNDens := c.p.pinNDens) is not None:
             # copy so scaling operations like component.changeNDensByFactor don't mutate original data
             pinNDens = pinNDens.copy()
+        if (detailedNDens := c.p.detailedNDens) is not None:
+            detailedNDens = detailedNDens.copy()
         return cls(
             c.parent.name,
             c.getMass(),
@@ -105,6 +108,7 @@ class StoreMassAndTemp:
             c.temperatureInC,
             c.getVolume(),
             pinNDens,
+            detailedNDens,
         )
 
 
@@ -204,6 +208,10 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         nPinNuclides = 7  # arbitrary
         self.c0.p.pinNDens = full((nPins, nPinNuclides), 1.0, dtype=float32)
         self.c1.p.pinNDens = full((nPins, nPinNuclides), 20.0, dtype=float32)
+
+        nDetailedNuclides = 11  # arbitrary
+        self.c0.p.detailedNDens = full((nDetailedNuclides,), 1e-3, dtype=float64)
+        self.c1.p.detailedNDens = full((nDetailedNuclides,), 4e-1, dtype=float64)
 
     def test_getAllNucs(self):
         nucsA = ["Zr90", "Zr91", "Zr92", "U235", "U238"]
@@ -536,6 +544,21 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         assert_allclose(
             fromComp.p.pinNDens * fromComp.getVolume() + toComp.p.pinNDens * toComp.getVolume(),
             fromCompRefData.pinNDens * fromCompRefData.volume + toCompRefData.pinNDens * toCompRefData.volume,
+            rtol=1e-5,
+        )
+
+        # detailed number density check
+        if fromComp is self.c1:
+            # if we contracted and are moving nuclides from the upper component, the number
+            # density in the from component is unchanged. it has not undergone any expansion or
+            # other changes in this test
+            assert_allclose(fromComp.p.detailedNDens, fromCompRefData.detailedNDens)
+        else:
+            # fromComp ndens should only change due to the thermal expansion in the lower component
+            assert_allclose(fromComp.p.detailedNDens, fromCompRefData.detailedNDens / growFrac)
+        assert_allclose(
+            fromComp.p.detailedNDens * fromComp.getVolume() + toComp.p.detailedNDens * toComp.getVolume(),
+            fromCompRefData.detailedNDens * fromCompRefData.volume + toCompRefData.detailedNDens * toCompRefData.volume,
             rtol=1e-5,
         )
 
