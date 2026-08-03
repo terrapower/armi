@@ -56,19 +56,21 @@ class TestMassRedistribution(TestCase):
         )
 
     def test_noUpdateMisMatchedPinNDens(self):
-        """If pin number density is only updated if both have similarly shaped data."""
+        """Pin number density is only updated if both components have `pinNDens` populated."""
         # neither have pin ndens => no update
         self.toComp.p.pinNDens = None
         self.fromComp.p.pinNDens = None
         self.assertFalse(self.distributor._adjustPinNDens())
-        # only one has pin ndens => update
+        # generate random sample pNDens data
         rng = np.random.default_rng()
         pinDensShape = (7, 3)  # arbitrary
         sampleData = rng.uniform(low=0, high=1e-2, size=pinDensShape).astype(np.float32)
 
+    # only fromComp has pin ndens => no update
         self.fromComp.p.pinNDens = sampleData
         self.assertFalse(self.distributor._adjustPinNDens())
 
+    # only toComp has pin ndens => no update
         self.fromComp.p.pinNDens = None
         self.toComp.p.pinNDens = sampleData
         self.assertFalse(self.distributor._adjustPinNDens())
