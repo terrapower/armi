@@ -2395,7 +2395,7 @@ class TestHexBlock(unittest.TestCase):
 
         # We haven't set a pitch defining component this time so set it now with 0 area.
         pitchDefiningComponent = components.Hexagon(
-            "pitchComp", "Void", op=desiredPitch, ip=desiredPitch, mult=1, **compArgs
+            "pitchComp", "Material", op=desiredPitch, ip=desiredPitch, mult=1, **compArgs
         )
         hexBlock.add(pitchDefiningComponent)
         self.assertEqual(desiredPitch, hexBlock.getPitch())
