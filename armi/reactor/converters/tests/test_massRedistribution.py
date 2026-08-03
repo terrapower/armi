@@ -91,7 +91,7 @@ class TestMassRedistribution(TestCase):
         self.assertTrue(self.distributor._adjustPinNDens())
         # no change in from comp
         np.testing.assert_allclose(self.fromComp.p.pinNDens, initialFromPinDens)
-        np.testing.assert_allclose(self.toComp.p.pinNDens, expected, rtol=1e-5)
+        np.testing.assert_allclose(self.toComp.p.pinNDens, expected)
 
     def test_updatedDetailedNDens(self):
         """Test the ability to shift detailed ndens between components."""
@@ -109,7 +109,7 @@ class TestMassRedistribution(TestCase):
         self.assertTrue(self.distributor._adjustDetailedNDens())
         # no change in from comp
         np.testing.assert_allclose(self.fromComp.p.detailedNDens, initialFromDetailedDens)
-        np.testing.assert_allclose(self.toComp.p.detailedNDens, expected, rtol=1e-5)
+        np.testing.assert_allclose(self.toComp.p.detailedNDens, expected)
 
     def test_volumes(self):
         """Test the volume properties.
