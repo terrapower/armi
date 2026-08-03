@@ -66,11 +66,11 @@ class TestMassRedistribution(TestCase):
         pinDensShape = (7, 3)  # arbitrary
         sampleData = rng.uniform(low=0, high=1e-2, size=pinDensShape).astype(np.float32)
 
-    # only fromComp has pin ndens => no update
+        # only fromComp has pin ndens => no update
         self.fromComp.p.pinNDens = sampleData
         self.assertFalse(self.distributor._adjustPinNDens())
 
-    # only toComp has pin ndens => no update
+        # only toComp has pin ndens => no update
         self.fromComp.p.pinNDens = None
         self.toComp.p.pinNDens = sampleData
         self.assertFalse(self.distributor._adjustPinNDens())
