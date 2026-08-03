@@ -429,7 +429,8 @@ class Database:
             return None
 
         stream = io.StringIO(bpString)
-        stream = Blueprints.migrate(stream)
+        version = self.version if self.version != "uncontrolled" else None
+        stream = Blueprints.migrate(stream, version)
         return Blueprints.load(stream)
 
     def writeInputsToDB(self, cs, csString=None, bpString=None):

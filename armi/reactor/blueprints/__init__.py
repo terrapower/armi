@@ -497,18 +497,21 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     )
 
     @classmethod
-    def migrate(cls, inp: typing.TextIO):
+    def migrate(cls, inp: typing.TextIO, version: str = None):
         """Given a stream representation of a blueprints file, migrate it.
 
         Parameters
         ----------
         inp : typing.TextIO
             Input stream to migrate.
+        version : str
+            Optional DB version string, for example: 1.2.3
         """
         for migI in migration.ACTIVE_MIGRATIONS:
             if issubclass(migI, migration.base.BlueprintsMigration):
                 mig = migI(stream=inp)
-                inp = mig.apply()
+                inp = mig.apply(version)
+
         return inp
 
     @classmethod

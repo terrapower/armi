@@ -665,4 +665,26 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     elif re.search(minV, versionRequired) is not None:
         return versionThis.split(".")[0] == versionRequired
     else:
-        raise ValueError("The required version is not a valid format: {}".format(versionRequired))
+        raise ValueError(f"The required version is not a valid format: {versionRequired}")
+
+
+def versionToNumber(version: str):
+    """Convert an ARMI version string to an arbitrary number, so we can compare ARMI version strings.
+
+    The expected format for versions strings is "1.2.3". Other formats are not supported.
+
+    The actual numerical value returned is not particularly interesting on its own, it is just meant to support
+    comparing version strings (which is greater, etc).
+
+    Parameters
+    ----------
+    versionThis: str
+        ARMI-style version string, typically of the form 1.2.3.
+    """
+    versionBits = version.split(".")
+    num = 1e6 * int(versionBits[0]) + 1e3 * int(versionBits[1])
+    if len(versionBits) >= 3:
+        num += int(versionBits[2])
+        # We are quietly ignoring longer versions strings, like 1.2.3.dev0
+
+    return num
