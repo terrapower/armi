@@ -68,13 +68,11 @@ class Migration:
                 # this migration is not necessary, because the DB is newer than that.
                 skip = True
 
-        if not skip:
-            runLog.info(f"Applying {self}")
-
         if self.path:
             self._loadStreamFromPath()
 
         if not skip:
+            runLog.info(f"Applying {self}")
             newStream = self._applyToStream()
 
             if self.path:
