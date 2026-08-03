@@ -64,11 +64,13 @@ class RedistributeMass:
     def _performRedistribution(self):
         """Perform the mass redistribution between compatible components."""
         self.setNewToCompNDens()
-        self.setNewToCompTemperature()
         if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
             self._adjustMassParams()
         self._adjustPinNDens()
         self._adjustDetailedNDens()
+        # Temperature change MUST go last because it can change the volume of the components
+        # and the pre-expansion / pre-distribution volumes control how much of what is moved
+        self.setNewToCompTemperature()
 
     @property
     def fromCompVolume(self):

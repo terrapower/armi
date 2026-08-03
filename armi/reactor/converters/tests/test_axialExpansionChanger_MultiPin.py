@@ -544,7 +544,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         assert_allclose(
             fromComp.p.pinNDens * fromComp.getVolume() + toComp.p.pinNDens * toComp.getVolume(),
             fromCompRefData.pinNDens * fromCompRefData.volume + toCompRefData.pinNDens * toCompRefData.volume,
-            rtol=1e-5,
         )
 
         # detailed number density check
@@ -559,7 +558,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         assert_allclose(
             fromComp.p.detailedNDens * fromComp.getVolume() + toComp.p.detailedNDens * toComp.getVolume(),
             fromCompRefData.detailedNDens * fromCompRefData.volume + toCompRefData.detailedNDens * toCompRefData.volume,
-            rtol=1e-5,
         )
 
 
