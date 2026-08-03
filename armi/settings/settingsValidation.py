@@ -685,5 +685,6 @@ def versionToNumber(version: str):
     num = 1e6 * int(versionBits[0]) + 1e3 * int(versionBits[1])
     if len(versionBits) >= 3:
         num += int(versionBits[2])
+        # We are quietly ignoring longer versions strings, like 1.2.3.dev0
 
     return num

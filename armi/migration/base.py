@@ -32,15 +32,17 @@ from armi.settings.settingsValidation import versionToNumber
 class Migration:
     """Generic migration.
 
-    To implement a concrete Migration, one must often only implement the ``_applyToStream`` method.
+    To implement a concrete Migration, you must implement the ``_applyToStream`` method. You must also over-write the
+    class variables ``fromVersion`` and ``toVersion``. These are the ARMI versions you are migrating from and to. The
+    ``toVersion`` must be higher than the ``fromVersion``.
     """
 
+    # Any subclass MUST over-write these ARMI versions; "toVersion" MUST be higher than "fromVersion".
     fromVersion = "x.x.x"
     toVersion = "x.x.x"
 
     def __init__(self, stream=None, path=None):
-        if not (bool(stream) ^ bool(path)):
-            # XOR
+        if not (bool(stream) ^ bool(path)):  # XOR
             raise RuntimeError("Stream and path inputs to migration aremutually exclusive. Choose one or the other.")
         self.stream = stream
         self.path = path
