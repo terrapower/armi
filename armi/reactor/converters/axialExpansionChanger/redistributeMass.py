@@ -283,7 +283,7 @@ class RedistributeMass:
             )
             runLog.error(msg)
             raise
-        setattr(self.toComp.p, paramName, toData)
+        self.toComp.p[paramName] = toData
         return True
 
     def _adjustPinNDens(self):
