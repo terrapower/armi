@@ -42,7 +42,7 @@ class TestMigration(unittest.TestCase):
     def test_noMigrationIfVersion(self):
         """
         Ensure that no migration happens if the version of the DB is newer than the migration 'toVersion'.
-        
+
         This test checks the specific case of `ConvertAlphanumLocationSettingsToNum`, which should only
         be applied until v0.1.7.
         """
