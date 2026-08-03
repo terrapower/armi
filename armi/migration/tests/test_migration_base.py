@@ -16,27 +16,90 @@
 import os
 import unittest
 
-from armi.migration.base import Migration, SettingsMigration
+from armi.migration.base import DatabaseMigration, Migration, SettingsMigration
 from armi.testing import TESTING_ROOT
 
 
+class MockMigration1(Migration):
+    """Migration defined for unit tests only."""
+
+    @property
+    def fromVersion(self):
+        return "0.2.3"
+
+    @property
+    def toVersion(self):
+        return "0.6.4"
+
+    def _applyToStream(self):
+        pass
+
+
+class MockSettingsMigration1(SettingsMigration):
+    """SettingsMigration defined for unit tests only."""
+
+    @property
+    def fromVersion(self):
+        return "0.1.2"
+
+    @property
+    def toVersion(self):
+        return "0.3.4"
+
+    def _applyToStream(self):
+        pass
+
+
+class BrokenDatabaseMigration1(DatabaseMigration):
+    """For testing purposes only, fromVersion and toVersion are invalid."""
+
+    @property
+    def fromVersion(self):
+        return "0.7.0"
+
+    @property
+    def toVersion(self):
+        return "0.6.4"
+
+    def _applyToStream(self):
+        pass
+
+
+class BrokenBlueprintsMigration1(DatabaseMigration):
+    """For testing purposes only, fromVersion and toVersion are missing."""
+
+    def _applyToStream(self):
+        pass
+
+
 class TestMigrationBases(unittest.TestCase):
-    def test_basic_validation(self):
+    def test_basicValidation(self):
         with self.assertRaises(RuntimeError):
-            _m = Migration(None, None)
+            _m = MockMigration1(None, None)
 
         with self.assertRaises(RuntimeError):
-            _m = Migration("fake_stream", "fake_path")
+            _m = MockMigration1("fake_stream", "fake_path")
 
-        Migration("fake_stream", None)
-        m = Migration(None, "fake_path")
+        MockMigration1("fake_stream", None)
+        m = MockMigration1(None, "fake_path")
         with self.assertRaises(ValueError):
             m._loadStreamFromPath()
+
+    def test_abstractClass(self):
+        """Some basic testing of the abstract base class."""
+        with self.assertRaises(AttributeError):
+            _m = Migration(None, "fake_path")
+
+        with self.assertRaises(ValueError):
+            _m = BrokenDatabaseMigration1(None, "fake_path")
+
+        with self.assertRaises(AttributeError):
+            _m = BrokenBlueprintsMigration1(None, "fake_path")
 
 
 class TestSettingsMigration(unittest.TestCase):
     def test_loadStreamFromPath(self):
         file_path = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor", "armiRun.yaml")
-        m = SettingsMigration(None, file_path)
+        m = MockSettingsMigration1(None, file_path)
         m._loadStreamFromPath()
         self.assertIsNotNone(m.stream)

@@ -20,6 +20,7 @@ migration class defined here chooses this behavior based on whether the ``stream
 the constructor.
 """
 
+import abc
 import io
 import os
 import shutil
@@ -32,20 +33,36 @@ from armi.settings.settingsValidation import versionToNumber
 class Migration:
     """Generic migration.
 
-    To implement a concrete Migration, you must implement the ``_applyToStream`` method. You must also over-write the
-    class variables ``fromVersion`` and ``toVersion``. These are the ARMI versions you are migrating from and to. The
-    ``toVersion`` must be higher than the ``fromVersion``.
+    To implement a concrete Migration, you must implement the ``_applyToStream`` method. You must also define the
+    abstract properties ``fromVersion`` and ``toVersion``. These are the ARMI versions you are migrating from and to.
+    The ``toVersion`` must be higher than the ``fromVersion``.
     """
 
-    # Any subclass MUST over-write these ARMI versions; "toVersion" MUST be higher than "fromVersion".
-    fromVersion = "x.x.x"
-    toVersion = "x.x.x"
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, stream=None, path=None):
         if not (bool(stream) ^ bool(path)):  # XOR
-            raise RuntimeError("Stream and path inputs to migration aremutually exclusive. Choose one or the other.")
+            raise RuntimeError("Only a stream or a path may be used as migration input. Choose exactly one.")
+        elif versionToNumber(self.toVersion) <= versionToNumber(self.fromVersion):
+            raise ValueError(f"{self.toVersion} is not higher than {self.fromVersion}.")
+
         self.stream = stream
         self.path = path
+
+    @abc.abstractproperty
+    def fromVersion(self):
+        """ARMI version string, must be smaller than toVersion."""
+        pass
+
+    @abc.abstractproperty
+    def toVersion(self):
+        """ARMI version string, must be larger than fromVersion."""
+        pass
+
+    @abc.abstractmethod
+    def _applyToStream(self):
+        """Add actual migration code here in a subclass."""
+        pass
 
     def __repr__(self):
         return f"<Migration from {self.fromVersion}: {self.__doc__[:40]}..."
@@ -91,10 +108,6 @@ class Migration:
         if not os.path.exists(self.path):
             raise ValueError(f"File {self.path} does not exist")
 
-    def _applyToStream(self):
-        """Add actual migration code here in a subclass."""
-        raise NotImplementedError()
-
     def _backupOriginal(self):
         # must be called after _loadStreamFromPath
         self.stream.close()
@@ -103,7 +116,7 @@ class Migration:
     def _writeNewFile(self, newStream):
         i = 0
         while os.path.exists(self.path):
-            # don't overwrite files (could be blueprints)
+            # Do not overwrite files (they could be blueprints).
             name, ext = os.path.splitext(self.path)
             self.path = name + f"{i}" + ext
             i += 1
@@ -118,7 +131,7 @@ class BlueprintsMigration(Migration):
     def _loadStreamFromPath(self):
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
-        Migration._loadStreamFromPath(self)
+        super()._loadStreamFromPath()
         cs = caseSettings.Settings(fName=self.path)
         self.path = cs[CONF_LOADING_FILE]
         self.stream = open(self.path)
@@ -128,7 +141,7 @@ class SettingsMigration(Migration):
     """Migration for settings input."""
 
     def _loadStreamFromPath(self):
-        Migration._loadStreamFromPath(self)
+        super()._loadStreamFromPath()
         self.stream = open(self.path)
 
 

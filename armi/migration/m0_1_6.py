@@ -35,8 +35,13 @@ AXIAL_CHARS = [
 class ConvertAlphanumLocationSettingsToNum(SettingsMigration):
     """Convert old location label values to new style."""
 
-    fromVersion = "0.1.6"
-    toVersion = "0.1.7"
+    @property
+    def fromVersion(self):
+        return "0.1.6"
+
+    @property
+    def toVersion(self):
+        return "0.1.7"
 
     def _applyToStream(self):
         cs = caseSettings.Settings()
