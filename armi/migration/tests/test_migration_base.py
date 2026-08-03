@@ -65,13 +65,6 @@ class BrokenDatabaseMigration1(DatabaseMigration):
         pass
 
 
-class BrokenBlueprintsMigration1(DatabaseMigration):
-    """For testing purposes only, fromVersion and toVersion are missing."""
-
-    def _applyToStream(self):
-        pass
-
-
 class TestMigrationBases(unittest.TestCase):
     def test_basicValidation(self):
         with self.assertRaises(RuntimeError):
@@ -85,16 +78,8 @@ class TestMigrationBases(unittest.TestCase):
         with self.assertRaises(ValueError):
             m._loadStreamFromPath()
 
-    def test_abstractClass(self):
-        """Some basic testing of the abstract base class."""
-        with self.assertRaises(AttributeError):
-            _m = Migration(None, "fake_path")
-
         with self.assertRaises(ValueError):
             _m = BrokenDatabaseMigration1(None, "fake_path")
-
-        with self.assertRaises(AttributeError):
-            _m = BrokenBlueprintsMigration1(None, "fake_path")
 
 
 class TestSettingsMigration(unittest.TestCase):

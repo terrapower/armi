@@ -30,7 +30,7 @@ from armi.settings import caseSettings
 from armi.settings.settingsValidation import versionToNumber
 
 
-class Migration:
+class Migration(abc.ABC):
     """Generic migration.
 
     To implement a concrete Migration, you must implement the ``_applyToStream`` method. You must also define the
