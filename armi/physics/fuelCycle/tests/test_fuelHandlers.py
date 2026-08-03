@@ -43,11 +43,10 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.tests import ArmiTestHelper
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import InputError
@@ -176,7 +175,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         There are some igniters and feeds but none of these have any number densities.
         """
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             self.directoryChanger.destination,
             customSettings={"nCycles": 4, "trackAssems": True},
         )

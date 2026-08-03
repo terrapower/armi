@@ -34,14 +34,13 @@ import os
 from armi import configure
 from armi.physics.fuelCycle import fuelHandlers
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import plotting
 
 # configure ARMI
 configure(permissive=True)
 
-o, reactor = test_reactors.loadTestReactor(
+o, reactor = loadTestReactor(
     os.path.join(TESTING_ROOT, "reactors", "smallCartesian"), inputFileName="refTestCartesian.yaml"
 )
 

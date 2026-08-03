@@ -44,12 +44,12 @@ efficient analysis.
 from armi import configure
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 
 # configure ARMI
 configure(permissive=True)
 
-_o, r = test_reactors.loadTestReactor()
+_o, r = loadTestReactor()
 
 # fully heterogeneous
 bFuel = r.core.getBlocks(Flags.FUEL)[0]

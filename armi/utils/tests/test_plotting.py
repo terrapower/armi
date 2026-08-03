@@ -27,8 +27,7 @@ from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import ISOAA_PATH, getEmptyHexReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -46,9 +45,7 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        cls.o, cls.r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
     def test_plotDepthMap(self):
         """Indirectly tests plot face map."""
@@ -223,7 +220,7 @@ class TestPatches(unittest.TestCase):
             f.write(txt)
 
         # this one is flats-up with many assemblies in the core
-        _, rHexFlatsUp = test_reactors.loadTestReactor(inputFilePath=".", inputFileName="armiRunSmallest.yaml")
+        _, rHexFlatsUp = loadTestReactor(inputFilePath=".", inputFileName="armiRunSmallest.yaml")
 
         nAssems = len(rHexFlatsUp.core)
         self.assertEqual(nAssems, 1)
@@ -242,7 +239,7 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][1], 0)
 
         # this one is corners-up, with only a single assembly
-        _, rHexCornersUp = test_reactors.loadTestReactor(
+        _, rHexCornersUp = loadTestReactor(
             TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
         )
 
@@ -257,7 +254,7 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][0], 0)
 
         # this one is cartestian, with many assemblies in the core
-        _, rCartesian = test_reactors.loadTestReactor(
+        _, rCartesian = loadTestReactor(
             os.path.join(TESTING_ROOT, "reactors", "smallCartesian"), inputFileName="refTestCartesian.yaml"
         )
 

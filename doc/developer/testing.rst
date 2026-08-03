@@ -108,7 +108,7 @@ To get the standard ARMI test reactor, import this:
 
 .. code-block:: python
 
-    from armi.reactor.tests.test_reactors import loadTestReactor
+    from armi.testing import loadTestReactor
 
 This function will return a reactor object. And it takes various input arguments to allow you to customize that reactor:
 
