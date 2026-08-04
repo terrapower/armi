@@ -515,10 +515,8 @@ class Database:
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
             cyc = time[0]
             tn = time[1]
-            print("TODO", cyc, tn)
             if cyc == startCycle and tn == startNode:
                 # all data up to current state are merged
-                print("    TODO", cyc, tn)
                 return
             self.h5db.copy(h5ts, h5ts.name)
 
