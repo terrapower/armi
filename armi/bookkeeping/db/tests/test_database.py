@@ -1055,7 +1055,7 @@ class TestSimplestDatabaseItems(unittest.TestCase):
                 self.timeSteps = timeSteps
 
             def genTimeStepGroups(self):
-                return [FakeHDF5(i) for i in range(len(self.timeSteps))]
+                return [FakeHDF5(t) for t in self.timeSteps]
 
             def genTimeSteps(self):
                 return self.timeSteps
@@ -1063,11 +1063,11 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         db.h5db = FakeHDF5(123)
         db.mergeHistory(MockDB([(0, 0), (0, 1)]), 0, 1)
 
-        self.assertListEqual(results, [0])
+        self.assertListEqual(results, [(0, 0)])
 
         results = []
         db.mergeHistory(MockDB([(0, 0), (0, 0, "error"), (0, 1)]), 0, 1)
-        self.assertListEqual(results, [0])
+        self.assertListEqual(results, [(0, 0), (0, 0, "error")])
 
         # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
         db.h5db = None

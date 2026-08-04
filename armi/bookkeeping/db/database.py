@@ -513,7 +513,8 @@ class Database:
 
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
-            cyc, tn = time
+            cyc = time[0]
+            tn = time[1]
             print("TODO", cyc, tn)
             if cyc == startCycle and tn == startNode:
                 # all data up to current state are merged
