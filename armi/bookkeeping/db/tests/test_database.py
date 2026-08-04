@@ -1035,7 +1035,7 @@ class TestSimplestDatabaseItems(unittest.TestCase):
     def test_mergeHistory(self):
         """Test some edge cases of Database.mergeHistory.
 
-        This test uses some mock database and H5 file tooling, so we can more easily test edge cases in the ........
+        This test uses some mock database and H5 file tooling, so we can more easily test edge cases.
         """
         # mock up a test DB
         dbPath = "test_mergeHistory.h5"
