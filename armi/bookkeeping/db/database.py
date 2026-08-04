@@ -495,10 +495,7 @@ class Database:
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
-        return (
-            self.h5db["inputs/settings"].asstr()[()],
-            self.h5db["inputs/blueprints"].asstr()[()],
-        )
+        return (self.h5db["inputs/settings"].asstr()[()], self.h5db["inputs/blueprints"].asstr()[()])
 
     def mergeHistory(self, inputDB, startCycle, startNode):
         """
@@ -517,8 +514,10 @@ class Database:
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
             cyc, tn = time
+            print("TODO", cyc, tn)
             if cyc == startCycle and tn == startNode:
                 # all data up to current state are merged
+                print("    TODO", cyc, tn)
                 return
             self.h5db.copy(h5ts, h5ts.name)
 

@@ -1032,6 +1032,46 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
         db.h5db = None
 
+    def test_mergeHistory(self):
+        # mock up a test DB
+        dbPath = "test_mergeHistory.h5"
+        db = Database(dbPath, "w")
+        db.close()
+
+        results = []
+
+        class FakeHDF5:
+            name = "fake"
+
+            def __init__(self, x):
+                self.x = x
+
+            def copy(self, a, b):
+                return results.append(a.x)
+
+        class MockDB:
+            def __init__(self, timeSteps):
+                self.versionMajor = 3
+                self.timeSteps = timeSteps
+
+            def genTimeStepGroups(self):
+                return [FakeHDF5(i) for i in range(len(self.timeSteps))]
+
+            def genTimeSteps(self):
+                return self.timeSteps
+
+        db.h5db = FakeHDF5(123)
+        db.mergeHistory(MockDB([(0, 0), (0, 1)]), 0, 1)
+
+        self.assertListEqual(results, [0])
+
+        results = []
+        db.mergeHistory(MockDB([(0, 0), (0, 0, "error"), (0, 1)]), 0, 1)
+        self.assertListEqual(results, [0])
+
+        # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
+        db.h5db = None
+
 
 class TestStaticDatabaseItems(unittest.TestCase):
     def test_applyComponentNumberDensitiesMigration(self):
