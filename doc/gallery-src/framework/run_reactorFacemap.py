@@ -20,13 +20,13 @@ power distribution from it. You can plot any block parameter.
 """
 
 from armi import configure
-from armi.reactor.tests import test_reactors
+from armi.testng import loadTestReactor
 from armi.utils import plotting
 
 # configure ARMI
 configure(permissive=True)
 
-operator, reactor = test_reactors.loadTestReactor()
+operator, reactor = loadTestReactor()
 reactor.core.growToFullCore(None)
 # set dummy power
 for b in reactor.core.getBlocks():

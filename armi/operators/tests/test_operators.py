@@ -30,7 +30,6 @@ from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
 from armi.reactor.reactors import Core, Reactor
-from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
 from armi.settings.fwSettings.globalSettings import (
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
@@ -40,7 +39,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_SETTINGS,
 )
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -64,7 +63,7 @@ class InterfaceC(Interface):
 
 class OperatorTests(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
         )
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
@@ -173,9 +172,7 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
     def test_interfaceIsActive(self):
-        self.o, _r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, _r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
@@ -552,7 +549,7 @@ settings:
 class TestInterfaceAndEventHeaders(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(
+        cls.o, cls.r = loadTestReactor(
             TESTING_ROOT,
             inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
             customSettings={CONF_TIGHT_COUPLING: True},
@@ -600,7 +597,7 @@ class OperatorRestartTests(unittest.TestCase):
     def setUpClass(cls):
         cls.START_CYCLE = 4
         cls.START_NODE = 2
-        cls.o, cls.r = test_reactors.loadTestReactor(
+        cls.o, cls.r = loadTestReactor(
             TESTING_ROOT,
             inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",
             customSettings={
