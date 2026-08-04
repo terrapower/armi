@@ -86,7 +86,7 @@ class HexBlock(Block):
 
             This method creates and returns a homogenized representation of itself in the form of a
             new Block. The homogenization occurs in the following manner. A single Hexagon Component
-            is created and added to the new Block. This Hexagon Component is given a default 
+            is created and added to the new Block. This Hexagon Component is given a default
             :py:class:`armi.materials.material.Material` material and a volume averaged temperature
             (``getAverageTempInC``). The number densities of the original Block are also stored on
             this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original
