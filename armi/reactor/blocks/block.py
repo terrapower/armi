@@ -986,24 +986,47 @@ class Block(composites.Composite):
 
             Uses some simple criteria to infer the number of pins in the block.
 
-            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`, loop
-            over all components of that type in the block. If the component is an instance of
-            :py:class:`~armi.reactor.components.basicShapes.Circle`, add its multiplicity to a list,
-            and sum that list over all components with each given flag.
+            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`, loop over all components
+            of that type in the block. If the component is an instance of
+            :py:class:`~armi.reactor.components.basicShapes.Circle`, add its multiplicity to a list, and sum that list
+            over all components with each given flag. If two such components have the same spatial locator, group them
+            together and pick the one with the highest multiplicity.
 
-            After looping over all possibilities, return the maximum value returned from the process
-            above, or if no compatible components were found, return zero.
+            After looping over all possibilities, return the maximum value returned from the process above, or if no
+            compatible components were found, return zero.
         """
-        nPins = [
-            sum(
-                [
-                    (int(c.getDimension("mult")) if isinstance(c, basicShapes.Circle) else 0)
-                    for c in self.iterComponents(compType)
-                ]
-            )
+        # find all the components in this block that match one of the flags in PIN_COMPONENTS
+        compsByType = [
+            [c for c in self.iterComponents(compType) if isinstance(c, basicShapes.Circle)]
             for compType in PIN_COMPONENTS
         ]
-        return 0 if not nPins else max(nPins)
+
+        # Group together components by spatial locator, THEN count the number of pins by group and by type/flag
+        numPinsByType = []
+        for comps in compsByType:
+            compsByLocation = []
+            while len(comps):
+                c = comps.pop()
+                index = -9
+                for i, cByLoc in enumerate(compsByLocation):
+                    if c.spatialLocator == cByLoc[0].spatialLocator:
+                        index = i
+                        break
+
+                if index < 0:
+                    # this spatialLocator was NOT seen before
+                    compsByLocation.append([c])
+                else:
+                    # this spatialLocator was seen before, group with the others
+                    compsByLocation[index].append(c)
+
+            # Count pins. If multiple components are at the same location, take the one that has the most pins.
+            numPins = [max([int(c.getDimension("mult")) for c in csByLocs]) for csByLocs in compsByLocation]
+            numPins = 0 if not numPins else sum(numPins)
+            numPinsByType.append(numPins)
+
+        # Return whichever component type/flag yields the highest pin count
+        return 0 if not numPinsByType else max(numPinsByType)
 
     def mergeWithBlock(self, otherBlock, fraction):
         """

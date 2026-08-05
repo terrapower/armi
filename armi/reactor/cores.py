@@ -290,6 +290,19 @@ class Core(composites.Composite):
         sortKey = lambda a: a.spatialLocator.getRingPos()
         self._children = sorted(self._children, key=sortKey)
 
+    def _genChildByLocationLookupTable(self):
+        """Update the childByLocation lookup table.
+
+        Notes
+        -----
+        This method assumes only one child per spatialLocator, as is typical in pin-type reactor cores. In the version
+        of this method on the generic Composite, it is assumed that multiple children might exist at a given location.
+        """
+        runLog.extra("Generating location-to-child lookup table.")
+        self.childrenByLocator = {}
+        for child in self:
+            self.childrenByLocator[child.spatialLocator] = child
+
     def summarizeReactorStats(self):
         """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
         totalMass = 0.0
