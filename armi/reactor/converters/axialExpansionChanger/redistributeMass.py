@@ -206,8 +206,12 @@ class RedistributeMass:
 
     @staticmethod
     def _sortKey(item):
-        """Break isotope string down by element, atomic weight, and metastable state for sorting. Raises a RuntimeError
-        if the string does not match the expected pattern.
+        """Break isotope string down by atomic weight, element, and metastable state for sorting.
+
+        Raises
+        ------
+        RuntimeError
+            If the string does not match the expected pattern.
         """
         pattern = re.compile(
             r"""
@@ -231,8 +235,7 @@ class RedistributeMass:
 
         Notes
         -----
-        The returned list is sorted by :py:meth:`sortKey`. Isotopes are sorted based on 1) atomic weight, 2) element,
-        and 3) metastable state.
+        The returned list is sorted by :py:meth:`_sortKey`.
         """
         nucsToAdd = set(nucsA).union(set(nucsB))
         return sorted(nucsToAdd, key=self._sortKey)
