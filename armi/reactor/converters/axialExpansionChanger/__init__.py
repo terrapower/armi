@@ -11,7 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Enable component-wise axial expansion for assemblies and/or a reactor."""
+"""Enable component-wise axial expansion for assemblies and/or a reactor.
+
+.. currentmodule:: armi.reactor.converters.axialExpansionChanger
+
+Primary class for performing axial expansion, thermal or otherwise, is
+:class:`~axialExpansionChanger.AxialExpansionChanger`
+
+"""
 
 # ruff: noqa: F401
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (

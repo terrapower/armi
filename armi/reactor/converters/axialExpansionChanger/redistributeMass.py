@@ -57,12 +57,19 @@ class RedistributeMass:
             self.performRedistribution()
 
     def performRedistribution(self):
-        """Perform the mass redistribution after checking compatibility."""
+        """Perform the mass redistribution after checking compatibility.
+
+        This is the primary method expected to be invoked by callers. Other private
+        methods can be overridden and extended by subclasses.
+        """
         if self.compatabilityCheck():
             self._performRedistribution()
 
     def _performRedistribution(self):
-        """Perform the mass redistribution between compatible components."""
+        """Perform the mass redistribution between compatible components.
+
+        :meta public:
+        """
         self.setNewToCompNDens()
         if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
             self._adjustMassParams()
@@ -231,7 +238,10 @@ class RedistributeMass:
         return sorted(nucsToAdd, key=self._sortKey)
 
     def _adjustMassParams(self):
-        """Adjust massHmBOL and molesHmBOL on fromComp and toComp."""
+        """Adjust massHmBOL and molesHmBOL on fromComp and toComp.
+
+        :meta public:
+        """
         paramsToMove = (
             "massHmBOL",
             "molesHmBOL",
@@ -263,6 +273,8 @@ class RedistributeMass:
         -------
         bool
             If the update was performed.
+
+        :meta public:
         """
         fromData: typing.Optional[np.ndarray] = getattr(self.fromComp.p, paramName, None)
         if fromData is None:
@@ -293,6 +305,8 @@ class RedistributeMass:
         -------
         bool
             If the update was performed.
+
+        :meta public:
         """
         return self._updateNumberDensityParameters("pinNDens")
 
@@ -303,5 +317,7 @@ class RedistributeMass:
         -------
         bool
             If the update was performed.
+
+        :meta public:
         """
         return self._updateNumberDensityParameters("detailedNDens")
