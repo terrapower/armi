@@ -301,7 +301,7 @@ class RedistributeMass:
         except Exception:
             msg = (
                 f"Error updating {paramName} on {self.assemblyName} : toComp={self.toComp} : fromComp={self.fromComp}\n"
-                f"Shape fromData {fromData.shape}\nShape toData {toData.shape}"
+                f"{fromData.shape=}\n{toData.shape=}"
             )
             runLog.error(msg)
             raise
