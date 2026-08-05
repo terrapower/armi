@@ -66,10 +66,7 @@ class RedistributeMass:
             self._performRedistribution()
 
     def _performRedistribution(self):
-        """Perform the mass redistribution between compatible components.
-
-        :meta public:
-        """
+        """Perform the mass redistribution between compatible components."""
         self.setNewToCompNDens()
         if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
             self._adjustMassParams()
@@ -241,10 +238,7 @@ class RedistributeMass:
         return sorted(nucsToAdd, key=self._sortKey)
 
     def _adjustMassParams(self):
-        """Adjust massHmBOL and molesHmBOL on fromComp and toComp.
-
-        :meta public:
-        """
+        """Adjust massHmBOL and molesHmBOL on fromComp and toComp."""
         paramsToMove = (
             "massHmBOL",
             "molesHmBOL",
@@ -276,8 +270,6 @@ class RedistributeMass:
         -------
         bool
             If the update was performed.
-
-        :meta public:
         """
         fromData: typing.Optional[np.ndarray] = getattr(self.fromComp.p, paramName, None)
         toData: typing.Optional[np.ndarray] = getattr(self.toComp.p, paramName, None)
@@ -315,8 +307,6 @@ class RedistributeMass:
         -------
         bool
             If the update was performed.
-
-        :meta public:
         """
         return self._updateNumberDensityParameters("pinNDens")
 
@@ -327,7 +317,5 @@ class RedistributeMass:
         -------
         bool
             If the update was performed.
-
-        :meta public:
         """
         return self._updateNumberDensityParameters("detailedNDens")
