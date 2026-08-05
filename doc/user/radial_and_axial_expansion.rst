@@ -557,7 +557,7 @@ Component parameter updates
 Pin and detailed number densities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-During the expansion process and redistribution of mass, some parameters beyond nuclide number densities
+During the expansion/contraction and redistribution of mass process, some parameters beyond nuclide number densities
 are updated via :class:`~armi.reactor.converters.axialExpansionChanger.redistributeMass.RedistributeMass`.
 
 ``Component.p.pinNDens`` and ``Component.p.detailedNDens`` are updated if they are populated for both
@@ -567,7 +567,7 @@ components. They are updated proportional to the volume shifted between the "fro
 .. math::
     :name: volumeWeightedUpdate
 
-    \rho_t^\prime = \left(\rho_t * V_t + \rho_f * V_f\right) / \left(V_t + V_f\right)
+    \rho_t^\prime = \frac{\rho_t * V_t + \rho_f * V_f}{V_t + V_f}.
 
 .. important::
 
@@ -593,7 +593,7 @@ and
 
     hm_f' = hm_f * \left(1 - \frac{\delta z}{h_f}\right)
 
-for a height change :math:`\delta z` and height :math:`h_f` in the source component prior to the redistribution.
+for a given change in height, :math:`\delta z`, and height of the source component prior to the redistribution, :math:`h_f`.
 
 
 Warnings and Runtime Error Messages
