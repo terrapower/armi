@@ -260,7 +260,7 @@ class ArmiPlugin:
         It is only meant to be run one time. Because ``db.load()`` may be run several times in the same script, it is
         strongly recommended that developers implement the following pattern when adding this hook to any plugin:
 
-        .. code::
+        .. code-block::
             from armi.utils import onlyRunOnce
 
             @staticmethod
@@ -274,7 +274,7 @@ class ArmiPlugin:
         with potentially different materials libraries in the same python instance, they may reset the ``onlyRunOnce``
         decorator with the following:
 
-        .. code::
+        .. code-block::
             from <somewhere> import <PLUGIN>
 
             <PLUGIN>.beforeReactorConstruction.reset_onlyRunOnce()
@@ -340,7 +340,7 @@ class ArmiPlugin:
 
         Example
         -------
-        .. code::
+        .. code-block::
 
             [
                 (HexBlock, HexAssembly),
@@ -622,7 +622,7 @@ class ArmiPlugin:
             Dictionary that maps a grid type from the input file (e.g., ``"core"``)
             to a function responsible for building a grid of that type, e.g.,
 
-            .. code::
+            .. code-block::
 
                 {
                     "core": armi.reactor.reactors.Core,

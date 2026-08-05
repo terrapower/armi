@@ -9,7 +9,7 @@ Introduction
 
 A partial core may be specified in the blueprints file using the ``symmetry`` attribute, as shown below.
 
-.. code:: yaml
+.. code-block:: yaml
 
     grids:
       core:
