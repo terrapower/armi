@@ -286,7 +286,7 @@ class RedistributeMass:
             runLog.warning(
                 f"Inconsistent {paramName} for {self.toComp} and {self.fromComp} in {self.assemblyName}. "
                 f"Conservation of {paramName} is not ensured.",
-                label=f"Conservation of c.p.{paramName} is not ensured"
+                label=f"Conservation of c.p.{paramName} is not ensured",
             )
             return False
         # If we're here, we know either both have data or neither have data
