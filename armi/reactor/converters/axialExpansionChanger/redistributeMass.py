@@ -280,10 +280,17 @@ class RedistributeMass:
         :meta public:
         """
         fromData: typing.Optional[np.ndarray] = getattr(self.fromComp.p, paramName, None)
-        if fromData is None:
-            return False
         toData: typing.Optional[np.ndarray] = getattr(self.toComp.p, paramName, None)
-        if toData is None:
+
+        if (fromData is None) != (toData is None):
+            runLog.warning(
+                f"Inconsistent {paramName} for {self.toComp} and {self.fromComp} in {self.assemblyName}. "
+                f"Conservation of {paramName} is not ensured.",
+                label=f"Conservation of c.p.{paramName} is not ensured"
+            )
+            return False
+        # If we're here, we know either both have data or neither have data
+        if fromData is None:
             return False
         # array * scalar gives us a new array, not a copy. So we can do in-place mutations later
         try:

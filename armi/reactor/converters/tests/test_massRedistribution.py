@@ -23,6 +23,7 @@ import numpy as np
 
 from armi.reactor.components import Circle
 from armi.reactor.converters.axialExpansionChanger.redistributeMass import RedistributeMass
+from armi.testing import mockRunLogs
 
 
 class BlockLike:
@@ -60,19 +61,6 @@ class TestMassRedistribution(TestCase):
         # neither have pin ndens => no update
         self.toComp.p.pinNDens = None
         self.fromComp.p.pinNDens = None
-        self.assertFalse(self.distributor._adjustPinNDens())
-        # generate random sample pNDens data
-        rng = np.random.default_rng()
-        pinDensShape = (7, 3)  # arbitrary
-        sampleData = rng.uniform(low=0, high=1e-2, size=pinDensShape).astype(np.float32)
-
-        # only fromComp has pin ndens => no update
-        self.fromComp.p.pinNDens = sampleData
-        self.assertFalse(self.distributor._adjustPinNDens())
-
-        # only toComp has pin ndens => no update
-        self.fromComp.p.pinNDens = None
-        self.toComp.p.pinNDens = sampleData
         self.assertFalse(self.distributor._adjustPinNDens())
 
     def test_updatedPinNDens(self):
@@ -127,3 +115,37 @@ class TestMassRedistribution(TestCase):
         self.assertAlmostEqual(
             self.distributor.newVolume, self.distributor.toCompVolume + self.distributor.fromCompVolume
         )
+
+    def test_onePinNDensNotBoth(self):
+        """Ensure that a warning is logged if one component has pinNDens and the other does not."""
+        testData = np.random.default_rng().uniform(low=0, high=1e-2, size=(10, 2)).astype(np.float32)
+
+        for case, (hasIt, missingIt) in (
+            ("missingFrom", (self.toComp, self.fromComp)),
+            ("missingTo", (self.fromComp, self.toComp)),
+        ):
+            hasIt.p.pinNDens = testData
+            missingIt.p.pinNDens = None
+
+            with mockRunLogs.BufferLog() as logs:
+                stat = self.distributor._adjustPinNDens()
+            self.assertFalse(stat)
+            msg = logs.getStdout()
+            self.assertIn("Inconsistent pinNDens", msg)
+
+    def test_oneDetailedNDensNotBoth(self):
+        """Ensure that a warning is logged if one component has detailedNDens and the other does not."""
+        testData = np.random.default_rng().uniform(low=0, high=1e-2, size=(10, 2))
+
+        for case, (hasIt, missingIt) in (
+            ("missingFrom", (self.toComp, self.fromComp)),
+            ("missingTo", (self.fromComp, self.toComp)),
+        ):
+            hasIt.p.detailedNDens = testData
+            missingIt.p.detailedNDens = None
+
+            with mockRunLogs.BufferLog() as logs:
+                stat = self.distributor._adjustDetailedNDens()
+            self.assertFalse(stat, msg=case)
+            stdout = logs.getStdout()
+            self.assertIn("Inconsistent detailedNDens", stdout, msg=case)
