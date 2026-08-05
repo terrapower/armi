@@ -429,7 +429,8 @@ class Database:
             return None
 
         stream = io.StringIO(bpString)
-        stream = Blueprints.migrate(stream)
+        version = self.version if self.version != "uncontrolled" else None
+        stream = Blueprints.migrate(stream, version)
         return Blueprints.load(stream)
 
     def writeInputsToDB(self, cs, csString=None, bpString=None):
@@ -494,10 +495,7 @@ class Database:
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
-        return (
-            self.h5db["inputs/settings"].asstr()[()],
-            self.h5db["inputs/blueprints"].asstr()[()],
-        )
+        return (self.h5db["inputs/settings"].asstr()[()], self.h5db["inputs/blueprints"].asstr()[()])
 
     def mergeHistory(self, inputDB, startCycle, startNode):
         """
@@ -515,7 +513,8 @@ class Database:
 
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
-            cyc, tn = time
+            cyc = time[0]
+            tn = time[1]
             if cyc == startCycle and tn == startNode:
                 # all data up to current state are merged
                 return

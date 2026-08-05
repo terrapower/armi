@@ -19,13 +19,13 @@ import unittest
 
 from armi.reactor import geometry
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 from armi.tests import TESTING_ROOT
 
 
 class CartesianReactorTests(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             os.path.join(TESTING_ROOT, "reactors", "smallCartesian"),
             inputFileName="refTestCartesian.yaml",
         )

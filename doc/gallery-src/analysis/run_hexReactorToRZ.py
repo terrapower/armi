@@ -30,13 +30,13 @@ import matplotlib.pyplot as plt
 
 from armi import configure
 from armi.reactor.converters import geometryConverters
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 from armi.utils import plotting
 
 # configure ARMI
 configure(permissive=True)
 
-o, r = test_reactors.loadTestReactor()
+o, r = loadTestReactor()
 kgFis = [a.getHMMass() for a in r.core]
 plotting.plotFaceMap(r.core, data=kgFis, labelFmt="{:.1e}")
 

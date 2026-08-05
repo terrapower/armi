@@ -27,8 +27,7 @@ from armi.mpiActions import (
     runActions,
     runBatchedActions,
 )
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import iterables
 
 
@@ -162,9 +161,7 @@ class MpiIterTests(unittest.TestCase):
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
     def test_runActionsDistributionAction(self):
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributionAction([self.action])
         results = runActions(o, r, o.cs, [act])
@@ -180,9 +177,7 @@ class MpiIterTests(unittest.TestCase):
     @patch("armi.context.MPI_NODENAMES", ["node0", "node0", "node1", "node1"])
     @patch("armi.context.MPI_DISTRIBUTABLE", True)
     def test_runBatchedActions(self):
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         actionsByNode = {
             "node0": [MockMpiAction(invokeResult=1)],
@@ -209,9 +204,7 @@ class MpiIterTests(unittest.TestCase):
     @patch("armi.context.MPI_DISTRIBUTABLE", True)
     def test_runBatchedActionsOverload(self):
         """Test that an error is thrown if the number of tasks exceeds number of ranks."""
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         actionsByNode = {
             "node0": [MockMpiAction()],
@@ -227,9 +220,7 @@ class MpiIterTests(unittest.TestCase):
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
     def test_runActionsDistributeStateAction(self):
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributeStateAction([self.action])
         results = runActions(o, r, o.cs, [act])
@@ -240,9 +231,7 @@ class MpiIterTests(unittest.TestCase):
     @patch("armi.context.MPI_SIZE", 4)
     @patch("armi.context.MPI_DISTRIBUTABLE", True)
     def test_runActionsDistStateActionParallel(self):
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributeStateAction([self.action])
         results = runActions(o, r, o.cs, [act])

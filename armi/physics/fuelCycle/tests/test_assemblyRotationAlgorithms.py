@@ -37,7 +37,7 @@ from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 
 
 class MockFuelHandler(fuelHandlers.FuelHandler):
@@ -75,7 +75,7 @@ class ShuffleAndRotateTestHelper(TestCase):
     N_PINS = 169
 
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor()
+        self.o, self.r = loadTestReactor()
         self.r.core.locateAllAssemblies()
 
     @staticmethod
