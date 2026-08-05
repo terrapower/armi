@@ -151,6 +151,6 @@ Use Case: Your unit test needs some ARMI objects, but not a full test reactor.
 ARMI provides several helpful tools for generating simple blocks and assemblies for unit tests:
 
 * ``from armi.reactor.tests.test_assemblies import buildTestAssemblies`` - Two hex blocks.
-* ``from armi.reactor.tests.test_blocks import buildSimpleFuelBlock`` - A simple hex block containing fuel, clad, duct, and coolant.
-* ``from armi.reactor.tests.test_blocks import loadTestBlock`` - An annular test block.
+* ``from armi.testing import buildSimpleFuelHexBlock`` - A simple hex block containing fuel, clad, duct, and coolant.
+* ``from armi.testing import buildComplexHexBlock`` - An annular test block.
 
