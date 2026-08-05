@@ -238,7 +238,7 @@ The other version is the corners up lattice. Notice how the ``-`` placeholders a
 
 and a larger example
 
-.. clode-block:: yaml
+.. code-block:: yaml
 
     geom: hex_corners_up
     symmetry: full
