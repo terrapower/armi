@@ -87,6 +87,7 @@ jobs:
           name: html-docs
           path: doc/_build/html
           retention-days: 5
+          include-hidden-files: true
       - name: Archive PDF Docs
         uses: actions/upload-artifact@v7
         with:
