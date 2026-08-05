@@ -14,7 +14,7 @@ Use Case: Test code that prints to stdout
 
 While there are some other mocking examples in ARMI, none are as heavily used as ``mockRunLogs``. ``mockRunLogs.BufferLog()`` is used to capture the ``runLog`` output instead of printing it.
 
-In `test_comparedb3.py <https://github.com/terrapower/armi/blob/49f357b2a92aaffaf883642f7b86fbe21b0e0272/armi/bookkeeping/db/tests/test_comparedb3.py>`_, there is a (simplified here) use case. A portion of the test for ``_diffSpecialData`` wants to confirm the below printout has happened, so it uses the ``getStdout()`` method to check that the expected printout exists.
+In ``test_comparedb3.py`` (``armi/bookkeeping/db/tests/test_comparedb3.py``), there is a (simplified here) use case. A portion of the test for ``_diffSpecialData`` wants to confirm the below printout has happened, so it uses the ``getStdout()`` method to check that the expected printout exists.
 
 Example of ``mockRunLogs``:
 
@@ -49,7 +49,7 @@ Use Case: Automatically cleans up tests that create files:
 
 Two main uses of this class in testing:
 
-1. Standalone test that calls code that creates something (`test_operators.py <https://github.com/terrapower/armi/blob/2bcb03689954ae39f3044f18a9a77c1fb7a0e63b/armi/operators/tests/test_operators.py#L237-L242>`_):
+1. Standalone test that calls code that creates something, like ``test_operators.py`` (``armi/operators/tests/test_operators.py``):
 
 .. code-block:: python
 
@@ -60,7 +60,7 @@ Two main uses of this class in testing:
                  self.o.snapshotRequest(0, 1) 
                  self.assertIn("ISOTXS-c0", mock.getStdout()) 
 
-2. Setup and teardown of a testing class, where all/most of the tests create something (`test_comparedb3.py <https://github.com/terrapower/armi/blob/2bcb03689954ae39f3044f18a9a77c1fb7a0e63b/armi/bookkeeping/db/tests/test_comparedb3.py#L36-L52>`_):
+2. Setup and teardown of a testing class, where all/most of the tests create something, like ``test_comparedb3.py`` (``armi/bookkeeping/db/tests/test_comparedb3.py``):
 
 .. code-block:: python
 
@@ -151,6 +151,6 @@ Use Case: Your unit test needs some ARMI objects, but not a full test reactor.
 ARMI provides several helpful tools for generating simple blocks and assemblies for unit tests:
 
 * ``from armi.reactor.tests.test_assemblies import buildTestAssemblies`` - Two hex blocks.
-* ``from armi.reactor.tests.test_blocks import buildSimpleFuelBlock`` - A simple hex block containing fuel, clad, duct, and coolant.
-* ``from armi.reactor.tests.test_blocks import loadTestBlock`` - An annular test block.
+* ``from armi.testing import buildSimpleFuelHexBlock`` - A simple hex block containing fuel, clad, duct, and coolant.
+* ``from armi.testing import buildComplexHexBlock`` - An annular test block.
 

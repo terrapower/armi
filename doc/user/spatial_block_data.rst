@@ -22,7 +22,7 @@ In your blueprints file, you likely have a core grid that defines where assembli
 are assigned to locations on that grid according to their ``specifier`` blueprint attribute. Below is an example
 of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetry.
 
-.. code:: yaml
+.. code-block:: yaml
 
     grids:
       core:
@@ -37,7 +37,7 @@ of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetry.
 
 We can similarly define a grid for the block with a similar entry in the ``grids`` portion of the blueprints.
 
-.. code:: yaml
+.. code-block:: yaml
 
     pins:
       geom: hex_corners_up

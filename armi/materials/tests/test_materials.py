@@ -611,7 +611,7 @@ class ThoriumTests(AbstractMaterialTest, unittest.TestCase):
         Test default mass fractions.
 
         .. test:: The materials generate nuclide mass fractions.
-            :id: T_ARMI_MAT_FRACS0
+            :id: T_ARMI_MAT_FRACS6
             :tests: R_ARMI_MAT_FRACS
         """
         self.mat.setDefaultMassFracs()
