@@ -261,6 +261,7 @@ class ArmiPlugin:
         strongly recommended that developers implement the following pattern when adding this hook to any plugin:
 
         .. code-block::
+
             from armi.utils import onlyRunOnce
 
             @staticmethod
@@ -275,6 +276,7 @@ class ArmiPlugin:
         decorator with the following:
 
         .. code-block::
+
             from <somewhere> import <PLUGIN>
 
             <PLUGIN>.beforeReactorConstruction.reset_onlyRunOnce()
