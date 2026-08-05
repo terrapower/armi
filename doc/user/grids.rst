@@ -274,7 +274,7 @@ and a larger example
 Placeholders and Whitespace
 """""""""""""""""""""""""""
 In lattice maps whitespace is used to separate symbols. The exact count of spaces is not strictly speaking important;
-one space is as good as five. The following to lattice maps yield the same result, though obviously one is easier to
+one space is as good as five. The following two lattice maps yield the same result, though obviously one is easier to
 read than the other
 
 .. code-block:: yaml
