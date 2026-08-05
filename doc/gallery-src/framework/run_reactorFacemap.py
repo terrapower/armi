@@ -20,7 +20,7 @@ power distribution from it. You can plot any block parameter.
 """
 
 from armi import configure
-from armi.testng import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.utils import plotting
 
 # configure ARMI
