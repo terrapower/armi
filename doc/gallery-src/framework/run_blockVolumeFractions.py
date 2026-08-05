@@ -35,7 +35,7 @@ from armi import configure
 configure(permissive=True)
 
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.testing import buildSimpleFuelHexBlock
 from armi.utils import tabulate
 
 
@@ -84,7 +84,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
 
 
 uniformTempsInC = [300.0, 400.0, 500.0, 600.0, 700.0]
-b = buildSimpleFuelBlock()
+b = buildSimpleFuelHexBlock()
 
 writeInitialVolumeFractions(b)
 plotVolFracsWithComponentTemps(b, uniformTempsInC)

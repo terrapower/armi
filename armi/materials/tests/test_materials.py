@@ -611,7 +611,7 @@ class ThoriumTests(AbstractMaterialTest, unittest.TestCase):
         Test default mass fractions.
 
         .. test:: The materials generate nuclide mass fractions.
-            :id: T_ARMI_MAT_FRACS0
+            :id: T_ARMI_MAT_FRACS6
             :tests: R_ARMI_MAT_FRACS
         """
         self.mat.setDefaultMassFracs()
@@ -686,30 +686,6 @@ class VoidTests(AbstractMaterialTest, unittest.TestCase):
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
-
-
-class MixtureTests(AbstractMaterialTest, unittest.TestCase):
-    MAT_CLASS = materials._Mixture
-
-    def test_density(self):
-        """No density function."""
-        self.assertEqual(self.mat.density(500), 0)
-
-    def test_setDefaultMassFracs(self):
-        """
-        Test default mass fractions.
-
-        .. test:: The materials generate nuclide mass fractions.
-            :id: T_ARMI_MAT_FRACS1
-            :tests: R_ARMI_MAT_FRACS
-        """
-        self.mat.setDefaultMassFracs()
-        cur = self.mat.pseudoDensity(500)
-        self.assertEqual(cur, 0.0)
-
-    def test_linearExpansion(self):
-        cur = self.mat.linearExpansion(400)
-        self.assertEqual(cur, 0.0)
 
 
 class LeadTests(AbstractMaterialTest, unittest.TestCase):

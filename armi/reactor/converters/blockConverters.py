@@ -667,7 +667,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         outerDiam = getOuterDiamFromIDAndArea(0.0, newBlock.getArea())
         circle = components.Circle(
             blockName,
-            "_Mixture",
+            "Material",
             newBlock.getAverageTempInC(),
             newBlock.getAverageTempInC(),
             id=0.0,
@@ -894,7 +894,7 @@ def stripComponents(block, compFlags):
     newBlock.add(
         components.Hexagon(
             "pitchComponent",
-            "Void",
+            "Material",
             avgBlockTemp,
             avgBlockTemp,
             ip=compIP,
