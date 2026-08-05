@@ -465,7 +465,7 @@ sphinx_gallery_conf = {
     "default_thumb_file": os.path.join(STATIC_DIR, "TerraPowerLogo.png"),
 }
 
-suppress_warnings = ["autoapi.python_import_resolution", "config.cache"]
+suppress_warnings = ["autoapi.python_import_resolution", "config.cache", "autosectionlabel.*"]
 
 # Filter out this warning which shows up in sphinx-gallery builds. This is suggested in the sphinx-gallery example but
 # doesn't actually work?

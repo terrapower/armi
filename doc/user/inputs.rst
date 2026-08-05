@@ -458,7 +458,7 @@ through the :attr:`~armi.reactor.cores.Core.zones` attribute on the core. See al
 Users can define these zones with the ``zonesFile`` setting. It must point to YAML file that contains the high-level key
 ``customZonesMap`` containing a map of ``location: zone`` maps.
 
-.. code:: yaml
+.. code-block:: yaml
 
     customZonesMap:
       001-001: primary control
@@ -480,7 +480,7 @@ This example would produce four zones:
 An alternative method is with the ``zoneDefinitions`` setting in the primary settings file. This contains a list of
 zone names and the assemblies that make up that zone. The following would create an identical zone structure as above.
 
-.. code:: yaml
+.. code-block:: yaml
 
     settings:
       zoneDefinitions:
