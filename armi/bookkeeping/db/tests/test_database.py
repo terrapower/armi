@@ -1032,15 +1032,72 @@ class TestSimplestDatabaseItems(unittest.TestCase):
         # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
         db.h5db = None
 
+    def test_mergeHistory(self):
+        """Test some edge cases of Database.mergeHistory.
+
+        This test uses some mock database and H5 file tooling, so we can more easily test edge cases.
+        """
+        # mock up a test DB
+        dbPath = "test_mergeHistory.h5"
+        db = Database(dbPath, "w")
+        db.close()
+
+        # Optimization: We use this "results" list so we do not need to write to a real H5 file for this tests.
+        results = []
+
+        class FakeHDF5:
+            """As an optimization, and simplification, a stand-in for a H5 group."""
+
+            name = "fake"
+
+            def __init__(self, x):
+                self.x = x
+
+            def copy(self, a, b):
+                return results.append(a.x)
+
+        class MockDB:
+            """As an optimization, and simplification, a stand-in for needing a second ARMI DB file in the tests."""
+
+            def __init__(self, timeSteps):
+                self.versionMajor = 3
+                self.timeSteps = timeSteps
+
+            def genTimeStepGroups(self):
+                return [FakeHDF5(t) for t in self.timeSteps]
+
+            def genTimeSteps(self):
+                return self.timeSteps
+
+        # test 0: should just grab the first time node
+        db.h5db = FakeHDF5(123)
+        db.mergeHistory(MockDB([(0, 0), (0, 1)]), 0, 1)
+        self.assertListEqual(results, [(0, 0)])
+
+        # test 1: should grab the first 4 of 6 time nodes
+        results = []
+        db.mergeHistory(MockDB([(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1)]), 2, 0)
+        self.assertListEqual(results, [(0, 0), (0, 1), (1, 0), (1, 1)])
+
+        # test 2: should grab the first time node and the error time node
+        results = []
+        db.mergeHistory(MockDB([(0, 0), (0, 0, "error"), (0, 1)]), 0, 1)
+        self.assertListEqual(results, [(0, 0), (0, 0, "error")])
+
+        # test 3: should grab all 5 time nodes, including the EOL
+        results = []
+        db.mergeHistory(MockDB([(0, 0), (0, 1), (1, 0), (1, 1), (1, 1, "EOL")]), 2, 4)
+        self.assertListEqual(results, [(0, 0), (0, 1), (1, 0), (1, 1), (1, 1, "EOL")])
+
+        # remove the fake H5 file or the DB cleanup in ARMI's context.py will panic
+        db.h5db = None
+
 
 class TestStaticDatabaseItems(unittest.TestCase):
     def test_applyComponentNumberDensitiesMigration(self):
         b = buildComplexHexBlock()
         comps = [b[0], b[1]]
-        unpacked = [
-            {"U235": 1.23e-3, "U238": 2.34e-3},
-            {"PU239": 5.6e-4, "PU240": 7.8e-4},
-        ]
+        unpacked = [{"U235": 1.23e-3, "U238": 2.34e-3}, {"PU239": 5.6e-4, "PU240": 7.8e-4}]
 
         Database._applyComponentNumberDensitiesMigration(comps, unpacked)
 
