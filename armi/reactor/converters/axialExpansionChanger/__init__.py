@@ -13,10 +13,8 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor.
 
-.. currentmodule:: armi.reactor.converters.axialExpansionChanger
-
 Primary class for performing axial expansion, thermal or otherwise, is
-:class:`~axialExpansionChanger.AxialExpansionChanger`
+:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
 
 """
 
