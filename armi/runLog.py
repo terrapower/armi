@@ -17,21 +17,21 @@ Handle logging of console during a simulation.
 
 The default way of calling and the global armi logger is to just import it:
 
-.. code::
+.. code-block::
 
     from armi import runLog
 
 You may want a logger specific to a single module, say to provide debug logging for only one module.
 That functionality is provided by a global override of logging imports:
 
-.. code::
+.. code-block::
 
     import logging
     runLog = logging.getLogger(__name__)
 
 In either case, you can then log things the same way:
 
-.. code::
+.. code-block::
 
     runLog.info('information here')
     runLog.error('extra error info here')
@@ -39,7 +39,7 @@ In either case, you can then log things the same way:
 
 Or change the log level the same way:
 
-.. code::
+.. code-block::
 
     runLog.setVerbosity('debug')
 """
