@@ -967,15 +967,106 @@ class Block(composites.Composite):
 
         Notes
         -----
-        If you just want sorted components in this block, use ``sorted(self)``. This will never
-        include any ``DerivedShape`` objects. Since they have a derived area they don't have a well-
-        defined dimension. For now we just ignore them. If they are desired in the future some
-        knowledge of their dimension will be required while they are being derived.
+        If you just want sorted components in this block, use ``sorted(self)``. This will never include any
+        ``DerivedShape`` objects. Since they have a derived area they don't have a well- defined dimension. For now we
+        just ignore them.
         """
         sortedComponents = sorted(self)
         componentIndex = sortedComponents.index(component)
         sortedComponents = sortedComponents[:componentIndex]
         return sortedComponents
+
+    def __getPinLikeCounts(self) -> list[Tuple[int, list[grids.IndexLocation]]]:
+        """Helper method to find components that look like pins, grouped by PIN_COMPONENT flags.
+
+        This method is not designed to be used by downstream, but is meant to help ``getPinLocations`` and
+        ``getNumPins`` share the same base logic.
+
+        Returns
+        -------
+        list(tuple(int, list(IndexLocation)))
+            A list of tuples: (number of pins, list of components at the same spatialLocator)
+        """
+        # find all the components in this block that match one of the flags in PIN_COMPONENTS
+        compsByType = [
+            [c for c in self.iterComponents(compType) if isinstance(c, basicShapes.Circle)]
+            for compType in PIN_COMPONENTS
+        ]
+
+        # Group together components by spatial locator, THEN count the number of pins by group and by type/flag
+        numPinsByType = []
+        for comps in compsByType:
+            compsByLocation = []
+            while len(comps):
+                c = comps.pop()
+                index = -9
+                for i, cByLoc in enumerate(compsByLocation):
+                    if c.spatialLocator == cByLoc[0].spatialLocator:
+                        index = i
+                        break
+
+                if index < 0:
+                    # this spatialLocator was NOT seen before
+                    compsByLocation.append([c])
+                else:
+                    # this spatialLocator was seen before, group with the others
+                    compsByLocation[index].append(c)
+
+            # Count pins. If multiple components are at the same location, take the one that has the most pins.
+            numPins = [max([int(c.getDimension("mult")) for c in csByLocs]) for csByLocs in compsByLocation]
+            numPins = 0 if not numPins else sum(numPins)
+            numPinsByType.append((numPins, compsByLocation))
+
+        return numPinsByType
+
+    def getPinLocations(self) -> list[grids.IndexLocation]:
+        """Produce all the index locations for pins in the block.
+
+        Returns
+        -------
+        list[grids.IndexLocation]
+            Integer locations where pins can be found in the block.
+
+        Notes
+        -----
+        Only components with ``Flags.CLAD`` are considered to define a pin's location.
+        """
+        numPinsByType = self.__getPinLikeCounts()
+
+        # Find which locations of the component type/flag yields the highest pin count
+        maxI = -999
+        pins = []
+        for i, comps in numPinsByType:
+            if i >= maxI:
+                maxI = i
+                pins = comps
+
+        # handle MultiIndexLocations
+        pinLocs = []
+        for comps in pins:
+            spatLoc = comps[0].spatialLocator
+            if isinstance(spatLoc, grids.MultiIndexLocation):
+                pinLocs.extend(spatLoc)
+            else:
+                pinLocs.append(spatLoc)
+
+        return pinLocs
+
+    def getPinCoordinates(self) -> np.ndarray:
+        """
+        Compute the local centroid coordinates of any pins in this block.
+
+        The pins must have a CLAD-flagged component for this to work.
+
+        Returns
+        -------
+        localCoords : numpy.ndarray
+            ``(N, 3)`` array of coordinates for pins locations. ``localCoords[i]`` contains a triplet of the x, y, z
+            location for pin ``i``. Ordered according to how they are listed as children
+        """
+        indices = self.getPinLocations()
+        coords = [location.getLocalCoordinates() for location in indices]
+        return np.array(coords)
 
     def getNumPins(self):
         """Return the number of pins in this block.
@@ -986,24 +1077,19 @@ class Block(composites.Composite):
 
             Uses some simple criteria to infer the number of pins in the block.
 
-            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`, loop
-            over all components of that type in the block. If the component is an instance of
-            :py:class:`~armi.reactor.components.basicShapes.Circle`, add its multiplicity to a list,
-            and sum that list over all components with each given flag.
+            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`, loop over all components
+            of that type in the block. If the component is an instance of
+            :py:class:`~armi.reactor.components.basicShapes.Circle`, add its multiplicity to a list, and sum that list
+            over all components with each given flag. If two such components have the same spatial locator, group them
+            together and pick the one with the highest multiplicity.
 
-            After looping over all possibilities, return the maximum value returned from the process
-            above, or if no compatible components were found, return zero.
+            After looping over all possibilities, return the maximum value returned from the process above, or if no
+            compatible components were found, return zero.
         """
-        nPins = [
-            sum(
-                [
-                    (int(c.getDimension("mult")) if isinstance(c, basicShapes.Circle) else 0)
-                    for c in self.iterComponents(compType)
-                ]
-            )
-            for compType in PIN_COMPONENTS
-        ]
-        return 0 if not nPins else max(nPins)
+        numPinsByType = self.__getPinLikeCounts()
+
+        # Return whichever component type/flag yields the highest pin count
+        return 0 if not numPinsByType else max([c[0] for c in numPinsByType])
 
     def mergeWithBlock(self, otherBlock, fraction):
         """
@@ -1406,50 +1492,6 @@ class Block(composites.Composite):
             Component specified to be target component for axial expansion changer
         """
         self.p.axialExpTargetComponent = targetComponent.name
-
-    def getPinLocations(self) -> list[grids.IndexLocation]:
-        """Produce all the index locations for pins in the block.
-
-        Returns
-        -------
-        list[grids.IndexLocation]
-            Integer locations where pins can be found in the block.
-
-        Notes
-        -----
-        Only components with ``Flags.CLAD`` are considered to define a pin's location.
-
-        See Also
-        --------
-        :meth:`getPinCoordinates` - companion for this method.
-        """
-        items = []
-        for clad in self.iterChildrenWithFlags(Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                items.extend(clad.spatialLocator)
-            else:
-                items.append(clad.spatialLocator)
-        return items
-
-    def getPinCoordinates(self) -> np.ndarray:
-        """
-        Compute the local centroid coordinates of any pins in this block.
-
-        The pins must have a CLAD-flagged component for this to work.
-
-        Returns
-        -------
-        localCoords : numpy.ndarray
-            ``(N, 3)`` array of coordinates for pins locations. ``localCoords[i]`` contains a triplet of
-            the x, y, z location for pin ``i``. Ordered according to how they are listed as children
-
-        See Also
-        --------
-        :meth:`getPinLocations` - companion for this method
-        """
-        indices = self.getPinLocations()
-        coords = [location.getLocalCoordinates() for location in indices]
-        return np.array(coords)
 
     def getTotalEnergyGenerationConstants(self):
         """
