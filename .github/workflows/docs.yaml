@@ -93,4 +93,4 @@ jobs:
         with:
           name: pdf-docs
           path: doc/_build/latex/ARMI.pdf
-          retention-days: 5
+          retention-days: 7
