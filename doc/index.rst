@@ -17,7 +17,10 @@ ARMI
    release/index
    qa_docs/index
    glossary
-   API Docs <.apidocs/modules>
+
+   .. only:: html
+
+       API Docs <.apidocs/modules>
 
 *  :doc:`glossary`
 *  :ref:`genindex`
