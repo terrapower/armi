@@ -2827,14 +2827,11 @@ nuclide flags:
         # Make sure we get new block-level pin locations or else this test is meaningless
         with patch.object(self.block, "assignPinIndices") as patchAssign:
             self.block.sort()
+
         newPinLocations = self.block.getPinLocations()
-        self.assertNotEqual(
-            newPinLocations,
-            self.allLocations,
-            msg="Test requires new pin locations post-sort.",
-        )
+        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
         # Make sure we called it. Other tests confirm that assignPinIndices is correct.
-        # this makes sure we've called it where we want to call it
+        # This makes sure we've called it where we want to call it
         patchAssign.assert_called_once()
 
 
