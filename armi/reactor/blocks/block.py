@@ -969,8 +969,7 @@ class Block(composites.Composite):
         -----
         If you just want sorted components in this block, use ``sorted(self)``. This will never include any
         ``DerivedShape`` objects. Since they have a derived area they don't have a well- defined dimension. For now we
-        just ignore them. If they are desired in the future some knowledge of their dimension will be required while
-        they are being derived.
+        just ignore them.
         """
         sortedComponents = sorted(self)
         componentIndex = sortedComponents.index(component)
