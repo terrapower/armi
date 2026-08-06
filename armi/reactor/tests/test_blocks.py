@@ -1508,7 +1508,7 @@ class TestBlock(unittest.TestCase):
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
 
-    def test_getNumPinsMultipleClads(self):
+    def test_getNumPinsNClads(self):
         """Test that we still get the correct number of pins if there are two co-centeric clad components.
 
         .. test:: Ensure the correct number of pins is returned if there are multiple clad on a fuel pin.
@@ -1517,6 +1517,11 @@ class TestBlock(unittest.TestCase):
         """
         # create a fuel block and add a single clad component, surrounding a single fuel component, with 8 pins
         b = blocks.HexBlock("empty")
+
+        randoComp1 = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1, 0, 0)
+        b.add(randoComp1)
+        randoComp2 = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1, 0, 0)
+        b.add(randoComp2)
 
         fuelPins = basicShapes.Circle("circle", "UZr", 100, 100, 1, 0, 8)
         fuelPins.spatialLocator._i = 1
@@ -1530,11 +1535,19 @@ class TestBlock(unittest.TestCase):
 
         self.assertEqual(b.getNumPins(), 8)
 
-        # add another clad, at the same position as the original clad, and ensure the pin count doesn't change
+        # add another clad, at the same position as the original clad, and ensure the pin count does not change
         pinClad2 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
         pinClad2.spatialLocator = fuelPins.spatialLocator
         pinClad2.setType("component", flags=Flags.CLAD)
         b.add(pinClad2)
+
+        self.assertEqual(b.getNumPins(), 8)
+
+        # add another clad, at the same position as the original clad, and ensure the pin count does not change
+        pinClad3 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
+        pinClad3.spatialLocator = fuelPins.spatialLocator
+        pinClad3.setType("component", flags=Flags.CLAD)
+        b.add(pinClad3)
 
         self.assertEqual(b.getNumPins(), 8)
 
