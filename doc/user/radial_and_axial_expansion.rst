@@ -110,6 +110,13 @@ This section provides an example thermal expansion calculation for a simple cyli
 from a reference temperature of 20°C to 1000°C with example material properties and dimensions as
 shown in the table below.
 
+.. note::
+
+    Implementation of axial expansion is handled through the :mod:`armi.reactor.converters.axialExpansionChanger`
+    module. Developers desiring to learn more can seek there. If you wish to expose a new class for axial expansion,
+    consider implementing the :meth:`~armi.plugins.ArmiPlugin.getAxialExpansionChanger`
+    plugin hook.
+
 .. list-table:: Example Component Properties for Thermal Expansion
    :widths: 50 50
    :header-rows: 1
@@ -523,6 +530,9 @@ cc to atoms per barn per cm. Given :math:`m_i`, the post redistribution number d
 
   \hat{N}_{i,0} = \frac{\left( m_{i,0} + m_{i,1} \right) \chi}{ \big(A_1(T_1) h_1 + A_2(T_2)\delta\big) \alpha_i}.
 
+Component temperature update
+----------------------------
+
 The post redistribution temperature, :math:`\hat{T}_0`, is computed by minimizing the residual of the difference between
 the actual post-redistribution area of the Component and its expected area,
 
@@ -540,6 +550,50 @@ minimization may fail. In this case, a mass weighted temperature is used instead
   :name: consolationPrize
 
   \hat{T}_0 = \frac{m_{i,0}T_0 + m_{i,1}T_1}{m_{i,0} + m_{i,1}}.
+
+Component parameter updates
+---------------------------
+
+Pin and detailed number densities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+During the expansion/contraction and redistribution of mass process, some parameters beyond nuclide number densities
+are updated via :class:`~armi.reactor.converters.axialExpansionChanger.redistributeMass.RedistributeMass`.
+
+``Component.p.pinNDens`` and ``Component.p.detailedNDens`` are updated if they are populated for both
+components. They are updated proportional to the volume shifted between the "from" (source) component and the "to"
+(destination) component per
+
+.. math::
+    :name: volumeWeightedUpdate
+
+    \rho_t^\prime = \frac{\rho_t V_t + \rho_f V_f}{V_t + V_f}.
+
+.. important::
+
+    The implementation expects that the ``Component.p.pinNDens`` and ``Component.p.detailedNDens``
+    parameters are structured identically across the two components. If they are vectors, then
+    ``source.p.detailedNDens[i]`` reflects number density for the same nuclide as ``dest.p.detailedNDens[i]``.
+    If this is not the case, consider subclassing and overriding methods on
+    :class:`~armi.reactor.converters.axialExpansionChanger.redistributeMass.RedistributeMass`
+
+BOL heavy metal
+^^^^^^^^^^^^^^^
+
+``Component.p.massHmBOL`` and ``Component.p.molesHmBOL`` are updated by moving a fraction from the source
+to the destination component, proportional to the height change and the height of the source component
+
+.. math::
+
+    hm_t' = hm_t + hm_f \frac{\Delta z}{h_f},
+
+and
+
+.. math::
+
+    hm_f' = hm_f \left(1 - \frac{\Delta z}{h_f}\right),
+
+for a given change in height, :math:`\Delta z`, and height of the source component prior to the redistribution, :math:`h_f`.
 
 
 Warnings and Runtime Error Messages
