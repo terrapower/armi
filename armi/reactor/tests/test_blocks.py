@@ -1483,7 +1483,7 @@ class TestBlock(unittest.TestCase):
         """Test that we can get the number of pins from various blocks.
 
         .. test:: Retrieve the number of pins from various blocks.
-            :id: T_ARMI_BLOCK_NPINS
+            :id: T_ARMI_BLOCK_NPINS1
             :tests: R_ARMI_BLOCK_NPINS
         """
         cur = self.block.getNumPins()
@@ -1507,6 +1507,36 @@ class TestBlock(unittest.TestCase):
         pins.setType("component", flags=Flags.PLENUM)
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
+
+    def test_getNumPinsMultipleClads(self):
+        """Test that we still get the correct number of pins if there are two co-centeric clad components.
+
+        .. test:: Ensure the correct number of pins is returned if there are multiple clad on a fuel pin.
+            :id: T_ARMI_BLOCK_NPINS2
+            :tests: R_ARMI_BLOCK_NPINS
+        """
+        # create a fuel block and add a single clad component, surrounding a single fuel component, with 8 pins
+        b = blocks.HexBlock("empty")
+
+        fuelPins = basicShapes.Circle("circle", "UZr", 100, 100, 1, 0, 8)
+        fuelPins.spatialLocator._i = 1
+        fuelPins.spatialLocator._j = 2
+        b.add(fuelPins)
+
+        pinClad1 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
+        pinClad1.spatialLocator = fuelPins.spatialLocator
+        pinClad1.setType("component", flags=Flags.CLAD)
+        b.add(pinClad1)
+
+        self.assertEqual(b.getNumPins(), 8)
+
+        # add another clad, at the same position as the original clad, and ensure the pin count doesn't change
+        pinClad2 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
+        pinClad2.spatialLocator = fuelPins.spatialLocator
+        pinClad2.setType("component", flags=Flags.CLAD)
+        b.add(pinClad2)
+
+        self.assertEqual(b.getNumPins(), 8)
 
     def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
