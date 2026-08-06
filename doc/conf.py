@@ -475,11 +475,7 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.",
 )
 
-# Path to an objects inventory file to lookup python objects in other modules
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-}
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # These are defaults in Windows in more recent versions of the imgconverter plugin and can be  removed if/when we
 # upgrade Sphinx beyond 2.2. Otherwise, 'convert' from system32 folder is used.
