@@ -137,8 +137,8 @@ def getMc2Label(name):
     'FE'
     >>> nucDir.getMc2Label("IRON")
     'FE'
-    >>> nucDir.getMc2Label("AM242")
-    A242
+    >>> nucDir.getMc2Label("AM242M")
+    A242M
 
     """
     # First translate to the proper nuclide. CARB->C

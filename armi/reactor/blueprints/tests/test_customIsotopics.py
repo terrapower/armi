@@ -65,7 +65,7 @@ nuclide flags:
     AM243: {burn: true, xs: true}
     CM244: {burn: true, xs: true}
     CM242: {burn: true, xs: true}
-    AM242: {burn: true, xs: true}
+    AM242M: {burn: true, xs: true}
     CM245: {burn: true, xs: true}
     NP238: {burn: true, xs: true}
     CM243: {burn: true, xs: true}
@@ -593,7 +593,6 @@ blocks:
         clad:
             shape: Hexagon
             material: Custom
-            #isotopics: sodium custom isotopics
             Tinput: 25.0
             Thot: 600.0
             ip: 0.0
