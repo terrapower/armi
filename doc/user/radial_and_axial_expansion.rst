@@ -567,7 +567,7 @@ components. They are updated proportional to the volume shifted between the "fro
 .. math::
     :name: volumeWeightedUpdate
 
-    \rho_t^\prime = \frac{\rho_t * V_t + \rho_f * V_f}{V_t + V_f}.
+    \rho_t^\prime = \frac{\rho_t V_t + \rho_f V_f}{V_t + V_f}.
 
 .. important::
 
@@ -585,15 +585,15 @@ to the destination component, proportional to the height change and the height o
 
 .. math::
 
-    hm_t' = hm_t + hm_f * \frac{\delta z}{h_f}
+    hm_t' = hm_t + hm_f \frac{\Delta z}{h_f},
 
 and
 
 .. math::
 
-    hm_f' = hm_f * \left(1 - \frac{\delta z}{h_f}\right)
+    hm_f' = hm_f \left(1 - \frac{\Delta z}{h_f}\right),
 
-for a given change in height, :math:`\delta z`, and height of the source component prior to the redistribution, :math:`h_f`.
+for a given change in height, :math:`\Delta z`, and height of the source component prior to the redistribution, :math:`h_f`.
 
 
 Warnings and Runtime Error Messages
