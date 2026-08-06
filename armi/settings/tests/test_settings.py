@@ -28,9 +28,8 @@ from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings, setting
-from armi.settings.settingsValidation import Inspector, validateVersion
-from armi.testing import TESTING_ROOT, mockRunLogs
-from armi.tests import ARMI_RUN_PATH
+from armi.settings.settingsValidation import Inspector, validateVersion, versionToNumber
+from armi.testing import ARMI_RUN_PATH, TESTING_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 
@@ -508,7 +507,7 @@ class TestFlagListSetting(unittest.TestCase):
             fs.value = "DUCT"
 
 
-class TestSettingsValidationUtils(unittest.TestCase):
+class TestSettingsVersionUtils(unittest.TestCase):
     def test_validateVersion(self):
         # controlled version, and true
         self.assertTrue(validateVersion("1.22.3", "1.22.3"))
@@ -535,3 +534,24 @@ class TestSettingsValidationUtils(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             validateVersion("1.2.3", "zzz")
+
+    def test_versionToNumber(self):
+        # the standard use-case
+        self.assertEqual(versionToNumber("0.0.7"), 7)
+        self.assertEqual(versionToNumber("0.1.0"), 1000)
+        self.assertEqual(versionToNumber("1.0.0"), 1e6)
+        self.assertEqual(versionToNumber("1.2.3"), 1002003)
+
+        # an edge case we support
+        self.assertEqual(versionToNumber("0.1"), 1000)
+        self.assertEqual(versionToNumber("3.2"), 3002000)
+
+        # an edge case we do not support
+        self.assertEqual(versionToNumber("1.3.5"), versionToNumber("1.3.5.dev0"))
+
+        # invalid put values
+        with self.assertRaises(AttributeError):
+            versionToNumber(123)
+
+        with self.assertRaises(IndexError):
+            versionToNumber("1")

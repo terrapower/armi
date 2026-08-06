@@ -23,8 +23,13 @@ from armi.migration.base import BlueprintsMigration
 class RemoveCentersFromBlueprints(BlueprintsMigration):
     """Removes now-invalid `centers:` lines from auto-generated component inputs."""
 
-    fromVersion = "0.1.2"
-    toVersion = "0.1.3"
+    @property
+    def fromVersion(self):
+        return "0.1.2"
+
+    @property
+    def toVersion(self):
+        return "0.1.3"
 
     def _applyToStream(self):
         runLog.info("Removing `centers:` sections.")
@@ -40,9 +45,6 @@ class RemoveCentersFromBlueprints(BlueprintsMigration):
 class UpdateElementalNuclides(BlueprintsMigration):
     """Update elemental nuclide flags."""
 
-    fromVersion = "0.1.2"
-    toVersion = "0.1.3"
-
     swaps = (
         ("NA23", "NA"),
         ("MN55", "MN"),
@@ -54,6 +56,14 @@ class UpdateElementalNuclides(BlueprintsMigration):
     )
     # these get absorbed into W
     deletions = ("W183", "W184", "W186")
+
+    @property
+    def fromVersion(self):
+        return "0.1.2"
+
+    @property
+    def toVersion(self):
+        return "0.1.3"
 
     def _applyToStream(self):
         # Change both nuclide flags as well as custom isotopics

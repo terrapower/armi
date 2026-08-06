@@ -19,8 +19,7 @@ from logging import WARNING
 
 from armi import runLog
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils import directoryChangers
 
 TEST_INPUT_TITLE = "c5g7-settings.yaml"
@@ -46,7 +45,7 @@ class C5G7ReactorTests(unittest.TestCase):
             runLog.LOG.setVerbosity(WARNING)
 
             # load the reactor
-            _o, r = test_reactors.loadTestReactor(
+            _o, r = loadTestReactor(
                 os.path.join(TESTING_ROOT, "reactors", "c5g7"),
                 inputFileName=TEST_INPUT_TITLE,
             )

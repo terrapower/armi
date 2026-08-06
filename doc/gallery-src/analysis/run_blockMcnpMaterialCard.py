@@ -23,13 +23,13 @@ materials cards is so pervasive that it made it into the framework
 
 from armi import configure
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 from armi.utils.densityTools import formatMaterialCard
 
 # configure ARMI
 configure(permissive=True)
 
-_o, r = test_reactors.loadTestReactor()
+_o, r = loadTestReactor()
 
 bFuel = r.core.getBlocks(Flags.FUEL)[0]
 
