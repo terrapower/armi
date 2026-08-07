@@ -226,6 +226,7 @@ def setup(app):
         if app.builder.name == "latex":
             # Exclude API docs from the LaTeX/PDF build
             app.config.exclude_patterns.append("api/**")
+            print("TODO: DOES THIS HAPPEN?")
         elif app.builder.name == "html":
             # If you ever want HTML-specific behavior, do it here
             pass
@@ -436,7 +437,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual], toctree_only).
 latex_documents = [
     (
-        "index",
+        "index-pdf",
         "ARMI.tex",
         "Advanced Reactor Modeling Interface (ARMI) Manual",
         "TerraPower, LLC",
