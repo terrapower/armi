@@ -216,27 +216,7 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 
 def setup(app):
     """Method to make `make html` generate api documentation."""
-    print("\n\n\nTODO: JOHN setup() ========================================")
-    print(app)
-    print(type(app))
-    print(dir(app))
-
-    def _on_builder_inited(app):
-        # Now the builder exists; we can branch on its name
-        if app.builder.name == "latex":
-            # Exclude API docs from the LaTeX/PDF build
-            app.config.exclude_patterns.append("api/**")
-            print("TODO: DOES THIS HAPPEN?")
-        elif app.builder.name == "html":
-            # If you ever want HTML-specific behavior, do it here
-            pass
-
-    # if app.builder.name == "latex":
-    #    # Do not add the API docs to the PDF
-    #    app.config.exclude_patterns.append(APIDOC_REL)
-
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
-    app.connect("builder-inited", _on_builder_inited)
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
@@ -276,12 +256,14 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_needs",  # needed for requirements tracking
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
-    "sphinxcontrib.apidoc",
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
     "sphinxcontrib.plantuml",
     "sphinxcontrib.test_reports",
     "sphinxext.opengraph",
 ]
+
+if os.environ.get("SPHINX_BUILDER") == "html":
+    extensions.append("sphinxcontrib.apidoc")
 
 # Our API should make sense without documenting private/special members.
 autodoc_default_options = {
@@ -437,7 +419,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual], toctree_only).
 latex_documents = [
     (
-        "index-pdf",
+        "index",
         "ARMI.tex",
         "Advanced Reactor Modeling Interface (ARMI) Manual",
         "TerraPower, LLC",
