@@ -256,14 +256,12 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_needs",  # needed for requirements tracking
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
+    "sphinxcontrib.apidoc",
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
     "sphinxcontrib.plantuml",
     "sphinxcontrib.test_reports",
     "sphinxext.opengraph",
 ]
-
-if os.environ.get("SPHINX_BUILDER") == "html":
-    extensions.append("sphinxcontrib.apidoc")
 
 # Our API should make sense without documenting private/special members.
 autodoc_default_options = {
