@@ -98,6 +98,8 @@ class NuclideFlag(yamlize.Object):
         if value not in nuclideBases.byName and value not in elements.bySymbol:
             allowedKeys = set(nuclideBases.byName.keys()).update(set(elements.bySymbol.keys()))
             raise ValueError(f"`{value}` is not a valid nuclide name, must be one of: {allowedKeys}")
+        elif value == "AM242":
+            raise ValueError("AM242 is not currently a valid nuclide in ARMI, you want to use AM242M.")
 
     burn = yamlize.Attribute(type=bool)
     xs = yamlize.Attribute(type=bool)
@@ -412,13 +414,16 @@ def getDefaultNuclideFlags():
         "U": [234, 235, 236, 238],
         "NP": [237, 238],
         "PU": [236] + list(range(238, 243)),
-        "AM": range(241, 244),
+        "AM": [241, 243],
         "CM": range(242, 248),
     }
 
     for el, masses in actinides.items():
         for mass in masses:
             nuclideFlags[f"{el}{mass}"] = {"burn": True, "xs": True, "expandTo": None}
+
+    # handle special case: AM242M
+    nuclideFlags["AM242M"] = {"burn": True, "xs": True, "expandTo": None}
 
     for fp in [35, 38, 39, 40, 41]:
         nuclideFlags[f"LFP{fp}"] = {"burn": True, "xs": True, "expandTo": None}
