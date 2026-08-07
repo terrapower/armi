@@ -220,11 +220,22 @@ def setup(app):
     print(app)
     print(type(app))
     print(dir(app))
-    if app.builder.name == "latex":
-        # Do not add the API docs to the PDF
-        app.config.exclude_patterns.append(APIDOC_REL)
+
+    def _on_builder_inited(app):
+        # Now the builder exists; we can branch on its name
+        if app.builder.name == "latex":
+            # Exclude API docs from the LaTeX/PDF build
+            app.config.exclude_patterns.append("api/**")
+        elif app.builder.name == "html":
+            # If you ever want HTML-specific behavior, do it here
+            pass
+
+    # if app.builder.name == "latex":
+    #    # Do not add the API docs to the PDF
+    #    app.config.exclude_patterns.append(APIDOC_REL)
 
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
+    app.connect("builder-inited", _on_builder_inited)
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
