@@ -216,6 +216,10 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 
 def setup(app):
     """Method to make `make html` generate api documentation."""
+    if app.builder.name == "latex":
+        # Do not add the API docs to the PDF
+        app.config.exclude_patterns.append(APIDOC_REL)
+
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
