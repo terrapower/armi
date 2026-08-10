@@ -1446,20 +1446,20 @@ Properties
 ----------
 The ``property`` field defines a property of the material. This is usually a temperature-dependent curve describing the
 material, like density. The value for this field is a collection consisting of several required and optional keywords. A
-summary of the keywords, their relevant status and appropriate section can be found below.
+summary of the keywords and their relevant status can be found below.
 
 .. table:: Summary of Property Components
 
-    +----------------------+-------------------------------------+--------------------------+
-    | Property Components  | Required Status                     | Section                  |
-    +======================+=====================================+==========================+
-    | function             | Required                            | :numref:`ref_functions`  |
-    +----------------------+-------------------------------------+--------------------------+
-    | references           | Optional                            | :numref:`ref_references` |
-    +----------------------+-------------------------------------+--------------------------+
-    | tabulated data       | Required for table data functions.  | :numref:`ref_tabdata`    |
-    |                      | Otherwise, it is optional.          |                          |
-    +----------------------+-------------------------------------+--------------------------+
+    +----------------------+-------------------------------------+
+    | Property Components  | Required Status                     |
+    +======================+=====================================+
+    | function             | Required                            |
+    +----------------------+-------------------------------------+
+    | references           | Optional                            |
+    +----------------------+-------------------------------------+
+    | tabulated data       | Required for table data functions.  |
+    |                      | Otherwise, it is optional.          |
+    +----------------------+-------------------------------------+
 
 The table below lists the default collection of properties that are defined for a material by ``matProps``. Note that
 these property names are case sensitive.
