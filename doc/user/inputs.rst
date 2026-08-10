@@ -1446,7 +1446,7 @@ Properties
 ----------
 The ``property`` field defines a property of the material. This is usually a temperature-dependent curve describing the
 material, like density. The value for this field is a collection consisting of several required and optional keywords. A
-summary of the keywords, their relevant status and appropriate section can be found below.
+summary of the keywords and their relevant status can be found below.
 
 .. table:: Summary of Property Components
 
