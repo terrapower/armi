@@ -370,7 +370,7 @@ html_theme_options = {
     # Toc options
     "collapse_navigation": True,
     "includehidden": True,
-    "navigation_depth": 4,
+    "navigation_depth": -1,
     "sticky_navigation": True,
     "titles_only": False,
 }
@@ -410,6 +410,8 @@ latex_elements = {
     "preamble": r"""\usepackage{amsmath}
 
 \usepackage{wasysym}
+\setcounter{tocdepth}{5}
+\setcounter{secnumdepth}{5}
 """,
 }
 
