@@ -832,7 +832,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 a.p.kInf = totalSrc / totalAbs  # assembly average k-inf.
 
 
-def computeDpaRate(mgFlux, dpaXs):
+def computeDpaRate(mgFlux, dpaXs, block=None):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
 
@@ -840,8 +840,8 @@ def computeDpaRate(mgFlux, dpaXs):
         :id: I_ARMI_FLUX_DPA
         :implements: R_ARMI_FLUX_DPA
 
-        This method calculates DPA rates using the inputted multigroup flux and DPA cross sections.
-        Displacements calculated by displacement cross-section:
+        Calculate DPA rates using a provided multi-group flux and DPA cross sections. Displacements are calculated by
+        displacement cross-section:
 
         .. math::
             :nowrap:
@@ -865,48 +865,49 @@ def computeDpaRate(mgFlux, dpaXs):
 
             \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
 
-        the number density of the structural material cancels out. It's in the macroscopic
-        cross-section and in the original number of atoms.
+        the number density of the structural material cancels out. It is in the macroscopic cross-section and in the
+        original number of atoms.
 
     Parameters
     ----------
     mgFlux : list
-        multigroup neutron flux in #/cm^2/s
-
+        multi-group neutron flux in #/cm^2/s
     dpaXs : list
         DPA cross section in barns to convolute with flux to determine DPA rate
+    block : Block
+        Optional parameter, used purely for logging.
 
     Returns
     -------
     dpaPerSecond : float
-        The dpa/s in this material due to this flux
+        The DPA/s in this material due to this flux
 
     Raises
     ------
     RuntimeError
        Negative dpa rate.
     """
-    displacements = 0.0
     if len(mgFlux) != len(dpaXs):
         runLog.warning(
-            "Multigroup flux of length {} is incompatible with dpa cross section of length {};"
-            "dpa rate will be set do 0.0".format(len(mgFlux), len(dpaXs)),
+            f"Multigroup flux of length {len(mgFlux)} is incompatible with DPA cross section of length {len(dpaXs)}; "
+            "DPA rate will be set do 0.0",
             single=True,
         )
-        return displacements
+        return 0.0
+
+    displacements = 0.0
     for flux, barns in zip(mgFlux, dpaXs):
         displacements += flux * barns
-    dpaPerSecond = displacements * units.CM2_PER_BARN
 
+    dpaPerSecond = displacements * units.CM2_PER_BARN
     if dpaPerSecond < 0:
-        runLog.warning(
-            "Negative DPA rate calculated at {}".format(dpaPerSecond),
-            single=True,
-            label="negativeDpaPerSecond",
-        )
+        forBlock = f" for block {block}" if block else ""
+        runLog.warning(f"Negative DPA rate calculated to be {dpaPerSecond}{forBlock}, setting to zero.")
         # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
-            raise RuntimeError("Calculated DPA rate is substantially negative at {}".format(dpaPerSecond))
+            msg = f"Calculated DPA rate is substantially negative at {dpaPerSecond}{forBlock}."
+            runLog.error(msg)
+            raise RuntimeError(msg)
         dpaPerSecond = 0.0
 
     return dpaPerSecond
