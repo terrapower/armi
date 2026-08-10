@@ -33,7 +33,6 @@ applications like word processors and spreadsheets.
 from armi.migration import m0_1_3, m0_1_6, m0_7_0
 
 ACTIVE_MIGRATIONS = [
-    m0_1_3.RemoveCentersFromBlueprints,
     m0_1_3.UpdateElementalNuclides,
     m0_1_6.ConvertAlphanumLocationSettingsToNum,
     m0_7_0.UpdateAmericium242,

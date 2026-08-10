@@ -11,19 +11,51 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test Locationlabel migration."""
+"""Basic tests of the migrations that come packaged with ARMI."""
 
 import io
 import unittest
 
-from armi.migration.m0_1_3 import RemoveCentersFromBlueprints, UpdateElementalNuclides
+from armi.migration.m0_1_3 import UpdateElementalNuclides
 from armi.migration.m0_1_6 import ConvertAlphanumLocationSettingsToNum
 from armi.migration.m0_7_0 import UpdateAmericium242
 from armi.settings import caseSettings
 from armi.settings.settingsIO import SettingsReader, SettingsWriter
 
 
-class TestMigration(unittest.TestCase):
+class TestMigration013(unittest.TestCase):
+    def test_updateElementalNuclides(self):
+        # mock up a partial blueprint
+        bpText = """
+nulide flags:
+  MN55: {burn: false, xs: true, expandTo: []}
+  CM242: {burn: false, xs: true, expandTo: []}
+  W182: {burn: false, xs: true, expandTo: []}
+  CM245: {burn: false, xs: true, expandTo: []}
+  AL27: {burn: false, xs: true, expandTo: []}
+"""
+        # run the UpdateElementalNuclides migration
+        stream = io.StringIO(bpText)
+        converter = UpdateElementalNuclides(stream=stream)
+        newStream = converter.apply(version="0.1.3")
+        outText = newStream.read()
+
+        # validate migration: old versions removed
+        self.assertNotIn("MN55:", outText)
+        self.assertNotIn("W182:", outText)
+        self.assertNotIn("AL27:", outText)
+
+        # validate migration: new versions added
+        self.assertIn("MN:", outText)
+        self.assertIn("W:", outText)
+        self.assertIn("AL:", outText)
+
+        # validate migration: unrelated things unaffected
+        self.assertIn("CM242:", outText)
+        self.assertIn("CM245:", outText)
+
+
+class TestMigration016(unittest.TestCase):
     def test_locationLabelMigration(self):
         """Make a setting with an old value and make sure it migrates to expected new value."""
         cs = caseSettings.Settings()
@@ -63,14 +95,8 @@ class TestMigration(unittest.TestCase):
         reader.readFromStream(converter.apply(version="0.6.4"))
         self.assertEqual(newCs["detailAssemLocationsBOL"][0], "B1012")
 
-    def test_removeCentersFromBlueprints(self):
-        # RemoveCentersFromBlueprints
-        pass
 
-    def test_updateElementalNuclides(self):
-        # UpdateElementalNuclides
-        pass
-
+class TestMigration070(unittest.TestCase):
     def test_updateAmericium242(self):
         # mock up a partial blueprint
         bpText = """
@@ -87,11 +113,8 @@ nulide flags:
         newStream = converter.apply(version="0.7.0")
         outText = newStream.read()
 
-        print(outText)
-
         # validate migration
         self.assertIn("AM242M:", outText)
         self.assertNotIn("AM242:", outText)
         self.assertIn("CM244:", outText)
         self.assertIn("CM243:", outText)
-        
