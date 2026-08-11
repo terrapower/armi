@@ -840,7 +840,7 @@ def computeDpaRate(mgFlux, dpaXs, block=None):
         :id: I_ARMI_FLUX_DPA
         :implements: R_ARMI_FLUX_DPA
 
-        Calculate DPA rates using a provided multi-group flux and DPA cross sections. Displacements are calculated by
+        Calculate DPA rates using a provided multi-group flux and DPA cross section. Displacements are calculated by
         displacement cross-section:
 
         .. math::
