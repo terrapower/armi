@@ -1050,10 +1050,6 @@ class Block(composites.Composite):
             else:
                 pinLocs.append(spatLoc)
 
-        # awkward re-ordering logic, for backward compatibility
-        if len(pinLocs) > 1:
-            pinLocs = pinLocs[1:] + [pinLocs[0]]
-
         return pinLocs
 
     def getPinCoordinates(self) -> np.ndarray:
