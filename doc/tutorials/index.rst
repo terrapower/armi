@@ -10,7 +10,7 @@ interact with ARMI.
 --------------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 5
     :numbered:
 
     nuclide_demo.ipynb
