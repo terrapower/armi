@@ -1014,7 +1014,7 @@ class Block(composites.Composite):
 
             # Count pins. If multiple components are at the same location, take the one that has the most pins.
             numPins = [max([int(c.getDimension("mult")) for c in csByLocs]) for csByLocs in compsByLocation]
-            numPins = 0 if not numPins else sum(numPins)
+            numPins = sum(numPins)
             numPinsByType.append((numPins, compsByLocation))
 
         return numPinsByType
