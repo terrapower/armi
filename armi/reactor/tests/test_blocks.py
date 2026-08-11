@@ -1559,6 +1559,7 @@ class TestBlock(unittest.TestCase):
         b = a1[2]
 
         self.assertEqual(b.getNumPins(), 37)
+        self.assertEqual(len(b.getPinLocations()), 37)
 
     def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
