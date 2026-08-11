@@ -16,10 +16,10 @@
 import unittest
 
 from armi.materials import Be9
-from armi.materials.tests.test_materials import AbstractMaterialTest
+from armi.materials.tests.test_materials import TestAbstractMaterial
 
 
-class Be9Tests(AbstractMaterialTest, unittest.TestCase):
+class Be9Tests(TestAbstractMaterial, unittest.TestCase):
     MAT_CLASS = Be9
 
     def test_pseudoDensity(self):
