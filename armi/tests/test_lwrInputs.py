@@ -25,7 +25,7 @@ from armi.utils import directoryChangers
 TEST_INPUT_TITLE = "c5g7-settings.yaml"
 
 
-class C5G7ReactorTests(unittest.TestCase):
+class TestC5G7Reactor(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()

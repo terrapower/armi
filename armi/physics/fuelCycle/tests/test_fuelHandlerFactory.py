@@ -33,7 +33,7 @@ class _DummyOperator:
         self.cs = settings
 
 
-class FuelHandlerFactoryTests(unittest.TestCase):
+class TestFuelHandlerFactory(unittest.TestCase):
     """Exercise the custom module import logic."""
 
     def setUp(self):

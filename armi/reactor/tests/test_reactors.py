@@ -48,7 +48,7 @@ from armi.utils import directoryChangers
 _THIS_DIR = os.path.dirname(__file__)
 
 
-class ReactorTests(unittest.TestCase):
+class TestReactor(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Prepare the input files. This is important so the unit tests run from wherever they need to run from.
@@ -60,9 +60,9 @@ class ReactorTests(unittest.TestCase):
         cls.td.__exit__(None, None, None)
 
 
-class HexReactorTests(ReactorTests):
+class TestHexReactor(TestReactor):
     """
-    Base class meant to pair with the ``HexReactorReadOnlyTests`` unit test class.
+    Base class meant to pair with the ``TestHexReactorReadOnly`` unit test class.
 
     The tests in this class all modify the Reactor object, so we need to create a new test reactor for each test.
     """
@@ -706,9 +706,9 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core.getNumRings(), 3)
 
 
-class HexReactorReadOnlyTests(unittest.TestCase):
+class TestHexReactorReadOnly(unittest.TestCase):
     """
-    Testing base class meant to pair with the ``HexReactorTests`` unit test class.
+    Testing base class meant to pair with the ``TestHexReactor`` unit test class.
 
     The tests in this class only READ, and not WRITE to the Reactor object, so we only have to create one test reactor.
     """
@@ -1073,9 +1073,9 @@ class HexReactorReadOnlyTests(unittest.TestCase):
                     self.assertAlmostEqual(p, coldHeightP)
 
 
-class HexReactorSoloTests(ReactorTests):
+class TestHexReactorSolo(TestReactor):
     """
-    Testing base class meant to pair with the ``HexReactorTests`` unit test class.
+    Testing base class meant to pair with the ``TestHexReactor`` unit test class.
 
     Each test here creates its own, slightly unique, test reactor.
     """
@@ -1094,9 +1094,9 @@ class HexReactorSoloTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
 
-class BigHexReactorTests(ReactorTests):
+class TestBigHexReactor(TestReactor):
     """
-    Testing base class meant to pair with the ``HexReactorTests`` unit test class.
+    Testing base class meant to pair with the ``TestHexReactor`` unit test class.
 
     These tests all need a larger test reactor. Ideally, we will migrate these to smaller test reactors one day.
     """
@@ -1210,7 +1210,7 @@ class BigHexReactorTests(ReactorTests):
         self.assertEqual(locs, [(3, 2), (3, 3), (3, 4), (2, 3), (1, 1), (2, 1)])
 
 
-class CartesianReactorTests(ReactorTests):
+class TestCartesianReactor(TestReactor):
     def setUp(self):
         self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
@@ -1253,7 +1253,7 @@ class CartesianReactorTests(ReactorTests):
         self.assertIn("Structure", messages)
 
 
-class CartesianReactorNeighborTests(ReactorTests):
+class TestCartesianReactorNeighbor(TestReactor):
     def setUp(self):
         self.r = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "zppr"), inputFileName="zpprTest.yaml")[1]
 

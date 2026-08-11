@@ -205,7 +205,7 @@ class TestMemoryProfiler(unittest.TestCase):
         ]
 
 
-class KlassCounterTests(unittest.TestCase):
+class TestKlassCounter(unittest.TestCase):
     def get_containers(self):
         container1 = [1, 2, 3, 4, 5, 6, 7, 2.0]
         container2 = ("a", "b", container1, None)

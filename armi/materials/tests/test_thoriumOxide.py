@@ -19,7 +19,7 @@ from armi.materials import ThoriumOxide
 from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class ThoriumOxideTests(AbstractMaterialTest, unittest.TestCase):
+class TestThoriumOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = ThoriumOxide
 
     def setUp(self):

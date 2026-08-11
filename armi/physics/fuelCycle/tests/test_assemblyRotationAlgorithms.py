@@ -317,7 +317,7 @@ class TestFuelHandlerMgmtTools(ShuffleAndRotateTestHelper):
         third.rotate.assert_not_called()
 
 
-class SimpleRotationTests(ShuffleAndRotateTestHelper):
+class TestSimpleRotation(ShuffleAndRotateTestHelper):
     """Test the simple rotation where assemblies are rotated a fixed amount."""
 
     def test_simpleAssemblyRotation(self):

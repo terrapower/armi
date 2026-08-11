@@ -82,7 +82,7 @@ class TestMaterialBaseClassHook(unittest.TestCase):
         self.assertIsInstance(mat, TestMaterial)
 
 
-class YamlMaterialTests(unittest.TestCase):
+class TestYamlMaterial(unittest.TestCase):
     def setUp(self):
         self._monkeypatch = MonkeyPatch()
         origNamespace = materials._MATERIAL_NAMESPACE_ORDER
