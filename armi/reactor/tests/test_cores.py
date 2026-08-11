@@ -177,3 +177,8 @@ class HexCoreTests(unittest.TestCase):
     def test_getFirstAssembly(self):
         a = self.core.getFirstAssembly()
         self.assertIsInstance(a, HexAssembly)
+
+    def test_genChildByLocationLookupTable(self):
+        self.core._genChildByLocationLookupTable()
+        numAssems = len(self.core.getAssemblies())
+        self.assertEqual(len(self.core.childrenByLocator), numAssems)
