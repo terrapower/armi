@@ -295,10 +295,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        This method assumes only one child per spatialLocator, as is typical in pin-type reactor cores. In the version
-        of this method on the generic Composite, it is assumed that multiple children might exist at a given location.
+        This method assumes only one child per spatialLocator, as is typical in pin-type reactor cores.
         """
-        runLog.extra("Generating location-to-child lookup table.")
         self.childrenByLocator = {}
         for child in self:
             self.childrenByLocator[child.spatialLocator] = child

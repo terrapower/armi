@@ -3108,21 +3108,6 @@ class Composite(ArmiObject):
         for c in self:
             c.printContents(includeNuclides=includeNuclides)
 
-    def _genChildByLocationLookupTable(self):
-        """Update the childByLocation lookup table.
-
-        Notes
-        -----
-        In this, most generic method, there can be multiple children per spatial location. In the version of this method
-        on Core, it is assumed only one child exists per location.
-        """
-        runLog.extra("Generating location-to-children lookup table.")
-        self.childrenByLocator = {}
-        for child in self:
-            if child.spatialLocator not in self.childrenByLocator:
-                self.childrenByLocator[child.spatialLocator] = []
-            self.childrenByLocator[child.spatialLocator].append(child)
-
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """
         Get sum circle bound.
