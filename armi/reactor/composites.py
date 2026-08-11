@@ -853,14 +853,14 @@ class ArmiObject(metaclass=CompositeModelType):
 
         See Also
         --------
-        test_block.Block_TestCase.test_consistentAreaWithOverlappingComponents
+        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
 
         Notes
         -----
         void areas can be negative in gaps between fuel/clad/liner(s), but these
         negative areas are intended to account for overlapping positive areas to insure
         the total area of components inside the clad is accurate. See
-        test_block.Block_TestCase.test_consistentAreaWithOverlappingComponents
+        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
         """
         children = self.getChildren()
         numerator = [c.getVolume() for c in children]

@@ -35,7 +35,7 @@ from armi.utils import directoryChangers, textProcessors
 NUM_BLOCKS = 3
 
 
-class MaterialInAssembly_TestCase(unittest.TestCase):
+class TestMaterialInAssembly(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.assembly = testing.buildHexAssemblySingleUZrUTh()
@@ -1026,7 +1026,7 @@ class TestAssembly(unittest.TestCase):
             self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
 
 
-class AssemblyInReactor_TestCase(unittest.TestCase):
+class TestAssemblyInReactor(unittest.TestCase):
     def setUp(self):
         root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
         self.o, self.r = loadTestReactor(root)
@@ -1244,7 +1244,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(shieldPlenumMass, shieldPlenumMassAfterShrink, 7)
 
 
-class AnnularFuelTestCase(unittest.TestCase):
+class TestAnnularFuel(unittest.TestCase):
     """Test fuel with a whole in the center."""
 
     def setUp(self):
