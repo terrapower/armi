@@ -1487,21 +1487,25 @@ class TestBlock(unittest.TestCase):
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         holedRectangle = complexShapes.HoledRectangle("holedRectangle", "HT9", 100, 100, 0.5, 1.0, 1.0)
         holedRectangle.setType("component", flags=Flags.CONTROL)
         emptyBlock.add(holedRectangle)
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         hexagon = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1)
         hexagon.setType("component", flags=Flags.SHIELD)
         emptyBlock.add(hexagon)
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         pins = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
         pins.setType("component", flags=Flags.PLENUM)
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 1)
 
     def test_getNumPinsNClads(self):
         """Test that we still get the correct number of pins if there are two co-centeric clad components.
@@ -1529,6 +1533,7 @@ class TestBlock(unittest.TestCase):
         b.add(pinClad1)
 
         self.assertEqual(b.getNumPins(), 8)
+        self.assertEqual(len(b.getPinLocations()), 1)
 
         # add another clad, at the same position as the original clad, and ensure the pin count does not change
         pinClad2 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
@@ -1537,6 +1542,7 @@ class TestBlock(unittest.TestCase):
         b.add(pinClad2)
 
         self.assertEqual(b.getNumPins(), 8)
+        self.assertEqual(len(b.getPinLocations()), 1)
 
         # add another clad, at the same position as the original clad, and ensure the pin count does not change
         pinClad3 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
@@ -1545,6 +1551,7 @@ class TestBlock(unittest.TestCase):
         b.add(pinClad3)
 
         self.assertEqual(b.getNumPins(), 8)
+        self.assertEqual(len(b.getPinLocations()), 1)
 
     def test_getNumPinsNPinTypes(self):
         """Test that we correctly count pins when there are multiple pin types.
