@@ -1506,11 +1506,11 @@ class ArmiObject(metaclass=CompositeModelType):
         densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
         self.setNumberDensities(densitiesScaled)
 
-        # Update detailedNDens
+        # Update detailedNDens if it exists (Components only)
         if self.p.get("detailedNDens", None) is not None:
             self.p.detailedNDens *= factor
 
-        # Update pinNDens
+        # Update pinNDens if it exists (Components only)
         if self.p.get("pinNDens", None) is not None:
             self.p.pinNDens *= factor
 
