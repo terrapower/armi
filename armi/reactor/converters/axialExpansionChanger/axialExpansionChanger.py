@@ -65,11 +65,17 @@ class AxialExpansionChanger:
     """
     Axially expand or contract assemblies or an entire core.
 
+
+    Parameters
+    ----------
+    detailedAxialExpansion : bool, optional
+        A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
+
     Attributes
     ----------
-    linked: :py:class:`AssemblyAxialLinkage`
+    linked: :class:`~armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage.AssemblyAxialLinkage`
         establishes object containing axial linkage information
-    expansionData: :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.expansionData.ExpansionData>`
+    expansionData: :class:`~armi.reactor.converters.axialExpansionChanger.expansionData.ExpansionData`
         establishes object to store and access relevant expansion data
 
     Notes
@@ -86,26 +92,21 @@ class AxialExpansionChanger:
     expansionData: typing.Optional[ExpansionData]
     topMostBlock: typing.Optional["Block"]
 
-    # 3cm is a presumptive lower threshold for DIF3D
     DIF3D_MIN_BLOCK_HEIGHT: float = 3.0
-    # when checking the diffference between the component and block heights, 1e-12 cm is used as a threshold to account
-    # for meaningful differences. This threshold filters out negligible differences arising from numerical precision
-    # that otherwise have a negliglble impact on the assembly post-axial expansion. Anything larger than this value is
-    # presumed to be valid of a warning that may warrant further investigation.
-    COMP_BLOCK_HEIGHT_DIFF_THRESHOLD: float = 1e-12
+    """Presumptive minimum block height (cm) for DIF3D."""
 
-    # Establish the class used to redistribute mass between components.
+    COMP_BLOCK_HEIGHT_DIFF_THRESHOLD: float = 1e-12
+    """Threshold in (cm) if heights are considered too different or not.
+
+    This threshold filters out negligible differences arising from numerical precision
+    that otherwise have a negliglble impact on the assembly post-axial expansion. Anything larger than this value is
+    presumed to be valid of a warning that may warrant further investigation.
+    """
+
     MASS_REDISTRIBUTOR = RedistributeMass
+    """Class responsible for performing distribution of mass between components."""
 
     def __init__(self, detailedAxialExpansion: bool = False):
-        """
-        Build an axial expansion converter.
-
-        Parameters
-        ----------
-        detailedAxialExpansion : bool, optional
-            A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
-        """
         self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None

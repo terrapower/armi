@@ -6,7 +6,7 @@ ARMI
 
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 5
 
    readme
    installation

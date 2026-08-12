@@ -1,7 +1,7 @@
 # Minimal makefile for Sphinx documentation for BASH Linux
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -j auto
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build

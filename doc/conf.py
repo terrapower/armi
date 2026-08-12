@@ -248,13 +248,10 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
-    "sphinx.ext.ifconfig",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
     "sphinx.ext.inheritance_diagram",
-    "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.todo",
+    "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
     "sphinx_needs",  # needed for requirements tracking
@@ -373,7 +370,7 @@ html_theme_options = {
     # Toc options
     "collapse_navigation": True,
     "includehidden": True,
-    "navigation_depth": 4,
+    "navigation_depth": -1,
     "sticky_navigation": True,
     "titles_only": False,
 }
@@ -413,6 +410,8 @@ latex_elements = {
     "preamble": r"""\usepackage{amsmath}
 
 \usepackage{wasysym}
+\setcounter{tocdepth}{5}
+\setcounter{secnumdepth}{5}
 """,
 }
 
@@ -474,8 +473,6 @@ warnings.filterwarnings(
     category=UserWarning,
     message="Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.",
 )
-
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # These are defaults in Windows in more recent versions of the imgconverter plugin and can be  removed if/when we
 # upgrade Sphinx beyond 2.2. Otherwise, 'convert' from system32 folder is used.
