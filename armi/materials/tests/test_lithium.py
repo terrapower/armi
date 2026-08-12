@@ -16,14 +16,14 @@
 import unittest
 
 from armi.materials import Lithium
-from armi.materials.tests.test_materials import TestAbstractMaterial
+from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class TestLithium(TestAbstractMaterial, unittest.TestCase):
+class TestLithium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = Lithium
 
     def setUp(self):
-        TestAbstractMaterial.setUp(self)
+        AbstractMaterialTest.setUp(self)
         self.mat = Lithium()
 
     def test_liAbundance(self):

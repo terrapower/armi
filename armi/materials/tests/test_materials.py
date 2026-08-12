@@ -33,7 +33,7 @@ from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
-class TestAbstractMaterial:
+class AbstractMaterialTest:
     """Base for material tests."""
 
     MAT_CLASS = None
@@ -185,7 +185,7 @@ class TestMaterialFinding(unittest.TestCase):
             self.assertGreater(mat.rho(T=400), 500)
 
 
-class TestCalifornium(TestAbstractMaterial, unittest.TestCase):
+class TestCalifornium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Californium
 
     def test_pseudoDensity(self):
@@ -203,7 +203,7 @@ class TestCalifornium(TestAbstractMaterial, unittest.TestCase):
         self.assertEqual(self.mat.gasPorosity, 0.0)
 
 
-class TestCesium(TestAbstractMaterial, unittest.TestCase):
+class TestCesium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Cs
 
     def test_pseudoDensity(self):
@@ -216,7 +216,7 @@ class TestCesium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=ref * 0.05)
 
 
-class TestMagnesium(TestAbstractMaterial, unittest.TestCase):
+class TestMagnesium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Magnesium
     VALID_TEMP_K = 1000
 
@@ -232,7 +232,7 @@ class TestMagnesium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
-class TestMagnesiumOxide(TestAbstractMaterial, unittest.TestCase):
+class TestMagnesiumOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.MgO
 
     def test_pseudoDensity(self):
@@ -256,7 +256,7 @@ class TestMagnesiumOxide(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class TestMOX(TestAbstractMaterial, unittest.TestCase):
+class TestMOX(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.MOX
 
     def test_density(self):
@@ -300,7 +300,7 @@ class TestMOX(TestAbstractMaterial, unittest.TestCase):
         self.assertEqual(len(self.mat.massFrac), 0)
 
 
-class TestNaCl(TestAbstractMaterial, unittest.TestCase):
+class TestNaCl(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.NaCl
 
     def test_density(self):
@@ -313,7 +313,7 @@ class TestNaCl(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class TestPotassium(TestAbstractMaterial, unittest.TestCase):
+class TestPotassium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Potassium
 
     def test_pseudoDensity(self):
@@ -343,7 +343,7 @@ class TestPotassium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
-class TestScandiumOxide(TestAbstractMaterial, unittest.TestCase):
+class TestScandiumOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Sc2O3
 
     def test_pseudoDensity(self):
@@ -361,7 +361,7 @@ class TestScandiumOxide(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class TestSodium(TestAbstractMaterial, unittest.TestCase):
+class TestSodium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Sodium
 
     def test_pseudoDensity(self):
@@ -398,7 +398,7 @@ class TestSodium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
-class TestThoriumUraniumMetal(TestAbstractMaterial, unittest.TestCase):
+class TestThoriumUraniumMetal(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ThU
 
     def test_pseudoDensity(self):
@@ -429,7 +429,7 @@ class TestThoriumUraniumMetal(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class TestUranium(TestAbstractMaterial, unittest.TestCase):
+class TestUranium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Uranium
 
     def test_applyInputParams(self):
@@ -478,7 +478,7 @@ class TestUranium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class TestUraniumOxide(TestAbstractMaterial, unittest.TestCase):
+class TestUraniumOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.UraniumOxide
 
     def test_adjustMassEnrichment(self):
@@ -603,7 +603,7 @@ class TestUraniumOxide(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ratio, 0.1)
 
 
-class TestThorium(TestAbstractMaterial, unittest.TestCase):
+class TestThorium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Thorium
 
     def test_setDefaultMassFracs(self):
@@ -638,7 +638,7 @@ class TestThorium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, accuracy)
 
 
-class TestThoriumOxide(TestAbstractMaterial, unittest.TestCase):
+class TestThoriumOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ThoriumOxide
 
     def test_density(self):
@@ -662,7 +662,7 @@ class TestThoriumOxide(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, 4)
 
 
-class TestVoid(TestAbstractMaterial, unittest.TestCase):
+class TestVoid(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
@@ -688,7 +688,7 @@ class TestVoid(TestAbstractMaterial, unittest.TestCase):
         self.assertEqual(cur, ref)
 
 
-class TestLead(TestAbstractMaterial, unittest.TestCase):
+class TestLead(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Lead
     VALID_TEMP_K = 600
 
@@ -734,7 +734,7 @@ class TestLead(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
-class TestLeadBismuth(TestAbstractMaterial, unittest.TestCase):
+class TestLeadBismuth(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.LeadBismuth
 
     def test_setDefaultMassFracs(self):
@@ -783,7 +783,7 @@ class TestLeadBismuth(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=ref * 0.001)
 
 
-class TestCopper(TestAbstractMaterial, unittest.TestCase):
+class TestCopper(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Cu
 
     def test_setDefaultMassFracs(self):
@@ -810,7 +810,7 @@ class TestCopper(TestAbstractMaterial, unittest.TestCase):
         self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
 
 
-class TestZr(TestAbstractMaterial, unittest.TestCase):
+class TestZr(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Zr
 
     def test_thermalConductivity(self):
@@ -908,7 +908,7 @@ class TestZr(TestAbstractMaterial, unittest.TestCase):
             self.assertAlmostEqual(self.mat.pseudoDensity(Tk=Tk), expectedValues[i], msg=str(Tk))
 
 
-class TestInconel(TestAbstractMaterial, unittest.TestCase):
+class TestInconel(AbstractMaterialTest, unittest.TestCase):
     def setUp(self):
         self.Inconel = materials.Inconel()
         self.Inconel800 = materials.Inconel800()
@@ -952,7 +952,7 @@ class TestInconel(TestAbstractMaterial, unittest.TestCase):
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=str(Tc))
 
 
-class TestInconel600(TestAbstractMaterial, unittest.TestCase):
+class TestInconel600(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Inconel600
 
     def test_setDefaultMassFracs(self):
@@ -1024,7 +1024,7 @@ class TestInconel600(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
 
-class TestInconel625(TestAbstractMaterial, unittest.TestCase):
+class TestInconel625(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Inconel625
 
     def test_setDefaultMassFracs(self):
@@ -1115,7 +1115,7 @@ class TestInconel625(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
 
-class TestInconelX750(TestAbstractMaterial, unittest.TestCase):
+class TestInconelX750(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.InconelX750
 
     def test_setDefaultMassFracs(self):
@@ -1200,7 +1200,7 @@ class TestInconelX750(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
 
-class TestAlloy200(TestAbstractMaterial, unittest.TestCase):
+class TestAlloy200(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Alloy200
 
     def test_nickleContent(self):
@@ -1218,7 +1218,7 @@ class TestAlloy200(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
 
-class TestCaH2(TestAbstractMaterial, unittest.TestCase):
+class TestCaH2(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.CaH2
 
     def test_pseudoDensity(self):
@@ -1230,7 +1230,7 @@ class TestCaH2(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
 
-class TestHafnium(TestAbstractMaterial, unittest.TestCase):
+class TestHafnium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Hafnium
 
     def test_pseudoDensity(self):
@@ -1242,7 +1242,7 @@ class TestHafnium(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
 
-class TestHT9(TestAbstractMaterial, unittest.TestCase):
+class TestHT9(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.HT9
 
     def test_feContent(self):
@@ -1259,7 +1259,7 @@ class TestHT9(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
 
-class TestHastelloyN(TestAbstractMaterial, unittest.TestCase):
+class TestHastelloyN(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.HastelloyN
 
     def test_thermalConductivity(self):
@@ -1313,7 +1313,7 @@ class TestHastelloyN(TestAbstractMaterial, unittest.TestCase):
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=str(Tc))
 
 
-class TestTZM(TestAbstractMaterial, unittest.TestCase):
+class TestTZM(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.TZM
 
     def test_applyInputParams(self):
@@ -1340,7 +1340,7 @@ class TestTZM(TestAbstractMaterial, unittest.TestCase):
             self.assertAlmostEqual(cur, ref, delta=10e-3, msg=str(Tc))
 
 
-class TestYttriumOxide(TestAbstractMaterial, unittest.TestCase):
+class TestYttriumOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.Y2O3
 
     def test_pseudoDensity(self):
@@ -1358,7 +1358,7 @@ class TestYttriumOxide(TestAbstractMaterial, unittest.TestCase):
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
 
-class TestZincOxide(TestAbstractMaterial, unittest.TestCase):
+class TestZincOxide(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = materials.ZnO
 
     def test_density(self):
@@ -1418,7 +1418,7 @@ assemblies:
 """
 
     def loadAssembly(self, materialModifications):
-        # Prevent circular import. Not all uses of TestAbstractMaterial will have a configured app.
+        # Prevent circular import. Not all uses of AbstractMaterialTest will have a configured app.
         from armi.reactor import blueprints
 
         yamlString = self.baseInput + "\n" + materialModifications
