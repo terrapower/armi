@@ -38,7 +38,7 @@ def betterSubClassCheck(item, superClass):
         return False
 
 
-class TestMaterials__init__(unittest.TestCase):
+class TestMaterialsInit(unittest.TestCase):
     def test_canAccessClassesFromPackage(self):
         klasses = [kk for _, kk in vars(materials).items() if betterSubClassCheck(kk, materials.material.Material)]
         self.assertGreater(len(klasses), 10)
