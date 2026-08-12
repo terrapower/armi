@@ -26,105 +26,17 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
 from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.testing.singleMixedAssembly import buildMixedThreePinAssembly
+from armi.testing import (
+    TESTING_ROOT,
+    buildComplexHexBlock,
+    buildLinkedFuelHexBlock,
+    buildLinkedFuelHexBlockNegativeArea,
+    buildMixedThreePinAssembly,
+    buildSimpleFuelHexBlockNegativeArea,
+    loadTestReactor,
+)
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-
-
-def buildSimpleFuelBlockNegativeArea():
-    """
-    Return a simple block containing fuel, clad, duct, and coolant.
-
-    The block has a negative-area gap between fuel and cladding for testing.
-    """
-    b = blocks.HexBlock("fuel", height=10.0)
-
-    fuelDims = {"Tinput": 25, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25, "Thot": 600, "od": 0.80, "id": 0.76, "mult": 127.0}
-    ductDims = {"Tinput": 25, "Thot": 600, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 400,
-        "Thot": 400,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": 400}
-
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    clad = components.Circle("clad", "HT9", **cladDims)
-    gapDims = {
-        "Tinput": 25,
-        "Thot": 600,
-        "od": "clad.id",
-        "id": "fuel.od",
-        "mult": 127.0,
-    }
-    gapDims["components"] = {"fuel": fuel, "clad": clad}
-    gap = components.Circle("gap", "Void", **gapDims)
-    duct = components.Hexagon("duct", "HT9", **ductDims)
-    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
-
-    b.add(fuel)
-    b.add(gap)
-    b.add(clad)
-    b.add(duct)
-    b.add(coolant)
-    b.add(intercoolant)
-
-    b.getVolumeFractions()
-
-    return b
-
-
-def buildSimpleFuelBlockNegativeAreaBond():
-    """
-    Return a simple block containing fuel, clad, duct, and coolant.
-
-    The block has a negative-area bond between fuel and cladding for testing.
-    """
-    b = blocks.HexBlock("fuel", height=10.0)
-
-    fuelDims = {"Tinput": 25, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25, "Thot": 600, "od": 0.80, "id": 0.76, "mult": 127.0}
-    ductDims = {"Tinput": 25, "Thot": 600, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 400,
-        "Thot": 400,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": 400}
-
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    clad = components.Circle("clad", "HT9", **cladDims)
-    bondDims = {
-        "Tinput": 25,
-        "Thot": 600,
-        "od": "clad.id",
-        "id": "fuel.od",
-        "mult": 127.0,
-    }
-    bondDims["components"] = {"fuel": fuel, "clad": clad}
-    bond = components.Circle("bond", "Sodium", **bondDims)
-    duct = components.Hexagon("duct", "HT9", **ductDims)
-    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
-
-    b.add(fuel)
-    b.add(bond)
-    b.add(clad)
-    b.add(duct)
-    b.add(coolant)
-    b.add(intercoolant)
-
-    b.getVolumeFractions()
-
-    return b
 
 
 class TestBlockConverter(unittest.TestCase):
@@ -143,8 +55,8 @@ class TestBlockConverter(unittest.TestCase):
             :id: T_ARMI_BLOCKCONV0
             :tests: R_ARMI_BLOCKCONV
         """
-        self._test_dissolve(loadTestBlock(), "wire", "coolant")
-        hotBlock = loadTestBlock(cold=False)
+        self._test_dissolve(buildComplexHexBlock(), "wire", "coolant")
+        hotBlock = buildComplexHexBlock(cold=False)
         self._test_dissolve(hotBlock, "wire", "coolant")
         hotBlock = self._perturbTemps(hotBlock, "wire", 127, 700)
         self._test_dissolve(hotBlock, "wire", "coolant")
@@ -157,8 +69,8 @@ class TestBlockConverter(unittest.TestCase):
             :id: T_ARMI_BLOCKCONV1
             :tests: R_ARMI_BLOCKCONV
         """
-        self._test_dissolve(loadTestBlock(), "outer liner", "clad")
-        hotBlock = loadTestBlock(cold=False)
+        self._test_dissolve(buildComplexHexBlock(), "outer liner", "clad")
+        hotBlock = buildComplexHexBlock(cold=False)
         self._test_dissolve(hotBlock, "outer liner", "clad")
         hotBlock = self._perturbTemps(hotBlock, "outer liner", 127, 700)
         self._test_dissolve(hotBlock, "outer liner", "clad")
@@ -171,7 +83,7 @@ class TestBlockConverter(unittest.TestCase):
             :id: T_ARMI_BLOCKCONV2
             :tests: R_ARMI_BLOCKCONV
         """
-        self._test_dissolve(buildLinkedFuelBlock(), "bond", "clad")
+        self._test_dissolve(buildLinkedFuelHexBlock(), "bond", "clad")
 
     def _perturbTemps(self, block, cName, tCold, tHot):
         """Give the component different ref and hot temperatures than in test_Blocks."""
@@ -188,8 +100,8 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_dissolveMultiple(self):
         """Test dissolving multiple components into another."""
-        self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
-        self._test_dissolve_multi(loadTestBlock(), ["inner liner", "outer liner"], "clad")
+        self._test_dissolve_multi(buildComplexHexBlock(), ["wire", "clad"], "coolant")
+        self._test_dissolve_multi(buildComplexHexBlock(), ["inner liner", "outer liner"], "clad")
 
     def test_dissolveMixedAssembly(self):
         """Test dissolving multiple components into another in a mixed assembly."""
@@ -218,26 +130,26 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_dissolveZeroArea(self):
         """Test dissolving a zero-area component into another."""
-        self._test_dissolve(loadTestBlock(), "gap2", "outer liner")
+        self._test_dissolve(buildComplexHexBlock(), "gap2", "outer liner")
 
     def test_dissolveIntoZeroArea(self):
         """Test dissolving a component into a zero-area solvent (raises ValueError)."""
         with self.assertRaises(ValueError):
-            self._test_dissolve(loadTestBlock(), "outer liner", "gap2")
+            self._test_dissolve(buildComplexHexBlock(), "outer liner", "gap2")
 
     def test_dissolveNegativeArea(self):
         """Test dissolving a zero-area gap component into another."""
-        self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
+        self._test_dissolve(buildSimpleFuelHexBlockNegativeArea(), "gap", "clad")
 
     def test_dissolveNegativeAreaBond(self):
         """Test dissolving a zero-area non-gap component into another."""
         with self.assertRaises(ValueError):
-            self._test_dissolve(buildSimpleFuelBlockNegativeAreaBond(), "bond", "clad")
+            self._test_dissolve(buildLinkedFuelHexBlockNegativeArea(), "bond", "clad")
 
     def test_dissolveIntoNegativeArea(self):
         """Test dissolving a zero-area component into another."""
         with self.assertRaises(ValueError):
-            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "clad", "gap")
+            self._test_dissolve(buildSimpleFuelHexBlockNegativeArea(), "clad", "gap")
 
     def _test_dissolve_multi(self, block, soluteNames, solventName):
         converter = blockConverters.MultipleComponentMerger(block, soluteNames, solventName)
@@ -257,7 +169,7 @@ class TestBlockConverter(unittest.TestCase):
     def test_build_NthRing(self):
         """Test building of one ring."""
         RING = 6
-        block = loadTestBlock(cold=False)
+        block = buildComplexHexBlock(cold=False)
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
         numPinsInRing = 30
@@ -277,7 +189,7 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_buildInsideDuct(self):
         """Test building inside the duct."""
-        block = loadTestBlock(cold=False)
+        block = buildComplexHexBlock(cold=False)
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter._buildInsideDuct()

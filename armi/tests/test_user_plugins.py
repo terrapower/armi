@@ -19,9 +19,8 @@ import unittest
 
 from armi import context, getApp, interfaces, plugins, utils
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.testing import TESTING_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import directoryChangers
 
 
@@ -69,7 +68,7 @@ class UserPluginFlags4(plugins.UserPlugin):
 
 
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
-    """This is invalid/bad because it implements defineSettings()."""
+    """Invalid/bad because it implements defineSettings()."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -79,7 +78,7 @@ class UserPluginBadDefinesSettings(plugins.UserPlugin):
 
 
 class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
-    """This is invalid/bad because it implements defineParameterRenames()."""
+    """Invalid/bad because it implements defineParameterRenames()."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -90,9 +89,8 @@ class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
 
 class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
     """
-    This plugin flex-tests the onProcessCoreLoading() hook,
-    and arbitrarily adds "1" to the height of every block,
-    after the DB is loaded.
+    Flex-test the onProcessCoreLoading() hook, and arbitrarily adds "1" to the height of every block, after the DB is
+    loaded.
     """
 
     @staticmethod
@@ -106,8 +104,8 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
 class UpInterface(interfaces.Interface):
     """
-    A mostly meaningless little test interface, just to prove that we can affect
-    the reactor state from an interface inside a UserPlugin.
+    Simple test interface to prove that we can affect the reactor state from an interface
+    inside a UserPlugin.
     """
 
     name = "UpInterface"
@@ -130,8 +128,8 @@ class UserPluginWithInterface(plugins.UserPlugin):
 class TestUserPlugins(unittest.TestCase):
     def setUp(self):
         """
-        Manipulate the standard App. We can't just configure our own, since the
-        pytest environment bleeds between tests.
+        Manipulate the standard App. We can not just configure our own, since the pytest environment bleeds between
+        tests.
         """
         self._backupApp = copy.deepcopy(getApp())
 
@@ -237,9 +235,7 @@ class TestUserPlugins(unittest.TestCase):
         plug0 = [p[1] for p in pluginz if p[0] == name][0]
 
         # load a reactor and grab the fuel assemblies
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         fuels = r.core.getBlocks(Flags.FUEL)
 
         # prove that our plugin affects the core in the desired way
@@ -264,9 +260,7 @@ class TestUserPlugins(unittest.TestCase):
         self.assertIn("UserPluginWithInterface", pluginNames)
 
         # load a reactor and grab the fuel assemblieapps
-        o, r = test_reactors.loadTestReactor(
-            TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         _fuels = r.core.getAssemblies(Flags.FUEL)
 
         # This is here because we have multiple tests altering the App()

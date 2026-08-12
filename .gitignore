@@ -72,6 +72,10 @@ tags
 temp-*
 venv*/
 
+# Ignore data files in the top dir
+/*.jpg
+/*.png
+
 # Ignore certain data files
 *.avi
 *.diff

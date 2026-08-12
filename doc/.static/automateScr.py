@@ -30,6 +30,8 @@ PR_TYPES = {
     "fixes": "Code Changes, Bugs and Fixes",
     "trivial": "Code Changes, Maintenance, or Trivial",
 }
+THIS_DIR = os.path.dirname(__file__)
+ERROR_FILE = os.path.join(THIS_DIR, "..", "..", "scr_error.txt")
 
 
 def main():
@@ -48,7 +50,26 @@ def main():
     pastCommit = args.pastCommit
     prNum = int(args.prNum)
 
+    clearScrLog()
     buildScrListing(pastCommit, prNum)
+
+
+def clearScrLog():
+    """Just a little helper method to clear the SCR error log before we start."""
+    # clean up any old SCR error files
+    if os.path.exists(ERROR_FILE):
+        try:
+            os.remove(ERROR_FILE)
+        except FileNotFoundError:
+            pass
+
+
+def logScrError(msg: str):
+    """Handle errors when there is a problem parsing an PR into the SCR format."""
+    # handle error reading PR description
+    with open(ERROR_FILE, "a") as f:
+        print(f"WARNING: SCR: {msg}")
+        f.write(f"{msg}\n")
 
 
 def _findOneLineData(lines: list, prNum: str, key: str):
@@ -72,7 +93,7 @@ def _findOneLineData(lines: list, prNum: str, key: str):
         if line.startswith(key):
             return line.split(key)[1].strip()
 
-    print(f"WARNING: SCR: Could not find {key} in PR#{prNum}.")
+    logScrError(f"Invalid change type '{key}' for PR#{prNum}")
     return "TBD"
 
 
@@ -111,7 +132,7 @@ def _buildScrLine(prNum: str, ghUsers: dict):
     # grab one-line description
     scrType = _findOneLineData(lines, prNum, "Change Type:")
     if scrType not in PR_TYPES:
-        print(f"WARNING: SCR: Invalid change type '{scrType}' for PR#{prNum}")
+        logScrError(f"Invalid change type '{scrType}' for PR#{prNum}")
         scrType = "trivial"
 
     # grab one-line description
@@ -165,7 +186,7 @@ def isMainPR(prNum: int):
         r = requests.get(url)
         return "terrapower/armi:main" in r.text
     except Exception as e:
-        print(f"WARNING: SCR: Failed to determine if PR#{prNum} merged into the main branch: {e}")
+        logScrError(f"Failed to determine if PR#{prNum} merged into the main branch: {e}")
         return True
 
 

@@ -38,12 +38,28 @@ class Custom(Material):
         Material.__init__(self)
         self.customDensity = 1.0
 
+    def linearExpansion(self, Tk=None, Tc=None):
+        """There is not enough information to calculate the linear expansion for this material."""
+        return 0.0
+
+    def linearExpansionPercent(self, Tk=None, Tc=None):
+        """There is not enough information to calculate the linear expansion for this material."""
+        return 0.0
+
     def pseudoDensity(self, Tk=None, Tc=None):
         """
         The density value is set in the loading input.
 
         In some cases it needs to be set after full core assemblies are populated (e.g. for CustomLocation materials),
         so the missing density warning will appear no matter what.
+        """
+        return self.customDensity
+
+    def density(self, Tk=None, Tc=None):
+        """The density value is set in the loading input.
+
+        As there is not enough information to calculate the linear expansion of this material, the density and pseudo-
+        density are set equal.
         """
         return self.customDensity
 

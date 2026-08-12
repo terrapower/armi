@@ -227,7 +227,7 @@ class Layout:
         # set the materials and temperatures
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
-            self.material.append(comp.material.__class__.__name__)
+            self.material.append(comp.material.name)
         except Exception:
             self.temperatures.append((-900, -900))  # an impossible temperature
             self.material.append("")

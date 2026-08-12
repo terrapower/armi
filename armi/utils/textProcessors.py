@@ -66,10 +66,10 @@ def _processIncludes(
     currentFile="<stream>",
 ):
     """
-    This is the workhorse of ``resolveMarkupInclusions`` and friends.
-
     Recursively inserts the contents of !included YAML files into the output stream,
     keeping track of indentation and a list of included files along the way.
+
+    This is the workhorse of ``resolveMarkupInclusions`` and friends.
     """
 
     def _beginningOfContent(line: str) -> int:

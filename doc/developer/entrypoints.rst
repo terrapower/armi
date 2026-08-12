@@ -1,11 +1,28 @@
-************
-Entry Points
-************
+.. _dev-entry-points:
 
-**Entry Points** are like the verbs that your App can *do*. The :py:mod:`built-in entry points <armi.cli>` offer basic
-functionality, like :py:class:`running a case <armi.cli.run.RunEntryPoint>` or
-:py:class:`opening up the GUI <armi.cli.gridGui.GridGuiEntryPoint>`, but the real joy of an application comes when you
-add your own project-specific entry points that do the actions that you commonly need done.
+**********************
+Accessing Entry Points 
+**********************
+
+**Entry Points** are like the verbs that your App can *do*. The built-in entry
+points in the :py:mod:`cli module<armi.cli>` offer basic functionality, like
+running a case (:py:class:`armi.cli.run.RunEntryPoint`) or opening up the GUI (
+:py:class:`armi.cli.gridGui.GridGuiEntryPoint`), but the real joy of an
+application comes when you add your own project-specific entry points that do
+the actions that you commonly need done.
+
+ARMI comes with some built-in Entry Points that
+can shown by running::
+
+    (venv) $ armi --list-commands
+
+Note that not all built-in Entry Points may be used out of the box, and some may
+need to be implemented for your specific application, like the
+:py:class:`armi.cli.reportsEntryPoint.ReportsEntryPoint`)
+
+*******************
+Making Entry Points
+*******************
 
 To make a new EntryPoint, first make a new module and subclass :py:class:`~armi.cli.entryPoint.EntryPoint`. Set the
 class attributes as follows:
@@ -20,7 +37,8 @@ class attributes as follows:
     * ``None`` if no settings input is allowed
 
 
-.. tip:: ARMI apps often collect EntryPoints in a ``cli/`` directory (Command Line Interface)
+.. tip:: ARMI app convention is to store EntryPoints in a ``cli/`` directory,
+   mirroring the strucutre of the ARMI source code.
 
 Next, implement the :py:meth:`~armi.cli.entryPoint.EntryPoint.addOptions` method. Here you can both:
 
@@ -80,8 +98,7 @@ or (if ``myapp`` is not in your ``PYTHONPATH``)::
     around the code. Please do not edit these settings during a run. The idea of "run settings" is a lot simpler to
     understand when they don't change. And such changes tend to hide data from other developers.
 
-To add entry points, ``ArmiPlugin``s can subclass the ``defineEntryPoints`` method. ARMI
-has an extensive :py:class:`~armi.cli.EntryPointsPlugin` that comes with several CLI entry points. 
+ARMI has an extensive :py:class:`~armi.cli.EntryPointsPlugin` that comes with several CLI entry points. 
 It is important to note that if you are building your own ARMI ``Application``, the
 ``EntryPointsPlugin`` must be registered to access these entry points either by registration in the application or 
 subclassing :py:class:`~armi.apps.App`. If you do not want them or if you only want

@@ -390,6 +390,17 @@ class MultiIndexLocation(IndexLocation):
         """
         return [loc.indices for loc in self._locations]
 
+    def getLocalCoordinates(self, nativeCoords=False):
+        """Return the coordinates of the center of the mesh cell here in cm.
+
+        Returns
+        -------
+        np.ndarray
+            ``(N, 3)`` array of the local coordinates within the parent grid where ``N`` is the number
+            of spatial locators
+        """
+        return np.array([loc.getLocalCoordinates(nativeCoords=nativeCoords) for loc in self])
+
 
 class CoordinateLocation(IndexLocation):
     """

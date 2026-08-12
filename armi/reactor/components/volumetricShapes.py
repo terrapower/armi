@@ -255,13 +255,11 @@ class RadialSegment(ShapedComponent):
 
 class DifferentialRadialSegment(RadialSegment):
     """
-    This component class represents a volume element with thicknesses in the
-    azimuthal, radial and axial directions. Furthermore it has dependent
-    dimensions: (outer theta, outer radius, outer axial) that can be updated
-    depending on the 'differential' in the corresponding directions.
+    Component class representing a volume element with thicknesses in the azimuthal, radial and axial directions.
 
-    This component class is super useful for defining ThRZ reactors and
-    perturbing its dimensions using the optimization modules
+    Furthermore it has dependent dimensions: (outer theta, outer radius, outer axial) that can be updated depending on
+    the 'differential' in the corresponding directions. This component class is super useful for defining ThRZ reactors
+    and perturbing its dimensions using the optimization modules
 
     See Also
     --------
@@ -321,8 +319,8 @@ class DifferentialRadialSegment(RadialSegment):
 
         Notes
         -----
-        Can be used to update any dimension on the component, but outer_radius, outer_axial, and outer_theta are
-        always updated.
+        Can be used to update any dimension on the component, but outer_radius, outer_axial, and outer_theta are always
+        updated.
 
         See Also
         --------

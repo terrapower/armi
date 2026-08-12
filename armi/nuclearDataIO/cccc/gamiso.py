@@ -66,7 +66,7 @@ def compareNuclideXS(nuc1, nuc2):
 
 def addDummyNuclidesToLibrary(lib, dummyNuclides):
     """
-    This method adds DUMMY nuclides to the current GAMISO library.
+    Add DUMMY nuclides to the current GAMISO library.
 
     Parameters
     ----------

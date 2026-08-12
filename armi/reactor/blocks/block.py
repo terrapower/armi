@@ -1301,21 +1301,20 @@ class Block(composites.Composite):
 
     def getBlocks(self):
         """
-        This method returns all the block(s) included in this block its implemented so that methods
-        could iterate over reactors, assemblies or single blocks without checking to see what the
-        type of the reactor-family object is.
+        Return all the block(s) included in this block it has implemented so that methods could iterate over reactors,
+        assemblies, or single blocks without checking to see what the type of the reactor-family object is.
         """
         return [self]
 
     def updateComponentDims(self):
         """
-        This method updates all the dimensions of the components.
+        Update all the dimensions of the components.
 
         Notes
         -----
-        This is VERY useful for defining a ThRZ core out of differentialRadialSegements whose
-        dimensions are connected together some of these dimensions are derivative and can be updated
-        by changing dimensions in a Parameter Component or other linked components
+        This is VERY useful for defining a ThRZ core out of differentialRadialSegements whose dimensions are connected
+        together some of these dimensions are derivative and can be updated by changing dimensions in a Parameter
+        Component or other linked components
 
         See Also
         --------

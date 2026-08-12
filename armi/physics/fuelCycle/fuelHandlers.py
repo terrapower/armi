@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module handles fuel management operations such as shuffling, rotation, and
-fuel processing (in fluid systems).
+Handles fuel management operations such as shuffling, rotation, and fuel processing (in fluid systems).
 
 The :py:class:`FuelHandlerInterface` instantiates a ``FuelHandler``, which is typically a user-defined
 subclass the :py:class:`FuelHandler` object in custom shuffle-logic input files.

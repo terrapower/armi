@@ -24,10 +24,10 @@ import os
 import pickle
 import re
 import shutil
-import sys
 import time
 
 from armi import runLog
+from armi.context import PLATFORM, Platform
 from armi.utils import iterables
 from armi.utils.flags import Flag  # noqa: F401
 from armi.utils.mathematics import *  # noqa: F403
@@ -678,15 +678,14 @@ def safeCopy(src: str, dst: str) -> None:
         dst = os.path.join(dst, os.path.basename(src))
 
     srcSize = os.path.getsize(src)
-    if "win" in sys.platform:
-        # this covers Windows ("win32") and MacOS ("darwin")
+    if PLATFORM == Platform.WINDOWS or PLATFORM == Platform.MACOS:
         shutil.copyfile(src, dst)
         shutil.copymode(src, dst)
-    elif "linux" in sys.platform:
+    elif PLATFORM == Platform.LINUX:
         cmd = f'cp "{src}" "{dst}"'
         os.system(cmd)
     else:
-        raise OSError("Cannot perform ``safeCopy`` on files because ARMI only supports Linux, MacOs, and Windows.")
+        raise OSError("Cannot perform ``safeCopy`` on files because ARMI only supports Linux, MacOS, and Windows.")
 
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
@@ -716,14 +715,14 @@ def safeMove(src: str, dst: str) -> None:
         dst = os.path.join(dst, os.path.basename(src))
 
     srcSize = os.path.getsize(src)
-    if "win" in sys.platform:
+    if PLATFORM == Platform.WINDOWS or PLATFORM == Platform.MACOS:
         # this covers Windows ("win32") and MacOS ("darwin")
         shutil.move(src, dst)
-    elif "linux" in sys.platform:
+    elif PLATFORM == Platform.LINUX:
         cmd = f'mv "{src}" "{dst}"'
         os.system(cmd)
     else:
-        raise OSError("Cannot perform ``safeMove`` on files because ARMI only supports " + "Linux, MacOS, and Windows.")
+        raise OSError("Cannot perform ``safeMove`` on files because ARMI only supports Linux, MacOS, and Windows.")
 
     waitTime = 0.01  # 10 ms
     maxWaitTime = 6000  # 1 min

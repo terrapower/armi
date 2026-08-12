@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Plot a reactor facemap.
-=======================
+Plot a reactor facemap
+======================
 
-Load a test reactor from the test suite and plot a dummy
-power distribution from it. You can plot any block parameter.
+Load a test reactor from the test suite and plot a dummy power distribution from it. You can plot any block parameter.
 """
 
 from armi import configure
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 from armi.utils import plotting
 
 # configure ARMI
 configure(permissive=True)
 
-operator, reactor = test_reactors.loadTestReactor()
+operator, reactor = loadTestReactor()
 reactor.core.growToFullCore(None)
 # set dummy power
 for b in reactor.core.getBlocks():

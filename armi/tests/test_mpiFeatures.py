@@ -37,8 +37,7 @@ from armi.operators import OperatorMPI
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.tests import ARMI_RUN_PATH
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -100,7 +99,7 @@ class MpiOperatorTests(unittest.TestCase):
     """Testing the MPI parallelization operator."""
 
     def setUp(self):
-        self.old_op, self.r = test_reactors.loadTestReactor(
+        self.old_op, self.r = loadTestReactor(
             TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
         )
         self.o = OperatorMPI(cs=self.old_op.cs)

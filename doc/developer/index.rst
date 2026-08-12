@@ -11,7 +11,7 @@ into their workflow and/or enhance ARMI for the community.
 -------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
    :numbered:
    :glob:
 

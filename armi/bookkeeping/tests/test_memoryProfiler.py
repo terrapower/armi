@@ -24,13 +24,12 @@ from armi.bookkeeping.memoryProfiler import (
     getCurrentMemoryUsage,
     getTotalJobMemory,
 )
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 
 
 class TestMemoryProfiler(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TESTING_ROOT,
             {"debugMem": True},
             inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",

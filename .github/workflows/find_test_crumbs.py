@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This script exists so we can determine if new tests in CI are leaving crumbs."""
+"""Determine if new tests in CI are leaving crumbs."""
 
 import subprocess
 

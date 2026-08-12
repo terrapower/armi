@@ -429,7 +429,26 @@ def getDefaultNuclideFlags():
     for boron in [10, 11]:
         nuclideFlags[f"B{boron}"] = {"burn": False, "xs": True, "expandTo": None}
 
-    for struct in ["ZR", "C", "SI", "V", "CR", "MN", "FE", "NI", "MO", "W", "NA", "HE", "AL", "CO", "NB"]:
+    for struct in [
+        "ZR",
+        "C",
+        "SI",
+        "V",
+        "CR",
+        "MN",
+        "FE",
+        "NI",
+        "MO",
+        "W",
+        "NA",
+        "HE",
+        "AL",
+        "CO",
+        "NB",
+        "CU",
+        "N",
+        "K",
+    ]:
         nuclideFlags[struct] = {"burn": False, "xs": True, "expandTo": None}
 
     return nuclideFlags
@@ -548,8 +567,8 @@ def genDefaultNucFlags():
 
 def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     """
-    This function is responsible for examining the fission product model treatment that is selected by the user and
-    adding a set of nuclides to the `nuclideFlags` list.
+    Examine the fission product model treatment that is selected by the user and adding a set of nuclides to the
+    `nuclideFlags` list.
 
     Notes
     -----
@@ -577,8 +596,8 @@ def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
 
 def getAllNuclideBasesByLibrary(cs):
     """
-    Return a list of nuclide bases available for cross section modeling
-    based on the ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
+    Return a list of nuclide bases available for cross section modeling based on the
+    ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
     """
     nbs = []
     if cs[CONF_FP_MODEL] == "explicitFissionProducts":

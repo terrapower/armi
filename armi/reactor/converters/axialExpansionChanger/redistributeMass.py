@@ -17,6 +17,7 @@ import typing
 from math import isclose
 from textwrap import dedent
 
+import numpy as np
 from scipy.optimize import brentq
 
 from armi import runLog
@@ -56,12 +57,24 @@ class RedistributeMass:
             self.performRedistribution()
 
     def performRedistribution(self):
-        """Perform the mass redistribution between two compatible components."""
+        """Perform the mass redistribution after checking compatibility.
+
+        This is the primary method expected to be invoked by callers. Other private
+        methods can be overridden and extended by subclasses.
+        """
         if self.compatabilityCheck():
-            self.setNewToCompNDens()
-            self.setNewToCompTemperature()
-            if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
-                self._adjustMassParams()
+            self._performRedistribution()
+
+    def _performRedistribution(self):
+        """Perform the mass redistribution between compatible components."""
+        self.setNewToCompNDens()
+        if self.fromComp.p.molesHmBOL is not None and self.toComp.p.molesHmBOL is not None:
+            self._adjustMassParams()
+        self._adjustPinNDens()
+        self._adjustDetailedNDens()
+        # Temperature change MUST go last because it can change the volume of the components
+        # and the pre-expansion / pre-distribution volumes control how much of what is moved
+        self.setNewToCompTemperature()
 
     @property
     def fromCompVolume(self):
@@ -143,7 +156,7 @@ class RedistributeMass:
 
         Where, :math:`A_1, T_1, H_1`, are the area, temperature, and height of ``toComp``, :math:`A_2, T_2`, are the
         area and temparature of ``fromComp``, :math:`\delta` is the parameter ``deltaZTop``, and :math:`\hat{T}` is
-        the new temperature of ``toComp`` post-redistribution. :func:`scipy.optimize.brentq` is used to
+        the new temperature of ``toComp`` post-redistribution. ``scipy.optimize.brentq`` is used to
         find the root of the above equation, indicating the value for :math:`\hat{T}`
         that finds the desired area, post-redistribution of mass.
         """
@@ -190,8 +203,12 @@ class RedistributeMass:
 
     @staticmethod
     def _sortKey(item):
-        """Break isotope string down by element, atomic weight, and metastable state for sorting. Raises a RuntimeError
-        if the string does not match the expected pattern.
+        """Break isotope string down by atomic weight, element, and metastable state for sorting.
+
+        Raises
+        ------
+        RuntimeError
+            If the string does not match the expected pattern.
         """
         pattern = re.compile(
             r"""
@@ -215,8 +232,7 @@ class RedistributeMass:
 
         Notes
         -----
-        The returned list is sorted by :py:meth:`sortKey`. Isotopes are sorted based on 1) atomic weight, 2) element,
-        and 3) metastable state.
+        The returned list is sorted by :py:meth:`_sortKey`.
         """
         nucsToAdd = set(nucsA).union(set(nucsB))
         return sorted(nucsToAdd, key=self._sortKey)
@@ -233,3 +249,73 @@ class RedistributeMass:
                 amountMoved = removalFrac * self.fromComp.p[paramName]
                 self.toComp.p[paramName] = self.toComp.p[paramName] + amountMoved
                 self.fromComp.p[paramName] = self.fromComp.p[paramName] - amountMoved
+
+    def _updateNumberDensityParameters(self, paramName: str):
+        """Update some number density parameter.
+
+        If one of the components :attr:`toComp` or :attr:`fromComp` does not have this parameter, no update will be
+        performed. This can lead to loss of conservation but is consistent with the approach of performing mass
+        redistribution between similar components.
+
+        Performs a volume-weighted average between number density parameters:
+        ``rho' = (rho_f * v_f + rho_t * v_t) / (v_f + v_t)`` where ``_f` is the "from" component and ``_t`` is the
+        "to" component.
+
+        Parameters
+        ----------
+        paramName
+            Name of the parameter to update
+
+        Returns
+        -------
+        bool
+            If the update was performed.
+        """
+        fromData: typing.Optional[np.ndarray] = getattr(self.fromComp.p, paramName, None)
+        toData: typing.Optional[np.ndarray] = getattr(self.toComp.p, paramName, None)
+
+        if (fromData is None) != (toData is None):
+            runLog.warning(
+                f"Inconsistent {paramName} for {self.toComp} and {self.fromComp} in {self.assemblyName}. "
+                f"Conservation of {paramName} is not ensured.",
+                label=f"Conservation of c.p.{paramName} is not ensured",
+            )
+            return False
+        # If we're here, we know either both have data or neither have data
+        if fromData is None:
+            return False
+        # array * scalar gives us a new array, not a copy. So we can do in-place mutations later
+        try:
+            toData = toData * self.toCompVolume
+            fromData = fromData * self.fromCompVolume
+            toData += fromData
+            toData /= self.newVolume
+        except Exception:
+            msg = (
+                f"Error updating {paramName} on {self.assemblyName} : toComp={self.toComp} : fromComp={self.fromComp}\n"
+                f"{fromData.shape=}\n{toData.shape=}"
+            )
+            runLog.error(msg)
+            raise
+        self.toComp.p[paramName] = toData
+        return True
+
+    def _adjustPinNDens(self):
+        """Update pin number density parameter.
+
+        Returns
+        -------
+        bool
+            If the update was performed.
+        """
+        return self._updateNumberDensityParameters("pinNDens")
+
+    def _adjustDetailedNDens(self):
+        """Update the detailed number density parameter.
+
+        Returns
+        -------
+        bool
+            If the update was performed.
+        """
+        return self._updateNumberDensityParameters("detailedNDens")

@@ -22,7 +22,7 @@ In your blueprints file, you likely have a core grid that defines where assembli
 are assigned to locations on that grid according to their ``specifier`` blueprint attribute. Below is an example
 of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetry.
 
-.. code:: yaml
+.. code-block:: yaml
 
     grids:
       core:
@@ -37,7 +37,7 @@ of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetry.
 
 We can similarly define a grid for the block with a similar entry in the ``grids`` portion of the blueprints.
 
-.. code:: yaml
+.. code-block:: yaml
 
     pins:
       geom: hex_corners_up
@@ -329,3 +329,17 @@ Other parameters may be updated to reflect some geometric state. The second posi
 ``Block.p.orientation`` reflects the cumulative rotation around the z-axis and is updated through
 rotation. Displacement parameters like ``Block.p.displacementX`` are updated as the displacement
 vector rotates through space.
+
+Assembly Shuffling
+==================
+
+ARMI can be configured to move assemblies during an outage. See :ref:`fuel-management-input`.
+This can be further configured to rotate hexagonal assemblies via the ``assemblyRotationAlgorithm`` setting.
+During rotation, spatial parameters will be updated as mentioned above to match the current
+orientation.
+
+However, ARMI does not clear out parameters that may reflect the assembly's previous state. For example,
+at the last node of cycle 0, a global flux solve may take place to set parameters like ``fuelBlock.p.pinMgFluxes``.
+At the start of cycle 1, the parent assembly is moved to a new location and rotated. Until another
+global flux solve is performed, or some other plugin intervenes, ``fuelBlock.p.pinMgFluxes`` will contain the same
+data prior to the outage, subject to any rotations.

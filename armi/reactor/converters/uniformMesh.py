@@ -88,15 +88,14 @@ def converterFactory(globalFluxOptions):
 
 class UniformMeshGenerator:
     """
-    This class generates a common axial mesh to for the uniform mesh converter to use. The
-    generation algorithm starts with the simple ``average1DWithinTolerance`` utility function
-    to compute a representative "average" of the assembly meshes in the reactor. It then modifies
-    that mesh to more faithfully represent important material boundaries of fuel and control
-    absorber material.
+    Generate a common axial mesh to for the uniform mesh converter to use. The generation algorithm starts with the
+    simple ``average1DWithinTolerance`` utility function to compute a representative "average" of the assembly meshes in
+    the reactor. It then modifies that mesh to more faithfully represent important material boundaries of fuel and
+    control absorber material.
 
-    The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no
-    value is provided for this setting, the uniform mesh generator will skip the decusping step
-    and just provide the result of ``_computeAverageAxialMesh``.
+    The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no value is provided for
+    this setting, the uniform mesh generator will skip the decusping step and just provide the result of
+    ``_computeAverageAxialMesh``.
     """
 
     def __init__(self, r, minimumMeshSize=None):
@@ -276,8 +275,8 @@ class UniformMeshGenerator:
             When neither mesh point is in the list of ``anchorPoints``, which mesh point is given preference
             ("bottom" or "top")
         warn : bool, optional
-            Whether to log a warning when a mesh is removed. This is true if a
-            control material boundary is removed, but otherwise it is false.
+            Whether to log a warning when a mesh is removed. This is true if a control material boundary is removed, but
+            otherwise it is false.
         """
         if preference == "bottom":
             meshList = sorted(list(set(meshList)))
@@ -308,10 +307,9 @@ class UniformMeshGenerator:
 
                     if warn:
                         runLog.warning(
-                            f"{meshList[i + 1]} is too close to {meshList[i]}! "
-                            f"Difference = {difference} is less than mesh size "
-                            f"tolerance of {minimumMeshSize}. The uniform mesh will "
-                            f"remove {meshList[removeIndex]}."
+                            f"{meshList[i + 1]} is too close to {meshList[i]}! Difference = {difference} is less than "
+                            f"mesh size tolerance of {minimumMeshSize}. The uniform mesh will remove "
+                            f"{meshList[removeIndex]}."
                         )
                     break
             else:
@@ -364,8 +362,7 @@ class UniformMeshGenerator:
 
 class UniformMeshGeometryConverter(GeometryConverter):
     """
-    This geometry converter can be used to change the axial mesh structure of the
-    reactor core.
+    Geometry converter can be used to change the axial mesh structure of the reactor core.
 
     Notes
     -----
@@ -391,10 +388,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
     `setAssemblyStateFromOverlaps` is dependent on the direction in which the mapping
     is being applied to prevent the numerical diffusion problem.
 
-    - "in" is used when mapping parameters into the uniform assembly
-      from the non-uniform assembly.
-    - "out" is used when mapping parameters from the uniform assembly back
-      to the non-uniform assembly.
+    - "in" is used when mapping parameters into the uniform assembly from the non-uniform assembly.
+    - "out" is used when mapping parameters from the uniform assembly back to the non-uniform assembly.
 
     .. warning::
         If a parameter is calculated by a physics solver while the reactor is in its
@@ -592,9 +587,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # map the block parameters back to the non-uniform assembly
         self._setParamsToUpdate("out")
 
-        # If we have non-uniform mesh assemblies then we need to apply a
-        # different approach to undo the geometry transformations on an
-        # assembly by assembly basis.
+        # If we have non-uniform mesh assemblies then we need to apply a different approach to undo the geometry
+        # transformations on an assembly by assembly basis.
         if self._hasNonUniformAssems:
             for assem in self._sourceReactor.core.getAssemblies(self._nonUniformMeshFlags):
                 for storedAssem in self._nonUniformAssemStorage:
@@ -617,10 +611,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         break
                 else:
                     runLog.error(
-                        f"No assembly matching name {assem.getName()} "
-                        f"was found in the temporary storage list. {assem} "
-                        "will persist as an axially unified assembly. "
-                        "This is likely not intended."
+                        f"No assembly matching name {assem.getName()} was found in the temporary storage list. {assem} "
+                        "will persist as an axially unified assembly. This is likely not intended."
                     )
 
             self._sourceReactor.core.updateAxialMesh()

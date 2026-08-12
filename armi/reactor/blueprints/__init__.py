@@ -75,7 +75,7 @@ import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
-from ruamel.yaml import RoundTripLoader
+from ruamel.yaml import RoundTripDumper, RoundTripLoader
 
 from armi import (
     context,
@@ -278,15 +278,13 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     def _prepConstruction(self, cs):
         """
-        This method initializes a bunch of information within a Blueprints object such as assigning
-        assembly and block type numbers, resolving the nuclides in the problem, and pre-populating
-        assemblies.
+        Initialize a bunch of information within a Blueprints object such as assigning assembly and block type numbers,
+        resolving the nuclides in the problem, and pre-populating assemblies.
 
-        Ideally, it would not be necessary at all, but the ``cs`` currently contains a bunch of
-        information necessary to create the applicable model. If it were possible, it would be
-        terrific to override the Yamlizable.from_yaml method to run this code after the instance has
-        been created, but we need additional information in order to build the assemblies that is
-        not within the YAML file.
+        Ideally, it would not be necessary at all, but the ``cs`` currently contains a bunch of information necessary to
+        create the applicable model. If it were possible, it would be terrific to override the Yamlizable.from_yaml
+        method to run this code after the instance has been created, but we need additional information in order to
+        build the assemblies that is not within the YAML file.
 
         This method should not be called directly, but it is used in testing.
         """
@@ -384,8 +382,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         for nucBase in nuclideBases.instances:
             isAlreadyIsotopic = not isinstance(nucBase, nuclideBases.NaturalNuclideBase)
             if isAlreadyIsotopic:
-                # `elemental` may be a NaturalNuclideBase or a NuclideBase
-                # skip all NuclideBases (isotopics)
+                # `elemental` may be a NaturalNuclideBase or a NuclideBase skip all NuclideBases (isotopics)
                 continue
 
             # we now know its an elemental
@@ -500,28 +497,86 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     )
 
     @classmethod
-    def migrate(cls, inp: typing.TextIO):
+    def migrate(cls, inp: typing.TextIO, version: str = None):
         """Given a stream representation of a blueprints file, migrate it.
 
         Parameters
         ----------
         inp : typing.TextIO
             Input stream to migrate.
+        version : str
+            Optional DB version string, for example: 1.2.3
         """
         for migI in migration.ACTIVE_MIGRATIONS:
             if issubclass(migI, migration.base.BlueprintsMigration):
                 mig = migI(stream=inp)
-                inp = mig.apply()
+                inp = mig.apply(version)
+
         return inp
 
     @classmethod
+    def dump(cls, data, stream=None, Dumper=RoundTripDumper):
+        """A modification of yamlize.Object.dump.
+
+        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
+        values incorrectly for the zero values to zero strings: '0.0'.
+        """
+        convertToYaml = stream is None
+        stream = stream or io.StringIO()
+        dumper = Dumper(stream)
+
+        try:
+            dumper._serializer.open()
+            root_node = cls.to_yaml(dumper, data)
+            dumper.serialize(root_node)
+            dumper._serializer.close()
+        finally:
+            try:
+                dumper._emitter.dispose()
+            except AttributeError:
+                raise
+                dumper.dispose()  # cyaml
+
+        try:
+            Blueprints.streamCleaner(stream)
+        except io.UnsupportedOperation:
+            # Not all streams are writable.
+            pass
+
+        if convertToYaml:
+            return stream.getvalue()
+
+        return None
+
+    @classmethod
+    def streamCleaner(cls, stream) -> None:
+        """Clean the zero strings into zero floats.
+
+        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
+        values incorrectly for the zero values to zero strings: '0.0'.
+        """
+        # must rewind to be able to read the entire stream
+        stream.seek(0)
+
+        # build the replacement string
+        txt = stream.read()
+        txt = txt.replace("'0.0'", "0.0")
+        txt = txt.replace('"0.0"', "0.0")
+
+        # wipe out the stream and then over-write it
+        stream.seek(0)
+        stream.truncate(0)
+        stream.write(txt)
+
+    @classmethod
     def load(cls, stream, roundTrip=False):
-        """This method is a wrapper around the `yamlize.Object.load()` method."""
-        # With the release of ruamel.yaml 0.19.1, we began getting the following error:
-        # AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
-        # Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading
-        # to side step the issue entirely. This occurs because of the way `yamlize` works when it calls
-        # `get_single_node`.
+        """A wrapper around the `yamlize.Object.load()` method.
+
+        With the release of ruamel.yaml 0.19.1, we began getting the following error:
+        AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
+        Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading to
+        side step the issue entirely. This occurs because of the way `yamlize` calls `get_single_node`.
+        """
         RoundTripLoader.max_depth = None
         return super().load(stream, Loader=RoundTripLoader)
 

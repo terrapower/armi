@@ -4,5 +4,11 @@ coverage:
   status:
     project:
       default:
-        target: 1%    # the required coverage value: stop codecov.io from failing the build
+        target: 90%     # the required coverage value: 90%
         threshold: 99%  # allows a 99% drop from the previous base commit coverage
+    patch:
+      default:
+        informational: true  # set non-blocking status check
+github_checks:
+  # https://docs.codecov.com/docs/common-recipe-list#disable-github-check-run-annotations
+  annotations: false

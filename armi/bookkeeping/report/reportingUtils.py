@@ -373,12 +373,12 @@ def getSystemInfo():
         Basic system information: OS name, OS version, basic processor information
     """
     # Get basic system information (on Linux, MacOS, and Windows)
-    if "darwin" in sys.platform:
-        return _getSystemInfoMac()
-    elif "win" in sys.platform:
-        return _getSystemInfoWindows()
-    elif "linux" in sys.platform:
+    if context.PLATFORM == context.Platform.LINUX:
         return _getSystemInfoLinux()
+    elif context.PLATFORM == context.Platform.MACOS:
+        return _getSystemInfoMac()
+    elif context.PLATFORM == context.Platform.WINDOWS:
+        return _getSystemInfoWindows()
     else:
         runLog.warning(
             f"Cannot get system information for {sys.platform} because ARMI only supports Linux, MacOS, and Windows."

@@ -78,7 +78,7 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     """Test the DatabaseInterface class at the BOL."""
 
     def test_interactBOL(self):
-        """This test is in its own class, because of temporary directory issues."""
+        """Because of versions of this test ran into temporary directory issues, this test is in its own class."""
         with directoryChangers.TemporaryDirectoryChanger():
             self.o, self.r = loadTestReactor(
                 TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
@@ -582,7 +582,7 @@ class TestDatabaseReading(unittest.TestCase):
     def test_growToFullCoreFromFactoryWithCS(self):
         from armi.bookkeeping.db import databaseFactory
 
-        db = databaseFactory(self.dbName, "r")
+        db = databaseFactory(self.dbName, "r+")
         with db:
             r = db.load(0, 0, allowMissing=True)
 

@@ -19,7 +19,7 @@ import unittest
 from armi import settings
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks
+from armi.testing import buildSimpleFuelHexBlock
 
 FULL_BP = """
 blocks:
@@ -390,8 +390,8 @@ class TestGriddedBlock(unittest.TestCase):
         fuelBlock = a1[0]
         clad = fuelBlock.getComponent(Flags.CLAD)
 
-        # now construct clad programmatically like in test_Blocks
-        programmaticBlock = test_blocks.buildSimpleFuelBlock()
+        # now construct clad programmatically
+        programmaticBlock = buildSimpleFuelHexBlock()
         programaticClad = programmaticBlock.getComponent(Flags.CLAD)
         self.assertAlmostEqual(
             clad.density(),

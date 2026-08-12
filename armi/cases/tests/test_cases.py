@@ -17,7 +17,6 @@ import copy
 import cProfile
 import logging
 import os
-import platform
 import unittest
 
 import h5py
@@ -26,8 +25,7 @@ from armi import cases, context, getApp, interfaces, plugins, runLog, settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
-from armi.reactor.tests import test_reactors
-from armi.testing import TESTING_ROOT, mockRunLogs
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.tests import ARMI_RUN_PATH
 from armi.utils import directoryChangers
 
@@ -287,7 +285,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", "c1.h5", False),
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", r"..\1\c1.h5", False),
         ]
-        if platform.system() == "Windows":
+        if context.PLATFORM == context.Platform.WINDOWS:
             # windows-specific case insensitivity
             checks.extend(
                 [
@@ -413,7 +411,7 @@ class TestCaseSuiteComparison(unittest.TestCase):
     def test_compareNoDiffs(self):
         """As a baseline, this test should always reveal zero diffs."""
         # build two super-simple H5 files for testing
-        o, r = test_reactors.loadTestReactor(
+        o, r = loadTestReactor(
             TESTING_ROOT,
             customSettings={"reloadDBName": "reloadingDB.h5"},
             inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml",

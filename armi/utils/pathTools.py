@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains commonly used functions relating to directories, files and path
-manipulations.
-"""
+"""Commonly used functions relating to directories, files and path manipulations."""
 
 import importlib
 import os

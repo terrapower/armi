@@ -8,7 +8,7 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
 --------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
    :numbered:
 
    inputs
@@ -18,6 +18,5 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
    params_report
    spatial_block_data
    physics_coupling
-   accessingEntryPoints
    radial_and_axial_expansion
    symmetry_handling

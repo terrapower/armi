@@ -208,6 +208,18 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
+    def setMaterialBaseClass(materialType) -> type:
+        """
+        Allows a plugin to define a custom base class for materials that are loaded via directory
+        or via virtual environment path. The material type from the YAML file is provided to allow different
+        classes by type. For example, a fluid material can have a different base class.
+        Only one plugin can define this hook. If it is not defined,
+        then the ARMI Material class will be used as the base class. Any class that is defined by
+        a plugin is expected to inherit from the ARMI Material class.
+        """
+
+    @staticmethod
+    @HOOKSPEC
     def afterConstructionOfAssemblies(assemblies, cs) -> None:
         """
         Function to call after a set of assemblies are constructed.
@@ -248,7 +260,8 @@ class ArmiPlugin:
         It is only meant to be run one time. Because ``db.load()`` may be run several times in the same script, it is
         strongly recommended that developers implement the following pattern when adding this hook to any plugin:
 
-        .. code::
+        .. code-block::
+
             from armi.utils import onlyRunOnce
 
             @staticmethod
@@ -262,7 +275,8 @@ class ArmiPlugin:
         with potentially different materials libraries in the same python instance, they may reset the ``onlyRunOnce``
         decorator with the following:
 
-        .. code::
+        .. code-block::
+
             from <somewhere> import <PLUGIN>
 
             <PLUGIN>.beforeReactorConstruction.reset_onlyRunOnce()
@@ -328,7 +342,7 @@ class ArmiPlugin:
 
         Example
         -------
-        .. code::
+        .. code-block::
 
             [
                 (HexBlock, HexAssembly),
@@ -610,7 +624,7 @@ class ArmiPlugin:
             Dictionary that maps a grid type from the input file (e.g., ``"core"``)
             to a function responsible for building a grid of that type, e.g.,
 
-            .. code::
+            .. code-block::
 
                 {
                     "core": armi.reactor.reactors.Core,
@@ -681,7 +695,7 @@ class UserPlugin(ArmiPlugin):
 
     def __enforceLimitations(self):
         """
-        This method enforces that UserPlugins are more limited than regular ArmiPlugins.
+        Enforce that UserPlugins are more limited than regular ArmiPlugins.
 
         UserPlugins are different from regular plugins in that they can be defined during a run, and as such, we want to
         limit how flexible they are, so we can correctly corral their side effects during a run.

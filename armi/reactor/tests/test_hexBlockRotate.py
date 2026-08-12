@@ -22,7 +22,7 @@ import numpy as np
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
 from armi.reactor.grids import CoordinateLocation, HexGrid, IndexLocation, MultiIndexLocation
-from armi.reactor.tests.test_blocks import NUM_PINS_IN_TEST_BLOCK, loadTestBlock
+from armi.testing import NUM_PINS_IN_COMPLEX_HEX_BLOCK, buildComplexHexBlock
 from armi.utils import iterables
 
 
@@ -45,10 +45,10 @@ class HexBlockRotateTests(unittest.TestCase):
         "linPowByPin",
     ]
 
-    PIN_DATA = np.arange(NUM_PINS_IN_TEST_BLOCK, dtype=float)
+    PIN_DATA = np.arange(NUM_PINS_IN_COMPLEX_HEX_BLOCK, dtype=float)
 
     def setUp(self):
-        self.baseBlock = loadTestBlock()
+        self.baseBlock = buildComplexHexBlock()
         self._assignParamData(self.BOUNDARY_PARAMS, self.BOUNDARY_DATA)
         self._assignParamData(self.PIN_PARAMS, self.PIN_DATA)
 

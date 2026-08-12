@@ -34,8 +34,6 @@ class TestMapPropsMaterial(unittest.TestCase):
 
         Parameters
         ----------
-        fileName
-            String containing name of yaml file being written
         materialType
             String containing the "material type" node value
         """

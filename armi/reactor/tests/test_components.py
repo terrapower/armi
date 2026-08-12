@@ -52,7 +52,7 @@ from armi.reactor.components import (
     materials,
 )
 from armi.reactor.reactors import Reactor
-from armi.testing import TESTING_ROOT, loadTestReactor
+from armi.testing import TESTING_ROOT, buildSimpleFuelHexBlock, loadTestReactor
 from armi.utils.units import getTc
 
 
@@ -538,10 +538,8 @@ class TestDerivedShape(TestShapedComponent):
             :id: T_ARMI_COMP_FLUID
             :tests: R_ARMI_COMP_FLUID
         """
-        from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-
         # Calculate the total volume of the block
-        b = buildSimpleFuelBlock()
+        b = buildSimpleFuelHexBlock()
         totalVolume = b.getVolume()
 
         # calculate the total volume by adding up all the components
@@ -772,19 +770,13 @@ class TestCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_badComponentName(self):
-        """This shows that resolveLinkedDims cannot support names with periods in them."""
+        """Show that resolveLinkedDims cannot support names with periods in them."""
         nPins = 12
         fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
         cladDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.1, "id": 1.0, "mult": nPins}
         fuel = Circle("fuel", "UZr", **fuelDims)
         clad = Circle("clad_4.2.3", "HT9", **cladDims)
-        gapDims = {
-            "Tinput": 25.0,
-            "Thot": 430.0,
-            "od": "clad_4.2.3.id",
-            "id": "fuel.od",
-            "mult": nPins,
-        }
+        gapDims = {"Tinput": 25.0, "Thot": 430.0, "od": "clad_4.2.3.id", "id": "fuel.od", "mult": nPins}
         gapDims["components"] = {"clad_4.2.3": clad, "fuel": fuel}
         with self.assertRaises(ValueError):
             _gap = Circle("gap", "Void", **gapDims)

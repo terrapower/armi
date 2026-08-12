@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This is a selection of fuel management utilities that seem generally useful enough to keep in ARMI, but they still only
-apply to hex assembly reactors.
+A selection of fuel management utilities that seem generally useful enough to keep in ARMI, but they still only apply to
+hex assembly reactors.
 
 Notes
 -----

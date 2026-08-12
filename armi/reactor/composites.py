@@ -13,20 +13,18 @@
 # limitations under the License.
 
 """
-This module contains the basic composite pattern underlying the reactor package.
+The basic composite pattern underlying the reactor package.
 
-This follows the principles of the `Composite Design Pattern
-<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a part/whole
-hierarchy representing a physical nuclear reactor. The composite objects act somewhat like lists:
-they can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy
-knows its children and its parent, so full access to the hierarchy is available from everywhere.
-This design was chosen because of the close analogy of the model to the physical nature of nuclear
-reactors.
+This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
+allow the construction of a part/whole hierarchy representing a physical nuclear reactor. The composite objects act
+somewhat like lists: they can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy
+knows its children and its parent, so full access to the hierarchy is available from everywhere. This design was chosen
+because of the close analogy of the model to the physical nature of nuclear reactors.
 
 Warning
 -------
-Because each member of the hierarchy is linked to the entire tree, it is often unsafe to save
-references to individual members; it can cause large and unexpected memory inefficiencies.
+Because each member of the hierarchy is linked to the entire tree, it is often unsafe to save references to individual
+members; it can cause large and unexpected memory inefficiencies.
 
 See Also
 --------

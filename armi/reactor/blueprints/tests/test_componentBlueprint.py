@@ -313,3 +313,32 @@ assemblies:
         expectedNuclides = ["TH232"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
+
+    def test_customMaterials(self):
+        nuclideFlags = (
+            inspect.cleandoc(
+                r"""
+            nuclide flags:
+                TH232: {burn: false, xs: true}
+            custom isotopics:
+                Thorium:
+                    input format: number densities
+                    TH232: 1.0
+            """
+            )
+            + "\n"
+        )
+        bp = blueprints.Blueprints.load(
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: Thorium", flags="")
+        )
+        cs = settings.Settings()
+        a = bp.constructAssem(cs, "assembly")
+
+        mat = a[0][0].material
+        customDensity = mat.customDensity
+        self.assertAlmostEqual(customDensity, 385.30820803695826, delta=1)
+        for t in range(400, 701, 100):
+            self.assertEqual(mat.linearExpansion(Tc=t), 0.0)
+            self.assertEqual(mat.linearExpansionPercent(Tc=t), 0.0)
+            self.assertEqual(mat.density(Tc=t), customDensity)
+            self.assertEqual(mat.pseudoDensity(Tc=t), customDensity)

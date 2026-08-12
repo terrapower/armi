@@ -34,15 +34,16 @@ class ReactorPlugin(plugins.ArmiPlugin):
     """Plugin exposing built-in reactor components, blocks, assemblies, etc."""
 
     @staticmethod
-    @plugins.HOOKIMPL
+    @plugins.HOOKIMPL(tryfirst=True)
     @onlyRunOnce
     def beforeReactorConstruction(cs) -> None:
         """Just before reactor construction, update the material "registry" with user settings, if it is set. Often it
         is set by the application.
+
+        Since this hook is loading all the materials for the simulation, it should run first before any other
+        pre-reactor construction hooks. Hence the inclusion of `tryfirst=True` in the HOOKIMPL.
         """
-        from armi.settings.fwSettings.globalSettings import (
-            CONF_MATERIAL_NAMESPACE_ORDER,
-        )
+        from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 
         if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
             materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])

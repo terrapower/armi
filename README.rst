@@ -173,12 +173,12 @@ subchannel vs. CFD, etc.).
 
 New analysis and physics capabilities
 *************************************
-The ARMI reactor model is fully accessible via a Python-based API, meaning that power-users and developers have full
+The ARMI reactor model is fully accessible via a Python-based API, meaning that users have full
 access to the details of the plant at all times. Developers adding new physics features can take advantage of the ARMI
 data management structure by simply reading and writing to the Reactor state. Leveraging the infrastructure of ARMI,
 progress can be made rapidly.
 
-Power-user analysts can modify the plant in many ways. For instance, removing all sodium coolant is a one-liner::
+A user can modify the plant in many ways. For instance, removing all sodium coolant is a one-liner::
 
     core.setNumberDensity('NA23',0.0)
 
@@ -238,7 +238,7 @@ A nuclear reactor research scientist, at a national lab or university, may benef
 reduce the time spent on data management. ARMI can handle the tedium so that researchers can better focus on designing
 and testing their research.
 
-For example, if an ARMI input file describing the FFTF reactor is provided, the researcher can start running benchmark
+For example, if an ARMI input file describing the Fast Flux Test Facility (FTFF) reactor is provided, the researcher can start running benchmark
 cases with their new code method very rapidly, rather than spending the time building their own FFTF model.
 
 If someone wants to try varying nuclear cross sections by a percent here and there to compute sensitivities, ARMI is a

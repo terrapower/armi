@@ -73,6 +73,15 @@ class Constituent:
         msg += ">"
         return msg
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        result.__dict__.update(self.__dict__)
+
+        return result
+
     @staticmethod
     def parseComposition(node):
         """

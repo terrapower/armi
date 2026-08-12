@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This package houses helper tools that allow ARMI to communicate with external isotopic depletion programs."""
+"""Helper tools that allow ARMI to communicate with external isotopic depletion programs."""

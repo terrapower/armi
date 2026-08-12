@@ -20,6 +20,10 @@ and can perform useful operations like compare, clone, and run.
 
 A ``CaseSuite`` is a set of (often related) Cases. These are fundamental to parameter sweeps and test suites.
 
+This module also contains a variety of ``InputModifier`` classes, which are examples
+of how you can modify inputs for parameter sweeping. Users will generally implement
+their own ``Modifier`` classes that are application or design-specific.
+
 See Also
 --------
 armi.cli : Entry points that build Cases and/or CaseSuites and send them off to do work

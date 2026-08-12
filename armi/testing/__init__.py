@@ -25,8 +25,32 @@ This will not be a catch-all for random unit test functions. Be very sparing her
 import os
 import pickle
 
-from armi import runLog
-from armi.reactor import geometry, grids, reactors
+from armi import getPluginManagerOrFail, materials, operators, runLog, settings
+from armi.materials import uZr
+from armi.reactor import assemblies, blocks, geometry, grids, reactors
+from armi.reactor.components import Hexagon, Rectangle
+from armi.testing.singleAssemblies import (  # noqa: F401
+    BLOCK_DEFINITIONS_2PIN,
+    BLOCK_DEFINITIONS_3PIN,
+    GRID_DEFINITION,
+    REGULAR_ASSEMBLY_DEF,
+    buildEmptyHexAssembly,
+    buildHexAssemblyFiveUZrUTh,
+    buildHexAssemblyFourUZrUTh,
+    buildHexAssemblySingleUZr,
+    buildHexAssemblySingleUZrUTh,
+    buildMixedPinAssembly,
+    buildMixedThreePinAssembly,
+)
+from armi.testing.singleBlocks import (  # noqa: F401
+    NUM_PINS_IN_COMPLEX_HEX_BLOCK,
+    applyDummyData,
+    buildComplexHexBlock,
+    buildLinkedFuelHexBlock,
+    buildLinkedFuelHexBlockNegativeArea,
+    buildSimpleFuelHexBlock,
+    buildSimpleFuelHexBlockNegativeArea,
+)
 
 TEST_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tests"))
 TESTING_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -75,6 +99,11 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
         # return test reactor from cache
         o, r = pickle.loads(_TEST_REACTORS[reactorHash])
         o.reattach(r, o.cs)
+        if not o.cs["materialNamespaceOrder"] and materials.getMaterialNamespaceOrder != ["armi.materials"]:
+            materials.setMaterialNamespaceOrder(["armi.materials"])
+        elif o.cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
+            # Reload materials if the current global namespace order doesn't match the case settings namespace order
+            materials.setMaterialNamespaceOrder(o.cs["materialNamespaceOrder"])
         return o, r
 
     # Overwrite settings if desired
@@ -85,6 +114,9 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
 
+    # Always want to reset this hook if the namespace has changed unit tests have varying namespace settings
+    if cs["materialNamespaceOrder"] != materials.getMaterialNamespaceOrder():
+        _resetBeforeReactorConstructionHook()
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
 
@@ -97,6 +129,22 @@ def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileN
         _TEST_REACTORS[reactorHash] = pickle.dumps((o, o.r), protocol=2)
 
     return o, o.r
+
+
+def _resetBeforeReactorConstructionHook():
+    """
+    Helper function that gathers all the plugins with a `beforeReactorConstruction` hook and resets the `onlyRunOnce`
+    decorator. This is important to do for unit tests because different plugins may have a different namespace order
+    and we need the materials accurate to the test to load.
+    """
+    pm = getPluginManagerOrFail()
+    hook = pm.hook.beforeReactorConstruction
+
+    for hookimpl in hook.get_hookimpls():
+        func = hookimpl.function
+        reset = getattr(func, "reset_onlyRunOnce", None)
+        if callable(reset):
+            reset()
 
 
 def reduceTestReactorRings(r, cs, maxNumRings):
@@ -151,3 +199,85 @@ def getEmptyCartesianReactor(pitch=(10.0, 16.0), throughCenterAssembly=True):
     reactor.core.spatialGrid.armiObject = reactor.core
 
     return reactor
+
+
+def buildOperatorOfEmptyHexBlocks(customSettings=None):
+    """
+    Builds a operator w/ a reactor object with some hex assemblies and blocks, but all are empty.
+
+    Doesn't depend on inputs and loads quickly.
+
+    Parameters
+    ----------
+    customSettings : dict
+        Dictionary of off-default settings to update
+    """
+    cs = settings.Settings()  # fetch new
+    if customSettings is None:
+        customSettings = {}
+
+    customSettings["db"] = False  # stop use of database
+    cs = cs.modified(newSettings=customSettings)
+
+    r = getEmptyHexReactor()
+    r.core.setOptionsFromCs(cs)
+    o = operators.Operator(cs)
+    o.initializeInterfaces(r)
+
+    a = assemblies.HexAssembly("fuel")
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
+    b = blocks.HexBlock("TestBlock")
+    b.setType("fuel")
+    dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
+    c = Hexagon("fuel", uZr.UZr(), **dims)
+    b.add(c)
+    a.add(b)
+    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
+    o.r.core.add(a)
+    o.r.sort()
+    return o
+
+
+def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
+    """
+    Builds a operator w/ a reactor object with some Cartesian assemblies and blocks, but all are empty.
+
+    Doesn't depend on inputs and loads quickly.
+
+    Parameters
+    ----------
+    customSettings : dict
+        Off-default settings to update
+    """
+    cs = settings.Settings()  # fetch new
+    if customSettings is None:
+        customSettings = {}
+
+    customSettings["db"] = False  # stop use of database
+    cs = cs.modified(newSettings=customSettings)
+
+    r = getEmptyCartesianReactor()
+    r.core.setOptionsFromCs(cs)
+    o = operators.Operator(cs)
+    o.initializeInterfaces(r)
+
+    a = assemblies.CartesianAssembly("fuel")
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
+    b = blocks.CartesianBlock("TestBlock")
+    b.setType("fuel")
+    dims = {
+        "Tinput": 600,
+        "Thot": 600,
+        "widthOuter": 16.0,
+        "lengthOuter": 10.0,
+        "widthInner": 1,
+        "lengthInner": 1,
+        "mult": 1,
+    }
+    c = Rectangle("fuel", uZr.UZr(), **dims)
+    b.add(c)
+    a.add(b)
+    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
+    o.r.core.add(a)
+    o.r.sort()
+    return o

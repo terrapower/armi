@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module contains the implementation of the ``FissionProductModel`` interface.
+The implementation of the ``FissionProductModel`` interface.
 
 
 This ``FissionProductModel`` class implements the management of fission products within

@@ -119,8 +119,8 @@ class Database:
     `doc/user/outputs/database` for more details.
     """
 
-    # Allows matching for, e.g., c01n02EOL
-    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
+    # DB timenode matching. Please see genTimeSteps for details.
+    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)([a-zA-Z]{0,9})$")
 
     def __init__(self, fileName: os.PathLike, permission: str = "r"):
         """
@@ -181,7 +181,7 @@ class Database:
         filePath = self._fileName
         self._openCount += 1
 
-        if self._permission in {"r", "a"}:
+        if self._permission in {"r", "a", "r+"}:
             self._fullPath = os.path.abspath(filePath)
             self.h5db = h5py.File(filePath, self._permission)
             self.version = self.h5db.attrs["databaseVersion"]
@@ -302,7 +302,7 @@ class Database:
             newPath = safeMove(self._fullPath, self._fileName)
             self._fullPath = os.path.abspath(newPath)
 
-    def splitDatabase(self, keepTimeSteps: Sequence[Tuple[int, int]], label: str) -> str:
+    def splitDatabase(self, keepTimeSteps: Sequence[Tuple], label: str) -> str:
         """
         Discard all data except for specific time steps, retaining old data in a separate file.
 
@@ -346,7 +346,13 @@ class Database:
             for groupName, _ in dbIn.items():
                 m = self.timeNodeGroupPattern.match(groupName)
                 if m:
-                    timeSteps.add((int(m.group(1)), int(m.group(2))))
+                    groups = m.groups()
+                    if len(groups[2]):
+                        # handle timenodes with statepoint names like c01n02EOL and c07n01error
+                        timeStep = (int(groups[0]), int(groups[1]), groups[2])
+                    else:
+                        timeStep = (int(groups[0]), int(groups[1]))
+                    timeSteps.add(timeStep)
                 else:
                     dbIn.copy(groupName, dbOut)
 
@@ -423,7 +429,8 @@ class Database:
             return None
 
         stream = io.StringIO(bpString)
-        stream = Blueprints.migrate(stream)
+        version = self.version if self.version != "uncontrolled" else None
+        stream = Blueprints.migrate(stream, version)
         return Blueprints.load(stream)
 
     def writeInputsToDB(self, cs, csString=None, bpString=None):
@@ -488,10 +495,7 @@ class Database:
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
-        return (
-            self.h5db["inputs/settings"].asstr()[()],
-            self.h5db["inputs/blueprints"].asstr()[()],
-        )
+        return (self.h5db["inputs/settings"].asstr()[()], self.h5db["inputs/blueprints"].asstr()[()])
 
     def mergeHistory(self, inputDB, startCycle, startNode):
         """
@@ -509,7 +513,8 @@ class Database:
 
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
-            cyc, tn = time
+            cyc = time[0]
+            tn = time[1]
             if cyc == startCycle and tn == startNode:
                 # all data up to current state are merged
                 return
@@ -563,15 +568,32 @@ class Database:
 
         return Layout(version, self.h5db[timeGroupName])
 
-    def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
-        """Returns a generator of (cycle, node) tuples that are present in the DB."""
+    def genTimeSteps(self):
+        """Returns a generator of tuples reflecting statepoints that are present in the DB.
+
+        This method relies on a class variable timeNodeGroupPattern, which is a Python regex pattern that matches the
+        the Python database time nodes. This method must support all possible Database time nodes.
+
+        Examples
+        --------
+        c00n00 -> (0, 0)
+        c01n04 -> (1, 4)
+        c01n02EOL -> (1, 2, "EOL")
+        c12n99error -> (12, 99, "error")
+        """
         assert self.h5db is not None, "Must open the database before calling genTimeSteps"
         for groupName in sorted(self.h5db.keys()):
             match = self.timeNodeGroupPattern.match(groupName)
             if match:
-                cycle = int(match.groups()[0])
-                node = int(match.groups()[1])
-                yield (cycle, node)
+                groups = match.groups()
+                cycle = int(groups[0])
+                node = int(groups[1])
+                statePoint = groups[2]
+                if len(statePoint):
+                    # handle timenodes with statepoint names like c01n02EOL and c07n01error
+                    yield (cycle, node, statePoint)
+                else:
+                    yield (cycle, node)
 
     def genAuxiliaryData(self, ts: Tuple[int, int]) -> Generator[str, None, None]:
         """Returns a generator of names of auxiliary data on the requested time point."""

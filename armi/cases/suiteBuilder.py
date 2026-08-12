@@ -20,10 +20,6 @@ The general use case is to create a :py:class:`~SuiteBuilder` with a base
 adjust inputs according to the supplied arguments, and finally use ``.buildSuite`` to
 generate inputs. The case suite can then be discovered, submitted, and analyzed using
 the standard ``CaseSuite`` objects.
-
-This module contains a variety of ``InputModifier`` objects as well, which are examples
-of how you can modify inputs for parameter sweeping. Power-users will generally make
-their own ``Modifier``\ s that are design-specific.
 """
 
 import copy

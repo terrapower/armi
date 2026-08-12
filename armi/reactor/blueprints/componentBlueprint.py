@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
+Define the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
 
 Special logic is required for handling component links.
 """
@@ -112,8 +112,8 @@ class ComponentDimension(yamlize.Object):
 
 class ComponentBlueprint(yamlize.Object):
     """
-    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization
-    to and from YAML.
+    Define the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization to and from
+    YAML.
 
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
@@ -184,7 +184,7 @@ class ComponentBlueprint(yamlize.Object):
             the component blueprint and associated material modifications from the component's block.
 
             Within ``_constructMaterial()``, the material class is resolved into a material object by calling
-            :py:func:`~armi.materials.resolveMaterialClassByName`. The ``applyInputParams()`` method of that material
+            :py:func:`~armi.materials.createMaterialByName`. The ``applyInputParams()`` method of that material
             class is then called, passing in the associated material modifications data, which the material class can
             then use to modify the isotopics as necessary.
 
@@ -259,7 +259,7 @@ class ComponentBlueprint(yamlize.Object):
                 label=f"custom iso + mat mods {self.material} {comp}",
             )
 
-        mat = materials.resolveMaterialClassByName(self.material)()
+        mat = materials.createMaterialByName(self.material)
         if not isinstance(mat, materials.Custom):
             # check for some problem cases
             overSpecs = [k for k in matMods if k.endswith("_frac")]
@@ -303,7 +303,7 @@ class ComponentBlueprint(yamlize.Object):
             )
 
     def _conformKwargs(self, blueprint, matMods):
-        """This method gets the relevant kwargs to construct the component."""
+        """Get the relevant kwargs to construct the component."""
         kwargs = {"mergeWith": self.mergeWith or "", "isotopics": self.isotopics or ""}
 
         for attr in self.attributes:  # yamlize magic
@@ -337,7 +337,7 @@ class ComponentBlueprint(yamlize.Object):
     def _constructMaterial(self, blueprint, matMods):
         nucsInProblem = blueprint.allNuclidesInProblem
         # make material with defaults
-        mat = materials.resolveMaterialClassByName(self.material)()
+        mat = materials.createMaterialByName(self.material)
 
         if self.isotopics is not None:
             # Apply custom isotopics before processing input mods so

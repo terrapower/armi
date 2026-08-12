@@ -86,8 +86,8 @@ class HexBlock(Block):
 
             This method creates and returns a homogenized representation of itself in the form of a
             new Block. The homogenization occurs in the following manner. A single Hexagon Component
-            is created and added to the new Block. This Hexagon Component is given the
-            :py:class:`armi.materials.mixture._Mixture` material and a volume averaged temperature
+            is created and added to the new Block. This Hexagon Component is given a default
+            :py:class:`armi.materials.material.Material` material and a volume averaged temperature
             (``getAverageTempInC``). The number densities of the original Block are also stored on
             this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original
             block are copied onto the homogenized block (e.g., macros, lumped fission products,
@@ -135,7 +135,7 @@ class HexBlock(Block):
 
         hexComponent = Hexagon(
             "homogenizedHex",
-            "_Mixture",
+            "Material",
             self.getAverageTempInC(),
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
@@ -151,8 +151,8 @@ class HexBlock(Block):
                 cladComponents = self.getComponents(Flags.CLAD)
                 for i, clad in enumerate(cladComponents):
                     pinComponent = Circle(
-                        f"voidPin{i}",
-                        "Void",
+                        f"pin{i}",
+                        "Material",
                         self.getAverageTempInC(),
                         self.getAverageTempInC(),
                         0.0,
@@ -330,14 +330,19 @@ class HexBlock(Block):
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
     def verifyBlockDims(self):
-        """Perform some checks on this type of block before it is assembled."""
+        """Perform some checks on this type of block before it is assembled.
+
+        This method assumes the HexBlock has at least one DUCT component, at
+        most one WIRE component, and at most one CLAD component. If any of these
+        conditions are not met, the dimensions will not be checked.
+        """
         try:
             wireComp = self.getComponent(Flags.WIRE, quiet=True)  # Quiet because None case is checked for below
             ductComps = self.getComponents(Flags.DUCT)
             cladComp = self.getComponent(Flags.CLAD, quiet=True)  # Quiet because None case is checked for below
         except ValueError:
-            # there are probably more that one clad/wire, so we really dont know what this block looks like
-            runLog.info(f"Block design {self} is too complicated to verify dimensions. Make sure they are correct!")
+            # Silent Exit
+            # There is no duct or more that one clad/wire, the logic below cannot check the dimensions of the block.
             return
 
         # check wire wrap in contact with clad
