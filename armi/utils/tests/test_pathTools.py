@@ -27,7 +27,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 THIS_DIR = os.path.dirname(__file__)
 
 
-class PathToolsTests(unittest.TestCase):
+class TestPathTools(unittest.TestCase):
     def test_copyOrWarnFile(self):
         with TemporaryDirectoryChanger():
             # Test a successful copy
@@ -98,7 +98,7 @@ class PathToolsTests(unittest.TestCase):
         self.assertFalse(pathTools.moduleAndAttributeExist(thisFile))
         self.assertFalse(pathTools.moduleAndAttributeExist(thisFile + ":doesntExist"))
         self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":THIS_DIR"))
-        self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":PathToolsTests"))
+        self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":TestPathTools"))
 
     @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_cleanPathNoMpi(self):

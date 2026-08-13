@@ -95,7 +95,7 @@ class MockInterface(Interface):
         pass
 
 
-class MpiOperatorTests(unittest.TestCase):
+class TestMpiOperator(unittest.TestCase):
     """Testing the MPI parallelization operator."""
 
     def setUp(self):
@@ -196,7 +196,7 @@ class BcastAction2(mpiActions.MpiAction):
             return []
 
 
-class MpiDistributeStateTests(unittest.TestCase):
+class TestMpiDistributeState(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings(fName=ARMI_RUN_PATH)
         bp = blueprints.loadFromCs(self.cs)
@@ -292,7 +292,7 @@ class MpiDistributeStateTests(unittest.TestCase):
         self.assertEqual(results1, results2)
 
 
-class MpiPathToolsTests(unittest.TestCase):
+class TestMpiPathTools(unittest.TestCase):
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_cleanPathMpi(self):
         """Simple tests of cleanPath(), in the MPI scenario."""

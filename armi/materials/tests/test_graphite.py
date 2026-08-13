@@ -19,7 +19,7 @@ import unittest
 from armi.materials import Graphite
 
 
-class Graphite_TestCase(unittest.TestCase):
+class TestGraphite(unittest.TestCase):
     MAT_CLASS = Graphite
 
     def setUp(self):

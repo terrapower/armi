@@ -26,7 +26,7 @@ from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
-class HexCoreTests(unittest.TestCase):
+class TestHexCore(unittest.TestCase):
     """Tests on a hex reactor core."""
 
     @classmethod

@@ -19,7 +19,7 @@ import unittest
 from armi.nuclearDataIO import cccc
 
 
-class CcccIOStreamTests(unittest.TestCase):
+class TestCcccIOStream(unittest.TestCase):
     def test_initWithFileMode(self):
         self.assertIsInstance(cccc.Stream("some-file", "rb"), cccc.Stream)
         self.assertIsInstance(cccc.Stream("some-file", "wb"), cccc.Stream)
@@ -29,7 +29,7 @@ class CcccIOStreamTests(unittest.TestCase):
             cccc.Stream("some-file", "bacon")
 
 
-class CcccBinaryRecordTests(unittest.TestCase):
+class TestCcccBinaryRecord(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.writerClass = cccc.BinaryRecordWriter
@@ -97,8 +97,8 @@ class CcccBinaryRecordTests(unittest.TestCase):
                 self.assertEqual(4, reader.rwInt(None))
 
 
-class CcccAsciiRecordTests(CcccBinaryRecordTests):
-    """Runs the same tests as CcccBinaryRecordTests, but using ASCII readers and writers."""
+class TestCcccAsciiRecord(TestCcccBinaryRecord):
+    """Runs the same tests as TestCcccBinaryRecord, but using ASCII readers and writers."""
 
     @classmethod
     def setUpClass(cls):

@@ -20,7 +20,7 @@ from unittest import TestCase
 from armi.materials.uZr import UZr
 
 
-class UZR_TestCase(TestCase):
+class TestUZR(TestCase):
     MAT_CLASS = UZr
 
     def setUp(self):

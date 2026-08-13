@@ -174,7 +174,7 @@ class TestIsotxs(unittest.TestCase):
             nuclearDataIO.getExpectedGAMISOFileName(cycle=10, xsID="AA")
 
 
-class Isotxs_merge_Tests(unittest.TestCase):
+class TestIsotxsMerge(unittest.TestCase):
     def test_mergeMccV2FilesRemovesTheFileWideChi(self):
         """Test merging ISOTXS files.
 

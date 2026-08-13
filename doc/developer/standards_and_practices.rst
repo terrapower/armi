@@ -136,6 +136,9 @@ class attribute, instance attribute and method names
     Use ``camelCase``. If the method is only intended to be used within that module, prefix it with a single
     leading underscore to indicate it is "class protected."
 
+test class and test function names
+    See :ref:`unit-tests` for test function and class naming conventions.
+
 Naming quick-reference
 ----------------------
 
@@ -208,6 +211,8 @@ Public methods should have docstrings
 Always create the `proper docstrings <https://numpydoc.readthedocs.io/en/latest/example.html>`_ for all public
 functions and public classes.
 
+.. _unit-tests:
+
 Unit tests
 ==========
 All ARMI developers are required to write unit tests.
@@ -222,6 +227,7 @@ ARMI uses the ``pytest`` library to drive tests, therefore tests need to be runn
 * All unit tests should be placed into a separate module from production code that is prefixed with ``test_``.
 * All unit tests should be written in object-oriented fashion, inheriting from ``unittest.TestCase``.
 * All test method names should start with ``test_``.
+* All test clases should be of the form ``TestXYZ``.
 * All test method names should be descriptive. If the test method is not descriptive enough, add a docstring.
 * Unit tests should have at least one assertion.
 

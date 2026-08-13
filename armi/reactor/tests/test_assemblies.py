@@ -35,7 +35,7 @@ from armi.utils import directoryChangers, textProcessors
 NUM_BLOCKS = 3
 
 
-class MaterialInAssembly_TestCase(unittest.TestCase):
+class TestMaterialInAssembly(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.assembly = testing.buildHexAssemblySingleUZrUTh()
@@ -63,7 +63,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(uZrFuel.getMass("U235") / (uZrFuel.getMass("U238") + uZrFuel.getMass("U235")), 0.1)
 
 
-class AssemblyReadOnlyTests(unittest.TestCase):
+class TestAssemblyReadOnly(unittest.TestCase):
     """These tests of Assemblies do not modify the test assembly, which can be created in a setUpClass method."""
 
     @classmethod
@@ -363,7 +363,7 @@ class AssemblyReadOnlyTests(unittest.TestCase):
         self.assertEqual(elevations, [0.0, 10.0, 10.0, 20.0, 20.0, 30.0])
 
 
-class AssemblyTests(unittest.TestCase):
+class TestAssembly(unittest.TestCase):
     """These tests of Assemblies modify the test assembly, so each unit tests needs a fresh test assembly."""
 
     def setUp(self):
@@ -1026,7 +1026,7 @@ class AssemblyTests(unittest.TestCase):
             self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
 
 
-class AssemblyInReactor_TestCase(unittest.TestCase):
+class TestAssemblyInReactor(unittest.TestCase):
     def setUp(self):
         root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
         self.o, self.r = loadTestReactor(root)
@@ -1244,7 +1244,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(shieldPlenumMass, shieldPlenumMassAfterShrink, 7)
 
 
-class AnnularFuelTestCase(unittest.TestCase):
+class TestAnnularFuel(unittest.TestCase):
     """Test fuel with a whole in the center."""
 
     def setUp(self):

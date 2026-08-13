@@ -19,7 +19,7 @@ from armi.materials.b4c import B4C
 from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class B4C_TestCase(AbstractMaterialTest, unittest.TestCase):
+class TestB4C(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = B4C
 
     def setUp(self):
