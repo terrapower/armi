@@ -180,7 +180,7 @@ class ComponentBlueprint(yamlize.Object):
 
             Allows for user input to impact a component's materials by applying the "material modifications" section of
             a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`) to the material during construction. This takes place
-            during lower calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``, which operate using
+            during lower calls to ``_conformComponetnKwargs()`` and subsequently ``_constructMaterial()``, which operate using
             the component blueprint and associated material modifications from the component's block.
 
             Within ``_constructMaterial()``, the material class is resolved into a material object by calling
@@ -198,7 +198,9 @@ class ComponentBlueprint(yamlize.Object):
             See the case setting of the same name.
         """
         runLog.debug(f"Constructing component {self.name}")
-        kwargs = self._conformKwargs(blueprint, matMods)
+
+        # the material is constructed here an set within material kwargs
+        cKwargs = self._conformComponetnKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
         if shape == COMPONENT_GROUP_SHAPE:
             group = blueprint.componentGroups[self.name]
@@ -213,7 +215,7 @@ class ComponentBlueprint(yamlize.Object):
                 constructedObject.add(component)
 
         else:
-            constructedObject = components.factory(shape, [], kwargs)
+            constructedObject = components.factory(shape, [], cKwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
             constructedObject.p.theoreticalDensityFrac = constructedObject.material.getTD()
@@ -302,7 +304,7 @@ class ComponentBlueprint(yamlize.Object):
                 single=True,
             )
 
-    def _conformKwargs(self, blueprint, matMods):
+    def _conformComponetnKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component."""
         kwargs = {"mergeWith": self.mergeWith or "", "isotopics": self.isotopics or ""}
 
@@ -312,8 +314,8 @@ class ComponentBlueprint(yamlize.Object):
             if attr.name == "shape" or val == attr.default:
                 continue
             elif attr.name == "material":
-                # value is a material instance
-                value = self._constructMaterial(blueprint, matMods)
+                # material created, taking mat modss as inputs
+                value = mat = self._constructMaterial(blueprint, matMods )
             elif attr.name == "latticeIDs":
                 # Don't pass latticeIDs on to the component constructor.
                 # They're applied during block construction.
@@ -331,6 +333,7 @@ class ComponentBlueprint(yamlize.Object):
                 value = value.value
 
             kwargs[attr.name] = value
+            kwargs["mat_mod"] = matMods # return mat mods to construct component
 
         return kwargs
 
@@ -351,6 +354,10 @@ class ComponentBlueprint(yamlize.Object):
             # don't apply if only customIsotopics is in there
             try:
                 # update material with updated input params from blueprints file.
+
+                # mad mods are applied without mat having a parent and  mats are preferred not to store state...
+                # this is not great
+                
                 mat.applyInputParams(**matMods)
             except TypeError as ee:
                 errorMessage = ee.args[0]

@@ -350,7 +350,9 @@ class Layout:
                 kwargs["name"] = name
                 kwargs["Tinput"] = temperatures[0]
                 kwargs["Thot"] = temperatures[1]
+                Component.dbLoad = True
                 comp = Klass(**kwargs)
+                Component.dbLoad = False
             else:
                 comp = Klass(name)
 

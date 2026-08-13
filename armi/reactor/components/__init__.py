@@ -53,6 +53,7 @@ def factory(shape, bcomps, kwargs):
     kwargs : dict
         dictionary of inputs for the Component subclass's ``__init__`` method.
     """
+    # this makes the component 
     try:
         class_ = ComponentType.TYPES[shape]
     except KeyError:
