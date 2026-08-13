@@ -98,7 +98,7 @@ docs = [
     "nbsphinx==0.9.6", # Parses Jupyter notebooks
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
-    "pypdf==6.15.0", # Generating a single PDF file for the Sphinx documentation
+    "pypdf", # Generating a single PDF file for the Sphinx documentation
     "setuptools",  # needed for conf.py tooling
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
     "sphinx-needs==4.2.0", # Requirements traceability matrices for QA
