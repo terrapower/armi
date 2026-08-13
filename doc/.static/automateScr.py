@@ -262,6 +262,7 @@ def buildScrListing(pastCommit: str, thisPrNum: int = -1):
 
     for ln in txt.split("\n"):
         line = ln.strip()
+        print(line)  # TODO
         if pastCommit in line:
             # do not include the reference commit
             break
@@ -279,6 +280,7 @@ def buildScrListing(pastCommit: str, thisPrNum: int = -1):
     # 4. Build a list for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
+        print(f"TODO: prNum: {prNum}")
         if not isMainPR(prNum):
             continue
 
