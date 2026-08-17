@@ -1505,11 +1505,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
         densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
         self.setNumberDensities(densitiesScaled)
-        # Update detailedNDens
-        if self.p.detailedNDens is not None:
+
+        # Update detailedNDens if it exists (Components only)
+        if self.p.get("detailedNDens", None) is not None:
             self.p.detailedNDens *= factor
-        # Update pinNDens
-        if self.p.pinNDens is not None:
+
+        # Update pinNDens if it exists (Components only)
+        if self.p.get("pinNDens", None) is not None:
             self.p.pinNDens *= factor
 
     def clearNumberDensities(self):
