@@ -43,7 +43,6 @@ class UpdateAmericium242(BlueprintsMigration):
         Custom isotopics: `        AM242: 0.0015135`
         Nuclide flags: `    AM242M: {burn: false, xs: true}`
         """
-        print("xxxxxxxxxxx")
         migrated = []
         swapFrom, swapTo = self.swap
         for line in self.stream.read().split("\n"):
