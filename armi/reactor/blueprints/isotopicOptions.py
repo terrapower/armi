@@ -98,8 +98,6 @@ class NuclideFlag(yamlize.Object):
         if value not in nuclideBases.byName and value not in elements.bySymbol:
             allowedKeys = set(nuclideBases.byName.keys()).update(set(elements.bySymbol.keys()))
             raise ValueError(f"`{value}` is not a valid nuclide name, must be one of: {allowedKeys}")
-        elif value == "AM242":
-            raise ValueError("AM242 is not currently a valid nuclide in ARMI, you want to use AM242M.")
 
     burn = yamlize.Attribute(type=bool)
     xs = yamlize.Attribute(type=bool)
