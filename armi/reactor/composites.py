@@ -267,7 +267,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all classes
-    * Declares an interface for accessing and managing child objects
+    * TODO: This should live on the Composite class. Declares an interface for accessing and managing child objects
     * Defines an interface for accessing parents.
 
     Called "component" in gang of four, this is an ArmiObject here because the word component was
@@ -395,7 +395,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        This ArmiObject may have lost a reference to its parent. If the parent was also
+        This ArmiObject may have lost a reference to its parent. If the parent (a Composite, Assembly, or Block) was also
         pickled (serialized), then the parent should update the ``.parent`` attribute
         during its own ``__setstate__``. That means within the context of
         ``__setstate__`` one should not rely upon ``self.parent``.
@@ -404,8 +404,9 @@ class ArmiObject(metaclass=CompositeModelType):
 
         if self.spatialGrid is not None:
             self.spatialGrid.armiObject = self
+
             # Spatial locators also get disassociated with their grids when detached;
-            # make sure they get hooked back up
+            # make sure they get hooked back up.
             for c in self:
                 c.spatialLocator.associate(self.spatialGrid)
 
@@ -510,35 +511,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def iterChildren(
-        self,
-        deep=False,
-        generationNum=1,
-        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
-    ) -> Iterator["ArmiObject"]:
-        """Iterate over children of this object."""
-        raise NotImplementedError()
-
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False) -> list["ArmiObject"]:
-        """Return the children of this object."""
-        raise NotImplementedError()
-
-    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> Iterator["ArmiObject"]:
-        """Produce an iterator of children that have given flags."""
-        return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> list["ArmiObject"]:
-        """Get all children that have given flags."""
-        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
-
-    def iterChildrenOfType(self, typeName: str) -> Iterator["ArmiObject"]:
-        """Iterate over children that have a specific input type name."""
-        return self.iterChildren(predicate=lambda o: o.getType() == typeName)
-
-    def getChildrenOfType(self, typeName: str) -> list["ArmiObject"]:
-        """Produce a list of children that have a specific input type name."""
-        return list(self.iterChildrenOfType(typeName))
-
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return all armi.reactor.component.Component within this Composite.
@@ -563,68 +535,6 @@ class ArmiObject(metaclass=CompositeModelType):
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """Yield components one by one in a generator."""
         raise NotImplementedError()
-
-    def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
-        """
-        Generator that yields True if the next child has given flags.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Requested type of the child
-        """
-        for c in self.getChildren(deep):
-            if c.hasFlags(typeSpec, exact=False):
-                yield True
-            else:
-                yield False
-
-    def containsAtLeastOneChildWithFlags(self, typeSpec: TypeSpec):
-        """
-        Return True if any of the children are of a given type.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Requested type of the children
-
-        See Also
-        --------
-        self.doChildrenHaveFlags
-        self.containsOnlyChildrenWithFlags
-        """
-        return any(self.doChildrenHaveFlags(typeSpec))
-
-    def containsOnlyChildrenWithFlags(self, typeSpec: TypeSpec):
-        """
-        Return True if all of the children are of a given type.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Requested type of the children
-
-        See Also
-        --------
-        self.doChildrenHaveFlags
-        self.containsAtLeastOneChildWithFlags
-        """
-        return all(self.doChildrenHaveFlags(typeSpec))
-
-    def copyParamsToChildren(self, paramNames):
-        """
-        Copy param values in paramNames to all children.
-
-        Parameters
-        ----------
-        paramNames : list
-            List of param names to copy to children
-
-        """
-        for paramName in paramNames:
-            myVal = self.p[paramName]
-            for c in self:
-                c.p[paramName] = myVal
 
     @classmethod
     def getParameterCollection(cls):
@@ -1327,11 +1237,6 @@ class ArmiObject(metaclass=CompositeModelType):
                 )
         return numberDensities
 
-    def getChildrenWithNuclides(self, nucNames):
-        """Return children that contain any nuclides in nucNames."""
-        nucNames = set(nucNames)  # only convert to set once
-        return [child for child in self if nucNames.intersection(child.getNuclides())]
-
     def getAncestor(self, fn):
         """
         Return the first ancestor that satisfies the supplied predicate.
@@ -1555,10 +1460,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def setLumpedFissionProducts(self, lfpCollection):
         self._lumpedFissionProducts = lfpCollection
-
-    def setChildrenLumpedFissionProducts(self, lfpCollection):
-        for c in self:
-            c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
         """Returns the fissile mass enrichment."""
@@ -1829,10 +1730,6 @@ class ArmiObject(metaclass=CompositeModelType):
             return realVal, maxP[1]
         else:
             return realVal
-
-    def getChildParamValues(self, param):
-        """Get the child parameter values in a numpy array."""
-        return np.array([child.p[param] for child in self])
 
     def isFuel(self):
         """True if this is a fuel block."""
@@ -2645,6 +2542,97 @@ class Composite(ArmiObject):
         else:
             items = self.iterChildrenWithMaterials(deep=deep, generationNum=generationNum, predicate=predicate)
         return list(items)
+
+    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> Iterator["ArmiObject"]:
+        """Produce an iterator of children that have given flags."""
+        return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
+
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> list["ArmiObject"]:
+        """Get all children that have given flags."""
+        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
+
+    def getChildrenWithNuclides(self, nucNames):
+        """Return children that contain any nuclides in nucNames."""
+        nucNames = set(nucNames)  # only convert to set once
+        return [child for child in self if nucNames.intersection(child.getNuclides())]
+
+    def iterChildrenOfType(self, typeName: str) -> Iterator["ArmiObject"]:
+        """Iterate over children that have a specific input type name."""
+        return self.iterChildren(predicate=lambda o: o.getType() == typeName)
+
+    def getChildrenOfType(self, typeName: str) -> list["ArmiObject"]:
+        """Produce a list of children that have a specific input type name."""
+        return list(self.iterChildrenOfType(typeName))
+
+    def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
+        """
+        Generator that yields True if the next child has given flags.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Requested type of the child
+        """
+        for c in self.getChildren(deep):
+            if c.hasFlags(typeSpec, exact=False):
+                yield True
+            else:
+                yield False
+
+    def containsAtLeastOneChildWithFlags(self, typeSpec: TypeSpec):
+        """
+        Return True if any of the children are of a given type.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Requested type of the children
+
+        See Also
+        --------
+        self.doChildrenHaveFlags
+        self.containsOnlyChildrenWithFlags
+        """
+        return any(self.doChildrenHaveFlags(typeSpec))
+
+    def containsOnlyChildrenWithFlags(self, typeSpec: TypeSpec):
+        """
+        Return True if all of the children are of a given type.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Requested type of the children
+
+        See Also
+        --------
+        self.doChildrenHaveFlags
+        self.containsAtLeastOneChildWithFlags
+        """
+        return all(self.doChildrenHaveFlags(typeSpec))
+
+    def setChildrenLumpedFissionProducts(self, lfpCollection):
+        for c in self:
+            c.setLumpedFissionProducts(lfpCollection)
+
+    def getChildParamValues(self, param):
+        """Get the child parameter values in a numpy array."""
+        return np.array([child.p[param] for child in self])
+
+    def copyParamsToChildren(self, paramNames):
+        """
+        Copy param values in paramNames to all children.
+
+        Parameters
+        ----------
+        paramNames : list
+            List of param names to copy to children
+
+        """
+        for paramName in paramNames:
+            myVal = self.p[paramName]
+            for c in self:
+                c.p[paramName] = myVal
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
