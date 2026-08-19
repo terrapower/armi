@@ -2365,7 +2365,7 @@ class Composite(ArmiObject):
     2. Coordinates in the parent's universe in cm, used when the dtype is float.
 
     The top parent of any composite must have a coordinate-based ``spatialLocator``. For
-    example, a Reactor an a Pump should both have coordinates based on how far apart
+    example, a Reactor and a Pump should both have coordinates based on how far apart
     they are.
 
     The traversal of indices and grids is recursive. The Reactor/Core/Assembly/Block
@@ -2377,17 +2377,6 @@ class Composite(ArmiObject):
     coordinate-based spatialLocators mixed with siblings in a grid. This allows mixing
     grid-representation with explicit representation, often useful in advanced
     assemblies and thermal reactors.
-
-    The traversal of indices and grids is recursive. The
-    Reactor/Core/Assembly/Block model is handled by putting a 2-D grid (either
-    Theta-R, Hex, or Cartesian) on the Core and individual 1-D Z-meshes on the
-    assemblies. Then, Assemblies have 2-D spatialLocators (i,j,0) and Blocks
-    have 1-D spatiaLocators (0,0,k). These get added to form the global indices.
-    This way, if an assembly is moved, all the blocks immediately and naturally
-    move with it. Individual children may have coordinate-based spatialLocators
-    mixed with siblings in a grid. This allows mixing grid-representation with
-    explicit representation, often useful in advanced assemblies and thermal
-    reactors.
 
     .. impl:: Composites are a physical part of the reactor in a hierarchical data model.
         :id: I_ARMI_CMP0
