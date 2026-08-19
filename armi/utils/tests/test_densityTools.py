@@ -27,7 +27,7 @@ class UraniumOxide(Material):
     """A test material that needs to be stored in a different namespace.
 
     This is a duplicate (by name only) of :py:class:`armi.materials.UraniumOxide` and is used for testing in
-    :py:meth:`armi.materials.tests.test_materials.MaterialFindingTests.test_namespacing`
+    :py:meth:`armi.materials.tests.test_materials.TestMaterialFinding.test_namespacing`
     """
 
     def pseudoDensity(self, Tk=None, Tc=None):

@@ -43,7 +43,7 @@ class MockCompositeChild(MockCompositeParent):
     pass
 
 
-class ParameterTests(unittest.TestCase):
+class TestParameter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.defs = parameters.ALL_DEFINITIONS._paramDefs

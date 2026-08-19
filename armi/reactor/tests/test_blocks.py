@@ -3131,7 +3131,7 @@ class TestCartesianBlock(unittest.TestCase):
         # block/assembly. The inner dimensions is defined by whatever thickness is necessary to have the desired area
         # fraction. The second way is to define all physical material components as unshaped, and add an additional
         # infinitely thin Void component (no area) that defines pitch. See second part of
-        # HexBlock_TestCase.test_getPitchHomogeneousBlock for demonstration.
+        # TestHexBlock.test_getPitchHomogeneousBlock for demonstration.
         cartBlock = blocks.CartesianBlock("TestCartBlock")
 
         hexComponentArea = areaFractions[0] * rectTotalArea

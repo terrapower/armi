@@ -23,7 +23,7 @@ from armi.testing import loadTestReactor
 from armi.tests import TESTING_ROOT
 
 
-class CartesianReactorTests(unittest.TestCase):
+class TestCartesianReactor(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(
             os.path.join(TESTING_ROOT, "reactors", "smallCartesian"),

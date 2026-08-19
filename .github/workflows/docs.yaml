@@ -26,8 +26,6 @@ jobs:
         with:
           python-version: 3.13
           persist-credentials: false
-      - name: Update package index
-        run: sudo apt-get update
       - name: Install apt-get libs
         run: sudo apt-get -y install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
       - name: Setup Graphviz

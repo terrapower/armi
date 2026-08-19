@@ -38,7 +38,7 @@ def betterSubClassCheck(item, superClass):
         return False
 
 
-class Materials__init__Tests(unittest.TestCase):
+class TestMaterialsInit(unittest.TestCase):
     def test_canAccessClassesFromPackage(self):
         klasses = [kk for _, kk in vars(materials).items() if betterSubClassCheck(kk, materials.material.Material)]
         self.assertGreater(len(klasses), 10)
@@ -82,7 +82,7 @@ class TestMaterialBaseClassHook(unittest.TestCase):
         self.assertIsInstance(mat, TestMaterial)
 
 
-class YamlMaterialTests(unittest.TestCase):
+class TestYamlMaterial(unittest.TestCase):
     def setUp(self):
         self._monkeypatch = MonkeyPatch()
         origNamespace = materials._MATERIAL_NAMESPACE_ORDER

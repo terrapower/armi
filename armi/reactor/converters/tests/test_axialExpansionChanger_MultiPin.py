@@ -16,10 +16,11 @@ import collections
 import copy
 import io
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
 from unittest.mock import MagicMock
 
-from numpy import array, array_equal, full
+from numpy import array, array_equal, dtype, float32, float64, full, ndarray
+from numpy.testing import assert_allclose
 
 from armi.materials.material import Fluid
 from armi.reactor.blueprints import Blueprints
@@ -83,6 +84,32 @@ class StoreMassAndTemp:
     HMmassBOL: float
     HMmolesBOL: float
     temp: float
+    volume: float
+    pinNDens: Optional[ndarray[Tuple[int, int], dtype[float32]]]
+    detailedNDens: Optional[ndarray[Tuple[int], dtype[float64]]]
+
+    @classmethod
+    def fromComponent(cls, c: Component):
+        """Initialize from a component.
+
+        Helps because the init signature has lots of fields.
+        """
+        if (pinNDens := c.p.pinNDens) is not None:
+            # copy so scaling operations like component.changeNDensByFactor don't mutate original data
+            pinNDens = pinNDens.copy()
+        if (detailedNDens := c.p.detailedNDens) is not None:
+            detailedNDens = detailedNDens.copy()
+        return cls(
+            c.parent.name,
+            c.getMass(),
+            c.getHMMass(),
+            c.p.massHmBOL,
+            c.p.molesHmBOL,
+            c.temperatureInC,
+            c.getVolume(),
+            pinNDens,
+            detailedNDens,
+        )
 
 
 class TestMultiPinConservationBase(AxialExpansionTestBase):
@@ -177,6 +204,15 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.c0 = next(filter(lambda c: c.getType() == "fuel test", self.b0))
         self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
 
+        nPins = self.c0.getDimension("mult")
+        nPinNuclides = 7  # arbitrary
+        self.c0.p.pinNDens = full((nPins, nPinNuclides), 1.0, dtype=float32)
+        self.c1.p.pinNDens = full((nPins, nPinNuclides), 20.0, dtype=float32)
+
+        nDetailedNuclides = 11  # arbitrary
+        self.c0.p.detailedNDens = full((nDetailedNuclides,), 1e-3, dtype=float64)
+        self.c1.p.detailedNDens = full((nDetailedNuclides,), 4e-1, dtype=float64)
+
     def test_getAllNucs(self):
         nucsA = ["Zr90", "Zr91", "Zr92", "U235", "U238"]
         nucsB = ["Zr90", "Zr91", "Zr92", "U233", "U238", "I131", "XE131", "NP237", "AM242", "AM242M"]
@@ -266,7 +302,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         """
         growFrac = 1.10
         self._initializeTest(growFrac, fromComp=self.c0)
-        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
+        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False, growFrac=growFrac)
 
     def test_addMassToCompNonTargetCompNoTherm(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
@@ -280,7 +316,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         """
         growFrac = 0.9
         self._initializeTest(growFrac, fromComp=self.c1)
-        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
+        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False, growFrac=growFrac)
 
     def test_addMassToCompNonTargetComprYesTherm(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
@@ -300,7 +336,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
 
         self._initializeTest(growFrac, fromComp=self.c1)
-        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True)
+        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True, growFrac=growFrac)
 
     def test_addMassToCompNonTargetExpanYesTherm(self):
         """Increase c0 by 100 deg C and and show that c0 mass is moved to c1.
@@ -319,7 +355,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
 
         self._initializeTest(growFrac, fromComp=self.c0)
-        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
+        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True, growFrac=growFrac)
 
     def _updateToCompElevations(self, toComp: Component):
         """Shift ``toComp`` based on expansion or contraction of ``fromComp``, as indicated by ``self.deltaZTop``.
@@ -369,22 +405,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         """
         # set the original mass and temperature of the components post expansion and pre redistribution
 
-        self.originalC0 = StoreMassAndTemp(
-            self.c0.parent.name,
-            self.c0.getMass(),
-            self.c0.getHMMass(),
-            self.c0.p.massHmBOL,
-            self.c0.p.molesHmBOL,
-            self.c0.temperatureInC,
-        )
-        self.originalC1 = StoreMassAndTemp(
-            self.c1.parent.name,
-            self.c1.getMass(),
-            self.c1.getHMMass(),
-            self.c1.p.massHmBOL,
-            self.c1.p.molesHmBOL,
-            self.c1.temperatureInC,
-        )
+        self.originalC0 = StoreMassAndTemp.fromComponent(self.c0)
+        self.originalC1 = StoreMassAndTemp.fromComponent(self.c1)
 
         # adjust c0 elevations per growFrac
         self.c0.zbottom = self.b0.p.zbottom
@@ -423,7 +445,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             toCompRefData = self.originalC0 if toComp.parent.name == self.originalC0.cType else self.originalC1
         return fromCompRefData, toCompRefData
 
-    def _redistributeMassWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
+    def _redistributeMassWithTempAssert(
+        self, fromComp: Component, toComp: Component, thermalExp: bool, growFrac: float
+    ):
         """Perform the mass redistribution from ``fromComp`` to ``toComp``.
 
         Notes
@@ -437,6 +461,25 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         fromCompRefData, toCompRefData = self._getReferenceData(fromComp, toComp)
         self._updateToCompElevations(toComp=toComp)
         self._updateFromCompElevations(fromComp=fromComp)
+
+        # Ensure conservation between the two components (e.g., total mass before == total mass after)
+        self.assertAlmostEqual(
+            toComp.getMass() + fromComp.getMass(),
+            toCompRefData.mass + fromCompRefData.mass,
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            toComp.getHMMass() + fromComp.getHMMass(), toCompRefData.HMmass + fromCompRefData.HMmass, places=self.places
+        )
+        self.assertAlmostEqual(
+            toComp.p.molesHmBOL + fromComp.p.molesHmBOL,
+            toCompRefData.HMmolesBOL + fromCompRefData.HMmolesBOL,
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            toComp.p.massHmBOL + fromComp.p.massHmBOL,
+            toCompRefData.HMmassBOL + fromCompRefData.HMmassBOL,
+        )
 
         # ensure the toComp mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
@@ -487,6 +530,34 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             fromComp.p.molesHmBOL,
             fromCompRefData.HMmolesBOL - self.redistributedBOLMoles,
             places=self.places,
+        )
+        # pin number density check
+        if fromComp is self.c1:
+            # if we contracted and are moving nuclides from the upper component, the number
+            # density in the from component is unchanged. it has not undergone any expansion or
+            # other changes in this test
+            assert_allclose(fromComp.p.pinNDens, fromCompRefData.pinNDens)
+        else:
+            # fromComp ndens should only change due to the thermal expansion in the lower component
+            assert_allclose(fromComp.p.pinNDens, fromCompRefData.pinNDens / growFrac)
+        # conservation of total number of pin atoms through expansion
+        assert_allclose(
+            fromComp.p.pinNDens * fromComp.getVolume() + toComp.p.pinNDens * toComp.getVolume(),
+            fromCompRefData.pinNDens * fromCompRefData.volume + toCompRefData.pinNDens * toCompRefData.volume,
+        )
+
+        # detailed number density check
+        if fromComp is self.c1:
+            # if we contracted and are moving nuclides from the upper component, the number
+            # density in the from component is unchanged. it has not undergone any expansion or
+            # other changes in this test
+            assert_allclose(fromComp.p.detailedNDens, fromCompRefData.detailedNDens)
+        else:
+            # fromComp ndens should only change due to the thermal expansion in the lower component
+            assert_allclose(fromComp.p.detailedNDens, fromCompRefData.detailedNDens / growFrac)
+        assert_allclose(
+            fromComp.p.detailedNDens * fromComp.getVolume() + toComp.p.detailedNDens * toComp.getVolume(),
+            fromCompRefData.detailedNDens * fromCompRefData.volume + toCompRefData.detailedNDens * toCompRefData.volume,
         )
 
 

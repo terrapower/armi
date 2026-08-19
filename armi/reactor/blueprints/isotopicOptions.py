@@ -412,13 +412,16 @@ def getDefaultNuclideFlags():
         "U": [234, 235, 236, 238],
         "NP": [237, 238],
         "PU": [236] + list(range(238, 243)),
-        "AM": range(241, 244),
+        "AM": [241, 243],
         "CM": range(242, 248),
     }
 
     for el, masses in actinides.items():
         for mass in masses:
             nuclideFlags[f"{el}{mass}"] = {"burn": True, "xs": True, "expandTo": None}
+
+    # handle special case: AM242M
+    nuclideFlags["AM242M"] = {"burn": True, "xs": True, "expandTo": None}
 
     for fp in [35, 38, 39, 40, 41]:
         nuclideFlags[f"LFP{fp}"] = {"burn": True, "xs": True, "expandTo": None}

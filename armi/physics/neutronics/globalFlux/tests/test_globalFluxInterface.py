@@ -28,7 +28,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.testing import TESTING_ROOT, applyDummyData, buildComplexHexBlock, loadTestReactor
+from armi.testing import TESTING_ROOT, applyDummyData, buildComplexHexBlock, loadTestReactor, mockRunLogs
 from armi.tests import ISOAA_PATH
 
 
@@ -152,10 +152,36 @@ class TestGFI(unittest.TestCase):
             :id: T_ARMI_FLUX_DPA
             :tests: R_ARMI_FLUX_DPA
         """
-        xs = [1, 2, 3]
-        flx = [0.5, 0.75, 2]
-        res = globalFluxInterface.computeDpaRate(flx, xs)
-        self.assertEqual(res, 10**-24 * (0.5 + 1.5 + 6))
+        with mockRunLogs.BufferLog() as mock:
+            # test basic math
+            xs = [1, 2, 3]
+            flx = [0.5, 0.75, 2]
+            res = globalFluxInterface.computeDpaRate(flx, xs)
+            self.assertEqual(res, 10**-24 * (0.5 + 1.5 + 6))
+
+            # test mismatched input data, including logging
+            xs = [1, 2, 3, 4, 5]
+            flx = [1, 2, 3]
+            self.assertNotIn("will be set do 0.0", mock.getStdout())
+            self.assertEqual(globalFluxInterface.computeDpaRate(flx, xs), 0.0)
+            self.assertIn("will be set do 0.0", mock.getStdout())
+
+            # test slightly negative value, including logging
+            xs = [-2, 1, 1]
+            flx = [1.0 + 1e-12, 1.0, 1.0]
+            mock.emptyStdout()
+            self.assertNotIn("setting to zero", mock.getStdout())
+            self.assertEqual(globalFluxInterface.computeDpaRate(flx, xs), 0.0)
+            self.assertIn("setting to zero", mock.getStdout())
+
+            # test very negative value, including logging
+            xs = [-2e14, 1, 1]
+            flx = [1, 1, 1]
+            mock.emptyStdout()
+            self.assertNotIn("substantially negative", mock.getStdout())
+            with self.assertRaises(RuntimeError):
+                globalFluxInterface.computeDpaRate(flx, xs)
+            self.assertIn("substantially negative", mock.getStdout())
 
     def test_interaction(self):
         """

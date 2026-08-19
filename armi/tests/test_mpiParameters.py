@@ -42,7 +42,7 @@ def makeComp(name):
     return c
 
 
-class SynchronizationTests(unittest.TestCase):
+class TestSynchronization(unittest.TestCase):
     """Some tests that must be run with mpirun instead of the standard unittest system."""
 
     def setUp(self):
