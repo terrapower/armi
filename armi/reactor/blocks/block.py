@@ -950,7 +950,7 @@ class Block(composites.Composite):
                 cList.append(candidate)
                 runLog.error(
                     "The component {0} in {1} contains a dimension that is linked to another component, "
-                    " but the required component is not present in the block. They may also be other dependency fails. "
+                    "but the required component is not present in the block. They may also be other dependency fails. "
                     "The component dims are {2}".format(cList[0], self, cList[0].p)
                 )
                 raise RuntimeError("Cannot locate linked component.")
@@ -976,49 +976,6 @@ class Block(composites.Composite):
         sortedComponents = sortedComponents[:componentIndex]
         return sortedComponents
 
-    def __getPinLikeCounts(self) -> list[Tuple[int, list[grids.IndexLocation]]]:
-        """Helper method to find components that look like pins, grouped by PIN_COMPONENT flags.
-
-        This method is not designed to be used by downstream, but is meant to help ``getPinLocations`` and
-        ``getNumPins`` share the same base logic.
-
-        Returns
-        -------
-        list(tuple(int, list(IndexLocation)))
-            A list of tuples: (number of pins, list of components at the same spatialLocator)
-        """
-        # find all the components in this block that match one of the flags in PIN_COMPONENTS
-        compsByType = [
-            [c for c in self.iterComponents(compType) if isinstance(c, basicShapes.Circle)]
-            for compType in PIN_COMPONENTS
-        ]
-
-        # Group together components by spatial locator, THEN count the number of pins by group and by type/flag
-        numPinsByType = []
-        for comps in compsByType:
-            compsByLocation = []
-            while len(comps):
-                c = comps.pop()
-                index = -9
-                for i, cByLoc in enumerate(compsByLocation):
-                    if c.spatialLocator == cByLoc[0].spatialLocator:
-                        index = i
-                        break
-
-                if index < 0:
-                    # this spatialLocator was NOT seen before
-                    compsByLocation.append([c])
-                else:
-                    # this spatialLocator was seen before, group with the others
-                    compsByLocation[index].append(c)
-
-            # Count pins. If multiple components are at the same location, take the one that has the most pins.
-            numPins = [max([int(c.getDimension("mult")) for c in csByLocs]) for csByLocs in compsByLocation]
-            numPins = sum(numPins)
-            numPinsByType.append((numPins, compsByLocation))
-
-        return numPinsByType
-
     def getPinLocations(self) -> list[grids.IndexLocation]:
         """Produce all the index locations for pins in the block.
 
@@ -1030,27 +987,19 @@ class Block(composites.Composite):
         Notes
         -----
         Only components with ``Flags.CLAD`` are considered to define a pin's location.
+
+        See Also
+        --------
+        :meth:`getPinCoordinates` - companion for this method.
         """
-        numPinsByType = self.__getPinLikeCounts()
-
-        # Find which locations of the component type/flag yields the highest pin count
-        maxI = -999
-        pins = []
-        for i, comps in numPinsByType:
-            if i >= maxI:
-                maxI = i
-                pins = comps
-
-        # handle MultiIndexLocations
-        pinLocs = []
-        for comps in pins:
-            spatLoc = comps[0].spatialLocator
-            if isinstance(spatLoc, grids.MultiIndexLocation):
-                pinLocs.extend(spatLoc)
+        items = []
+        for clad in self.iterChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                items.extend(clad.spatialLocator)
             else:
-                pinLocs.append(spatLoc)
+                items.append(clad.spatialLocator)
 
-        return pinLocs
+        return items
 
     def getPinCoordinates(self) -> np.ndarray:
         """
@@ -1086,7 +1035,35 @@ class Block(composites.Composite):
             After looping over all possibilities, return the maximum value returned from the process above, or if no
             compatible components were found, return zero.
         """
-        numPinsByType = self.__getPinLikeCounts()
+        # find all the components in this block that match one of the flags in PIN_COMPONENTS
+        compsByType = [
+            [c for c in self.iterComponents(compType) if isinstance(c, basicShapes.Circle)]
+            for compType in PIN_COMPONENTS
+        ]
+
+        # Group together components by spatial locator, THEN count the number of pins by group and by type/flag
+        numPinsByType = []
+        for comps in compsByType:
+            compsByLocation = []
+            while len(comps):
+                c = comps.pop()
+                index = -1
+                for i, cByLoc in enumerate(compsByLocation):
+                    if c.spatialLocator == cByLoc[0].spatialLocator:
+                        index = i
+                        break
+
+                if index < 0:
+                    # this spatialLocator was NOT seen before
+                    compsByLocation.append([c])
+                else:
+                    # this spatialLocator was seen before, group with the others
+                    compsByLocation[index].append(c)
+
+            # Count pins. If multiple components are at the same location, take the one that has the most pins.
+            numPins = [max([int(c.getDimension("mult")) for c in csByLocs]) for csByLocs in compsByLocation]
+            numPins = sum(numPins)
+            numPinsByType.append((numPins, compsByLocation))
 
         # Return whichever component type/flag yields the highest pin count
         return 0 if not numPinsByType else max([c[0] for c in numPinsByType])

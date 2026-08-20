@@ -1505,7 +1505,7 @@ class TestBlock(unittest.TestCase):
         pins.setType("component", flags=Flags.PLENUM)
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
-        self.assertEqual(len(emptyBlock.getPinLocations()), 1)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
     def test_getNumPinsNClads(self):
         """Test that we still get the correct number of pins if there are two co-centeric clad components.
@@ -1542,7 +1542,7 @@ class TestBlock(unittest.TestCase):
         b.add(pinClad2)
 
         self.assertEqual(b.getNumPins(), 8)
-        self.assertEqual(len(b.getPinLocations()), 1)
+        self.assertEqual(len(b.getPinLocations()), 2)
 
         # add another clad, at the same position as the original clad, and ensure the pin count does not change
         pinClad3 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
@@ -1551,7 +1551,7 @@ class TestBlock(unittest.TestCase):
         b.add(pinClad3)
 
         self.assertEqual(b.getNumPins(), 8)
-        self.assertEqual(len(b.getPinLocations()), 1)
+        self.assertEqual(len(b.getPinLocations()), 3)
 
     def test_getNumPinsNPinTypes(self):
         """Test that we correctly count pins when there are multiple pin types.
