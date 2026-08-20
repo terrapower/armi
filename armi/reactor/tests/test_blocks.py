@@ -50,12 +50,7 @@ from armi.testing import (
 from armi.tests import ISOAA_PATH
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.utils.units import (
-    ASCII_LETTER_A,
-    ASCII_LETTER_Z,
-    MOLES_PER_CC_TO_ATOMS_PER_BARN_CM,
-    ASCII_LETTER_a,
-)
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, MOLES_PER_CC_TO_ATOMS_PER_BARN_CM, ASCII_LETTER_a
 
 
 def getComponentData(component):
@@ -1483,7 +1478,7 @@ class TestBlock(unittest.TestCase):
         """Test that we can get the number of pins from various blocks.
 
         .. test:: Retrieve the number of pins from various blocks.
-            :id: T_ARMI_BLOCK_NPINS
+            :id: T_ARMI_BLOCK_NPINS1
             :tests: R_ARMI_BLOCK_NPINS
         """
         cur = self.block.getNumPins()
@@ -1492,21 +1487,86 @@ class TestBlock(unittest.TestCase):
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         holedRectangle = complexShapes.HoledRectangle("holedRectangle", "HT9", 100, 100, 0.5, 1.0, 1.0)
         holedRectangle.setType("component", flags=Flags.CONTROL)
         emptyBlock.add(holedRectangle)
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         hexagon = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1)
         hexagon.setType("component", flags=Flags.SHIELD)
         emptyBlock.add(hexagon)
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         pins = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
         pins.setType("component", flags=Flags.PLENUM)
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
+
+    def test_getNumPinsNClads(self):
+        """Test that we still get the correct number of pins if there are two co-centeric clad components.
+
+        .. test:: Ensure the correct number of pins is returned if there are multiple clad on a fuel pin.
+            :id: T_ARMI_BLOCK_NPINS2
+            :tests: R_ARMI_BLOCK_NPINS
+        """
+        # create a fuel block and add a single clad component, surrounding a single fuel component, with 8 pins
+        b = blocks.HexBlock("empty")
+
+        randoComp1 = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1, 0, 0)
+        b.add(randoComp1)
+        randoComp2 = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1, 0, 0)
+        b.add(randoComp2)
+
+        fuelPins = basicShapes.Circle("circle", "UZr", 100, 100, 1, 0, 8)
+        fuelPins.spatialLocator._i = 1
+        fuelPins.spatialLocator._j = 2
+        b.add(fuelPins)
+
+        pinClad1 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
+        pinClad1.spatialLocator = fuelPins.spatialLocator
+        pinClad1.setType("component", flags=Flags.CLAD)
+        b.add(pinClad1)
+
+        self.assertEqual(b.getNumPins(), 8)
+        self.assertEqual(len(b.getPinLocations()), 1)
+
+        # add another clad, at the same position as the original clad, and ensure the pin count does not change
+        pinClad2 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
+        pinClad2.spatialLocator = fuelPins.spatialLocator
+        pinClad2.setType("component", flags=Flags.CLAD)
+        b.add(pinClad2)
+
+        self.assertEqual(b.getNumPins(), 8)
+        self.assertEqual(len(b.getPinLocations()), 2)
+
+        # add another clad, at the same position as the original clad, and ensure the pin count does not change
+        pinClad3 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
+        pinClad3.spatialLocator = fuelPins.spatialLocator
+        pinClad3.setType("component", flags=Flags.CLAD)
+        b.add(pinClad3)
+
+        self.assertEqual(b.getNumPins(), 8)
+        self.assertEqual(len(b.getPinLocations()), 3)
+
+    def test_getNumPinsNPinTypes(self):
+        """Test that we correctly count pins when there are multiple pin types.
+
+        .. test:: Ensure the correct number of pins is returned if there are multiple pin types.
+            :id: T_ARMI_BLOCK_NPINS3
+            :tests: R_ARMI_BLOCK_NPINS
+        """
+        core = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"))[1].core
+
+        a1 = core.getAssemblyWithStringLocation("002-001")
+        b = a1[2]
+
+        self.assertEqual(b.getNumPins(), 37)
+        self.assertEqual(len(b.getPinLocations()), 37)
 
     def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
@@ -2784,14 +2844,11 @@ nuclide flags:
         # Make sure we get new block-level pin locations or else this test is meaningless
         with patch.object(self.block, "assignPinIndices") as patchAssign:
             self.block.sort()
+
         newPinLocations = self.block.getPinLocations()
-        self.assertNotEqual(
-            newPinLocations,
-            self.allLocations,
-            msg="Test requires new pin locations post-sort.",
-        )
+        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
         # Make sure we called it. Other tests confirm that assignPinIndices is correct.
-        # this makes sure we've called it where we want to call it
+        # This makes sure we've called it where we want to call it
         patchAssign.assert_called_once()
 
 
