@@ -1218,6 +1218,33 @@ class Assembly(composites.Composite):
             if b.spatialGrid is not None:
                 b.assignPinIndices()
 
+    def assignConsistentDetailedNDens(self):
+        r"""Update ``self.p.detailedNDens`` to be consistent with child components.
+
+        Sets the parameter equal to the sum of detailed atoms
+
+        .. math::
+
+            N = \frac{\sum_c\left(N_c * V_c\right)}{\sum_cV_c}
+
+        If no detailed number densities are found, sets parameter to ``None``
+        """
+        totalVolume = 0.0
+        onAssembly = None
+        for c in self.iterComponents():
+            vol = c.getVolume()
+            totalVolume += vol
+            if (onChild := c.p.detailedNDens) is not None:
+                if onAssembly is not None:
+                    onAssembly += onChild * vol
+                else:
+                    onAssembly = onChild * vol
+        if onAssembly is not None:
+            onAssembly /= totalVolume
+            self.p.detailedNDens = onAssembly
+        else:
+            self.p.detailedNDens = None
+
 
 class HexAssembly(Assembly):
     """An assembly that is hexagonal in cross-section."""
