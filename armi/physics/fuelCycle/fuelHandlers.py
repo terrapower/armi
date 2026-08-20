@@ -1116,6 +1116,15 @@ class FuelHandler:
             moved.extend([a1, a2])
         self.pendingRotations = moveData.rotations
 
+        # Sometimes after shuffling, the assembly detailed number density can go out of
+        # sync with the constituent child components. For example, if stationary blocks
+        # are depletable and have detailedNDens, their contribution to their assembly
+        # detailedNDens needs to be adjusted. Instead, we will re-update the parameter
+        # after everything has settled.
+
+        for a in filter(lambda asm: asm.p.detailedNDens is not None, self.r.core):
+            a.assignConsistentDetailedNDens()
+
         return moved
 
     @staticmethod
