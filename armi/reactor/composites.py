@@ -395,24 +395,15 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        This ArmiObject may have lost a reference to its parent. If the parent (a Composite, Assembly, or Block) was also
-        pickled (serialized), then the parent should update the ``.parent`` attribute
-        during its own ``__setstate__``. That means within the context of
-        ``__setstate__`` one should not rely upon ``self.parent``.
+        This ArmiObject may have lost a reference to its parent. If the parent (a Composite, Assembly, or Block) was
+        also pickled (serialized), then the parent should update the ``.parent`` attribute during its own
+        ``__setstate__`` call. That means within the context of ``__setstate__`` one should not rely upon
+        ``self.parent``.
         """
         self.__dict__.update(state)
 
         if self.spatialGrid is not None:
             self.spatialGrid.armiObject = self
-
-            # Spatial locators also get disassociated with their grids when detached;
-            # make sure they get hooked back up.
-            for c in self:
-                c.spatialLocator.associate(self.spatialGrid)
-
-        # now "reattach" children
-        for c in self:
-            c.parent = self
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.name}>"
@@ -2295,6 +2286,22 @@ class Composite(ArmiObject):
         ArmiObject.__init__(self, name)
         self.childrenByLocator = {}
         self._children = []
+
+    def __setstate__(self, state):
+        """Sets the state of this Composite."""
+        ArmiObject.__setstate__(self, state)
+
+        if self.spatialGrid is not None:
+
+            # Spatial locators also get disassociated with their grids when detached;
+            # make sure they get hooked back up.
+            for c in self:
+                c.spatialLocator.associate(self.spatialGrid)
+
+        # now "reattach" children
+        for c in self:
+            c.parent = self
+
 
     def __getitem__(self, index):
         return self._children[index]
