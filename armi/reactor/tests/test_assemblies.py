@@ -1045,6 +1045,32 @@ class TestAssembly(unittest.TestCase):
             bIndex = self.assembly.getBIndexFromZIndex(zIndex * 0.5)
             self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
 
+    def test_assemblyDetailedNDens(self):
+        """Ensure assembly and component number densities are consistent."""
+        # Set Up
+        numDetailedNucs = 100  # arbitrary
+        didUpdate = False
+        # Use random densities, we just need to show consistency
+        rng = np.random.default_rng()
+        for c in self.assembly.iterComponents(Flags.FUEL):
+            c.p.detailedNDens = rng.uniform(low=0, high=1e-2, size=(numDetailedNucs,))
+            didUpdate = True
+        self.assertTrue(didUpdate, msg="No components updated!")
+        self.assembly.p.detailedNDens = None
+        # Now the real test
+        self.assembly.assignConsistentDetailedNDens()
+        self.assertIsNotNone(self.assembly.p.detailedNDens)
+        # Recalculate and compare
+        expected = np.zeros(numDetailedNucs)
+        totalVol = 0
+        for c in self.assembly.iterComponents():
+            vol = c.getVolume()
+            totalVol += vol
+            if c.p.detailedNDens is not None:
+                expected += c.p.detailedNDens * vol
+        np.testing.assert_allclose(self.assembly.p.detailedNDens, expected / totalVol)
+
+
 
 class TestAssemblyInReactor(unittest.TestCase):
     def setUp(self):
