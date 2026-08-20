@@ -1070,6 +1070,15 @@ class TestAssembly(unittest.TestCase):
                 expected += c.p.detailedNDens * vol
         np.testing.assert_allclose(self.assembly.p.detailedNDens, expected / totalVol)
 
+    def test_assemblyDetailedNDensNoOperation(self):
+        """If the assembly has no children with detailed number density, nothing happens."""
+        # Arbitrary non-None initial data
+        self.assembly.p.detailedNDens = np.random.default_rng().uniform(low=0, high=1e-2, size=(73,))
+        for c in self.assembly.iterComponents():
+            c.p.detailedNDens = None
+
+        self.assembly.assignConsistentDetailedNDens()
+        self.assertIsNone(self.assembly.p.detailedNDens)
 
 
 class TestAssemblyInReactor(unittest.TestCase):
