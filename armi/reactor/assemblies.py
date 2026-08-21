@@ -1245,6 +1245,30 @@ class Assembly(composites.Composite):
         else:
             self.p.detailedNDens = None
 
+    def setPitch(self, pitchInCm: float):
+        """Adjust the assembly to alight with a uniform pitch.
+
+        Parameters
+        ----------
+        pitchInCm
+            Requested pitch of this assembly. Means different things for
+           different assemblies (e.g., hex vs. cartesian). But the child blocks
+           also know what to do with this.
+
+        See Also
+        --------
+        :meth:`armi.reactor.cores.Core.setPitchUniform`
+        :meth:`armi.reactor.blocks.Block.setPitch`
+
+        :meth:`assignConsistentDetailedNDens` will be called if ``detailedNDens`` is set
+        because the child volumes may have been adjusted
+        """
+        for block in self:
+            block.setPitch(pitchInCm)
+
+        if self.p.detailedNDens is not None:
+            self.assignConsistentDetailedNDens()
+
 
 class HexAssembly(Assembly):
     """An assembly that is hexagonal in cross-section."""
