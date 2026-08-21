@@ -447,12 +447,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError
 
-    def clearCache(self):
-        """Clear the cache so all new values are recomputed."""
-        self.cached = {}
-        for child in self:
-            child.clearCache()
-
     def _getCached(self, name):
         """
         Obtain a value from the cache.
@@ -2376,6 +2370,12 @@ class Composite(ArmiObject):
             raise RuntimeError(f"Cannot insert {obj} because it has already been added to {self}.")
         obj.parent = self
         self._children.insert(index, obj)
+
+    def clearCache(self):
+        """Clear the cache so all new values are recomputed."""
+        self.cached = {}
+        for child in self:
+            child.clearCache()
 
     def removeAll(self):
         """Remove all children."""
