@@ -739,14 +739,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
-        .. impl:: Return mass of composite.
-            :id: I_ARMI_CMP_GET_MASS
-            :implements: R_ARMI_CMP_GET_MASS
-
-            This method allows for the querying of the mass of a Composite.
-            If the ``nuclideNames`` argument is included, it will filter for the mass
-            of those nuclide names and provide the sum of the mass of those nuclides.
-
         Parameters
         ----------
         nuclideNames
@@ -758,7 +750,7 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
+        raise NotImplementedError()
 
     def getMassFrac(self, nucName):
         """
@@ -2383,6 +2375,30 @@ class Composite(ArmiObject):
         fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
         return fracs
 
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
+        """
+        Determine the mass in grams of nuclide(s) and/or elements in this object.
+
+        .. impl:: Return mass of composite.
+            :id: I_ARMI_CMP_GET_MASS
+            :implements: R_ARMI_CMP_GET_MASS
+
+            This method allows for the querying of the mass of a Composite.
+            If the ``nuclideNames`` argument is included, it will filter for the mass
+            of those nuclide names and provide the sum of the mass of those nuclides.
+
+        Parameters
+        ----------
+        nuclideNames
+            The nuclide/element specifier to get the mass of in the object.
+            If omitted, total mass is returned.
+
+        Returns
+        -------
+        mass : float
+            The mass in grams.
+        """
+        return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
 
     def removeAll(self):
         """Remove all children."""
