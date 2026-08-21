@@ -425,10 +425,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return True
 
-    def __add__(self, other):
-        """Return a list of all children in this and another object."""
-        return self.getChildren() + other.getChildren()
-
     @property
     def nuclideBases(self):
         from armi.reactor.reactors import Reactor
@@ -2308,6 +2304,10 @@ class Composite(ArmiObject):
 
     def __setitem__(self, index, obj):
         raise NotImplementedError("Unsafe to insert elements directly")
+
+    def __add__(self, other):
+        """Return a list of all children in this and another object."""
+        return self.getChildren() + other.getChildren()
 
     def __iter__(self):
         return iter(self._children)
