@@ -711,57 +711,10 @@ class ArmiObject(metaclass=CompositeModelType):
         self.p.type = typ
 
     def getVolume(self):
-        return sum(child.getVolume() for child in self)
+        raise NotImplementedError()
 
     def getArea(self, cold=False):
-        return sum(child.getArea(cold) for child in self)
-
-    def _updateVolume(self):
-        """Recompute and store volume."""
-        children = self.getChildren()
-        # Derived shapes must come last so we temporarily change the order if we
-        # have one.
-        from armi.reactor.components import DerivedShape
-
-        for child in children[:]:
-            if isinstance(child, DerivedShape):
-                children.remove(child)
-                children.append(child)
-        for child in children:
-            child._updateVolume()
-
-    def getVolumeFractions(self):
-        """
-        Return volume fractions of each child.
-
-        Sets volume or area of missing piece (like coolant) if it exists.  Caching would
-        be nice here.
-
-        Returns
-        -------
-        fracs : list
-            list of (component, volFrac) tuples
-
-        See Also
-        --------
-        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
-
-        Notes
-        -----
-        void areas can be negative in gaps between fuel/clad/liner(s), but these
-        negative areas are intended to account for overlapping positive areas to insure
-        the total area of components inside the clad is accurate. See
-        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
-        """
-        children = self.getChildren()
-        numerator = [c.getVolume() for c in children]
-        denom = sum(numerator)
-        if denom == 0.0:
-            numerator = [c.getArea() for c in children]
-            denom = sum(numerator)
-
-        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
-        return fracs
+        raise NotImplementedError()
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
@@ -2376,6 +2329,60 @@ class Composite(ArmiObject):
         self.cached = {}
         for child in self:
             child.clearCache()
+
+    def getVolume(self):
+        return sum(child.getVolume() for child in self)
+
+    def getArea(self, cold=False):
+        return sum(child.getArea(cold) for child in self)
+
+    def _updateVolume(self):
+        """Recompute and store volume."""
+        children = self.getChildren()
+        # Derived shapes must come last so we temporarily change the order if we
+        # have one.
+        from armi.reactor.components import DerivedShape
+
+        for child in children[:]:
+            if isinstance(child, DerivedShape):
+                children.remove(child)
+                children.append(child)
+        for child in children:
+            child._updateVolume()
+
+    def getVolumeFractions(self):
+        """
+        Return volume fractions of each child.
+
+        Sets volume or area of missing piece (like coolant) if it exists.  Caching would
+        be nice here.
+
+        Returns
+        -------
+        fracs : list
+            list of (component, volFrac) tuples
+
+        See Also
+        --------
+        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
+
+        Notes
+        -----
+        void areas can be negative in gaps between fuel/clad/liner(s), but these
+        negative areas are intended to account for overlapping positive areas to insure
+        the total area of components inside the clad is accurate. See
+        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
+        """
+        children = self.getChildren()
+        numerator = [c.getVolume() for c in children]
+        denom = sum(numerator)
+        if denom == 0.0:
+            numerator = [c.getArea() for c in children]
+            denom = sum(numerator)
+
+        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
+        return fracs
+
 
     def removeAll(self):
         """Remove all children."""
