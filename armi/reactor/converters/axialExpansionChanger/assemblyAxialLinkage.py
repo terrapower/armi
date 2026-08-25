@@ -257,16 +257,16 @@ class AssemblyAxialLinkage:
         lstLinkedC = AxialLink(lowerC, upperC)
         self.linkedComponents[c] = lstLinkedC
 
-        if self.linkedBlocks[b].lower is None and lstLinkedC.lower is None:
-            runLog.debug(
-                f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
-                single=True,
-            )
-        if self.linkedBlocks[b].upper is None and lstLinkedC.upper is None:
-            runLog.debug(
-                f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
-                single=True,
-            )
+        # if self.linkedBlocks[b].lower is None and lstLinkedC.lower is None:
+        #     runLog.debug(
+        #         f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
+        #         single=True,
+        #     )
+        # if self.linkedBlocks[b].upper is None and lstLinkedC.upper is None:
+        #     runLog.debug(
+        #         f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
+        #         single=True,
+        #     )
 
     @staticmethod
     def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:

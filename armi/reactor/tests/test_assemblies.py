@@ -479,6 +479,27 @@ class TestAssembly(unittest.TestCase):
         with self.assertRaises(TypeError):
             a.add(blocks.CartesianBlock("Test Cart Block"))
 
+    def test_setBlockStack(self):
+        a = buildEmptyHexAssembly(1, 1)
+
+        # successfully add some Blocks to an Assembly
+        blockStack = a.getBlocks()
+        nBlocks = len(blockStack)
+        for n in range(3):
+            self.assertEqual(len(a), n)
+            b = blocks.HexBlock("TestBlock")
+            blockStack.append(b)
+
+        a.setBlockStack(blockStack)
+        self.assertEqual(len(a), nBlocks + n)
+        for b in blockStack:
+            self.assertIn(b, a)
+            self.assertEqual(b.parent, a)
+
+        with self.assertRaises(TypeError):
+            blockStack.append(blocks.CartesianBlock("Test Cart Block"))
+            a.setBlockStack(blockStack)
+
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
         i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)

@@ -201,6 +201,21 @@ class Assembly(composites.Composite):
         self.reestablishBlockOrder()
         self.calculateZCoords()
 
+    def setBlockStack(self, blockStack: list[blocks.Block]):
+        """Re-initialize this assembly based on a provided stack of blocks."""
+        # replace grid with one that has the right number of locations
+        self.removeAll()
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(blockStack))
+        self.spatialGrid.armiObject = self
+        for i, obj in enumerate(blockStack):
+            self._checkPotentialChild(obj, "add")
+            composites.Composite.add(self, obj)
+            obj.spatialLocator = self.spatialGrid[0, 0, i]
+
+        # more work is needed, make a new mesh
+        self.reestablishBlockOrder()
+        self.calculateZCoords()
+
     def insert(self, index, obj):
         """Insert an object at a given index position with the assembly."""
         self._checkPotentialChild(obj, "insert")
@@ -375,9 +390,7 @@ class Assembly(composites.Composite):
 
         self.removeAll()
         self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
-        for b in newBlockStack:
-            self.add(b)
-        self.reestablishBlockOrder()
+        self.setBlockStack(newBlockStack)
 
     def getAxialMesh(self, centers=False, zeroAtFuel=False):
         """
