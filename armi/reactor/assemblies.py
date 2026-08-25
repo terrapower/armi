@@ -209,12 +209,9 @@ class Assembly(composites.Composite):
             :id: I_ARMI_ASSEM_BLOCKS_2
             :implements: R_ARMI_ASSEM_BLOCKS
 
-            Builds an assembly from a stack of Blocks. The spatialLocator
-            of the Assembly is updated. In ``reestablishBlockOrder``, the
-            Assembly spatialGrid is reinitialized and Block-wise
-            spatialLocator and name objects are updated. The axial mesh
-            and other Block geometry parameters are updated in
-            ``calculateZCoords``.
+            Builds an Assembly from a stack of Blocks. The spatialLocator of the Assembly is updated. In
+            ``reestablishBlockOrder``, the Assembly spatialGrid is reinitialized and Block-wise spatialLocator and name
+            objects are updated. The axial mesh and other Block geometry parameters are updated in ``calculateZCoords``.
         """
         # replace grid with one that has the right number of locations
         self.removeAll()
