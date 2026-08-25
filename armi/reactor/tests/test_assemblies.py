@@ -482,16 +482,15 @@ class TestAssembly(unittest.TestCase):
     def test_setBlockStack(self):
         a = buildEmptyHexAssembly(1, 1)
 
-        # successfully add some Blocks to an Assembly
-        blockStack = a.getBlocks()
-        nBlocks = len(blockStack)
-        for n in range(3):
-            self.assertEqual(len(a), n)
+        # successfully add a stack of Blocks to an Assembly
+        blockStack = []
+        nBlocks = 3
+        for _n in range(nBlocks):
             b = blocks.HexBlock("TestBlock")
             blockStack.append(b)
 
         a.setBlockStack(blockStack)
-        self.assertEqual(len(a), nBlocks + n)
+        self.assertEqual(len(a), nBlocks)
         for b in blockStack:
             self.assertIn(b, a)
             self.assertEqual(b.parent, a)
