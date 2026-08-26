@@ -43,14 +43,15 @@ from armi.utils import densityTools, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
+# flags used to ID a pin. (The order here matters to unit tests.)
 PIN_COMPONENTS = [
-    Flags.PIN,
-    Flags.CLAD,
-    Flags.FUEL,
     Flags.CONTROL,
     Flags.PLENUM,
-    Flags.WIRE,
     Flags.SHIELD,
+    Flags.FUEL,
+    Flags.CLAD,
+    Flags.PIN,
+    Flags.WIRE,
 ]
 
 _PitchDefiningComponent = Optional[Tuple[Type[components.Component], ...]]

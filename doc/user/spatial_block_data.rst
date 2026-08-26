@@ -232,13 +232,13 @@ so the tooling in ARMI has necessarily become more complex to help find pins in 
 Pins in an ARMI reactor data model are identified as circular Components (inside a Block) with at least one of the
 following flags:
 
-- ``Flags.PIN``
-- ``Flags.CLAD``
-- ``Flags.FUEL``
 - ``Flags.CONTROL``
 - ``Flags.PLENUM``
-- ``Flags.WIRE``
 - ``Flags.SHIELD``
+- ``Flags.FUEL``
+- ``Flags.CLAD``
+- ``Flags.PIN``
+- ``Flags.WIRE``
 
 But in ARMI a Component can have a multiplicity. So if, inside some Block, there is a single circular Component marked
 with the flags ``CLAD`` ``FUEL`` and a multiplicity of 217, then there are 217 pins in that Block. The exact position of
