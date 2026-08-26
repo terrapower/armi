@@ -1026,19 +1026,15 @@ class Block(composites.Composite):
         -------
         list[grids.IndexLocation]
             Integer locations where pins can be found in the block.
-
-        Notes
-        -----
-        Only components with ``Flags.CLAD`` are considered to define a pin's location.
         """
         numPinsByType = self.__getPinLikeCounts()
 
         # Find which locations of the component type/flag yields the highest pin count
-        maxI = -999
+        maxPins = float("-inf")
         pins = []
-        for i, comps in numPinsByType:
-            if i >= maxI:
-                maxI = i
+        for pinsThisComp, comps in numPinsByType:
+            if pinsThisComp >= maxPins:
+                maxPins = pinsThisComp
                 pins = comps
 
         # handle MultiIndexLocations
@@ -1055,8 +1051,6 @@ class Block(composites.Composite):
     def getPinCoordinates(self) -> np.ndarray:
         """
         Compute the local centroid coordinates of any pins in this block.
-
-        The pins must have a CLAD-flagged component for this to work.
 
         Returns
         -------
