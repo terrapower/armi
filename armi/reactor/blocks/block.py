@@ -998,18 +998,14 @@ class Block(composites.Composite):
         for comps in compsByType:
             compsByLocation = []
             for c in comps:
-                index = -1
-                for i, cByLoc in enumerate(compsByLocation):
+                for cByLoc in compsByLocation:
                     if c.spatialLocator == cByLoc[0].spatialLocator:
-                        index = i
+                        # we have seen this location before
+                        cByLoc.append(c)
                         break
-
-                if index < 0:
-                    # this spatialLocator was NOT seen before
-                    compsByLocation.append([c])
                 else:
-                    # this spatialLocator was seen before, group with the others
-                    compsByLocation[index].append(c)
+                    # we have not seen this location before
+                    compsByLocation.append([c])
 
             # Count pins. If multiple components are at the same location, take the one that has the most pins.
             numPins = [max([int(c.getDimension("mult")) for c in csByLocs]) for csByLocs in compsByLocation]
