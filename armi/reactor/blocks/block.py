@@ -976,7 +976,7 @@ class Block(composites.Composite):
         sortedComponents = sortedComponents[:componentIndex]
         return sortedComponents
 
-    def __getPinLikeCounts(self) -> list[Tuple[int, list[grids.IndexLocation]]]:
+    def __getPinLikeCounts(self) -> list[Tuple[int, list[components.Component]]]:
         """Helper method to find components that look like pins, grouped by PIN_COMPONENT flags.
 
         This method is not designed to be used by downstream, but is meant to help ``getPinLocations`` and
@@ -984,7 +984,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        list(tuple(int, list(IndexLocation)))
+        list(tuple(int, list(components.Component)))
             A list of tuples: (number of pins, list of components at the same spatialLocator)
         """
         # find all the components in this block that match one of the flags in PIN_COMPONENTS
@@ -997,9 +997,8 @@ class Block(composites.Composite):
         numPinsByType = []
         for comps in compsByType:
             compsByLocation = []
-            while len(comps):
-                c = comps.pop()
-                index = -9
+            for c in comps:
+                index = -1
                 for i, cByLoc in enumerate(compsByLocation):
                     if c.spatialLocator == cByLoc[0].spatialLocator:
                         index = i
