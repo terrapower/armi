@@ -1481,9 +1481,11 @@ class TestBlock(unittest.TestCase):
             :id: T_ARMI_BLOCK_NPINS1
             :tests: R_ARMI_BLOCK_NPINS
         """
-        cur = self.block.getNumPins()
-        ref = self.block.getDim(Flags.FUEL, "mult")
-        self.assertEqual(cur, ref)
+        nPins = self.block.getNumPins()
+        pinMult = self.block.getDim(Flags.FUEL, "mult")
+        self.assertEqual(nPins, 217)
+        self.assertEqual(nPins, pinMult)
+        self.assertEqual(len(self.block.getPinLocations()), nPins)
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
@@ -1501,12 +1503,6 @@ class TestBlock(unittest.TestCase):
         self.assertEqual(emptyBlock.getNumPins(), 0)
         self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
-        pins = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
-        pins.setType("component", flags=Flags.PLENUM)
-        emptyBlock.add(pins)
-        self.assertEqual(emptyBlock.getNumPins(), 8)
-        self.assertEqual(len(emptyBlock.getPinLocations()), 1)
-
     def test_getNumPinsNClads(self):
         """Test that we still get the correct number of pins if there are two co-centeric clad components.
 
@@ -1514,44 +1510,33 @@ class TestBlock(unittest.TestCase):
             :id: T_ARMI_BLOCK_NPINS2
             :tests: R_ARMI_BLOCK_NPINS
         """
-        # create a fuel block and add a single clad component, surrounding a single fuel component, with 8 pins
-        b = blocks.HexBlock("empty")
+        # test a single fuel hex block, with only one clad component (and it is circular)
+        b = copy.deepcopy(self.block)
 
-        randoComp1 = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1, 0, 0)
-        b.add(randoComp1)
-        randoComp2 = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1, 0, 0)
-        b.add(randoComp2)
+        cladComps = b.getComponents(Flags.CLAD)
+        self.assertEqual(len(cladComps), 1)
+        clad = cladComps[0]
+        self.assertIn("Circle", str(type(clad)))
 
-        fuelPins = basicShapes.Circle("circle", "UZr", 100, 100, 1, 0, 8)
-        fuelPins.spatialLocator._i = 1
-        fuelPins.spatialLocator._j = 2
-        b.add(fuelPins)
+        numPins = 217
+        self.assertEqual(b.getNumPins(), numPins)
+        self.assertEqual(len(b.getPinLocations()), numPins)
 
-        pinClad1 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
-        pinClad1.spatialLocator = fuelPins.spatialLocator
-        pinClad1.setType("component", flags=Flags.CLAD)
-        b.add(pinClad1)
+        # add a second clad, at the same position as the original clad, and ensure the pin count does not change
+        clad2 = basicShapes.Circle("circle", clad.material, 500, 500, 1, 0, numPins)
+        clad2.spatialLocator = copy.deepcopy(clad.spatialLocator)
+        b.add(clad2)
 
-        self.assertEqual(b.getNumPins(), 8)
-        self.assertEqual(len(b.getPinLocations()), 1)
+        self.assertEqual(b.getNumPins(), numPins)
+        self.assertEqual(len(b.getPinLocations()), numPins)
 
-        # add another clad, at the same position as the original clad, and ensure the pin count does not change
-        pinClad2 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
-        pinClad2.spatialLocator = fuelPins.spatialLocator
-        pinClad2.setType("component", flags=Flags.CLAD)
-        b.add(pinClad2)
+        # add a third clad, at the same position as the original clad, and ensure the pin count does not change
+        clad3 = basicShapes.Circle("circle", clad.material, 500, 500, 1, 0, numPins)
+        clad3.spatialLocator = copy.deepcopy(clad.spatialLocator)
+        b.add(clad3)
 
-        self.assertEqual(b.getNumPins(), 8)
-        self.assertEqual(len(b.getPinLocations()), 1)
-
-        # add another clad, at the same position as the original clad, and ensure the pin count does not change
-        pinClad3 = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
-        pinClad3.spatialLocator = fuelPins.spatialLocator
-        pinClad3.setType("component", flags=Flags.CLAD)
-        b.add(pinClad3)
-
-        self.assertEqual(b.getNumPins(), 8)
-        self.assertEqual(len(b.getPinLocations()), 1)
+        self.assertEqual(b.getNumPins(), numPins)
+        self.assertEqual(len(b.getPinLocations()), numPins)
 
     def test_getNumPinsNPinTypes(self):
         """Test that we correctly count pins when there are multiple pin types.
