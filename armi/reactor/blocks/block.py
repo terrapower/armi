@@ -44,13 +44,13 @@ from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
 PIN_COMPONENTS = [
+    Flags.PIN,
+    Flags.CLAD,
+    Flags.FUEL,
     Flags.CONTROL,
     Flags.PLENUM,
-    Flags.SHIELD,
-    Flags.FUEL,
-    Flags.CLAD,
-    Flags.PIN,
     Flags.WIRE,
+    Flags.SHIELD,
 ]
 
 _PitchDefiningComponent = Optional[Tuple[Type[components.Component], ...]]

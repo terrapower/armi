@@ -1,5 +1,5 @@
 ******************
-Spatial block data
+Spatial Block Data
 ******************
 
 Many parameters assigned on a ``Block`` are scalar quantities that are useful for visualization and
@@ -159,15 +159,14 @@ will be assigned locations on the lattice grid.
 Interacting with spatial data
 =============================
 
-This section will focus on accessing locations of components in the block, locations of specifically
-pins, and examples of some pin data that may be assigned to a block's parameter set.
+This section will focus on accessing locations of components in a Block.
 
 Component locations
 -------------------
 
-Components that live on a spatial grid have a ``spatialLocator`` attribute to help indicate where
-that component exists in space. If we grab the fuel component from the UO2 block in the
-:ref:`ANL AFCI 177 example <walkthrough-inputs>` we can see where it exists in the block::
+Components that live on a spatial grid have a ``spatialLocator`` attribute to indicate where that component exists in
+space. If we grab the fuel component from the UO2 block in the :ref:`ANL AFCI 177 example <walkthrough-inputs>` we can
+see where it exists in a Block::
 
     >>> import armi
     >>> armi.configure()
@@ -194,8 +193,8 @@ that component exists in space. If we grab the fuel component from the UO2 block
     >>> fuel.spatialLocator
     <MultiIndexLocation with 271 locations>
 
-This :class:`~armi.reactor.grids.MultiIndexLocation` is a way to indicate this Component exists at multiple
-sites. Each item in this locator is one location on the underlying grid where we could find this component::
+This :class:`~armi.reactor.grids.MultiIndexLocation` is a way to indicate this Component exists at multiple sites. Each
+item in this locator is one location on the underlying grid where we could find this Component::
 
     >>> fuel.spatialLocator[0]
     <IndexLocation @ (0,0,0)>
@@ -205,36 +204,72 @@ sites. Each item in this locator is one location on the underlying grid where we
     >>> coordsFromFuel.shape
     (271, 3)
 
-We get a ``(271, 3)`` array because we have 271 of these fuel components in the block, and each row contains one
-(x, y, z) location for that component. We can do this for every component, though some may only exist at a single
-site on the grid and be assigned a :class:`~armi.reactor.grids.CoordinateLocation` spatial locator instead. The API
-is mostly the same, but attempts to signify such an object does not live on the grid e.g., duct or derived shape
-objects::
+We get a ``(271, 3)`` array because we have 271 of these fuel components in the Block, and each row contains one
+``(x, y, z)`` location for that component. We can do this for every Component, though some may only exist at a single
+site on the grid and be assigned a :class:`~armi.reactor.grids.CoordinateLocation` spatial locator instead. The API is
+mostly the same, but attempts to signify such an object does not live on the grid e.g., duct or derived shape objects::
 
     >>> duct = fuelBlock.getChildrenWithFlags(Flags.DUCT)[0]
     >>> duct.spatialLocator
     <CoordinateLocation @ (0.0,0.0,0.0)>
 
+
+Pins
+====
+
+In nuclear reactor modeling, a “pin” is a slender, metal-clad rod. A "fuel pin" is the most common type, but people may
+talk about "control pins", "absorber pins", "structural/guide pins", and so on. In "pin-type" reactors, these pins are
+collected into groups inside a physical object called an assembly. ARMI is mostly designed for modeling such reactors.
+
+Finding Pins in an ARMI Model
+-----------------------------
+
+Originally, ARMI was packaged with a ``Flags`` system that include the flag ``PIN``. The assumption was that, in
+blueprints, all pins in an Assembly would be marked with the ``PIN`` flag. Hypothetically, this would yield the most
+optimally simple path to identifying all the pins in a Core, Assembly, or Block. However, in pratice this was not done,
+so the tooling in ARMI has necessarily become more complex to help find pins in assemblies.
+
+Pins in an ARMI reactor data model are identified as circular Components (inside a Block) with at least one of the
+following flags:
+
+- ``Flags.PIN``
+- ``Flags.CLAD``
+- ``Flags.FUEL``
+- ``Flags.CONTROL``
+- ``Flags.PLENUM``
+- ``Flags.WIRE``
+- ``Flags.SHIELD``
+
+But in ARMI a Component can have a multiplicity. So if, inside some Block, there is a single circular Component marked
+with the flags ``CLAD`` ``FUEL`` and a multiplicity of 217, then there are 217 pins in that Block. The exact position of
+those pins should be defined on a sub-Block-level lattice.
+
+At the ``Block`` level, there are a few important pin-related methods to know:
+
+- ``Block.getNumPins()`` - return the number of pins in a given Block
+- ``Block.getPinLocations()`` - return the locations of each pin in a given Block
+- ``Block.getPinCoordinates()`` - return the coordinates of the center of each pin in a given Block
+
+These method all share the same underlying logic for identifying pins within a Block, which should help them maintain a
+a high level of agreement.
+
+
 Pin locations
 -------------
 
-Everything in the before section works for finding center points of pins in your assembly. But often
-times you have multiple components that may exist at the same lattice site (e.g., fuel, gap, clad,
-maybe a wire?). Or you may have multiple cladded-things that count as pins and but exist in multiple
-components. In some circumstances, :meth:`armi.reactor.blocks.HexBlock.getPinCoordinates` may be
-useful to find the unique centroids of pins in a block. Using our example above, we get a very
-similar set of coordinates when comparing to the coordinates of the fuel pin::
+The "Component Locations" section above works for finding center points of pins in an Assembly. But often times you have multiple components that may exist at the same lattice site (e.g., fuel, gap, clad). Or you may have multiple cladded-
+things that count as pins and but exist in multiple components. Using our example above, we get a very similar set of
+coordinates when comparing to the coordinates of the fuel pin::
 
     >>> coordsFromPin = fuel.spatialLocator.getLocalCoordinates()
     >>> coordsFromBlock = fuelBlock.getPinCoordinates()
     >>> (coordsFromPin == coordsFromBlock).all()
     True
 
-In this specific case :meth:`~armi.reactor.blocks.HexBlock.getPinCoordinates` looks at components
-with ``Flags.CLAD`` and obtains their locations, and we have one cladding component and it exists at
-each of the 271 sites we care about. However, if you have multiple cladding components per lattice
-site, such as in the :ref:`C5G7 example <walkthrough-lwr>`, you may see an incorrect number of
-locations returned.
+In this specific case :meth:`~armi.reactor.blocks.HexBlock.getPinCoordinates` looks at components with the list of flags
+from the previous section and obtains their locations. There is one cladding component and it exists at each of the 271
+sites we care about. This will also work if you have multiple clad components at each lattice site, as in the
+:ref:`C5G7 example <walkthrough-lwr>`.
 
 .. note::
 
@@ -247,18 +282,17 @@ locations returned.
 Pin parameter data
 ------------------
 
-The ARMI framework defines a few parameters that live on the block, but define data for each of the
-child pin components. Two examples are ``Block.p.linPowByPin`` and ``Block.p.pinMgFluxes``. These
-parameters are structured and related to the output of ``getPinCoordinates`` such that
+The ARMI framework defines a few parameters that live on the Block, but define data for each of the child pin
+components. Two examples are ``Block.p.linPowByPin`` and ``Block.p.pinMgFluxes``. These parameters are structured and
+related to the output of ``getPinCoordinates`` such that
 
 1. Pin ``i`` can be found at ``Block.getPinCoordinates()[i]``.
-2. Parameter data for pin ``i`` can be found at location ``i`` in the parameter array, e.g.,
-   ``Block.p.linPowByPin[i]``.
+2. Parameter data for pin ``i`` can be found at location ``i`` in the parameter array, e.g., ``Block.p.linPowByPin[i]``.
 
-Parameters like ``Block.p.pinMgFluxes`` may be higher dimensional, storing mutli-group flux for each
-pin. In this case, the parameter data array has shape ``(nPins, nGroups)`` such that
-``Block.p.pinMgFluxes[i, g]`` has the group ``g`` flux in pin ``i``, found at
-``Block.getPinCoordinates()[i]``.
+Parameters like ``Block.p.pinMgFluxes`` may be higher dimensional, storing mutli-group flux for each pin. In this case,
+the parameter data array has shape ``(nPins, nGroups)`` such that ``Block.p.pinMgFluxes[i, g]`` has the group ``g`` flux
+in pin ``i``, found at ``Block.getPinCoordinates()[i]``.
+
 
 Block rotation
 ==============
