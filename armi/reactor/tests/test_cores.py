@@ -180,5 +180,10 @@ class TestHexCore(unittest.TestCase):
 
     def test_genChildByLocationLookupTable(self):
         self.core._genChildByLocationLookupTable()
+
         numAssems = len(self.core.getAssemblies())
         self.assertEqual(len(self.core.childrenByLocator), numAssems)
+
+        coreChildren = self.core.childrenByLocator.values()
+        for a in self.core.getAssemblies():
+            self.assertIn(a, coreChildren)
