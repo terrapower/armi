@@ -131,10 +131,13 @@ class RedistributeMass:
         # calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
         nucs = self._getAllNucs(self.toComp.getNuclides(), self.fromComp.getNuclides())
+        toVolume = self.toCompVolume
+        fromVolume = self.fromCompVolume
+        newVolume = toVolume + fromVolume
         for nuc in nucs:
-            massByNucFrom = densityTools.getMassInGrams(nuc, self.fromCompVolume, self.fromComp.getNumberDensity(nuc))
-            massByNucTo = densityTools.getMassInGrams(nuc, self.toCompVolume, self.toComp.getNumberDensity(nuc))
-            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, self.newVolume)
+            massByNucFrom = densityTools.getMassInGrams(nuc, fromVolume, self.fromComp.getNumberDensity(nuc))
+            massByNucTo = densityTools.getMassInGrams(nuc, toVolume, self.toComp.getNumberDensity(nuc))
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
             self.massFrom += massByNucFrom
             self.massTo += massByNucTo
 

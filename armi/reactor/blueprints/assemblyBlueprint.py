@@ -203,9 +203,11 @@ class AssemblyBlueprint(yamlize.Object):
         a.p.AziMesh = aziMeshPoints
 
         # Loop a second time because we needed all the blocks before choosing the assembly class.
+        blockStack = []
         for axialIndex, b in enumerate(blocks):
             b.name = b.makeName(a.p.assemNum, axialIndex)
-            a.add(b)
+            blockStack.append(b)
+        a.setBlockStack(blockStack)
 
         # Assign values for the parameters if they are defined on the blueprints
         for paramDef in a.p.paramDefs.inCategory(parameters.Category.assignInBlueprints):
