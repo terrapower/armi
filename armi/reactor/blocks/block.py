@@ -43,7 +43,7 @@ from armi.utils import densityTools, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
-# flags used to ID a pin. (The order here matters to unit tests.)
+# Flags used to ID a pin. (The order matters to unit tests.)
 PIN_COMPONENTS = [
     Flags.CONTROL,
     Flags.PLENUM,
