@@ -89,12 +89,24 @@ class AbstractMaterialTest:
         self.assertEqual(val, "Noether")
 
 
-class TestMaterialConstruction(unittest.TestCase):
+class TestMaterialBasics(unittest.TestCase):
     def test_matInit(self):
         """Make sure all materials can be instantiated without error."""
         for matClass in materials.iterAllMaterialClassesInNamespace(materials):
             m = matClass()
             self.assertIsInstance(m, materials.Material)
+
+    def test_getProperty(self):
+        mat = materials.Cs()
+
+        # use Material.getProperty on something simple; that has a direction function in the Material class
+        self.assertAlmostEqual(mat.density(Tc=500), 1.843)
+        self.assertAlmostEqual(mat.getProperty("density", Tc=500), 1.843)
+        self.assertAlmostEqual(mat.getProperty("density", Tk=units.getTk(Tc=500)), 1.843)
+
+        # use Material.getProperty on a matProps-only property name
+        self.assertAlmostEqual(mat.getProperty("T_melt", Tc=500), 111)
+        self.assertAlmostEqual(mat.getProperty("T_melt", Tk=600), 222)
 
 
 class TestMaterialFinding(unittest.TestCase):
