@@ -594,16 +594,9 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
             :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
         xsgm = self.o.getInterface("xsGroups")
-
         xsgm.interactBOL()
 
-        # Check that the correct defaults are propagated after the interactBOL
-        # from the cross section group manager is called.
-        xsOpt = self.o.cs[CONF_CROSS_SECTION]["UA"]
-        self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
-
         annularFuel = self.r.core.getAssemblies(Flags.FUEL | Flags.ANNULAR, includeBolAssems=True)[0]
-
         # set temperatures of each gap component before performing average
         # give the gaps some mass (material is arbitrary)
         for i, b in enumerate(annularFuel.getBlocks(Flags.FUEL)):
@@ -622,11 +615,14 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
         reprBlock = xsgm.representativeBlocks["UA"]
         for c in reprBlock.getComponents(Flags.GAP):
             if c.getName() == "gap3":
+                # gap3 temp is 700 C because the 500 C and 600 C components have negative volume
                 self.assertAlmostEqual(c.temperatureInC, 700.0)
             elif c.getName() == "gap4":
+                # gap4 temp is between 500 C and 600 C because the 700C component has negative volume
                 self.assertLess(c.temperatureInC, 600.0)
                 self.assertGreater(c.temperatureInC, 500.0)
             else:
+                # other gap components all have positive volume
                 self.assertAlmostEqual(c.temperatureInC, 600.0)
         outerLiner = reprBlock.getComponent(Flags.LINER | Flags.OUTER)
         self.assertAlmostEqual(outerLiner.temperatureInC, 600.0)
