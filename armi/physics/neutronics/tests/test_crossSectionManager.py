@@ -593,7 +593,6 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
             :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS2
             :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
-
         xsgm = self.o.getInterface("xsGroups")
 
         xsgm.interactBOL()
