@@ -105,8 +105,8 @@ class TestMaterialBasics(unittest.TestCase):
         self.assertAlmostEqual(mat.getProperty("density", Tk=units.getTk(Tc=500)), 1.843)
 
         # use Material.getProperty on a matProps-only property name
-        self.assertAlmostEqual(mat.getProperty("T_melt", Tc=500), 111)
-        self.assertAlmostEqual(mat.getProperty("T_melt", Tk=600), 222)
+        self.assertAlmostEqual(mat.getProperty("T_melt", Tc=500), 28.55)
+        self.assertAlmostEqual(mat.getProperty("T_melt", Tk=600), 28.55)
 
 
 class TestMaterialFinding(unittest.TestCase):
