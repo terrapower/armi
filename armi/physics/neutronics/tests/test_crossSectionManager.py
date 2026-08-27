@@ -402,6 +402,7 @@ class TestBlockCollCompAvg(unittest.TestCase):
             ("Assemblies not in the core should still have XS groups, see _getMissingBlueprintBlocks()"),
         )
 
+
 class TestBlockCollCompAvg1DCyl(unittest.TestCase):
     """Test Block collection component averages for 1D cylinder."""
 
@@ -592,7 +593,7 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
             :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS2
             :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
-        
+
         xsgm = self.o.getInterface("xsGroups")
 
         xsgm.interactBOL()
