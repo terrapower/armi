@@ -224,13 +224,9 @@ collected into groups inside a physical object called an assembly. ARMI is mostl
 Finding Pins in an ARMI Model
 -----------------------------
 
-Originally, ARMI was packaged with a ``Flags`` system that include the flag ``PIN``. The assumption was that, in
-blueprints, all pins in an Assembly would be marked with the ``PIN`` flag. Hypothetically, this would yield the most
-optimally simple path to identifying all the pins in a Core, Assembly, or Block. However, in pratice this was not done,
-so the tooling in ARMI has necessarily become more complex to help find pins in assemblies.
-
-Pins in an ARMI reactor data model are identified as circular Components (inside a Block) with at least one of the
-following flags:
+ARMI comes packaged with a ``Flags`` system that include the flag ``PIN``. However, often pin components often do not
+get the ``PIN`` flag in bluepints in the wild. Thus, pins in an ARMI reactor data model are identified as circular
+Components (inside a Block) with at least one of the following flags:
 
 - ``Flags.CONTROL``
 - ``Flags.PLENUM``
@@ -246,9 +242,9 @@ those pins should be defined on a sub-Block-level lattice.
 
 At the ``Block`` level, there are a few important pin-related methods to know:
 
-- ``Block.getNumPins()`` - return the number of pins in a given Block
-- ``Block.getPinLocations()`` - return the locations of each pin in a given Block
-- ``Block.getPinCoordinates()`` - return the coordinates of the center of each pin in a given Block
+- :meth:`armi.reactor.blocks.Block.getNumPins` - return the number of pins in a given Block
+- :meth:`armi.reactor.blocks.Block.getPinLocations` - return the locations of each pin in a given Block
+- :meth:`armi.reactor.blocks.Block.getPinCoordinates` - return the coordinates of the center of each pin in a Block
 
 These method all share the same underlying logic for identifying pins within a Block, which should help them maintain a
 a high level of agreement.
