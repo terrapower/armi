@@ -27,6 +27,7 @@ from unittest.mock import MagicMock
 
 from armi import settings
 from armi.context import PLATFORM, Platform
+from armi.materials.water import Water
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
@@ -401,7 +402,6 @@ class TestBlockCollCompAvg(unittest.TestCase):
             ("Assemblies not in the core should still have XS groups, see _getMissingBlueprintBlocks()"),
         )
 
-
 class TestBlockCollCompAvg1DCyl(unittest.TestCase):
     """Test Block collection component averages for 1D cylinder."""
 
@@ -584,6 +584,52 @@ class TestBlockCollCompAvg1DCyl(unittest.TestCase):
                         1.0,
                         f"{nuc} temperature should be different from {compTemp} for component {c}",
                     )
+
+    def test_compAverageNegativeVolume(self):
+        """Test creation of a representative block when negative-volume components are present.
+
+        .. test:: Create representative blocks using a volume-weighted averaging.
+            :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS2
+            :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
+        """
+        
+        xsgm = self.o.getInterface("xsGroups")
+
+        xsgm.interactBOL()
+
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
+        xsOpt = self.o.cs[CONF_CROSS_SECTION]["UA"]
+        self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
+
+        annularFuel = self.r.core.getAssemblies(Flags.FUEL | Flags.ANNULAR, includeBolAssems=True)[0]
+
+        # set temperatures of each gap component before performing average
+        # give the gaps some mass (material is arbitrary)
+        for i, b in enumerate(annularFuel.getBlocks(Flags.FUEL)):
+            gaps = b.getComponents(Flags.GAP)
+            for c in gaps:
+                c.temperatureInC = 500.0 + 100.0 * i
+                c.material = Water()
+                c.setNumberDensities({"H": 0.5, "O": 0.25})
+            # make some of the negative-volume gaps have positive volume by adjusting liner temperature
+            liner = b.getComponent(Flags.LINER | Flags.OUTER)
+            liner.setTemperature(500.0 + 100.0 * i)
+
+        xsgm.createRepresentativeBlocks()
+        xsgm.updateNuclideTemperatures()
+
+        reprBlock = xsgm.representativeBlocks["UA"]
+        for c in reprBlock.getComponents(Flags.GAP):
+            if c.getName() == "gap3":
+                self.assertAlmostEqual(c.temperatureInC, 700.0)
+            elif c.getName() == "gap4":
+                self.assertLess(c.temperatureInC, 600.0)
+                self.assertGreater(c.temperatureInC, 500.0)
+            else:
+                self.assertAlmostEqual(c.temperatureInC, 600.0)
+        outerLiner = reprBlock.getComponent(Flags.LINER | Flags.OUTER)
+        self.assertAlmostEqual(outerLiner.temperatureInC, 600.0)
 
     def test_checkComponentConsistency(self):
         xsgm = self.o.getInterface("xsGroups")
