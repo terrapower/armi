@@ -457,7 +457,8 @@ class AverageBlockCollection(BlockCollection):
             return np.mean(np.array([c.temperatureInC for c in components]))
         else:
             return (
-                weights.dot(np.array([c.temperatureInC * c.getMass() for c in components if c.getMass() > 0.0])) / weightedAvgComponentMass
+                weights.dot(np.array([c.temperatureInC * c.getMass() for c in components if c.getMass() > 0.0]))
+                / weightedAvgComponentMass
             )
 
     def _performAverageByComponent(self):
