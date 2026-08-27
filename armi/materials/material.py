@@ -529,8 +529,16 @@ class Material(MatPropsMaterial):
             # only use cached value if the temperature at which it is cached is the same.
             return cached[1]
         else:
-            # go look it up from material properties.
-            val = getattr(self, propName)(Tk=Tk, **kwargs)
+            # go look it up from material properties
+            try:
+                # If this is an armi.materials.Material property.
+                val = getattr(self, propName)(Tk=Tk, **kwargs)
+            except KeyError:
+                # This is an armi.matProps.MatPropsMaterial property.
+                if Tc is None:
+                    Tc = getTc(Tc, Tk)
+                val = getattr(self, propName)(T=Tc, **kwargs)
+
             # cache only one value for each property. Prevents unbounded cache explosion.
             self._setCache(propName, (Tk, val))
             return val

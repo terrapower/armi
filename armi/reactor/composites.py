@@ -3110,13 +3110,6 @@ class Composite(ArmiObject):
         for c in self:
             c.printContents(includeNuclides=includeNuclides)
 
-    def _genChildByLocationLookupTable(self):
-        """Update the childByLocation lookup table."""
-        runLog.extra("Generating location-to-child lookup table.")
-        self.childrenByLocator = {}
-        for child in self:
-            self.childrenByLocator[child.spatialLocator] = child
-
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """
         Get sum circle bound.
