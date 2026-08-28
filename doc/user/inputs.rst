@@ -1292,12 +1292,10 @@ you start changing which nuclides are modeled and which ones deplete.::
 The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in ``nuclide flags``.
 A failure can also occur if the burn chain is missing a nuclide.
 
-.. tip::
-    We plan to upgrade the default behavior of this to inherit from all defined materials in a problem to reduce the
-    user-input burden.
+.. note::
+    If you use the ``expandTo`` feature, ARMI will conserve the total mass, but not the total number of atoms.
 
-.. These following are rst substitutions. They're useful for keeping the plaintext readable while getting subscripted
-   text.
+.. These following are RST substitutions. They're useful for keeping the plain text readable.
 
 .. |Tinput| replace:: T\ :sub:`input`
 .. |Thot| replace:: T\ :sub:`hot`
