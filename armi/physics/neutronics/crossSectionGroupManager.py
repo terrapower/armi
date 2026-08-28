@@ -451,8 +451,9 @@ class AverageBlockCollection(BlockCollection):
         weights = np.array([self.getWeight(b) / b.getHeight() for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        masses = [c.getMass() for c in components]
         weightedAvgComponentMass = sum(
-            w * c.getMass() if c.getMass() > 0.0 else 0.0 for w, c in zip(weights, components)
+            w * mass if mass > 0.0 else 0.0 for w, mass in zip(weights, masses)
         )
         if weightedAvgComponentMass == 0.0:
             # if there is no component mass (e.g., gap), do a regular average
@@ -460,7 +461,7 @@ class AverageBlockCollection(BlockCollection):
         else:
             return (
                 weights.dot(
-                    np.array([c.temperatureInC * c.getMass() if c.getMass() > 0.0 else 0.0 for c in components])
+                    np.array([c.temperatureInC * mass if mass > 0.0 else 0.0 for c, mass in zip(components, masses)])
                 )
                 / weightedAvgComponentMass
             )
