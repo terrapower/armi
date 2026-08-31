@@ -1205,28 +1205,19 @@ class ArmiObject(metaclass=CompositeModelType):
         nFPsPerLFP = fissionProductModel.NUM_FISSION_PRODUCTS_PER_LFP  # LFPs count as two! Big deal in non BOL cases.
         return sum(dens * (nFPsPerLFP if "LFP" in name else 1.0) for name, dens in self.getNumberDensities().items())
 
+
     def setNumberDensity(self, nucName, val):
         """
         Set the number density of this nuclide to this value.
 
-        This distributes atom density evenly across all children that contain nucName.
-        If the nuclide doesn't exist in any of the children, then that's actually an
-        error. This would only happen if some unnatural nuclide like Pu239 built up in
-        fresh UZr. That should be anticipated and dealt with elsewhere.
+        Parameters
+        ----------
+        nucName : str
+            Nuclide number density to modify
+        val : float
+            Number density to set in atoms/bn-cm (heterogeneous)
         """
-        activeChildren = self.getChildrenWithNuclides({nucName})
-        if not activeChildren:
-            activeVolumeFrac = 1.0
-            if val:
-                raise ValueError(
-                    f"The nuclide {nucName} does not exist in any children of {self}; "
-                    f"cannot set its number density to {val}. The nuclides here are: {self.getNuclides()}"
-                )
-        else:
-            activeVolumeFrac = sum(vf for ci, vf in self.getVolumeFractions() if ci in activeChildren)
-        dehomogenizedNdens = val / activeVolumeFrac  # scale up to dehomogenize on children.
-        for child in activeChildren:
-            child.setNumberDensity(nucName, dehomogenizedNdens)
+        raise NotImplementedError
 
     def setNumberDensities(self, numberDensities):
         """
@@ -1236,26 +1227,12 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         numberDensities : dict
             nucName: ndens pairs.
-
-        Notes
-        -----
-        We'd like to not have to call setNumberDensity for each nuclide because we don't
-        want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
         """
-        numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
-        self.updateNumberDensities(numberDensities)
+        raise NotImplementedError
 
     def updateNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
-
-        This changes a nuclide number density only on children that already have that
-        nuclide, thereby allowing, for example, actinides to stay in the fuel component
-        when setting block-level values.
-
-        The complication is that various number densities are distributed among various
-        components. This sets the number density for each nuclide evenly across all
-        components that contain it.
 
         Parameters
         ----------
@@ -1263,53 +1240,11 @@ class ArmiObject(metaclass=CompositeModelType):
             nucName: ndens pairs.
 
         """
-        children, volFracs = zip(*self.getVolumeFractions())
-        childNucs = tuple(set(child.getNuclides()) for child in children)
-
-        allDehomogenizedNDens = collections.defaultdict(dict)
-
-        # compute potentially-different homogenization factors for each child.  evenly
-        # distribute entire number density over the subset of active children.
-        for nuc, dens in numberDensities.items():
-            # get "active" indices, i.e., indices of children containing nuc
-            # NOTE: this is one of the rare instances in which (imo), using explicit
-            # indexing clarifies subsequent code since it's not necessary to zip +
-            # filter + extract individual components (just extract by filtered index).
-            indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
-
-            if not indiciesToSet:
-                if dens == 0:
-                    # density is zero, skip
-                    continue
-
-                # This nuc doesn't exist in any children but is to be set.
-                # Evenly distribute it everywhere.
-                childrenToSet = children
-                dehomogenizedNDens = dens / sum(volFracs)
-
-            else:
-                childrenToSet = tuple(children[i] for i in indiciesToSet)
-                dehomogenizedNDens = dens / sum(volFracs[i] for i in indiciesToSet)
-
-            for child in childrenToSet:
-                allDehomogenizedNDens[child][nuc] = dehomogenizedNDens
-
-        # apply the child-dependent ndens vectors to the children
-        for child, ndens in allDehomogenizedNDens.items():
-            child.updateNumberDensities(ndens)
+        raise NotImplementedError
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
-        self.setNumberDensities(densitiesScaled)
-
-        # Update detailedNDens if it exists (Components only)
-        if self.p.get("detailedNDens", None) is not None:
-            self.p.detailedNDens *= factor
-
-        # Update pinNDens if it exists (Components only)
-        if self.p.get("pinNDens", None) is not None:
-            self.p.pinNDens *= factor
+        raise NotImplementedError
 
     def clearNumberDensities(self):
         """
@@ -2436,6 +2371,120 @@ class Composite(ArmiObject):
         """
         nucNames = self.getNuclides()
         return dict(zip(nucNames, self.getNuclideNumberDensities(nucNames)))
+
+    def setNumberDensity(self, nucName, val):
+        """
+        Set the number density of this nuclide to this value.
+
+        This distributes atom density evenly across all children that contain nucName.
+        If the nuclide doesn't exist in any of the children, then that's actually an
+        error. This would only happen if some unnatural nuclide like Pu239 built up in
+        fresh UZr. That should be anticipated and dealt with elsewhere.
+
+        Parameters
+        ----------
+        nucName : str
+            Nuclide number density to modify
+        val : float
+            Number density to set in atoms/bn-cm (heterogeneous)
+
+        """
+        activeChildren = self.getChildrenWithNuclides({nucName})
+        if not activeChildren:
+            activeVolumeFrac = 1.0
+            if val:
+                raise ValueError(
+                    f"The nuclide {nucName} does not exist in any children of {self}; "
+                    f"cannot set its number density to {val}. The nuclides here are: {self.getNuclides()}"
+                )
+        else:
+            activeVolumeFrac = sum(vf for ci, vf in self.getVolumeFractions() if ci in activeChildren)
+        dehomogenizedNdens = val / activeVolumeFrac  # scale up to dehomogenize on children.
+        for child in activeChildren:
+            child.setNumberDensity(nucName, dehomogenizedNdens)
+
+    def setNumberDensities(self, numberDensities):
+        """
+        Set one or more multiple number densities. Reset any non-listed nuclides to 0.0.
+
+        Parameters
+        ----------
+        numberDensities : dict
+            nucName: ndens pairs.
+
+        Notes
+        -----
+        We'd like to not have to call setNumberDensity for each nuclide because we don't
+        want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
+        """
+        numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
+        self.updateNumberDensities(numberDensities)
+
+    def updateNumberDensities(self, numberDensities):
+        """
+        Set one or more multiple number densities. Leaves unlisted number densities alone.
+
+        This changes a nuclide number density only on children that already have that
+        nuclide, thereby allowing, for example, actinides to stay in the fuel component
+        when setting block-level values.
+
+        The complication is that various number densities are distributed among various
+        components. This sets the number density for each nuclide evenly across all
+        components that contain it.
+
+        Parameters
+        ----------
+        numberDensities : dict
+            nucName: ndens pairs.
+
+        """
+        children, volFracs = zip(*self.getVolumeFractions())
+        childNucs = tuple(set(child.getNuclides()) for child in children)
+
+        allDehomogenizedNDens = collections.defaultdict(dict)
+
+        # compute potentially-different homogenization factors for each child.  evenly
+        # distribute entire number density over the subset of active children.
+        for nuc, dens in numberDensities.items():
+            # get "active" indices, i.e., indices of children containing nuc
+            # NOTE: this is one of the rare instances in which (imo), using explicit
+            # indexing clarifies subsequent code since it's not necessary to zip +
+            # filter + extract individual components (just extract by filtered index).
+            indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
+
+            if not indiciesToSet:
+                if dens == 0:
+                    # density is zero, skip
+                    continue
+
+                # This nuc doesn't exist in any children but is to be set.
+                # Evenly distribute it everywhere.
+                childrenToSet = children
+                dehomogenizedNDens = dens / sum(volFracs)
+
+            else:
+                childrenToSet = tuple(children[i] for i in indiciesToSet)
+                dehomogenizedNDens = dens / sum(volFracs[i] for i in indiciesToSet)
+
+            for child in childrenToSet:
+                allDehomogenizedNDens[child][nuc] = dehomogenizedNDens
+
+        # apply the child-dependent ndens vectors to the children
+        for child, ndens in allDehomogenizedNDens.items():
+            child.updateNumberDensities(ndens)
+
+    def changeNDensByFactor(self, factor):
+        """Change the number density of all nuclides within the object by a multiplicative factor."""
+        densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
+        self.setNumberDensities(densitiesScaled)
+
+        # Update detailedNDens if it exists (Components only)
+        if self.p.get("detailedNDens", None) is not None:
+            self.p.detailedNDens *= factor
+
+        # Update pinNDens if it exists (Components only)
+        if self.p.get("pinNDens", None) is not None:
+            self.p.pinNDens *= factor
 
     def removeAll(self):
         """Remove all children."""
