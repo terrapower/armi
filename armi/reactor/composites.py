@@ -1045,64 +1045,30 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError
 
-    def getNumberDensity(self, nucName):
-        """
-        Return the number density of a nuclide in atoms/barn-cm.
-
-        .. impl:: Get number density for a specific nuclide
-            :id: I_ARMI_CMP_NUC0
-            :implements: R_ARMI_CMP_NUC
-
-            This method queries the number density
-            of a specific nuclide within the Composite. It invokes the
-            ``getNuclideNumberDensities`` method for just the requested nuclide.
-
-        Notes
-        -----
-        This can get called very frequently and has to do volume computations so should
-        use some kind of caching that is invalidated by any temperature, composition,
-        etc. changes. Even with caching the volume calls are still somewhat expensive so
-        prefer the methods in see also.
-
-        See Also
-        --------
-        ArmiObject.getNuclideNumberDensities: More efficient for >1 specific nuc density is needed.
-        ArmiObject.getNumberDensities: More efficient for when all nucs in object is needed.
-        """
-        return self.getNuclideNumberDensities([nucName])[0]
-
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested.
 
-        .. impl:: Get number densities for specific nuclides.
-            :id: I_ARMI_CMP_NUC1
-            :implements: R_ARMI_CMP_NUC
-
-            This method provides the capability to query the volume weighted number
-            densities for a list of nuclides within a given Composite. It provides the
-            result in units of atoms/barn-cm. The volume weighting is accomplished by
-            multiplying the number densities within each child Composite by the volume
-            of the child Composite and dividing by the total volume of the Composite.
+        Parameters
+        ----------
+        nucNames : list of str
+            Nuclide names to get number densities for, e.g. ['U233', 'U235', 'Pu239']
         """
-        volumes = np.array([c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0) for c in self])  # c x 1
-        totalVol = volumes.sum()
-        if totalVol == 0.0:
-            # there are no children so no volume or number density
-            return [0.0] * len(nucNames)
-
-        nucDensForEachComp = np.array([c.getNuclideNumberDensities(nucNames) for c in self])  # c x n
-        return volumes.dot(nucDensForEachComp) / totalVol
+        raise NotImplementedError
 
     def _getNdensHelper(self):
-        """
-        Return a number densities dict with unexpanded lfps.
+        """Return a number densities dict with unexpanded lfps."""
+        raise NotImplementedError
 
-        Notes
-        -----
-        This is implemented more simply on the component level.
+    def getNumberDensity(self, nucName):
+        """Return the number density of a nuclide in atoms/barn-cm.
+
+        Parameters
+        ----------
+        nucName : str
+            Nuclide name to get number density for, e.g. 'U233'.
+
         """
-        nucNames = self.getNuclides()
-        return dict(zip(nucNames, self.getNuclideNumberDensities(nucNames)))
+        raise NotImplementedError
 
     def getNumberDensities(self, expandFissionProducts=False):
         """
@@ -2399,6 +2365,77 @@ class Composite(ArmiObject):
             The mass in grams.
         """
         return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
+
+    def getNumberDensity(self, nucName):
+        """
+        Return the number density of a nuclide in atoms/barn-cm.
+
+        .. impl:: Get number density for a specific nuclide
+            :id: I_ARMI_CMP_NUC0
+            :implements: R_ARMI_CMP_NUC
+
+            This method queries the number density
+            of a specific nuclide within the Composite. It invokes the
+            ``getNuclideNumberDensities`` method for just the requested nuclide.
+
+        Parameters
+        ----------
+        nucName : str
+            Nuclide name to get number densities for, e.g. 'U233'
+
+        Notes
+        -----
+        This can get called very frequently and has to do volume computations so should
+        use some kind of caching that is invalidated by any temperature, composition,
+        etc. changes. Even with caching the volume calls are still somewhat expensive so
+        prefer the methods in see also.
+
+        See Also
+        --------
+        ArmiObject.getNuclideNumberDensities: More efficient for >1 specific nuc density is needed.
+        ArmiObject.getNumberDensities: More efficient for when all nucs in object is needed.
+        """
+        return self.getNuclideNumberDensities([nucName])[0]
+
+    def getNuclideNumberDensities(self, nucNames):
+        """Return a list of number densities in atoms/barn-cm for the nuc names requested.
+
+        .. impl:: Get number densities for specific nuclides.
+            :id: I_ARMI_CMP_NUC1
+            :implements: R_ARMI_CMP_NUC
+
+        Parameters
+        ----------
+        nucNames : list of str
+            Nuclide names to get number densities for, e.g. ['U233', 'U235', 'Pu239']
+
+        Notes
+        -----
+        This method provides the capability to query the volume weighted number
+        densities for a list of nuclides within a given Composite. It provides the
+        result in units of atoms/barn-cm. The volume weighting is accomplished by
+        multiplying the number densities within each child Composite by the volume
+        of the child Composite and dividing by the total volume of the Composite.
+        """
+        volumes = np.array([c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0) for c in self])  # c x 1
+        totalVol = volumes.sum()
+        if totalVol == 0.0:
+            # there are no children so no volume or number density
+            return [0.0] * len(nucNames)
+
+        nucDensForEachComp = np.array([c.getNuclideNumberDensities(nucNames) for c in self])  # c x n
+        return volumes.dot(nucDensForEachComp) / totalVol
+
+    def _getNdensHelper(self):
+        """
+        Return a number densities dict with unexpanded lfps.
+
+        Notes
+        -----
+        This is implemented more simply on the component level.
+        """
+        nucNames = self.getNuclides()
+        return dict(zip(nucNames, self.getNuclideNumberDensities(nucNames)))
 
     def removeAll(self):
         """Remove all children."""
