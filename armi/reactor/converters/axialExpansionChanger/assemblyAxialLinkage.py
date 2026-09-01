@@ -60,29 +60,30 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     ## Cases 4
     linked = False
 
-    if isinstance(componentA, type(componentB)) and (
-        componentA.containsSolidMaterial() and componentB.containsSolidMaterial()
-    ):
-        if isinstance(componentA, UnshapedComponent):
-            ## Case 1
-            runLog.warning(
-                f"Components {componentA} and {componentB} are UnshapedComponents "
-                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
-                "nor is it physical to do so. Instead of crashing and raising an error, "
-                "they are going to be assumed to not be linked.",
-                single=True,
-            )
-        elif isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(
-            componentB.spatialLocator, MultiIndexLocation
+    if componentA.getDimension("mult") == componentB.getDimension("mult"):
+        if isinstance(componentA, type(componentB)) and (
+            componentA.containsSolidMaterial() and componentB.containsSolidMaterial()
         ):
-            ## Case 2
-            fromA = set(tuple(index) for index in componentA.spatialLocator.indices)
-            fromB = set(tuple(index) for index in componentB.spatialLocator.indices)
-            if fromA == fromB:
+            if isinstance(componentA, UnshapedComponent):
+                ## Case 1
+                runLog.warning(
+                    f"Components {componentA} and {componentB} are UnshapedComponents "
+                    "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                    "nor is it physical to do so. Instead of crashing and raising an error, "
+                    "they are going to be assumed to not be linked.",
+                    single=True,
+                )
+            elif isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(
+                componentB.spatialLocator, MultiIndexLocation
+            ):
+                ## Case 2
+                fromA = set(tuple(index) for index in componentA.spatialLocator.indices)
+                fromB = set(tuple(index) for index in componentB.spatialLocator.indices)
+                if fromA == fromB:
+                    linked = _checkOverlap(componentA, componentB)
+            else:
+                ## Case 3
                 linked = _checkOverlap(componentA, componentB)
-        elif componentA.getDimension("mult") == componentB.getDimension("mult"):
-            ## Case 3
-            linked = _checkOverlap(componentA, componentB)
 
     return linked
 

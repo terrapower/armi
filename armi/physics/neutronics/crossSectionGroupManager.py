@@ -451,13 +451,15 @@ class AverageBlockCollection(BlockCollection):
         weights = np.array([self.getWeight(b) / b.getHeight() for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
-        weightedAvgComponentMass = sum(w * c.getMass() for w, c in zip(weights, components))
+        weightedMass = [w * c.getMass() for w, c in zip(weights, components)]
+        weightedAvgComponentMass = sum(m for m in weightedMass if m > 0.0)
         if weightedAvgComponentMass == 0.0:
             # if there is no component mass (e.g., gap), do a regular average
             return np.mean(np.array([c.temperatureInC for c in components]))
         else:
             return (
-                weights.dot(np.array([c.temperatureInC * c.getMass() for c in components])) / weightedAvgComponentMass
+                sum([c.temperatureInC * mass if mass > 0.0 else 0.0 for c, mass in zip(components, weightedMass)])
+                / weightedAvgComponentMass
             )
 
     def _performAverageByComponent(self):
@@ -844,7 +846,10 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         densities = np.zeros(len(allNucNames))
         totalWeight = 0.0
         for c, bWeight in zip(components, bWeights):
-            weight = bWeight * c.getArea()
+            compArea = c.getArea()
+            if compArea <= 0.0:
+                continue
+            weight = bWeight * compArea
             totalWeight += weight
             densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
         if totalWeight > 0.0:
