@@ -1306,258 +1306,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return fissileU / totalU
 
-    def calcTotalParam(
-        self,
-        param,
-        objs=None,
-        volumeIntegrated=False,
-        addSymmetricPositions=False,
-        typeSpec: TypeSpec = None,
-        generationNum=1,
-        calcBasedOnFullObj=False,
-    ):
-        """
-        Sums up a parameter throughout the object's children or list of objects.
-
-        Parameters
-        ----------
-        param : str
-            Name of the block parameter to sum
-
-        objs : iterable, optional
-            A list of objects to sum over. If none, all children in object will be used
-
-        volumeIntegrated : bool, optional
-            Integrate over volume
-
-        addSymmetricPositions : bool, optional
-            If True, will multiply by the symmetry factor of the core (3 for 1/3 models,
-            1 for full core models)
-
-        typeSpec : TypeSpec
-            object types to restrict to
-
-        generationNum : int, optional
-            Which generation to consider. 1 means direct children, 2 means children of
-            children. Default: Just return direct children.
-
-        calcBasedOnFullObj : bool, optional
-            Some assemblies or blocks, such as the center assembly in a third core
-            model, are not modeled as full assemblies or blocks. In the third core model
-            objects at these positions are modeled as having 1/3 the volume and thus 1/3
-            the power. Setting this argument to True will apply the full value of the
-            parameter as if it was a full block or assembly.
-        """
-        tot = 0.0
-        if objs is None:
-            objs = self.getChildren(generationNum=generationNum)
-
-        if addSymmetricPositions:
-            if calcBasedOnFullObj:
-                raise ValueError(
-                    "AddSymmetricPositions is Incompatible with calcBasedOnFullObj. Will result in double counting."
-                )
-            try:
-                coreMult = self.powerMultiplier
-            except AttributeError:
-                coreMult = self.parent.powerMultiplier
-            if not coreMult:
-                raise ValueError(f"powerMultiplier is equal to {coreMult}")
-        else:
-            coreMult = 1.0
-
-        for a in objs:
-            if not a.hasFlags(typeSpec):
-                continue
-
-            mult = a.getVolume() if volumeIntegrated else 1.0
-            if calcBasedOnFullObj:
-                mult *= a.getSymmetryFactor()
-
-            tot += a.p[param] * mult
-
-        return tot * coreMult
-
-    def calcAvgParam(
-        self,
-        param,
-        typeSpec: TypeSpec = None,
-        weightingParam=None,
-        volumeAveraged=True,
-        absolute=True,
-        generationNum=1,
-    ):
-        r"""
-        Calculate the child-wide average of a parameter.
-
-        Parameters
-        ----------
-        param : str
-            The ARMI block parameter that you want the average from
-
-        typeSpec : TypeSpec
-            The child types that should be included in the calculation. Restrict average
-            to a certain child type with this parameter.
-
-        weightingParam : None or str, optional
-             An optional block param that the average will be weighted against
-
-        volumeAveraged : bool, optional
-            volume (or height, or area) average this param
-
-        absolute : bool, optional
-            Returns the average of the absolute value of param
-
-        generationNum : int, optional
-            Which generation to average over (1 for children, 2 for grandchildren)
-
-
-        The weighted sum is:
-
-        .. math::
-
-            \left<\text{x}\right> = \frac{\sum_{i} x_i w_i}{\sum_i w_i}
-
-        where :math:`i` is each child, :math:`x_i` is the param value of the i-th child,
-        and :math:`w_i` is the weighting param value of the i-th child.
-
-        Warning
-        -------
-        If a param is unset/zero on any of the children, this will be included in the
-        average and may significantly perturb results.
-
-        Returns
-        -------
-        float
-            The average parameter value.
-        """
-        total = 0.0
-        weightSum = 0.0
-        for child in self.getChildren(generationNum=generationNum):
-            if child.hasFlags(typeSpec):
-                if weightingParam:
-                    weight = child.p[weightingParam]
-                    if weight < 0:
-                        # Just for conservatism, do not allow negative weights.
-                        raise ValueError(f"Weighting value ({weightingParam},{weight}) cannot be negative.")
-                else:
-                    weight = 1.0
-
-                if volumeAveraged:
-                    weight *= child.getVolume()
-
-                weightSum += weight
-                if absolute:
-                    total += abs(child.p[param]) * weight
-                else:
-                    total += child.p[param] * weight
-        if not weightSum:
-            raise ValueError(
-                f"Cannot calculate {weightingParam}-weighted average of {param} in {self}. "
-                f"Weights sum to zero. typeSpec is {typeSpec}"
-            )
-        return total / weightSum
-
-    def getMaxParam(
-        self,
-        param,
-        typeSpec: TypeSpec = None,
-        absolute=True,
-        generationNum=1,
-        returnObj=False,
-    ):
-        """
-        Find the maximum value for the parameter in this container.
-
-        Parameters
-        ----------
-        param : str
-            block parameter that will be sought.
-
-        typeSpec : TypeSpec
-            restricts the search to cover a variety of block types.
-
-        absolute : bool
-            looks for the largest magnitude value, regardless of sign, default: true
-
-        returnObj : bool, optional
-            If true, returns the child object as well as the value.
-
-        Returns
-        -------
-        maxVal : float
-            The maximum value of the parameter asked for
-        obj : child object
-            The object that has the max (only returned if ``returnObj==True``)
-        """
-        compartor = lambda x, y: x > y
-        return self._minMaxHelper(
-            param,
-            typeSpec,
-            absolute,
-            generationNum,
-            returnObj,
-            -float("inf"),
-            compartor,
-        )
-
-    def getMinParam(
-        self,
-        param,
-        typeSpec: TypeSpec = None,
-        absolute=True,
-        generationNum=1,
-        returnObj=False,
-    ):
-        """
-        Find the minimum value for the parameter in this container.
-
-        See Also
-        --------
-        getMaxParam : details
-        """
-        compartor = lambda x, y: x < y
-        return self._minMaxHelper(param, typeSpec, absolute, generationNum, returnObj, float("inf"), compartor)
-
-    def _minMaxHelper(
-        self,
-        param,
-        typeSpec: TypeSpec,
-        absolute,
-        generationNum,
-        returnObj,
-        startingNum,
-        compartor,
-    ):
-        """Helper for getMinParam and getMaxParam."""
-        maxP = (startingNum, None)
-        realVal = 0.0
-        objs = self.getChildren(generationNum=generationNum)
-        for b in objs:
-            if b.hasFlags(typeSpec):
-                try:
-                    val = b.p[param]
-                except parameters.UnknownParameterError:
-                    # No worries; not all Composite types are guaranteed to have the
-                    # relevant parameter. It might be a good idea to more strongly
-                    # type-check this, perhaps by passing the paramDef,
-                    # rather than its name?
-                    continue
-                if val is None:
-                    # Neither bigger or smaller than anything (also illegal in Python3)
-                    continue
-                if absolute:
-                    absVal = abs(val)
-                else:
-                    absVal = val
-                if compartor(absVal, maxP[0]):
-                    maxP = (absVal, b)
-                    realVal = val
-        if returnObj:
-            return realVal, maxP[1]
-        else:
-            return realVal
-
     def isFuel(self):
         """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
@@ -1572,13 +1320,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        list
-            List of nuclide names that exist in this
+        nucs : list of str
+            Nuclide names that exist in this ArmiObject
         """
-        nucs = set()
-        for child in self:
-            nucs.update(child.getNuclides())
-        return nucs
+        raise NotImplementedError()
 
     def getFissileMass(self):
         """Returns fissile mass in grams."""
@@ -2485,6 +2230,272 @@ class Composite(ArmiObject):
         # Update pinNDens if it exists (Components only)
         if self.p.get("pinNDens", None) is not None:
             self.p.pinNDens *= factor
+
+    def calcTotalParam(
+        self,
+        param,
+        objs=None,
+        volumeIntegrated=False,
+        addSymmetricPositions=False,
+        typeSpec: TypeSpec = None,
+        generationNum=1,
+        calcBasedOnFullObj=False,
+    ):
+        """
+        Sums up a parameter throughout the object's children or list of objects.
+
+        Parameters
+        ----------
+        param : str
+            Name of the block parameter to sum
+
+        objs : iterable, optional
+            A list of objects to sum over. If none, all children in object will be used
+
+        volumeIntegrated : bool, optional
+            Integrate over volume
+
+        addSymmetricPositions : bool, optional
+            If True, will multiply by the symmetry factor of the core (3 for 1/3 models,
+            1 for full core models)
+
+        typeSpec : TypeSpec
+            object types to restrict to
+
+        generationNum : int, optional
+            Which generation to consider. 1 means direct children, 2 means children of
+            children. Default: Just return direct children.
+
+        calcBasedOnFullObj : bool, optional
+            Some assemblies or blocks, such as the center assembly in a third core
+            model, are not modeled as full assemblies or blocks. In the third core model
+            objects at these positions are modeled as having 1/3 the volume and thus 1/3
+            the power. Setting this argument to True will apply the full value of the
+            parameter as if it was a full block or assembly.
+        """
+        tot = 0.0
+        if objs is None:
+            objs = self.getChildren(generationNum=generationNum)
+
+        if addSymmetricPositions:
+            if calcBasedOnFullObj:
+                raise ValueError(
+                    "AddSymmetricPositions is Incompatible with calcBasedOnFullObj. Will result in double counting."
+                )
+            try:
+                coreMult = self.powerMultiplier
+            except AttributeError:
+                coreMult = self.parent.powerMultiplier
+            if not coreMult:
+                raise ValueError(f"powerMultiplier is equal to {coreMult}")
+        else:
+            coreMult = 1.0
+
+        for a in objs:
+            if not a.hasFlags(typeSpec):
+                continue
+
+            mult = a.getVolume() if volumeIntegrated else 1.0
+            if calcBasedOnFullObj:
+                mult *= a.getSymmetryFactor()
+
+            tot += a.p[param] * mult
+
+        return tot * coreMult
+
+    def calcAvgParam(
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        weightingParam=None,
+        volumeAveraged=True,
+        absolute=True,
+        generationNum=1,
+    ):
+        r"""
+        Calculate the child-wide average of a parameter.
+
+        Parameters
+        ----------
+        param : str
+            The ARMI block parameter that you want the average from
+
+        typeSpec : TypeSpec
+            The child types that should be included in the calculation. Restrict average
+            to a certain child type with this parameter.
+
+        weightingParam : None or str, optional
+             An optional block param that the average will be weighted against
+
+        volumeAveraged : bool, optional
+            volume (or height, or area) average this param
+
+        absolute : bool, optional
+            Returns the average of the absolute value of param
+
+        generationNum : int, optional
+            Which generation to average over (1 for children, 2 for grandchildren)
+
+
+        The weighted sum is:
+
+        .. math::
+
+            \left<\text{x}\right> = \frac{\sum_{i} x_i w_i}{\sum_i w_i}
+
+        where :math:`i` is each child, :math:`x_i` is the param value of the i-th child,
+        and :math:`w_i` is the weighting param value of the i-th child.
+
+        Warning
+        -------
+        If a param is unset/zero on any of the children, this will be included in the
+        average and may significantly perturb results.
+
+        Returns
+        -------
+        float
+            The average parameter value.
+        """
+        total = 0.0
+        weightSum = 0.0
+        for child in self.getChildren(generationNum=generationNum):
+            if child.hasFlags(typeSpec):
+                if weightingParam:
+                    weight = child.p[weightingParam]
+                    if weight < 0:
+                        # Just for conservatism, do not allow negative weights.
+                        raise ValueError(f"Weighting value ({weightingParam},{weight}) cannot be negative.")
+                else:
+                    weight = 1.0
+
+                if volumeAveraged:
+                    weight *= child.getVolume()
+
+                weightSum += weight
+                if absolute:
+                    total += abs(child.p[param]) * weight
+                else:
+                    total += child.p[param] * weight
+        if not weightSum:
+            raise ValueError(
+                f"Cannot calculate {weightingParam}-weighted average of {param} in {self}. "
+                f"Weights sum to zero. typeSpec is {typeSpec}"
+            )
+        return total / weightSum
+
+    def getMaxParam(
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        absolute=True,
+        generationNum=1,
+        returnObj=False,
+    ):
+        """
+        Find the maximum value for the parameter in this container.
+
+        Parameters
+        ----------
+        param : str
+            block parameter that will be sought.
+
+        typeSpec : TypeSpec
+            restricts the search to cover a variety of block types.
+
+        absolute : bool
+            looks for the largest magnitude value, regardless of sign, default: true
+
+        returnObj : bool, optional
+            If true, returns the child object as well as the value.
+
+        Returns
+        -------
+        maxVal : float
+            The maximum value of the parameter asked for
+        obj : child object
+            The object that has the max (only returned if ``returnObj==True``)
+        """
+        compartor = lambda x, y: x > y
+        return self._minMaxHelper(
+            param,
+            typeSpec,
+            absolute,
+            generationNum,
+            returnObj,
+            -float("inf"),
+            compartor,
+        )
+
+    def getMinParam(
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        absolute=True,
+        generationNum=1,
+        returnObj=False,
+    ):
+        """
+        Find the minimum value for the parameter in this container.
+
+        See Also
+        --------
+        getMaxParam : details
+        """
+        compartor = lambda x, y: x < y
+        return self._minMaxHelper(param, typeSpec, absolute, generationNum, returnObj, float("inf"), compartor)
+
+    def _minMaxHelper(
+        self,
+        param,
+        typeSpec: TypeSpec,
+        absolute,
+        generationNum,
+        returnObj,
+        startingNum,
+        compartor,
+    ):
+        """Helper for getMinParam and getMaxParam."""
+        maxP = (startingNum, None)
+        realVal = 0.0
+        objs = self.getChildren(generationNum=generationNum)
+        for b in objs:
+            if b.hasFlags(typeSpec):
+                try:
+                    val = b.p[param]
+                except parameters.UnknownParameterError:
+                    # No worries; not all Composite types are guaranteed to have the
+                    # relevant parameter. It might be a good idea to more strongly
+                    # type-check this, perhaps by passing the paramDef,
+                    # rather than its name?
+                    continue
+                if val is None:
+                    # Neither bigger or smaller than anything (also illegal in Python3)
+                    continue
+                if absolute:
+                    absVal = abs(val)
+                else:
+                    absVal = val
+                if compartor(absVal, maxP[0]):
+                    maxP = (absVal, b)
+                    realVal = val
+        if returnObj:
+            return realVal, maxP[1]
+        else:
+            return realVal
+
+    def getNuclides(self):
+        """
+        Determine which nuclides are present in this armi object.
+
+        Returns
+        -------
+        nucs : list of str
+            Nuclide names that exist in this ArmiObject
+        """
+        nucs = set()
+        for child in self:
+            nucs.update(child.getNuclides())
+        return nucs
 
     def removeAll(self):
         """Remove all children."""
