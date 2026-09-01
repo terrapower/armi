@@ -1250,7 +1250,7 @@ class Assembly(composites.Composite):
 
             N = \frac{\sum_c\left(N_c * V_c\right)}{\sum_cV_c}
 
-        If no detailed number densities are found, sets parameter to ``None``
+        If no detailed number densities are found, sets parameter to ``None``.
         """
         totalVolume = 0.0
         onAssembly = None
@@ -1274,7 +1274,7 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         pitchInCm
-            Requested pitch of this assembly. Means different things for
+           Requested pitch of this assembly. Means different things for
            different assemblies (e.g., hex vs. cartesian). But the child blocks
            also know what to do with this.
 
