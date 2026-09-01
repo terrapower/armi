@@ -1582,166 +1582,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return ((minI, maxI), (minJ, maxJ), (minK, maxK))
 
-    def getComponentNames(self):
-        r"""
-        Get all unique component names of this Composite.
-
-        Returns
-        -------
-        set or str
-            A set of all unique component names found in this Composite.
-        """
-        return set(c.getName() for c in self.iterComponents())
-
-    def getComponentsOfShape(self, shapeClass):
-        """
-        Return list of components in this block of a particular shape.
-
-        Parameters
-        ----------
-        shapeClass : Component
-            The class of component, e.g. Circle, Helix, Hexagon, etc.
-
-        Returns
-        -------
-        param : list
-            List of components in this block that are of the given shape.
-        """
-        return [c for c in self.iterComponents() if isinstance(c, shapeClass)]
-
-    def getComponentsOfMaterial(self, material=None, materialName=None):
-        """
-        Return list of components in this block that are made of a particular material.
-
-        Only one of the selectors may be used
-
-        Parameters
-        ----------
-        material : armi.materials.material.Material, optional
-            The material to match
-        materialName : str, optional
-            The material name to match.
-
-        Returns
-        -------
-        componentsWithThisMat : list
-
-        """
-        if materialName is None:
-            materialName = material.getName()
-        else:
-            assert material is None, "Cannot call with more than one selector. Choose one or the other."
-
-        componentsWithThisMat = []
-        for c in self.iterComponents():
-            if c.getProperties().getName() == materialName:
-                componentsWithThisMat.append(c)
-        return componentsWithThisMat
-
-    def hasComponents(self, typeSpec: Union[TypeSpec, List[TypeSpec]], exact=False):
-        """
-        Return true if components matching all TypeSpec exist in this object.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            Component flags to check for
-        """
-        # Wrap the typeSpec in a tuple if we got a scalar
-        try:
-            typeSpec = iter(typeSpec)
-        except TypeError:
-            typeSpec = (typeSpec,)
-
-        return all(self.getComponents(t, exact) for t in typeSpec)
-
-    def getComponentByName(self, name: str) -> "Component":
-        """
-        Gets a particular component from this object, based on its name.
-
-        Parameters
-        ----------
-        name
-            The blueprint name of the component to return
-
-        Returns
-        -------
-        Component, c, whose c.name matches name.
-        """
-        components = [c for c in self.iterComponents() if c.name == name]
-        nComp = len(components)
-        if nComp == 0:
-            return None
-        elif nComp > 1:
-            raise ValueError(f"More than one component named '{name}' in {self}")
-        else:
-            return components[0]
-
-    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
-        """
-        Get a particular component from this object.
-
-        Be careful with multiple similar names in one object.
-
-        Parameters
-        ----------
-        typeSpec : flags.Flags or list of Flags
-            The type specification of the component to return
-        exact : boolean, optional
-            Demand that the component flags be exactly equal to the typespec. Default: False
-        quiet : boolean, optional
-            Log if the component is not found. Default: True
-
-        Returns
-        -------
-        Component : The component that matches the criteria or None
-
-        Raises
-        ------
-        ValueError: more than one Component matches the typeSpec
-        """
-        results = self.getComponents(typeSpec, exact=exact)
-        if len(results) == 1:
-            return results[0]
-        elif not results:
-            if not quiet:
-                runLog.debug(
-                    f"No component matched {typeSpec} in {self}. Returning None",
-                    single=True,
-                    label=f"None component returned instead of {typeSpec}",
-                )
-            return None
-        else:
-            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
-
-    def getNumComponents(self, typeSpec: TypeSpec, exact=False):
-        """
-        Get the number of components that have these flags, taking into account multiplicity. Useful
-        for getting nPins even when there are pin detailed cases.
-
-        Parameters
-        ----------
-        typeSpec : Flags
-            Expected flags of the component to get. e.g. Flags.FUEL
-
-        Returns
-        -------
-        total : int
-            the number of components of this type in this object, including multiplicity.
-        """
-        total = 0
-        for c in self.iterComponents(typeSpec, exact):
-            total += int(c.getDimension("mult"))
-        return total
-
-    def setComponentDimensionsReport(self):
-        """Makes a summary of the dimensions of the components in this object."""
-        reportGroups = []
-        for c in self.iterComponents():
-            reportGroups.append(c.setDimensionReport())
-
-        return reportGroups
-
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
         for elemental in self.nuclideBases.where(
@@ -2821,6 +2661,166 @@ class Composite(ArmiObject):
             items matching typeSpec and exact criteria
         """
         return (c for child in self for c in child.iterComponents(typeSpec, exact))
+
+    def getComponentNames(self):
+        r"""
+        Get all unique component names of this Composite.
+
+        Returns
+        -------
+        set or str
+            A set of all unique component names found in this Composite.
+        """
+        return set(c.getName() for c in self.iterComponents())
+
+    def getComponentsOfShape(self, shapeClass):
+        """
+        Return list of components in this block of a particular shape.
+
+        Parameters
+        ----------
+        shapeClass : Component
+            The class of component, e.g. Circle, Helix, Hexagon, etc.
+
+        Returns
+        -------
+        param : list
+            List of components in this block that are of the given shape.
+        """
+        return [c for c in self.iterComponents() if isinstance(c, shapeClass)]
+
+    def getComponentsOfMaterial(self, material=None, materialName=None):
+        """
+        Return list of components in this block that are made of a particular material.
+
+        Only one of the selectors may be used
+
+        Parameters
+        ----------
+        material : armi.materials.material.Material, optional
+            The material to match
+        materialName : str, optional
+            The material name to match.
+
+        Returns
+        -------
+        componentsWithThisMat : list
+
+        """
+        if materialName is None:
+            materialName = material.getName()
+        else:
+            assert material is None, "Cannot call with more than one selector. Choose one or the other."
+
+        componentsWithThisMat = []
+        for c in self.iterComponents():
+            if c.getProperties().getName() == materialName:
+                componentsWithThisMat.append(c)
+        return componentsWithThisMat
+
+    def hasComponents(self, typeSpec: Union[TypeSpec, List[TypeSpec]], exact=False):
+        """
+        Return true if components matching all TypeSpec exist in this object.
+
+        Parameters
+        ----------
+        typeSpec : Flags or iterable of Flags
+            Component flags to check for
+        """
+        # Wrap the typeSpec in a tuple if we got a scalar
+        try:
+            typeSpec = iter(typeSpec)
+        except TypeError:
+            typeSpec = (typeSpec,)
+
+        return all(self.getComponents(t, exact) for t in typeSpec)
+
+    def getComponentByName(self, name: str) -> "Component":
+        """
+        Gets a particular component from this object, based on its name.
+
+        Parameters
+        ----------
+        name
+            The blueprint name of the component to return
+
+        Returns
+        -------
+        Component, c, whose c.name matches name.
+        """
+        components = [c for c in self.iterComponents() if c.name == name]
+        nComp = len(components)
+        if nComp == 0:
+            return None
+        elif nComp > 1:
+            raise ValueError(f"More than one component named '{name}' in {self}")
+        else:
+            return components[0]
+
+    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
+        """
+        Get a particular component from this object.
+
+        Be careful with multiple similar names in one object.
+
+        Parameters
+        ----------
+        typeSpec : flags.Flags or list of Flags
+            The type specification of the component to return
+        exact : boolean, optional
+            Demand that the component flags be exactly equal to the typespec. Default: False
+        quiet : boolean, optional
+            Log if the component is not found. Default: True
+
+        Returns
+        -------
+        Component : The component that matches the criteria or None
+
+        Raises
+        ------
+        ValueError: more than one Component matches the typeSpec
+        """
+        results = self.getComponents(typeSpec, exact=exact)
+        if len(results) == 1:
+            return results[0]
+        elif not results:
+            if not quiet:
+                runLog.debug(
+                    f"No component matched {typeSpec} in {self}. Returning None",
+                    single=True,
+                    label=f"None component returned instead of {typeSpec}",
+                )
+            return None
+        else:
+            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
+
+    def getNumComponents(self, typeSpec: TypeSpec, exact=False):
+        """
+        Get the number of components that have these flags, taking into account multiplicity. Useful
+        for getting nPins even when there are pin detailed cases.
+
+        Parameters
+        ----------
+        typeSpec : Flags
+            Expected flags of the component to get. e.g. Flags.FUEL
+
+        Returns
+        -------
+        total : int
+            the number of components of this type in this object, including multiplicity.
+        """
+        total = 0
+        for c in self.iterComponents(typeSpec, exact):
+            total += int(c.getDimension("mult"))
+        return total
+
+    def setComponentDimensionsReport(self):
+        """Makes a summary of the dimensions of the components in this object."""
+        reportGroups = []
+        for c in self.iterComponents():
+            reportGroups.append(c.setDimensionReport())
+
+        return reportGroups
 
     def syncMpiState(self):
         """
