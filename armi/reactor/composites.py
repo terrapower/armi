@@ -1375,7 +1375,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getFuelMass(self):
         """Returns mass of fuel in grams."""
-        return sum((c.getFuelMass() for c in self))
+        raise NotImplementedError
 
     def constituentReport(self):
         """A print out of some pertinent constituent information."""
@@ -1552,108 +1552,12 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return 1.0
 
-    def getBoundingIndices(self):
-        """
-        Find the 3-D index bounds (min, max) of all children in the spatial grid of this object.
-
-        Returns
-        -------
-        bounds : tuple
-            ((minI, maxI), (minJ, maxJ), (minK, maxK))
-        """
-        minI = minJ = minK = float("inf")
-        maxI = maxJ = maxK = -float("inf")
-        for obj in self:
-            i, j, k = obj.spatialLocator.getCompleteIndices()
-            if i >= maxI:
-                maxI = i
-            if i <= minI:
-                minI = i
-
-            if j >= maxJ:
-                maxJ = j
-            if j <= minJ:
-                minJ = j
-
-            if k >= maxK:
-                maxK = k
-            if k <= minK:
-                minK = k
-
-        return ((minI, maxI), (minJ, maxJ), (minK, maxK))
-
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
         for elemental in self.nuclideBases.where(
             lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
         ):
             self.expandElementalToIsotopics(elemental)
-
-    def expandElementalToIsotopics(self, elementalNuclide):
-        """
-        Expands the density of a specific elemental nuclides to its natural isotopics.
-
-        Parameters
-        ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
-            replace.
-        """
-        natName = elementalNuclide.name
-        for component in self.iterComponents():
-            elementalDensity = component.getNumberDensity(natName)
-            if elementalDensity == 0.0:
-                continue
-
-            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
-            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
-            newNDens = component.p.numberDensities[keepIndex]
-            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
-
-            # add in isotopics
-            for natNuc in elementalNuclide.getNaturalIsotopics():
-                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
-
-    def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
-        """Return the average temperature of the ArmiObject in C by averaging all components."""
-        tempNumerator = 0.0
-        totalVol = 0.0
-        for component in self.iterComponents(typeSpec, exact):
-            vol = component.getVolume()
-            tempNumerator += component.temperatureInC * vol
-            totalVol += vol
-
-        return tempNumerator / totalVol
-
-    def resolveLinkedDims(self, components):
-        """Resolve link strings to links on all child components."""
-        for component in self.iterComponents():
-            component.resolveLinkedDims(components)
-
-    def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return the first sample of the most dominant material (by volume) in this object.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags, optional
-            The types of components to consider (e.g. ``[Flags.FUEL, Flags.CONTROL]``)
-        exact : bool, optional
-            Whether or not the TypeSpec is exact
-
-        Returns
-        -------
-        mat : armi.materials.material.Material
-             the first instance of the most dominant material (by volume) in this object.
-
-        See Also
-        --------
-        getComponentsOfMaterial
-            Gets components that are made of a particular material
-        gatherMaterialsByVolume
-            Classifies all materials by volume
-        """
-        return getDominantMaterial([self], typeSpec, exact)
-
 
 class Composite(ArmiObject):
     """
@@ -1885,6 +1789,10 @@ class Composite(ArmiObject):
             The mass in grams.
         """
         return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
+
+    def getFuelMass(self):
+        """Returns mass of fuel in grams."""
+        return sum((c.getFuelMass() for c in self))
 
     def getNumberDensity(self, nucName):
         """
@@ -2821,6 +2729,102 @@ class Composite(ArmiObject):
             reportGroups.append(c.setDimensionReport())
 
         return reportGroups
+
+    def getBoundingIndices(self):
+        """
+        Find the 3-D index bounds (min, max) of all children in the spatial grid of this object.
+
+        Returns
+        -------
+        bounds : tuple
+            ((minI, maxI), (minJ, maxJ), (minK, maxK))
+        """
+        minI = minJ = minK = float("inf")
+        maxI = maxJ = maxK = -float("inf")
+        for obj in self:
+            i, j, k = obj.spatialLocator.getCompleteIndices()
+            if i >= maxI:
+                maxI = i
+            if i <= minI:
+                minI = i
+
+            if j >= maxJ:
+                maxJ = j
+            if j <= minJ:
+                minJ = j
+
+            if k >= maxK:
+                maxK = k
+            if k <= minK:
+                minK = k
+
+        return ((minI, maxI), (minJ, maxJ), (minK, maxK))
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expands the density of a specific elemental nuclides to its natural isotopics.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
+            replace.
+        """
+        natName = elementalNuclide.name
+        for component in self.iterComponents():
+            elementalDensity = component.getNumberDensity(natName)
+            if elementalDensity == 0.0:
+                continue
+
+            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
+            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
+            newNDens = component.p.numberDensities[keepIndex]
+            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
+
+            # add in isotopics
+            for natNuc in elementalNuclide.getNaturalIsotopics():
+                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
+
+    def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
+        """Return the average temperature of the ArmiObject in C by averaging all components."""
+        tempNumerator = 0.0
+        totalVol = 0.0
+        for component in self.iterComponents(typeSpec, exact):
+            vol = component.getVolume()
+            tempNumerator += component.temperatureInC * vol
+            totalVol += vol
+
+        return tempNumerator / totalVol
+
+    def resolveLinkedDims(self, components):
+        """Resolve link strings to links on all child components."""
+        for component in self.iterComponents():
+            component.resolveLinkedDims(components)
+
+    def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return the first sample of the most dominant material (by volume) in this object.
+
+        Parameters
+        ----------
+        typeSpec : Flags or iterable of Flags, optional
+            The types of components to consider (e.g. ``[Flags.FUEL, Flags.CONTROL]``)
+        exact : bool, optional
+            Whether or not the TypeSpec is exact
+
+        Returns
+        -------
+        mat : armi.materials.material.Material
+             the first instance of the most dominant material (by volume) in this object.
+
+        See Also
+        --------
+        getComponentsOfMaterial
+            Gets components that are made of a particular material
+        gatherMaterialsByVolume
+            Classifies all materials by volume
+        """
+        return getDominantMaterial([self], typeSpec, exact)
+
 
     def syncMpiState(self):
         """
