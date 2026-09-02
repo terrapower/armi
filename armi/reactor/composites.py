@@ -267,7 +267,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all classes
-    * TODO: This should live on the Composite class. Declares an interface for accessing and managing child objects
     * Defines an interface for accessing parents.
 
     Called "component" in gang of four, this is an ArmiObject here because the word component was
@@ -1562,6 +1561,8 @@ class ArmiObject(metaclass=CompositeModelType):
 class Composite(ArmiObject):
     """
     An ArmiObject that has children.
+
+    This class implements an interface for accessing and managing child objects.
 
     This is a fundamental ARMI state object that generally represents some piece of the
     nuclear reactor that is made up of other smaller pieces. This object can cache
