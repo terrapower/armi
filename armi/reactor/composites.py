@@ -1205,7 +1205,6 @@ class ArmiObject(metaclass=CompositeModelType):
         nFPsPerLFP = fissionProductModel.NUM_FISSION_PRODUCTS_PER_LFP  # LFPs count as two! Big deal in non BOL cases.
         return sum(dens * (nFPsPerLFP if "LFP" in name else 1.0) for name, dens in self.getNumberDensities().items())
 
-
     def setNumberDensity(self, nucName, val):
         """
         Set the number density of this nuclide to this value.
@@ -1559,6 +1558,7 @@ class ArmiObject(metaclass=CompositeModelType):
         ):
             self.expandElementalToIsotopics(elemental)
 
+
 class Composite(ArmiObject):
     """
     An ArmiObject that has children.
@@ -1617,7 +1617,6 @@ class Composite(ArmiObject):
         ArmiObject.__setstate__(self, state)
 
         if self.spatialGrid is not None:
-
             # Spatial locators also get disassociated with their grids when detached;
             # make sure they get hooked back up.
             for c in self:
@@ -1626,7 +1625,6 @@ class Composite(ArmiObject):
         # now "reattach" children
         for c in self:
             c.parent = self
-
 
     def __getitem__(self, index):
         return self._children[index]
@@ -2824,7 +2822,6 @@ class Composite(ArmiObject):
             Classifies all materials by volume
         """
         return getDominantMaterial([self], typeSpec, exact)
-
 
     def syncMpiState(self):
         """
