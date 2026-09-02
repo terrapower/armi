@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Interface to help diagnose memory issues during debugging/development.
 
 There are many approaches to memory profiling.
@@ -146,7 +146,7 @@ class MemoryProfiler(interfaces.Interface):
         )
 
     def displayMemoryUsage(self, timeDescription):
-        r"""
+        """
         Print out some information to stdout about the memory usage of ARMI.
 
         Useful when the debugMem setting is set to True.
@@ -299,8 +299,8 @@ class KlassCounter:
         """
         Recursively find objects inside arbitrarily-deeply-nested containers.
 
-        This is designed to work with the garbage collector, so it focuses on
-        objects potentially being held in dict, tuple, list, or sets.
+        This is designed to work with the garbage collector, so it focuses on objects potentially being held in dict,
+        tuple, list, or sets.
         """
         counter = self[type(ao)]
         if counter.add(ao):

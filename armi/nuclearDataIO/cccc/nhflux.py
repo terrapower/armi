@@ -413,10 +413,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
             numExternalSurfaces = self._getNumOuterSurfacesHex()
 
-            # Initialize np arrays to store all node ordering (and node surface ordering)
-            # data. We don't actually use incomingPointersToAllAssemblies (basically
-            # equivalent to nearest neighbors indices), but it's here in case someone
-            # needs it in the future.
+            # Initialize np arrays to store all node ordering (and node surface ordering) data. We don't actually use
+            # incomingPointersToAllAssemblies (basically equivalent to nearest neighbors indices), but it's here in case
+            # someone needs it in the future.
 
             # Initialize data size when reading
             if self._data.incomingPointersToAllAssemblies.size == 0:
@@ -450,7 +449,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                 self._data.ingoingPCSymSecPointers = record.rwList(self._data.ingoingPCSymSecPointers, "int", npcsto)
 
     def _rwFluxMoments3D(self, contents):
-        r"""
+        """
         Read/write multigroup flux moments from the NHFLUX 3D block.
 
         This reads/writes the planar moments for each DIF3D node on ONE x,y plane. The
@@ -485,7 +484,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         return contents
 
     def _rwHexPartialCurrents4D(self, surfCurrents, externalSurfCurrents):
-        r"""
+        """
         Read/write multigroup lateral partial OUTGOING currents from the NHFLUX 4D block.
 
         This reads all OUTGOING partial currents for all assembly block lateral surfaces
