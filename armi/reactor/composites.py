@@ -1720,8 +1720,7 @@ class Composite(ArmiObject):
     def _updateVolume(self):
         """Recompute and store volume."""
         children = self.getChildren()
-        # Derived shapes must come last so we temporarily change the order if we
-        # have one.
+        # Derived shapes must come last so we temporarily change the order if we have one.
         from armi.reactor.components import DerivedShape
 
         for child in children[:]:
@@ -1735,8 +1734,7 @@ class Composite(ArmiObject):
         """
         Return volume fractions of each child.
 
-        Sets volume or area of missing piece (like coolant) if it exists.  Caching would
-        be nice here.
+        Sets volume or area of missing piece (like coolant) if it exists.
 
         Returns
         -------
@@ -2501,7 +2499,6 @@ class Composite(ArmiObject):
         ----------
         paramNames : list
             List of param names to copy to children
-
         """
         for paramName in paramNames:
             myVal = self.p[paramName]
@@ -2570,7 +2567,7 @@ class Composite(ArmiObject):
         return (c for child in self for c in child.iterComponents(typeSpec, exact))
 
     def getComponentNames(self):
-        r"""
+        """
         Get all unique component names of this Composite.
 
         Returns
@@ -2612,7 +2609,6 @@ class Composite(ArmiObject):
         Returns
         -------
         componentsWithThisMat : list
-
         """
         if materialName is None:
             materialName = material.getName()
