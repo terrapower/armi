@@ -75,7 +75,6 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
                     "maxBuI",
                     "maxBuF",
                     "maxDPA",
-                    "numMoves",
                 ],
             )
         )

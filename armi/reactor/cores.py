@@ -93,7 +93,6 @@ class Core(composites.Composite):
         self.numRings = 0
         self.spatialGrid = None
         self.xsIndex = {}
-        self.p.numMoves = 0
         self._lib = None  # placeholder for ISOTXS object
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.

@@ -136,7 +136,6 @@ class TestRadar(unittest.TestCase):
             "maxBuF": [6, 7, 8, 9],
             "maxBuI": [6, 7, 8, 9],
             "maxDPA": [6, 7, 8, 9],
-            "numMoves": [2, 2, 2, 2],
             "time": [1, 2, 3, 4],
         }
         figName = name + ".moves.png"
