@@ -646,7 +646,6 @@ class TestAssembly(unittest.TestCase):
 
         params = {}
         params["maxPercentBu"] = 30.0
-        params["numMoves"] = 5.0
         params["maxPercentBu"] = 0
         params["timeToLimit"] = 2.7e5
         params["arealPd"] = 110.0

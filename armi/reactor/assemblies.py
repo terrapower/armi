@@ -237,7 +237,6 @@ class Assembly(composites.Composite):
         oldSymmetryFactor = self.getSymmetryFactor()
         composites.Composite.moveTo(self, locator)
         if self.lastLocationLabel != self.DATABASE:
-            self.p.numMoves += 1
             self.p.daysSinceLastMove = 0.0
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)

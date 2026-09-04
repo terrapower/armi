@@ -249,7 +249,6 @@ class FuelHandler:
         else:
             numMoved = 0
 
-        self.o.r.core.p.numMoves = numMoved
         self.o.r.core.setBlockMassParams()
 
         runLog.important("Fuel handler performed {0} assembly shuffles.".format(numMoved))
@@ -984,7 +983,6 @@ class FuelHandler:
             return
 
         # add assemblies into the moved location
-        # keep it unique so we don't get artificially inflated numMoves
         for a in [incoming, outgoing]:
             if a not in self.moved:
                 self.moved.append(a)

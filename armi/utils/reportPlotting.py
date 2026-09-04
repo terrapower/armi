@@ -75,7 +75,6 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
                     "maxBuI",
                     "maxBuF",
                     "maxDPA",
-                    "numMoves",
                 ],
             )
         )
@@ -97,7 +96,6 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         ymin=1.0,
         extension=extension,
     )
-    movesVsCycle(reactor.name, scalars, extension=extension)
 
 
 def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
@@ -192,54 +190,6 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     plt.close(1)
 
     report.setData("K-Eff", os.path.abspath(figName), report.KEFF_PLOT)
-
-
-def movesVsCycle(name, scalars, extension=None):
-    """
-    Make a bar chart showing the number of moves per cycle in the full core.
-
-    A move is defined as an assembly being picked up, moved, and put down. So if
-    two assemblies are swapped, that is 2 moves. Note that it does not count
-    temporary storage for such swaps. This is an approximation because in a chain of moves,
-    only one out of the chain would have to be temporarily stored. So as the chains get longer,
-    this approximation gets more accurate.
-
-    Parameters
-    ----------
-    name : str
-        reactor.name
-    extension : str, optional
-        The file extension for saving the figure
-
-    See Also
-    --------
-    FuelHandler.outage : sets the number of moves in each cycle
-    """
-    extension = extension or settings.Settings()["outputFileExtension"]
-
-    cycles = []
-    yvals = []
-    for moves, cycle in zip(scalars["numMoves"], scalars["cycle"]):
-        if moves is None:
-            moves = 0.0
-        if cycle not in cycles:  # only one move per cycle
-            # use the cycles scalar val in case burnSteps is dynamic
-            cycles.append(cycle)
-            yvals.append(moves)
-
-    plt.figure(figsize=(12, 6))  # make it wide and short
-    plt.bar(cycles, yvals, align="center")
-    if len(cycles) > 1:
-        plt.xticks(cycles)
-    plt.grid(color="0.70")
-    plt.xlabel("Cycle")
-    plt.ylabel("Number of Moves")
-    plt.title("Fuel management rate for " + name)
-    figName = name + ".moves." + extension
-    plt.savefig(figName)
-    plt.close(1)
-
-    report.setData("Moves Plot", os.path.abspath(figName), report.MOVES_PLOT)
 
 
 def plotCoreOverviewRadar(reactors, reactorNames=None):
