@@ -1240,6 +1240,57 @@ class Assembly(composites.Composite):
             if b.spatialGrid is not None:
                 b.assignPinIndices()
 
+    def assignConsistentDetailedNDens(self):
+        r"""Update ``self.p.detailedNDens`` to be consistent with child components.
+
+        Sets the parameter equal to the sum of detailed atoms
+
+        .. math::
+
+            N = \frac{\sum_c\left(N_c * V_c\right)}{\sum_cV_c}
+
+        If no detailed number densities are found, sets parameter to ``None``.
+        """
+        totalVolume = 0.0
+        onAssembly = None
+        for c in self.iterComponents():
+            vol = c.getVolume()
+            totalVolume += vol
+            if (onChild := c.p.detailedNDens) is not None:
+                if onAssembly is not None:
+                    onAssembly += onChild * vol
+                else:
+                    onAssembly = onChild * vol
+        if onAssembly is not None:
+            onAssembly /= totalVolume
+            self.p.detailedNDens = onAssembly
+        else:
+            self.p.detailedNDens = None
+
+    def setPitch(self, pitchInCm: float):
+        """Adjust the assembly to alight with a uniform pitch.
+
+        Parameters
+        ----------
+        pitchInCm
+           Requested pitch of this assembly. Means different things for
+           different assemblies (e.g., hex vs. cartesian). But the child blocks
+           also know what to do with this.
+
+        See Also
+        --------
+        :meth:`armi.reactor.cores.Core.setPitchUniform`
+        :meth:`armi.reactor.blocks.Block.setPitch`
+
+        :meth:`assignConsistentDetailedNDens` will be called if ``detailedNDens`` is set
+        because the child volumes may have been adjusted
+        """
+        for block in self:
+            block.setPitch(pitchInCm)
+
+        if self.p.detailedNDens is not None:
+            self.assignConsistentDetailedNDens()
+
 
 class HexAssembly(Assembly):
     """An assembly that is hexagonal in cross-section."""
