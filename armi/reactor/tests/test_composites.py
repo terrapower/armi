@@ -553,12 +553,23 @@ class TestCompositePattern(unittest.TestCase):
             found.add(c)
         self.assertSetEqual(found, expectedChildren)
 
+    def test_getChildrenWithFlags(self):
+        expectedChildren = [c for c in self.container if c.hasFlags(Flags.DUCT)]
+        testChildren = self.container.getChildrenWithFlags(Flags.DUCT)
+        self.assertListEqual(testChildren, expectedChildren)
+
+
     def test_iterChildrenOfType(self):
         clads = self.container.iterChildrenOfType("clad")
         first = next(clads)
         self.assertIs(first, self.cladChild)
         with self.assertRaises(StopIteration):
             next(clads)
+
+    def test_getChildrenOfType(self):
+        clads = self.container.getChildrenOfType("clad")
+        assert len(clads) == 1
+        self.assertListEqual(clads, [self.cladChild])
 
     def test_removeAll(self):
         """Test the ability to remove all children of a composite."""
@@ -860,7 +871,7 @@ class TestCompositeTree(unittest.TestCase):
         fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         c.add(fuelComponent)
 
-        # test initial state
+        # test initial state ang getMass, getFPMass, and getHMMass functions
         self.assertEqual(c.getFPMass(), 0.0)
         self.assertAlmostEqual(c.getHMMass(), 6.468105962375698, delta=1e-6)
         self.assertAlmostEqual(c.getMass(), 7.186784402639664, delta=1e-6)
@@ -1040,6 +1051,7 @@ class TestMiscMethods(unittest.TestCase):
         self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
         self.assertAlmostEqual(0.0000368, ndens["W"], 7)
 
+        # Test getNumberDensity
         ndens = self.obj.getNumberDensity("SI")
         self.assertAlmostEqual(0.0001096, ndens, 7)
 
