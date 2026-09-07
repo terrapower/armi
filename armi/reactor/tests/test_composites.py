@@ -789,7 +789,7 @@ class TestCompositeTree(unittest.TestCase):
         self.assertIn("FE", cur)  # this is in at trace value.
 
     def test_getChildrenWithNuclides(self):
-
+        """Test getChildrenWithNuclides."""
         ## Basic case: get fuel block via urainum nuclides
         refChildren = [self.block._children[2]] # fuel component
         nuclideList = ['U235', 'U238']
@@ -816,6 +816,21 @@ class TestCompositeTree(unittest.TestCase):
         nuclideList = []
         testChildren = self.block.getChildrenWithNuclides(nuclideList)
         self.assertListEqual(testChildren, refChildren)
+
+    def test_getChildParamValues(self):
+        """Test getChildParamValues."""
+        import numpy as np
+        ## Try the 'type' parameter
+        refTypes = ['annular void', 'bond', 'fuel', 'gap1', 'inner liner', 'gap2', 'outer liner', 'gap3', 'clad',
+                    'wire', 'coolant', 'duct', 'interCoolant']
+        testTypes = self.block.getChildParamValues('type')
+        self.assertIsInstance(testTypes, np.ndarray)
+
+        self.assertSequenceEqual(list(testTypes), refTypes)
+
+        ## Check error trips when unknown parameter passed in
+        with self.assertRaises(armi.reactor.parameters.exceptions.UnknownParameterError):
+            testTypes = self.block.getChildParamValues('')
 
     def test_getFuelMass(self):
         """
