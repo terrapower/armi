@@ -788,6 +788,35 @@ class TestCompositeTree(unittest.TestCase):
             self.assertIn(key, cur)
         self.assertIn("FE", cur)  # this is in at trace value.
 
+    def test_getChildrenWithNuclides(self):
+
+        ## Basic case: get fuel block via urainum nuclides
+        refChildren = [self.block._children[2]] # fuel component
+        nuclideList = ['U235', 'U238']
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+        # try with just U235
+        nuclideList = ['U235']
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+        # try with just U238
+        nuclideList = ['U238']
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+        ## Multi block: sodium coolant
+        refChildren = [self.block._children[1], self.block._children[10], self.block._children[12]] # bond, sodium and inter-sodium components
+        nuclideList = ['NA']
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+        ## Empty list input
+        refChildren = []
+        nuclideList = []
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
     def test_getFuelMass(self):
         """
         Create a dummy assembly and ensures that the assembly, block, and fuel component masses are consistent.
