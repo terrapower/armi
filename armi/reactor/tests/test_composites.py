@@ -835,7 +835,7 @@ class TestCompositeTree(unittest.TestCase):
         self.assertSequenceEqual(list(testTypes), refTypes)
 
         ## Check error trips when unknown parameter passed in
-        with self.assertRaises(armi.reactor.parameters.exceptions.UnknownParameterError):
+        with self.assertRaises(parameters.exceptions.UnknownParameterError):
             testTypes = self.block.getChildParamValues('')
 
     def test_getFuelMass(self):
