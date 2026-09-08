@@ -441,6 +441,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
             This method returns the area of a Component.
 
+        Parameters
+        ----------
+        cold : bool, optional
+            Compute the area with as-input dimensions instead of thermally-expanded
+        Tc : float, optional
+            Temperature to compute the area at
+
         See Also
         --------
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here

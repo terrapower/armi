@@ -1714,8 +1714,18 @@ class Composite(ArmiObject):
     def getVolume(self):
         return sum(child.getVolume() for child in self)
 
-    def getArea(self, cold=False):
-        return sum(child.getArea(cold) for child in self)
+    def getArea(self, cold=False, Tc=None):
+        """Get the area of a Composite in cm^2
+
+        Parameters
+        ----------
+        cold : bool, optional
+            Compute the area with as-input dimensions instead of thermally-expanded
+        Tc : float, optional
+            Temperature to compute the area at
+        """
+
+        return sum(child.getArea(cold=cold, Tc=Tc) for child in self)
 
     def _updateVolume(self):
         """Recompute and store volume."""
