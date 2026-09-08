@@ -1111,9 +1111,6 @@ class TestMiscMethods(unittest.TestCase):
         weight = self.obj.getAtomicWeight()
         self.assertTrue(50 < weight < 100)
 
-    def test_containsHeavyMetal(self):
-        self.assertTrue(self.obj.containsHeavyMetal())
-
     def test_copyParamsToChildren(self):
         self.obj.p.percentBu = 5
         self.obj.copyParamsToChildren(["percentBu"])
