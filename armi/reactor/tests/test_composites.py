@@ -703,7 +703,6 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        #self.block.setNumberDensities(self.refDict)
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
@@ -788,11 +787,24 @@ class TestCompositeTree(unittest.TestCase):
         The getNuclides should return all keys that have ever been in this block, including values
         that are at trace.
         """
-        cur = self.block.getNuclides()
-        ref = self.refDict.keys()
-        for key in ref:
-            self.assertIn(key, cur)
-        self.assertIn("FE", cur)  # this is in at trace value.
+        ## Case: all nuclides known to be in the block should be present
+        refNucs = ['ZR', 'NA', 'MN', 'W', 'MO', 'SI', 'NI', 'C', 'V', 'U235', 'FE', 'CR', 'U238']
+        testNucs = self.block.getNuclides()
+        for nuc in refNucs:
+            self.assertIn(nuc, testNucs)
+
+        ## Case: old nuclides should still be present after setting new ones
+        refNucs += list(self.refDict.keys())
+        self.block.setNumberDensities(self.refDict)
+        testNucs = self.block.getNuclides()
+        for nuc in refNucs:
+            self.assertIn(nuc, testNucs)
+
+        ## Case: nuclides known to not be in the block should not be present
+        refNucs = ['H1', 'Tc99', 'Pu239', 'He4', 'H2']
+        for nuc in refNucs:
+            self.assertNotIn(nuc, testNucs)
+
 
     def test_getChildrenWithNuclides(self):
         """Test getChildrenWithNuclides."""
