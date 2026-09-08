@@ -1838,10 +1838,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
 
-    def containsHeavyMetal(self):
-        """True if this has HM."""
-        return any(nucDir.isHeavyMetal(nucName) for nucName in self.getNuclides())
-
     def getNuclides(self):
         """
         Determine which nuclides are present in this armi object.
