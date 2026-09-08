@@ -805,7 +805,6 @@ class TestCompositeTree(unittest.TestCase):
         for nuc in refNucs:
             self.assertNotIn(nuc, testNucs)
 
-
     def test_getChildrenWithNuclides(self):
         """Test getChildrenWithNuclides."""
         ## Basic case: get fuel block via urainum nuclides
@@ -1193,6 +1192,27 @@ class TestMiscMethods(unittest.TestCase):
         ndens = self.obj.getNuclideNumberDensities(["He4", "bad-nuclide"])
         self.assertEqual(0.00000, ndens[0])
         self.assertEqual(0.00000, ndens[1])
+
+    def test_setNumberDensities(self):
+        ## Case: setting the number densities to the same quantites should allow them to be the same,
+        ## and other number densities should be set to zero
+        refNdens = self.obj.getNumberDensities()
+        self.obj.setNumberDensities({"SI": 0.0001096, "W": 0.0000368})
+        testNdens = self.obj.getNumberDensities()
+        for key, refValue in refNdens.items():
+            if key in ("SI", "W"):
+                self.assertAlmostEqual(refValue, testNdens[key])
+            else:
+                self.assertEqual(0.0000, testNdens[key])
+
+        ## Case: setting a new number density should add it to the nuclide densities
+        testNdens = self.obj.getNumberDensities()
+        self.assertTrue('H1' not in testNdens.keys())
+        self.obj.setNumberDensities({"H1": 0.0001})
+        testNdens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(testNdens['H1'], 0.0001, 7)
+
+
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
