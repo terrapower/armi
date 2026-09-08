@@ -354,6 +354,13 @@ class TestCompositePattern(unittest.TestCase):
             self.assertTrue(self.container.hasFlags(t))
             self.assertFalse(self.container.hasFlags(t, exact=True))
 
+    def test_isFuel(self):
+        """Ensure flags are queryable."""
+        self.container.setType("fuel")
+        self.assertTrue(self.container.isFuel())
+        self.container.setType("clad")
+        self.assertFalse(self.container.isFuel())
+
     def test_calcTotalParam(self):
         minSerialNumberCount = 21.0
         kids = self.container.getChildren()
