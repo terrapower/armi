@@ -609,6 +609,7 @@ class TestCompositePattern(unittest.TestCase):
         """Test the internal __add__ function, which should just add the two children lists."""
         refSum = self.container._children + self.container._children
         testSum = self.container + self.container
+        breakpoint()
         self.assertListEqual(testSum, refSum)
 
     def test_extend(self):
@@ -830,6 +831,7 @@ class TestCompositeTree(unittest.TestCase):
         refTypes = ['annular void', 'bond', 'fuel', 'gap1', 'inner liner', 'gap2', 'outer liner', 'gap3', 'clad',
                     'wire', 'coolant', 'duct', 'interCoolant']
         testTypes = self.block.getChildParamValues('type')
+        breakpoint()
         self.assertIsInstance(testTypes, np.ndarray)
 
         self.assertSequenceEqual(list(testTypes), refTypes)
@@ -1124,9 +1126,9 @@ class TestMiscMethods(unittest.TestCase):
     def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
 
-        .. test:: Get number densities.
-            :id: T_ARMI_CMP_NUC
-            :tests: R_ARMI_CMP_NUC
+        .. test:: Number density of composite is retrievable.
+            :id: T_ARMI_CMP_GET_NDENS1
+            :tests: R_ARMI_CMP_GET_NDENS
         """
         # verify the number densities from the composite
         ndens = self.obj.getNumberDensities(expandFissionProducts=True)
@@ -1164,6 +1166,23 @@ class TestMiscMethods(unittest.TestCase):
         # verify the children match this composite
         for nuc in ["FE", "SI"]:
             self.assertAlmostEqual(self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc)
+
+    def test_getNuclideNumberDensities(self):
+        """Get nuclide number densities from composite.
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
+        """
+
+        ndens = self.obj.getNuclideNumberDensities(["SI", "W"])
+        self.assertAlmostEqual(0.0001096, ndens[0], 7)
+        self.assertAlmostEqual(0.0000368, ndens[1], 7)
+
+        ## Nuclide not present should have a zero density
+        ndens = self.obj.getNuclideNumberDensities(["He4", "bad-nuclide"])
+        self.assertEqual(0.00000, ndens[0])
+        self.assertEqual(0.00000, ndens[1])
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
