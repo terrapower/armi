@@ -1193,6 +1193,30 @@ class TestMiscMethods(unittest.TestCase):
         self.assertEqual(0.00000, ndens[0])
         self.assertEqual(0.00000, ndens[1])
 
+    def test_updateNumberDensities(self):
+        ## Case: setting the number densities to the same quantites should allow them to be the same,
+        ## and other number densities shouldn't be changed
+        refNdens = self.obj.getNumberDensities()
+        self.obj.updateNumberDensities({"SI": 0.0001096, "W": 0.0000368})
+        testNdens = self.obj.getNumberDensities()
+        for key, refValue in refNdens.items():
+            self.assertAlmostEqual(refValue, testNdens[key])
+
+        ## Case: setting a new number density should add it to the nuclide densities
+        testNdens = self.obj.getNumberDensities()
+        self.assertTrue('H1' not in testNdens.keys())
+        self.obj.updateNumberDensities({"H1": 0.0001})
+        testNdens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(testNdens['H1'], 0.0001, 7)
+
+        ## Cleanup
+        import numpy as np
+        for child in self.obj:
+            i = np.where(child.p.nuclides == 'H1'.encode())[0] ## SHOULD just be a single value
+            if i.size > 0:
+                np.delete(child.p.nuclides, i[0])
+                np.delete(child.p.numberDensities, i[0])
+
     def test_setNumberDensities(self):
         ## Case: setting the number densities to the same quantites should allow them to be the same,
         ## and other number densities should be set to zero
@@ -1211,8 +1235,6 @@ class TestMiscMethods(unittest.TestCase):
         self.obj.setNumberDensities({"H1": 0.0001})
         testNdens = self.obj.getNumberDensities()
         self.assertAlmostEqual(testNdens['H1'], 0.0001, 7)
-
-
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
