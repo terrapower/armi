@@ -609,7 +609,6 @@ class TestCompositePattern(unittest.TestCase):
         """Test the internal __add__ function, which should just add the two children lists."""
         refSum = self.container._children + self.container._children
         testSum = self.container + self.container
-        breakpoint()
         self.assertListEqual(testSum, refSum)
 
     def test_extend(self):
@@ -704,7 +703,7 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(self.refDict)
+        #self.block.setNumberDensities(self.refDict)
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
@@ -831,7 +830,6 @@ class TestCompositeTree(unittest.TestCase):
         refTypes = ['annular void', 'bond', 'fuel', 'gap1', 'inner liner', 'gap2', 'outer liner', 'gap3', 'clad',
                     'wire', 'coolant', 'duct', 'interCoolant']
         testTypes = self.block.getChildParamValues('type')
-        breakpoint()
         self.assertIsInstance(testTypes, np.ndarray)
 
         self.assertSequenceEqual(list(testTypes), refTypes)
