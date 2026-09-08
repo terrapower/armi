@@ -605,6 +605,12 @@ class TestCompositePattern(unittest.TestCase):
         # verify the container's size has increased by one
         self.assertEqual(len(self.container), lenContainer + 1)
 
+    def test___add__(self):
+        """Test the internal __add__ function, which should just add the two children lists."""
+        refSum = self.container._children + self.container._children
+        testSum = self.container + self.container
+        self.assertListEqual(testSum, refSum)
+
     def test_extend(self):
         # generate a list of elements to add to this container
         elements = []
