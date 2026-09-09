@@ -607,7 +607,7 @@ class Block(composites.Composite):
             Block or component volume in cm^3
         """
         # use symmetryFactor in case the assembly is sitting on a boundary and needs to be cut in half, etc.
-        vol = super.getVolume()
+        vol = super().getVolume()
         return vol / self.getSymmetryFactor()
 
     def getSymmetryFactor(self):
