@@ -1116,6 +1116,10 @@ class FuelHandler:
 
         return moved
 
+    def performSettingsUpdates(self, shuffleFile):
+        """Settings updates may be implemented in a child class."""
+        pass
+
     @staticmethod
     def readMoves(fname):
         r"""

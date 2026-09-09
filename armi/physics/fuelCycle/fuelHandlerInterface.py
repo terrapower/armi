@@ -113,6 +113,12 @@ class FuelHandlerInterface(interfaces.Interface):
         """Make reports at EOL."""
         self.makeShuffleReport()
 
+    def interactRestart(self, startNode: tuple[int, int], previousNode: tuple[int, int]):
+        fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
+        for cycle in range(0, previousNode[0]):
+            fh.r.p.cycle = cycle
+            fh.performSettingsUpdates(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])  # move the assemblies around
+
     def manageFuel(self, cycle):
         """Perform the fuel management for this cycle."""
         fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
