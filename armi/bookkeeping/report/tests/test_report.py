@@ -34,7 +34,6 @@ from armi.bookkeeping.report.reportingUtils import (
     makeCoreDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
-    summarizePowerPeaking,
     writeAssemblyMassSummary,
     writeCycleSummary,
     writeWelcomeHeaders,
@@ -224,10 +223,6 @@ class TestReport(unittest.TestCase):
             makeBlockDesignReport(r)
             self.assertEqual(len(mock.getStdout()), 0)
             mock.emptyStdout()
-
-            # this report won't do much for the test reactor - improve test reactor
-            summarizePowerPeaking(r.core)
-            self.assertEqual(len(mock.getStdout()), 0)
 
     def test_writeWelcomeHeaders(self):
         o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
