@@ -397,6 +397,9 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c1.title = "new_bob"
         self.assertEqual(self.c1.title, "new_bob")
 
+    def test_discover(self):
+        pass
+
 
 class TestCaseSuiteComparison(unittest.TestCase):
     """CaseSuite.compare() tests."""

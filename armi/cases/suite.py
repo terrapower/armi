@@ -94,8 +94,7 @@ class CaseSuite:
         skipInspection=False,
     ):
         """
-        Finds case objects by searching for a pattern of file paths, and adds them to
-        the suite.
+        Finds case objects by searching for a pattern of file paths, and adds them to the suite.
 
         This searches for Settings input files and loads them to create Case objects.
 

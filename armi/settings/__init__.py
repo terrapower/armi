@@ -15,10 +15,9 @@
 """
 Settings are various key-value pairs that determine a bunch of modeling and simulation behaviors.
 
-They are one of the key inputs to an ARMI run. They say which modules to run and which
-modeling approximations to apply and how many cycles to run and at what power and
-availability fraction and things like that. The ARMI Framework itself has many settings
-of its own, and plugins typically register some of their own settings as well.
+They are one of the key inputs to an ARMI run. They say which modules to run and which modeling approximations to apply
+and how many cycles to run and at what power and availability fraction and things like that. The ARMI Framework itself
+has many settings of its own, and plugins typically register some of their own settings as well.
 """
 
 import fnmatch
@@ -75,11 +74,10 @@ def recursivelyLoadSettingsFiles(
         list of :py:class:`~armi.settings.caseSettings.Settings` objects.
     """
     assert not isinstance(ignorePatterns, str), "Bare string passed as ignorePatterns. Make sure to pass a list"
-
     assert not isinstance(patterns, str), "Bare string passed as patterns. Make sure to pass a list"
 
     possibleSettings = []
-    runLog.info("Finding potential settings files matching {}.".format(patterns))
+    runLog.info(f"Finding potential settings files matching {patterns}.")
     if recursive:
         for directory, _list, files in os.walk(rootDir):
             matches = set()
@@ -97,19 +95,17 @@ def recursivelyLoadSettingsFiles(
     runLog.info("Checking for valid settings files.")
     for possibleSettingsFile in possibleSettings:
         if os.path.getsize(possibleSettingsFile) > 1e6:
-            runLog.extra("skipping {} -- looks too big".format(possibleSettingsFile))
+            runLog.extra(f"skipping {possibleSettingsFile} -- looks too big")
             continue
         try:
             cs = Settings()
             cs.loadFromInputFile(possibleSettingsFile, handleInvalids=handleInvalids)
             csFiles.append(cs)
-            runLog.extra("loaded {}".format(possibleSettingsFile))
+            runLog.extra(f"loaded {possibleSettingsFile}")
         except InvalidSettingsFileError as ee:
-            runLog.extra("skipping {}\n    {}".format(possibleSettingsFile, ee))
+            runLog.extra(f"skipping {possibleSettingsFile}\n    {ee}")
         except yaml.composer.ComposerError as ee:
-            runLog.extra(
-                "skipping {}; it appears to be an incomplete YAML snippet\n    {}".format(possibleSettingsFile, ee)
-            )
+            runLog.extra(f"skipping {possibleSettingsFile}; it appears to be an incomplete YAML snippet\n    {ee}")
         except Exception as ee:
             runLog.error(
                 "Failed to parse {}.\nIt looked like a settings file but gave this exception:\n{}: {}".format(
@@ -117,6 +113,7 @@ def recursivelyLoadSettingsFiles(
                 )
             )
             raise
+
     csFiles.sort(key=lambda csFile: csFile.caseTitle)
     return csFiles
 
@@ -139,7 +136,7 @@ def promptForSettingsFile(choice=None):
 
     if choice is None:
         for i, pathToFile in enumerate(files):
-            runLog.info("[{0}] - {1}".format(i, os.path.split(pathToFile)[-1]))
+            runLog.info(f"[{i}] - {os.path.split(pathToFile)[-1]}")
         choice = int(input("Enter choice: "))
 
     return files[choice]
