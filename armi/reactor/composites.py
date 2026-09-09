@@ -2794,7 +2794,21 @@ class Composite(ArmiObject):
                 component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
-        """Return the average temperature of the ArmiObject in C by averaging all components."""
+        """Return the volume-averaged temperature (in degrees Celsius) of the ArmiObject over all children.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        averageTemperature : float
+            Child-averaged temperature (in degrees Celsius)
+        """
         tempNumerator = 0.0
         totalVol = 0.0
         for component in self.iterComponents(typeSpec, exact):

@@ -970,6 +970,94 @@ class TestCompositeTree(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
+def test_getAverageTempInC(self):
+        """Test getAverageTempInC."""
+        from armi.reactor import blocks
+        from armi.reactor.components import Circle
+        import math
+        b = blocks.HexBlock("temperature-block", height=10.0)
+        componentDims = {"Tinput": 25.0, "Thot": 600, "od": 1.00, "id": 0.00, "mult": 1.00}
+        ## Case: two components with identical dimensions should yield avg temperature equal to Thot
+        fuel = Circle("fuel", "UZr", **componentDims)
+        clad = Circle("clad", "HT9", **componentDims)
+
+        b.add(fuel)
+        b.add(clad)
+        self.assertAlmostEqual(componentDims['Thot'], b.getAverageTempInC(), 4)
+
+        ## Case: two components with different temperatures should yield volume-weighted-averaged temperature
+        # vol = (od * teFactor)**2 * 0.25 * mult * height
+        # temp = sum (vol * temp) / sum(vol)
+        b.removeAll()
+        volFuel = fuel.getVolume()
+        avgTemp = volFuel * componentDims['Thot']
+        componentDims["Thot"] = 400
+        clad = Circle("clad", "HT9", **componentDims)
+        b.add(fuel)
+        b.add(clad)
+        volClad = clad.getVolume()
+        totVol = volFuel + volClad
+        avgTemp += volClad * componentDims['Thot']
+        avgTemp /= totVol
+        self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
+        ## Case: same as above but components have different spatial dimensions and same temperatures should still
+        componentDims["Thot"] = 600
+        b.removeAll()
+        componentDims["od"] = 0.5
+        clad = Circle("clad", "HT9", **componentDims)
+        b.add(fuel)
+        b.add(clad)
+        volClad = clad.getVolume()
+        #totVol = volFuel + volClad
+        avgTemp = componentDims['Thot']
+        #avgTemp /= totVol
+        self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
+    def test_getAverageTempInC(self):
+        """Test getAverageTempInC."""
+        from armi.reactor import blocks
+        from armi.reactor.components import Circle
+        import math
+        b = blocks.HexBlock("temperature-block", height=10.0)
+        componentDims = {"Tinput": 25.0, "Thot": 600, "od": 1.00, "id": 0.00, "mult": 1.00}
+        ## Case: two components with identical dimensions should yield avg temperature equal to Thot
+        fuel = Circle("fuel", "UZr", **componentDims)
+        clad = Circle("clad", "HT9", **componentDims)
+
+        b.add(fuel)
+        b.add(clad)
+        self.assertAlmostEqual(componentDims['Thot'], b.getAverageTempInC(), 4)
+
+        ## Case: two components with different temperatures should yield volume-weighted-averaged temperature
+        # vol = (od * teFactor)**2 * 0.25 * mult * height
+        # temp = sum (vol * temp) / sum(vol)
+        b.removeAll()
+        volFuel = fuel.getVolume()
+        avgTemp = volFuel * componentDims['Thot']
+        componentDims["Thot"] = 400
+        clad = Circle("clad", "HT9", **componentDims)
+        b.add(fuel)
+        b.add(clad)
+        volClad = clad.getVolume()
+        totVol = volFuel + volClad
+        avgTemp += volClad * componentDims['Thot']
+        avgTemp /= totVol
+        self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
+        ## Case: same as above but components have different spatial dimensions and same temperatures should still
+        componentDims["Thot"] = 600
+        b.removeAll()
+        componentDims["od"] = 0.5
+        clad = Circle("clad", "HT9", **componentDims)
+        b.add(fuel)
+        b.add(clad)
+        volClad = clad.getVolume()
+        #totVol = volFuel + volClad
+        avgTemp = componentDims['Thot']
+        #avgTemp /= totVol
+        self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
     def test_getMaxParam(self):
         """Test getMaxParam().
 
