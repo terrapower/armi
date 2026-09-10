@@ -20,6 +20,9 @@ from unittest.mock import Mock
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
+from armi.bookkeeping.db import Database
+from armi.operators import snapshots
 from armi.operators import getOperatorClassFromSettings
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
@@ -68,6 +71,11 @@ class TestOperatorSnapshots(unittest.TestCase):
         cls.dbi.loadState = lambda c, n: None
         cls.dbi.writeDBEveryNode = lambda: None
         cls.dbi.closeDB = lambda: None
+        cls.dbi.initDB("testDB.h5")
+
+        # mock a FuelHandler Interface
+        cls.fhi = FuelHandlerInterface(cls.r, o1.cs)
+        cls.fhi.interactRestart = Mock()
 
         cls.o.createInterfaces()
 
@@ -82,11 +90,20 @@ class TestOperatorSnapshots(unittest.TestCase):
 
     def test_mainOperate(self):
         # Mock some tooling that we aren't testing
+        interfaceDict = {
+            "database": self.dbi,
+            "fuelHandler": self.fhi,
+        }
         self.o.interactBOL = lambda: None
-        self.o.getInterface = lambda s: (self.dbi if s == "database" else super().getInterface(s))
+        # self.o.getInterface = lambda s: (self.dbi if s == "database" else super().getInterface(s))
+        self.o.getInterface = lambda s: (interfaceDict.get(s, None) or super().getInterface(s))
 
         self.assertEqual(self.r.core.p.power, 0.0)
-        self.o._mainOperate()
+        with unittest.mock.patch.object(snapshots, "getPreviousTimeNode") as mockTimeNode:
+            self.o._mainOperate()
+        self.assertEqual(mockTimeNode.call_count, 2)
+        mockTimeNode.assert_called_with(16, 5, self.o.cs) # second and final call
+        self.assertEqual(self.fhi.interactRestart.call_count, 2)
         self.assertEqual(self.r.core.p.power, 1000000.0)
 
     def test_createInterfacesDisabled(self):
