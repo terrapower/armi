@@ -24,9 +24,9 @@ from unittest.mock import patch
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.interfaces import Interface, TightCoupler
 from armi.operators.operator import Operator
+from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )

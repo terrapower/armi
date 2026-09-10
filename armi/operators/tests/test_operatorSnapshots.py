@@ -20,12 +20,10 @@ from unittest.mock import Mock
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
-from armi.bookkeeping.db import Database
-from armi.operators import snapshots
-from armi.operators import getOperatorClassFromSettings
+from armi.operators import getOperatorClassFromSettings, snapshots
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
+from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.settings.fwSettings.globalSettings import CONF_GROW_TO_FULL_CORE_AFTER_LOAD
 from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -96,7 +94,7 @@ class TestOperatorSnapshots(unittest.TestCase):
         }
         self.o.interactBOL = lambda: None
         # self.o.getInterface = lambda s: (self.dbi if s == "database" else super().getInterface(s))
-        self.o.getInterface = lambda s: (interfaceDict.get(s, None) or super().getInterface(s))
+        self.o.getInterface = lambda s: (interfaceDict.get(s) or super().getInterface(s))
 
         self.assertEqual(self.r.core.p.power, 0.0)
         with unittest.mock.patch.object(snapshots, "getPreviousTimeNode") as mockTimeNode:
