@@ -102,7 +102,7 @@ class TestOperatorSnapshots(unittest.TestCase):
         with unittest.mock.patch.object(snapshots, "getPreviousTimeNode") as mockTimeNode:
             self.o._mainOperate()
         self.assertEqual(mockTimeNode.call_count, 2)
-        mockTimeNode.assert_called_with(16, 5, self.o.cs) # second and final call
+        mockTimeNode.assert_called_with(16, 5, self.o.cs)  # second and final call
         self.assertEqual(self.fhi.interactRestart.call_count, 2)
         self.assertEqual(self.r.core.p.power, 1000000.0)
 

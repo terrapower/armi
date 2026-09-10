@@ -24,6 +24,7 @@ from unittest.mock import patch
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.interfaces import Interface, TightCoupler
 from armi.operators.operator import Operator
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
@@ -606,12 +607,16 @@ class TestOperatorRestart(unittest.TestCase):
                 "startNode": cls.START_NODE,
                 # Need more cycles than we're restarting
                 "nCycles": cls.START_CYCLE + 3,
+                "shuffleLogic": "armi.physics.fuelCycle.fuelHandlers",
+                "fuelHandlerName": "FuelHandler",
             },
         )
 
     def setUp(self):
         self.dbi: DatabaseInterface = self.o.getInterface("database")
+        self.fhi: FuelHandlerInterface = self.o.getInterface("fuelHandler")
         self.assertIsNotNone(self.dbi, msg="Database interface required for test.")
+        self.assertIsNotNone(self.fhi, msg="FuelHandler interface required for test.")
 
     def test_nominalRestart(self):
         """Make sure the database interface is uniquely called and the interactRestart is not called for DB.
@@ -625,7 +630,7 @@ class TestOperatorRestart(unittest.TestCase):
         with (
             patch.object(self.dbi, "interactRestart") as dbInteractRestart,
             patch.object(self.dbi, "prepRestartRun") as dbPrepRestart,
-            patch.object(mainInterface, "interactRestart") as mainIfcRestart,
+            patch.object(self.fhi, "interactRestart") as fhiRestart,
         ):
             self.o.interactAllRestart(self.dbi)
         dbPrepRestart.assert_called_once()
@@ -633,9 +638,7 @@ class TestOperatorRestart(unittest.TestCase):
         dbInteractRestart.assert_not_called()
 
         # Ensure we called other interfaces restarts at the previous node
-        mainIfcRestart.assert_called_once_with(
-            (self.START_CYCLE, self.START_NODE), (self.START_CYCLE, self.START_NODE - 1)
-        )
+        fhiRestart.assert_called_once_with((self.START_CYCLE, self.START_NODE), (self.START_CYCLE, self.START_NODE - 1))
         self.assertEqual(self.o.r.p.cycle, self.START_CYCLE)
         self.assertEqual(self.o.r.p.timeNode, self.START_NODE)
 
