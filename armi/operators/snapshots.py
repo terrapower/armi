@@ -16,6 +16,7 @@
 
 from armi import runLog
 from armi.operators import operatorMPI
+from armi.utils import getPreviousTimeNode
 
 
 class OperatorSnapshots(operatorMPI.OperatorMPI):
@@ -66,6 +67,12 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         for ssCycle, ssNode in snapshots:
             runLog.important("Beginning snapshot ({0:02d}, {1:02d})".format(ssCycle, ssNode))
             dbi.loadState(ssCycle, ssNode)
+
+            # start with a fresh CS for each snapshot and apply settings updates using fuelHandler interface
+            self.cs = dbi.loadCS()
+            fhi = self.getInterface("fuelHandler")
+            prevTimeNode = getPreviousTimeNode(ssCycle, ssNode, self.cs)
+            fhi.interactRestart(startNode=(ssCycle, ssNode), previousNode=prevTimeNode)
 
             # need to update reactor power after the database load
             # this is normally handled in operator._cycleLoop

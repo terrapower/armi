@@ -117,7 +117,7 @@ class FuelHandlerInterface(interfaces.Interface):
         fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
         for cycle in range(0, previousNode[0]):
             fh.r.p.cycle = cycle
-            fh.performSettingsUpdates(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])  # move the assemblies around
+            fh.performSettingsUpdates(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])
 
     def manageFuel(self, cycle):
         """Perform the fuel management for this cycle."""
