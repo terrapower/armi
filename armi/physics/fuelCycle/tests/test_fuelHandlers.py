@@ -313,6 +313,23 @@ class TestFuelHandler(FuelHandlerTestHelper):
             fhi.interactBOC()
             self.assertIn("lattice physics before fuel management due to the", mock._outputStream)
 
+    def test_interactRestart(self):
+        yaml_text = """
+        settingsUpdates:
+            1:
+                - power: 12345.0
+        """
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(yaml_text)
+            fname = tf.name
+        self.r.p.cycle = 1
+        self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+        fhi = self.o.getInterface("fuelHandler")
+        fhi.cs = self.o.cs
+        with unittest.mock.patch.object(fuelHandlers.FuelHandler, "performSettingsUpdates") as mockUpdate:
+            fhi.interactRestart((1, 1), (1, 0))
+        mockUpdate.assert_called_once_with(fname)
+
     def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
@@ -322,6 +339,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         a1 = fh.findAssembly(param="percentBu", compareTo=100, blockLevelMax=True, typeSpec=None)
         self.assertIs(a, a1)
+
+    def test_settingsUpdate(self):
+        # no implementation in the base class; should return None
+        fh = fuelHandlers.FuelHandler(self.o)
+        self.assertIsNone(fh.performSettingsUpdates("file.txt"))
 
     @patch("armi.physics.fuelCycle.fuelHandlers.FuelHandler.chooseSwaps")
     def test_outage(self, mockChooseSwaps):

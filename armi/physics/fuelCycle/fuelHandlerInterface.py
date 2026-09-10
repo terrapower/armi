@@ -116,7 +116,7 @@ class FuelHandlerInterface(interfaces.Interface):
     def interactRestart(self, startNode: tuple[int, int], previousNode: tuple[int, int]):
         fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
         for cycle in range(0, previousNode[0]):
-            fh.r.p.cycle = cycle
+            fh.r.p.cycle = cycle + 1
             fh.performSettingsUpdates(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])
 
     def manageFuel(self, cycle):
