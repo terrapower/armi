@@ -379,7 +379,7 @@ class TestCompositePattern(unittest.TestCase):
                 "power", self.container.getChildren(), addSymmetricPositions=True, calcBasedOnFullObj=True
             )
 
-    def test_getBoundingCirlceOuterDiameter(self):
+    def test_getBoundingCircleOuterDiameter(self):
         od = self.container.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(od, len(list(self.container.iterComponents())))
 
@@ -659,7 +659,7 @@ class TestCompositeTree(unittest.TestCase):
             shape: Circle
             material: HT9
             Tinput: 450.0
-            Thot: 450.0
+       e     Thot: 450.0
             id: 1.09
             od: 1.1
             mult: 7
@@ -1011,6 +1011,21 @@ class TestCompositeTree(unittest.TestCase):
         volClad = clad.getVolume()
         avgTemp = componentDims['Thot']
         self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
+    def test_getDominantMaterial(self):
+        """Test getDominantMaterial"""
+        ## Case: fuel flag should just be UZr
+        refFuel = self.block._children[2].material
+        testFuel = self.block.getDominantMaterial(Flags.FUEL)
+        self.assertEqual(refFuel, testFuel)
+
+        ## Case: add a new fuel component that is WAY bigger
+        from armi.reactor.components import Circle
+        componentDims = {"Tinput": 25.0, "Thot": 600, "od": 100.00, "id": 0.00, "mult": 100.00}
+        refFuel = Circle("fuel", "UO2", **componentDims)
+        self.block.add(refFuel)
+        testFuel = self.block.getDominantMaterial(Flags.FUEL)
+        self.assertEqual(refFuel.material, testFuel)
 
     def test_getVolume(self):
         """Test getVolume"""
