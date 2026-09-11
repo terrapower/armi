@@ -13,15 +13,15 @@
 # limitations under the License.
 
 r"""
-The ``CaseSuite`` object is responsible for running, and executing a set of user inputs.  Many
-entry points redirect into ``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``.
+The ``CaseSuite`` object is responsible for running, and executing a set of user inputs. Many entry points redirect into
+``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``.
 
-Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can be used to
-collect a series of cases and submit them to a cluster for execution. Furthermore, a ``CaseSuite``
-can be used to gather executed cases for post-analysis.
+Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can be used to collect a series of
+cases and submit them to a cluster for execution. Furthermore, a ``CaseSuite`` can be used to gather executed cases for
+post-analysis.
 
-``CaseSuite``\ s should allow ``Cases`` to be added from totally separate directories. This is
-useful for plugin-informed testing as well as other things.
+``CaseSuite``\ s should allow ``Cases`` to be added from totally separate directories. This is useful for plugin-
+informed testing as well as other things.
 
 See Also
 --------
@@ -45,12 +45,10 @@ class CaseSuite:
         :id: I_ARMI_CASE_SUITE
         :implements: R_ARMI_CASE_SUITE
 
-        The CaseSuite object allows multiple, often related,
-        :py:class:`~armi.cases.case.Case` objects to be run sequentially. A CaseSuite
-        is intended to be both a pre-processing or a post-processing tool to facilitate
-        case generation and analysis. Under most circumstances one may wish to subclass
-        a CaseSuite to meet the needs of a specific calculation. A CaseSuite is a
-        collection that is keyed off Case titles.
+        The CaseSuite object allows multiple, often related, :py:class:`~armi.cases.case.Case` objects to be run
+        sequentially. A CaseSuite is intended to be both a pre-processing or a post-processing tool to facilitate case
+        generation and analysis. Under most circumstances one may wish to subclass a CaseSuite to meet the needs of a
+        specific calculation. A CaseSuite is a collection that is keyed off Case titles.
     """
 
     def __init__(self, cs):
@@ -88,8 +86,8 @@ class CaseSuite:
     def discover(
         self,
         rootDir=None,
-        patterns=None,
-        ignorePatterns=None,
+        patterns=[],
+        ignorePatterns=[],
         recursive=True,
         skipInspection=False,
     ):
@@ -111,6 +109,22 @@ class CaseSuite:
         skipInspection : bool, optional
             if True, skip running the check inputs
         """
+        assert not isinstance(patterns, str), "Bare string passed as patterns. Make sure to pass a list"
+        assert not isinstance(ignorePatterns, str), "Bare string passed as ignore patterns. Make sure to pass a list"
+
+        # handle the case where someone gives just a string (input), but they meant to add an asterisk (input*)
+        regexChars = [".", "^", "$", "*", "+", "?", "{", "}", "[", "]", "|", "(", ")"]
+        for i in range(len(patterns)):
+            pat = patterns[i]
+            foundRegex = False
+            for rChar in regexChars:
+                if rChar in pat:
+                    foundRegex = True
+                    break
+            if not foundRegex:
+                patterns[i] = pat = pat + "*"
+
+        # find all settings files that match the root dir and patterns provided
         csFiles = settings.recursivelyLoadSettingsFiles(
             rootDir or os.path.abspath(os.getcwd()),
             patterns or ["*.yaml"],
@@ -119,6 +133,7 @@ class CaseSuite:
             handleInvalids=False,
         )
 
+        # load cases from the found files
         for cs in csFiles:
             case = armicase.Case(cs=cs, caseSuite=self)
             if not skipInspection:
@@ -131,11 +146,10 @@ class CaseSuite:
 
         Notes
         -----
-        Some of these printouts won't make sense for all users, and may make sense to
-        be delegated to the plugins/app.
+        Some of these printouts won't make sense for all users, and may make sense to be delegated to the plugins/app.
         """
         for setting in self.cs.environmentSettings:
-            runLog.important("{}: {}".format(self.cs.getSetting(setting).label, self.cs[setting]))
+            runLog.important(f"{self.cs.getSetting(setting).label}: {self.cs[setting]}")
 
         runLog.important("Test inputs will be taken from test case results when they have finished")
         runLog.important(
@@ -157,30 +171,25 @@ class CaseSuite:
         """
         Clone a CaseSuite to a new place.
 
-        Creates a clone for each case within a CaseSuite. If ``oldRoot`` is not
-        specified, then each case clone is made in a directory with the title of the
-        case. If ``oldRoot`` is specified, then a relative path from ``oldRoot`` will
-        be used to determine a new relative path to the current directory ``oldRoot``.
+        Creates a clone for each case within a CaseSuite. If ``oldRoot`` is not specified, then each case clone is made
+        in a directory with the title of the case. If ``oldRoot`` is specified, then a relative path from ``oldRoot``
+        will be used to determine a new relative path to the current directory ``oldRoot``.
 
         Parameters
         ----------
         oldRoot : str (optional)
-            root directory of original case suite used to help filter when a suite
-            contains one or more cases with the same case title.
+            root directory of original case suite used to help filter when a suite contains one or more cases with the
+            same case title.
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files
-            (short, medium, or full).
+            Writing style for which settings get written back to the settings files (short, medium, or full).
 
         Notes
         -----
-        By design, a CaseSuite has no location dependence; this allows any set of cases
-        to compose a CaseSuite. The thought is that the post-analysis capabilities
-        without restricting a root directory could be beneficial. For example, this
-        allows one to perform analysis on cases analyzed by Person A and Person B, even
-        if the analyses were performed in completely different locations. As a
-        consequence, when you want to clone, we need to infer a "root" of the original
-        cases to attempt to mirror whatever existing directory structure there may have
-        been.
+        By design, a CaseSuite has no location dependence; this allows any set of cases to compose a CaseSuite. The
+        thought is that the post-analysis capabilities without restricting a root directory could be beneficial. For
+        example, this allows one to perform analysis on cases analyzed by Person A and Person B, even if the analyses
+        were performed in completely different locations. As a consequence, when you want to clone, we need to infer a
+        "root" of the original cases to attempt to mirror whatever existing directory structure there may have been.
         """
         clone = CaseSuite(self.cs.duplicate())
 
@@ -200,8 +209,8 @@ class CaseSuite:
 
         Warning
         -------
-        Suite running may not work yet if the cases have interdependencies. We typically run on a
-        HPC but are still working on a platform independent way of handling HPCs.
+        Suite running may not work yet if the cases have interdependencies. We typically run on a HPC but are still
+        working on a platform independent way of handling HPCs.
         """
         for ci, case in enumerate(self):
             runLog.important(f"Running case {ci + 1}/{len(self)}: {case}")
@@ -247,12 +256,10 @@ class CaseSuite:
                 caseStatus.append(status)
             refFile, userFile = caseStatus
             if any(stat != "Found" for stat in caseStatus):
-                # Case was not run, or failed to produce a database.
-                # In either case, this is an issue.
-                # It could possibly be a new test, but there is no way to tell this
-                # versus a reference file being missing so when a new test is made
-                # it will be an issue. After the first push with the new tests the files
-                # will be copied over and future tests will be fine.
+                # Case was not run, or failed to produce a database. In either case, this is an issue. It could possibly
+                # be a new test, but there is no way to tell this versus a reference file being missing so when a new
+                # test is made it will be an issue. After the first push with the new tests the files will be copied
+                # over and future tests will be fine.
                 caseIssues = 1
                 suiteHasMissingFiles = False
             else:
@@ -276,8 +283,7 @@ class CaseSuite:
         Write inputs for all cases in the suite.
 
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files
-            (short, medium, or full).
+            Writing style for which settings get written back to the settings files (short, medium, or full).
 
         See Also
         --------
@@ -309,7 +315,7 @@ class CaseSuite:
             totalDiffs += caseIssues
 
         print(tabulate.tabulate(data, header, tableFmt=fmt))
-        print(tabulate.tabulate([["Total number of differences: {}".format(totalDiffs)]], tableFmt=fmt))
+        print(tabulate.tabulate([[f"Total number of differences: {totalDiffs}"]], tableFmt=fmt))
 
 
 UNMISSABLE_FAILURE = '''

@@ -445,11 +445,23 @@ class TestSettingsUtils(unittest.TestCase):
     """Tests for utility functions."""
 
     def setUp(self):
+        """
+        Write arbitrary settings to files in the following file structure.
+
+        .. code-block::
+
+            tmpDir/
+            ├── settings1.yaml
+            ├── settings2.yaml
+            ├── notSettings.yaml
+            └── subdir/
+                ├── settings3.yaml
+                └── skipSettings.yaml
+
+        """
         self.dc = directoryChangers.TemporaryDirectoryChanger()
         self.dc.__enter__()
 
-        # Create a little case suite on the fly. Whipping it up from defaults should be
-        # more evergreen than committing settings files as a test resource
         cs = caseSettings.Settings()
         cs.writeToYamlFile("settings1.yaml")
         cs.writeToYamlFile("settings2.yaml")
@@ -462,14 +474,15 @@ class TestSettingsUtils(unittest.TestCase):
     def tearDown(self):
         self.dc.__exit__(None, None, None)
 
-    def test_recursiveScan(self):
-        loadedSettings = settings.recursivelyLoadSettingsFiles(".", ["*.yaml"], ignorePatterns=["skip*"])
-        names = {cs.caseTitle for cs in loadedSettings}
-        self.assertIn("settings1", names)
-        self.assertIn("settings2", names)
-        self.assertIn("settings3", names)
-        self.assertNotIn("skipSettings", names)
+    def test_recursivelyLoadSettingsFiles(self):
+        # test basic error handling
+        with self.assertRaises(AssertionError):
+            settings.recursivelyLoadSettingsFiles(".", "*.yaml")
 
+        with self.assertRaises(AssertionError):
+            settings.recursivelyLoadSettingsFiles(".", ["*.yaml"], ignorePatterns="skip*")
+
+        # find files non-recursively via *.yaml with an ignore pattern skip*
         loadedSettings = settings.recursivelyLoadSettingsFiles(
             ".", ["*.yaml"], recursive=False, ignorePatterns=["skip*"]
         )
@@ -477,6 +490,15 @@ class TestSettingsUtils(unittest.TestCase):
         self.assertIn("settings1", names)
         self.assertIn("settings2", names)
         self.assertNotIn("settings3", names)
+        self.assertNotIn("skipSettings", names)
+
+        # find files recursively via *.yaml with an ignore pattern skip*
+        loadedSettings = settings.recursivelyLoadSettingsFiles(".", ["*.yaml"], ignorePatterns=["skip*"])
+        names = {cs.caseTitle for cs in loadedSettings}
+        self.assertIn("settings1", names)
+        self.assertIn("settings2", names)
+        self.assertIn("settings3", names)
+        self.assertNotIn("skipSettings", names)
 
     def test_prompt(self):
         selection = settings.promptForSettingsFile(1)

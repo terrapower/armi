@@ -25,6 +25,7 @@ from armi import cases, context, getApp, interfaces, plugins, runLog, settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
+from armi.settings import caseSettings
 from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.tests import ARMI_RUN_PATH
 from armi.utils import directoryChangers
@@ -397,8 +398,76 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c1.title = "new_bob"
         self.assertEqual(self.c1.title, "new_bob")
 
+
+class TestCaseSuiteDiscovery(unittest.TestCase):
+    def setUp(self):
+        """
+        Write arbitrary settings to files in the following file structure.
+
+        .. code-block::
+
+            tmpDir/
+            ├── settings1.yaml
+            ├── settings2.yaml
+            ├── notSettings.yaml
+            └── subdir/
+                ├── settings3.yaml
+                └── skipSettings.yaml
+
+        """
+        self.dc = directoryChangers.TemporaryDirectoryChanger()
+        self.dc.__enter__()
+
+        cs = caseSettings.Settings()
+        cs.writeToYamlFile("settings1.yaml")
+        cs.writeToYamlFile("settings2.yaml")
+        with open("notSettings.yaml", "w") as f:
+            f.write("some: other\nyaml: file\n")
+        os.mkdir("subdir")
+        cs.writeToYamlFile("subdir/settings3.yaml")
+        cs.writeToYamlFile("subdir/skipSettings.yaml")
+
+    def tearDown(self):
+        self.dc.__exit__(None, None, None)
+
     def test_discover(self):
-        pass
+        """Test CaseSuit.discover().
+
+        Notes
+        -----
+        All of these examples have ``skipInspection=True``, because these are just dumb test settings.
+        """
+        cs = settings.Settings()
+
+        # find all YAML files, recursively in the test dir, fully explicity inputs
+        suite = cases.CaseSuite(cs)
+        self.assertEqual(len(suite), 0)
+        suite.discover(rootDir=".", patterns=["*.yaml"], ignorePatterns=["skip*"], recursive=True, skipInspection=True)
+        self.assertEqual(len(suite), 3)
+
+        # find all YAML files, recursively in the test dir, implicit file ending
+        suite = cases.CaseSuite(cs)
+        self.assertEqual(len(suite), 0)
+        suite.discover(rootDir=".", ignorePatterns=["skip*"], recursive=True, skipInspection=True)
+        self.assertEqual(len(suite), 3)
+
+        # find all YAML files in the subdir, recursively in the test dir, implicit file ending
+        suite = cases.CaseSuite(cs)
+        self.assertEqual(len(suite), 0)
+        suite.discover(rootDir="subdir", skipInspection=True)
+        self.assertEqual(len(suite), 2)
+
+        # find all YAML files starting with "settings*", not recursively, implicit file ending
+        suite = cases.CaseSuite(cs)
+        self.assertEqual(len(suite), 0)
+        suite.discover(rootDir=".", patterns=["settings*"], recursive=False, skipInspection=True)
+        self.assertEqual(len(suite), 2)
+
+        # find all YAML files starting with "settings", not recursively, implicit file ending
+        suite = cases.CaseSuite(cs)
+        self.assertEqual(len(suite), 0)
+        suite.discover(rootDir=".", patterns=["settings"], recursive=False, skipInspection=True)
+        self.assertEqual(len(suite), 2)
 
 
 class TestCaseSuiteComparison(unittest.TestCase):
