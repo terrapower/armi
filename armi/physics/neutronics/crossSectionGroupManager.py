@@ -525,7 +525,7 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
 
     def getNumberDensitiesWithTrace(component, allNucNames):
         """Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature."""
-        if component.p.nuclides is None:
+        if len(component.p.nuclides) == 0:
             return [0.0 for _nuc in allNucNames]
 
         allByteNucs = [nucName.encode() for nucName in allNucNames]

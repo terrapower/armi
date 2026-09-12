@@ -615,8 +615,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        if self.p.nuclides is None:
-            return []
         return [nucName.decode() for nucName in self.p.nuclides]
 
     def getNumberDensity(self, nucName):
@@ -646,7 +644,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             byteNucs = [nucName.encode() for nucName in nucNames]
 
-        if self.p.numberDensities is None:
+        if len(self.p.numberDensities) == 0:
             return np.zeros(len(byteNucs), dtype=np.float64)
 
         # trivial case where nucNames is the full set of nuclides in the same order
@@ -763,7 +761,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # prepare to change the densities with knowledge that dims could change due to material
         # thermal expansion dependence on composition
-        if self.p.numberDensities is not None and self.p.numberDensities.size > 0:
+        if self.p.numberDensities.size > 0:
             dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             materialExpansion = True
         else:
@@ -818,8 +816,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        if self.p.numberDensities is not None:
-            self.p.numberDensities *= factor
+        self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):

@@ -219,6 +219,35 @@ def isNumpyArray(paramStr):
     return setParameter
 
 
+def isNumpyArrayNotNone(paramStr):
+    """Helper meta-function to create a method that sets a Parameter value to a NumPy array, avoiding non-iterable None.
+
+    This can be used as a setter for parameters that are expected to always be iterable in ARMI (for example, c.p.nuclides
+    and c.p.numberDensities). When nuclide information is missing, this setter will set them to length-0 NumPy arrays
+    instead of None.
+
+    Parameters
+    ----------
+    paramStr : str
+        Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a NumPy array.
+    """
+
+    def setParameter(selfObj, value):
+        if value is None:
+            setattr(selfObj, "_p_" + paramStr, np.array(()))
+        elif isinstance(value, np.ndarray):
+            setattr(selfObj, "_p_" + paramStr, value)
+        else:
+            setattr(selfObj, "_p_" + paramStr, np.array(value))
+
+    return setParameter
+
+
 def isNumpyF32Array(paramStr: str):
     """Helper meta-function to create a method that sets a Parameter value to a 32 bit float NumPy array.
 
