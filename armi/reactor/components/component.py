@@ -637,7 +637,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return 0.0
 
-    def getNuclideNumberDensities(self, nucNames: Iterable[str | np.bytes_]) -> np.ndarray:
+    def getNuclideNumberDensities(self, nucNames: Iterable[str, np.bytes_]) -> np.ndarray:
         """
         Return a list of number densities for the nuc names requested.
 
