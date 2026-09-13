@@ -20,7 +20,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Union
+from typing import Iterable, Union
 
 import numpy as np
 
@@ -637,15 +637,23 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return 0.0
 
-    def getNuclideNumberDensities(self, nucNames: list[str]) -> list[float]:
-        """Return a list of number densities for the nuc names requested."""
+    def getNuclideNumberDensities(self, nucNames: Iterable[str | np.bytes_]) -> np.ndarray:
+        """
+        Return a list of number densities for the nuc names requested.
+
+        Parameters
+        ----------
+        nucNames : Iterable[str | np.bytes_]
+            Nuclide names (as string or byte strings) for which to retrieve number densities.
+
+        Returns
+        -------
+        Numpy array of the requested nuclide number densities.
+        """
         if isinstance(nucNames, (list, tuple, np.ndarray)):
             byteNucs = np.asanyarray(nucNames, dtype="S6")
         else:
-            byteNucs = [nucName.encode() for nucName in nucNames]
-
-        if len(self.p.numberDensities) == 0:
-            return np.zeros(len(byteNucs), dtype=np.float64)
+            byteNucs = np.asanyarray([nucName.encode() for nucName in nucNames], dtype="S6")
 
         # trivial case where nucNames is the full set of nuclides in the same order
         if np.array_equal(byteNucs, self.p.nuclides):
@@ -655,7 +663,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             return self._getNumberDensitiesArray(byteNucs)
 
         nDensDict = dict(zip(self.p.nuclides, self.p.numberDensities))
-        return [nDensDict.get(nuc, 0.0) for nuc in byteNucs]
+        return np.array([nDensDict.get(nuc, 0.0) for nuc in byteNucs])
 
     def _getNumberDensitiesArray(self, byteNucs):
         """
