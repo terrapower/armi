@@ -731,7 +731,6 @@ class TestCompositeTree(unittest.TestCase):
         with self.assertRaises(ValueError):
             otherBlock < self.block
 
-
     def test_clearCache(self):
         """Test that clearCache clears the volume parameter."""
         # Force volume to be computed
