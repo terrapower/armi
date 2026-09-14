@@ -731,6 +731,18 @@ class TestCompositeTree(unittest.TestCase):
         with self.assertRaises(ValueError):
             otherBlock < self.block
 
+
+    def test_clearCache(self):
+        """Test that clearCache clears the volume parameter."""
+        # Force volume to be computed
+        for child in self.block:
+            child.getVolume()
+            self.assertIsInstance(child.p.volume, float)
+
+        self.block.clearCache()
+        for child in self.block:
+            self.assertIs(child.p.volume, None)
+
     def test_getAncestorWithFlags(self):
         # this test block is not part of an assembly, so it should not have a parent/ancestor
         parent = self.block.getAncestorWithFlags(Flags.FUEL)
