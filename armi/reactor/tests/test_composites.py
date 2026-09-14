@@ -658,7 +658,7 @@ class TestCompositeTree(unittest.TestCase):
             shape: Circle
             material: HT9
             Tinput: 450.0
-       e     Thot: 450.0
+            Thot: 450.0
             id: 1.09
             od: 1.1
             mult: 7
