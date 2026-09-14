@@ -2813,11 +2813,6 @@ class Composite(ArmiObject):
 
         return tempNumerator / totalVol
 
-    def resolveLinkedDims(self, components):
-        """Resolve link strings to links on all child components."""
-        for component in self.iterComponents():
-            component.resolveLinkedDims(components)
-
     def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return the first sample of the most dominant material (by volume) in this object.
