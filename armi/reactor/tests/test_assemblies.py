@@ -802,7 +802,7 @@ class TestAssembly(unittest.TestCase):
         ## All powers are positive, so turning off absolute should yield the same answer
         self.assertAlmostEqual(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
         ## All children have the same height, so weighting by the height should yield the same answer
-        self.assertAlmostEqual(self.assembly.calcAvgParam("power", weightingParam='height'), refAvgPower)
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", weightingParam="height"), refAvgPower)
 
         # Add a dummy child that should skew the average up, ensure that the average power is greater than before
         testBlock = self.assembly._children[-1].createHomogenizedCopy()
@@ -811,7 +811,7 @@ class TestAssembly(unittest.TestCase):
         self.assertGreater(self.assembly.calcAvgParam("power"), refAvgPower)
         self.assertGreater(self.assembly.calcAvgParam("power", volumeAveraged=False), refAvgPower)
         self.assertGreater(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
-        self.assertGreater(self.assembly.calcAvgParam("power", weightingParam='height'), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", weightingParam="height"), refAvgPower)
 
         # Cleanup
         self.assembly.remove(testBlock)

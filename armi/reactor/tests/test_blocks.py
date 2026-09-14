@@ -1016,6 +1016,7 @@ class TestBlock(unittest.TestCase):
 
     def test_getHMMoles(self):
         from armi.utils import units
+
         refComp = self._densityHelper()
 
         refHMMoles = 0.0
@@ -1029,7 +1030,6 @@ class TestBlock(unittest.TestCase):
 
         places = 6
         self.assertAlmostEqual(testHMMoles, refHMMoles, places=places)
-
 
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
