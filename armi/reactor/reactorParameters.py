@@ -95,8 +95,6 @@ def defineCoreParameters():
             default=0,
         )
 
-        pb.defParam("numMoves", units=units.UNITLESS, description="numMoves", default=0)
-
     with pDefs.createBuilder() as pb:
         pb.defParam(
             "axialMesh",

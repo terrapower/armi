@@ -107,8 +107,6 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam("maxPercentBu", units=units.PERCENT, description="maxPercentBu")
 
-        pb.defParam("numMoves", units=units.UNITLESS, description="numMoves")
-
         pb.defParam("timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6)
 
         pb.defParam(

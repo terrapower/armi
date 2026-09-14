@@ -93,7 +93,6 @@ class Core(composites.Composite):
         self.numRings = 0
         self.spatialGrid = None
         self.xsIndex = {}
-        self.p.numMoves = 0
         self._lib = None  # placeholder for ISOTXS object
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.
@@ -2084,10 +2083,10 @@ class Core(composites.Composite):
 
         return converter
 
-    def setPitchUniform(self, pitchInCm):
-        """Set the pitch in all blocks."""
-        for b in self.iterBlocks():
-            b.setPitch(pitchInCm)
+    def setPitchUniform(self, pitchInCm: float):
+        """Set the pitch in all contained assemblies."""
+        for a in self:
+            a.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
         self.spatialGrid.changePitch(pitchInCm)

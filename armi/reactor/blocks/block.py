@@ -1316,6 +1316,9 @@ class Block(composites.Composite):
         if updateBolParams:
             self.completeInitialLoading()
 
+        # Area may have changed which means volume may have changed
+        self.clearCache()
+
     def getMfp(self, gamma=False):
         r"""
         Calculate the mean free path for neutron or gammas in this block.

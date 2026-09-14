@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-The reactor package houses the data model used in ARMI to represent the reactor during its
-simulation. It contains definitions of the reactor, assemblies, blocks, components, etc.
+"""
+The reactor package houses the data model used in ARMI to represent the reactor during its simulation. It contains
+definitions of the reactor, assemblies, blocks, components, etc.
 
 See :doc:`/developer/index`.
 """
