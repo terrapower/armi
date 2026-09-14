@@ -814,6 +814,9 @@ class TestAssembly(unittest.TestCase):
         self.assertGreater(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
         self.assertGreater(self.assembly.calcAvgParam("power", weightingParam='height'), refAvgPower)
 
+        # Cleanup
+        self.assembly.remove(testBlock)
+
     def test_calcTotalParam(self):
         # Remake original assembly
         self.assembly = buildEmptyHexAssembly(self.assemNum, self.assemNum)
