@@ -1027,6 +1027,9 @@ class TestCompositeTree(unittest.TestCase):
         testFuel = self.block.getDominantMaterial(Flags.FUEL)
         self.assertEqual(refFuel.material, testFuel)
 
+        # Cleanup
+        self.block.remove(refFuel)
+
     def test_getVolume(self):
         """Test getVolume"""
         from armi.reactor import blocks

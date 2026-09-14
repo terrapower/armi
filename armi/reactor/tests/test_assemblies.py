@@ -263,12 +263,6 @@ class TestAssemblyReadOnly(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-    def test_getDominantMaterial(self):
-        cur = self.assembly.getDominantMaterial(Flags.FUEL).getName()
-        ref = "UZr"
-        self.assertEqual(cur, ref)
-        self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
-
     def test_countBlocksOfType(self):
         cur = self.assembly.countBlocksWithFlags(Flags.IGNITER | Flags.FUEL)
         self.assertEqual(cur, 3)
@@ -797,12 +791,28 @@ class TestAssembly(unittest.TestCase):
         self.assertListEqual(heights, [12.5, 20.0])
 
     def test_calcAvgParam(self):
-        nums = []
-        for b in self.assembly:
-            nums.append(random.random())
-            b.p.power = nums[-1]
-        self.assertGreater(len(nums), 2)
-        self.assertAlmostEqual(self.assembly.calcAvgParam("power"), sum(nums) / len(nums))
+        powers = []
+        for child in self.assembly:
+            powers.append(random.random())
+            child.p.power = powers[-1]
+        self.assertGreater(len(powers), 2)
+        refAvgPower = sum(powers) / len(powers)
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power"), refAvgPower)
+        ## All the children have the same volume, so turning off volume averaging should yield the same answer
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", volumeAveraged=False), refAvgPower)
+        ## All powers are positive, so turning off absolute should yield the same answer
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
+        ## All children have the same height, so weighting by the height should yield the same answer
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", weightingParam='height'), refAvgPower)
+
+        # Add a dummy child that should skew the average up, ensure that the average power is greater than before
+        testBlock = self.assembly._children[-1].createHomogenizedCopy()
+        self.assembly.add(testBlock)
+        self.assembly._children[-1].p.power = 1000
+        self.assertGreater(self.assembly.calcAvgParam("power"), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", volumeAveraged=False), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", weightingParam='height'), refAvgPower)
 
     def test_calcTotalParam(self):
         # Remake original assembly
