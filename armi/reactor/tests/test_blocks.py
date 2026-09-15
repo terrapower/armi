@@ -33,6 +33,7 @@ from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
@@ -66,8 +67,6 @@ def getComponentData(component):
 
 class TestDetailedNDensUpdate(unittest.TestCase):
     def test_updateDetailedNdens(self):
-        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
-
         cs = settings.Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
@@ -1015,8 +1014,6 @@ class TestBlock(unittest.TestCase):
         self.assertAlmostEqual(testHMDens, refHMDens, places=places)
 
     def test_getHMMoles(self):
-        from armi.utils import units
-
         refComp = self._densityHelper()
 
         refHMMoles = 0.0
