@@ -33,6 +33,7 @@ from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
@@ -66,8 +67,6 @@ def getComponentData(component):
 
 class TestDetailedNDensUpdate(unittest.TestCase):
     def test_updateDetailedNdens(self):
-        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
-
         cs = settings.Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
@@ -973,58 +972,61 @@ class TestBlock(unittest.TestCase):
         ref = 0.0
         self.assertEqual(cur, ref)
 
+    def _densityHelper(self):
+        self.block.setType("fuel")
+        self.block.clearNumberDensities()
+        refDict = {
+            "U235": 0.00275173784234,
+            "U238": 0.0217358415457,
+            "W182": 1.09115150103e-05,
+            "W183": 5.89214392093e-06,
+            "W184": 1.26159558164e-05,
+            "W186": 1.17057432664e-05,
+            "ZR": 0.00709003962772,
+        }
+        self.block.setNumberDensities(refDict)
+        return refDict
+
     def test_getTotalNDens(self):
-        self.block.setType("fuel")
+        refComp = self._densityHelper()
 
-        self.block.clearNumberDensities()
-        refDict = {
-            "U235": 0.00275173784234,
-            "U238": 0.0217358415457,
-            "W182": 1.09115150103e-05,
-            "W183": 5.89214392093e-06,
-            "W184": 1.26159558164e-05,
-            "W186": 1.17057432664e-05,
-            "ZR": 0.00709003962772,
-        }
-        self.block.setNumberDensities(refDict)
+        refNDens = 0.0
+        for nucName in refComp.keys():
+            refNDens += self.block.getNumberDensity(nucName)
 
-        cur = self.block.getTotalNDens()
+        testNDens = self.block.getTotalNDens()
 
-        tot = 0.0
-        for nucName in refDict.keys():
-            ndens = self.block.getNumberDensity(nucName)
-            tot += ndens
-
-        ref = tot
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(testNDens, refNDens, places=places)
 
-    def test_getHMDens(self):
-        self.block.setType("fuel")
-        self.block.clearNumberDensities()
-        refDict = {
-            "U235": 0.00275173784234,
-            "U238": 0.0217358415457,
-            "W182": 1.09115150103e-05,
-            "W183": 5.89214392093e-06,
-            "W184": 1.26159558164e-05,
-            "W186": 1.17057432664e-05,
-            "ZR": 0.00709003962772,
-        }
-        self.block.setNumberDensities(refDict)
+    def test_getHMDensandHMMoles(self):
+        refComp = self._densityHelper()
 
-        cur = self.block.getHMDens()
-
-        hmDens = 0.0
-        for nuclide in refDict.keys():
+        refHMDens = 0.0
+        for nuclide in refComp.keys():
             if nucDir.isHeavyMetal(nuclide):
                 # then nuclide is a HM
-                hmDens += self.block.getNumberDensity(nuclide)
+                refHMDens += self.block.getNumberDensity(nuclide)
 
-        ref = hmDens
+        testHMDens = self.block.getHMDens()
 
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(testHMDens, refHMDens, places=places)
+
+    def test_getHMMoles(self):
+        refComp = self._densityHelper()
+
+        refHMMoles = 0.0
+        for nuclide in refComp.keys():
+            if nucDir.isHeavyMetal(nuclide):
+                # then nuclide is a HM
+                refHMMoles += self.block.getNumberDensity(nuclide)
+        refHMMoles *= self.block.getVolume() / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+
+        testHMMoles = self.block.getHMMoles()
+
+        places = 6
+        self.assertAlmostEqual(testHMMoles, refHMMoles, places=places)
 
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}

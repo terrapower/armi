@@ -267,7 +267,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all classes
-    * Declares an interface for accessing and managing child objects
     * Defines an interface for accessing parents.
 
     Called "component" in gang of four, this is an ArmiObject here because the word component was
@@ -395,23 +394,16 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        This ArmiObject may have lost a reference to its parent. If the parent was also
-        pickled (serialized), then the parent should update the ``.parent`` attribute
-        during its own ``__setstate__``. That means within the context of
-        ``__setstate__`` one should not rely upon ``self.parent``.
+        This ArmiObject may have lost a reference to its parent. If the parent (a Composite or Composite
+        subclass) was
+        also pickled (serialized), then the parent should update the ``.parent`` attribute during its own
+        ``__setstate__`` call. That means within the context of ``__setstate__`` one should not rely upon
+        ``self.parent``.
         """
         self.__dict__.update(state)
 
         if self.spatialGrid is not None:
             self.spatialGrid.armiObject = self
-            # Spatial locators also get disassociated with their grids when detached;
-            # make sure they get hooked back up
-            for c in self:
-                c.spatialLocator.associate(self.spatialGrid)
-
-        # now "reattach" children
-        for c in self:
-            c.parent = self
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.name}>"
@@ -432,10 +424,6 @@ class ArmiObject(metaclass=CompositeModelType):
         regardless of its contents.
         """
         return True
-
-    def __add__(self, other):
-        """Return a list of all children in this and another object."""
-        return self.getChildren() + other.getChildren()
 
     @property
     def nuclideBases(self):
@@ -459,12 +447,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError
 
-    def clearCache(self):
-        """Clear the cache so all new values are recomputed."""
-        self.cached = {}
-        for child in self:
-            child.clearCache()
-
     def _getCached(self, name):
         """
         Obtain a value from the cache.
@@ -484,6 +466,10 @@ class ArmiObject(metaclass=CompositeModelType):
         _getCached : returns a previously-cached value
         """
         self.cached[name] = val
+
+    def clearCache(self):
+        """Clear the cache so all new values are recomputed."""
+        self.cached = {}
 
     def copyParamsFrom(self, other):
         """
@@ -510,35 +496,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def iterChildren(
-        self,
-        deep=False,
-        generationNum=1,
-        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
-    ) -> Iterator["ArmiObject"]:
-        """Iterate over children of this object."""
-        raise NotImplementedError()
-
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False) -> list["ArmiObject"]:
-        """Return the children of this object."""
-        raise NotImplementedError()
-
-    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> Iterator["ArmiObject"]:
-        """Produce an iterator of children that have given flags."""
-        return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> list["ArmiObject"]:
-        """Get all children that have given flags."""
-        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
-
-    def iterChildrenOfType(self, typeName: str) -> Iterator["ArmiObject"]:
-        """Iterate over children that have a specific input type name."""
-        return self.iterChildren(predicate=lambda o: o.getType() == typeName)
-
-    def getChildrenOfType(self, typeName: str) -> list["ArmiObject"]:
-        """Produce a list of children that have a specific input type name."""
-        return list(self.iterChildrenOfType(typeName))
-
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return all armi.reactor.component.Component within this Composite.
@@ -563,68 +520,6 @@ class ArmiObject(metaclass=CompositeModelType):
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """Yield components one by one in a generator."""
         raise NotImplementedError()
-
-    def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
-        """
-        Generator that yields True if the next child has given flags.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Requested type of the child
-        """
-        for c in self.getChildren(deep):
-            if c.hasFlags(typeSpec, exact=False):
-                yield True
-            else:
-                yield False
-
-    def containsAtLeastOneChildWithFlags(self, typeSpec: TypeSpec):
-        """
-        Return True if any of the children are of a given type.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Requested type of the children
-
-        See Also
-        --------
-        self.doChildrenHaveFlags
-        self.containsOnlyChildrenWithFlags
-        """
-        return any(self.doChildrenHaveFlags(typeSpec))
-
-    def containsOnlyChildrenWithFlags(self, typeSpec: TypeSpec):
-        """
-        Return True if all of the children are of a given type.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Requested type of the children
-
-        See Also
-        --------
-        self.doChildrenHaveFlags
-        self.containsAtLeastOneChildWithFlags
-        """
-        return all(self.doChildrenHaveFlags(typeSpec))
-
-    def copyParamsToChildren(self, paramNames):
-        """
-        Copy param values in paramNames to all children.
-
-        Parameters
-        ----------
-        paramNames : list
-            List of param names to copy to children
-
-        """
-        for paramName in paramNames:
-            myVal = self.p[paramName]
-            for c in self:
-                c.p[paramName] = myVal
 
     @classmethod
     def getParameterCollection(cls):
@@ -820,57 +715,10 @@ class ArmiObject(metaclass=CompositeModelType):
         self.p.type = typ
 
     def getVolume(self):
-        return sum(child.getVolume() for child in self)
+        raise NotImplementedError()
 
     def getArea(self, cold=False):
-        return sum(child.getArea(cold) for child in self)
-
-    def _updateVolume(self):
-        """Recompute and store volume."""
-        children = self.getChildren()
-        # Derived shapes must come last so we temporarily change the order if we
-        # have one.
-        from armi.reactor.components import DerivedShape
-
-        for child in children[:]:
-            if isinstance(child, DerivedShape):
-                children.remove(child)
-                children.append(child)
-        for child in children:
-            child._updateVolume()
-
-    def getVolumeFractions(self):
-        """
-        Return volume fractions of each child.
-
-        Sets volume or area of missing piece (like coolant) if it exists.  Caching would
-        be nice here.
-
-        Returns
-        -------
-        fracs : list
-            list of (component, volFrac) tuples
-
-        See Also
-        --------
-        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
-
-        Notes
-        -----
-        void areas can be negative in gaps between fuel/clad/liner(s), but these
-        negative areas are intended to account for overlapping positive areas to insure
-        the total area of components inside the clad is accurate. See
-        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
-        """
-        children = self.getChildren()
-        numerator = [c.getVolume() for c in children]
-        denom = sum(numerator)
-        if denom == 0.0:
-            numerator = [c.getArea() for c in children]
-            denom = sum(numerator)
-
-        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
-        return fracs
+        raise NotImplementedError()
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
@@ -895,14 +743,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
-        .. impl:: Return mass of composite.
-            :id: I_ARMI_CMP_GET_MASS
-            :implements: R_ARMI_CMP_GET_MASS
-
-            This method allows for the querying of the mass of a Composite.
-            If the ``nuclideNames`` argument is included, it will filter for the mass
-            of those nuclide names and provide the sum of the mass of those nuclides.
-
         Parameters
         ----------
         nuclideNames
@@ -914,7 +754,7 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
+        raise NotImplementedError()
 
     def getMassFrac(self, nucName):
         """
@@ -1209,64 +1049,30 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError
 
-    def getNumberDensity(self, nucName):
-        """
-        Return the number density of a nuclide in atoms/barn-cm.
-
-        .. impl:: Get number density for a specific nuclide
-            :id: I_ARMI_CMP_NUC0
-            :implements: R_ARMI_CMP_NUC
-
-            This method queries the number density
-            of a specific nuclide within the Composite. It invokes the
-            ``getNuclideNumberDensities`` method for just the requested nuclide.
-
-        Notes
-        -----
-        This can get called very frequently and has to do volume computations so should
-        use some kind of caching that is invalidated by any temperature, composition,
-        etc. changes. Even with caching the volume calls are still somewhat expensive so
-        prefer the methods in see also.
-
-        See Also
-        --------
-        ArmiObject.getNuclideNumberDensities: More efficient for >1 specific nuc density is needed.
-        ArmiObject.getNumberDensities: More efficient for when all nucs in object is needed.
-        """
-        return self.getNuclideNumberDensities([nucName])[0]
-
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested.
 
-        .. impl:: Get number densities for specific nuclides.
-            :id: I_ARMI_CMP_NUC1
-            :implements: R_ARMI_CMP_NUC
-
-            This method provides the capability to query the volume weighted number
-            densities for a list of nuclides within a given Composite. It provides the
-            result in units of atoms/barn-cm. The volume weighting is accomplished by
-            multiplying the number densities within each child Composite by the volume
-            of the child Composite and dividing by the total volume of the Composite.
+        Parameters
+        ----------
+        nucNames : list of str
+            Nuclide names to get number densities for, e.g. ['U233', 'U235', 'Pu239']
         """
-        volumes = np.array([c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0) for c in self])  # c x 1
-        totalVol = volumes.sum()
-        if totalVol == 0.0:
-            # there are no children so no volume or number density
-            return [0.0] * len(nucNames)
-
-        nucDensForEachComp = np.array([c.getNuclideNumberDensities(nucNames) for c in self])  # c x n
-        return volumes.dot(nucDensForEachComp) / totalVol
+        raise NotImplementedError
 
     def _getNdensHelper(self):
-        """
-        Return a number densities dict with unexpanded lfps.
+        """Return a number densities dict with unexpanded lfps."""
+        raise NotImplementedError
 
-        Notes
-        -----
-        This is implemented more simply on the component level.
+    def getNumberDensity(self, nucName):
+        """Return the number density of a nuclide in atoms/barn-cm.
+
+        Parameters
+        ----------
+        nucName : str
+            Nuclide name to get number density for, e.g. 'U233'.
+
         """
-        nucNames = self.getNuclides()
-        return dict(zip(nucNames, self.getNuclideNumberDensities(nucNames)))
+        raise NotImplementedError
 
     def getNumberDensities(self, expandFissionProducts=False):
         """
@@ -1326,11 +1132,6 @@ class ArmiObject(metaclass=CompositeModelType):
                     "an lfpCollection."
                 )
         return numberDensities
-
-    def getChildrenWithNuclides(self, nucNames):
-        """Return children that contain any nuclides in nucNames."""
-        nucNames = set(nucNames)  # only convert to set once
-        return [child for child in self if nucNames.intersection(child.getNuclides())]
 
     def getAncestor(self, fn):
         """
@@ -1412,24 +1213,14 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Set the number density of this nuclide to this value.
 
-        This distributes atom density evenly across all children that contain nucName.
-        If the nuclide doesn't exist in any of the children, then that's actually an
-        error. This would only happen if some unnatural nuclide like Pu239 built up in
-        fresh UZr. That should be anticipated and dealt with elsewhere.
+        Parameters
+        ----------
+        nucName : str
+            Nuclide number density to modify
+        val : float
+            Number density to set in atoms/bn-cm (heterogeneous)
         """
-        activeChildren = self.getChildrenWithNuclides({nucName})
-        if not activeChildren:
-            activeVolumeFrac = 1.0
-            if val:
-                raise ValueError(
-                    f"The nuclide {nucName} does not exist in any children of {self}; "
-                    f"cannot set its number density to {val}. The nuclides here are: {self.getNuclides()}"
-                )
-        else:
-            activeVolumeFrac = sum(vf for ci, vf in self.getVolumeFractions() if ci in activeChildren)
-        dehomogenizedNdens = val / activeVolumeFrac  # scale up to dehomogenize on children.
-        for child in activeChildren:
-            child.setNumberDensity(nucName, dehomogenizedNdens)
+        raise NotImplementedError
 
     def setNumberDensities(self, numberDensities):
         """
@@ -1439,26 +1230,12 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         numberDensities : dict
             nucName: ndens pairs.
-
-        Notes
-        -----
-        We'd like to not have to call setNumberDensity for each nuclide because we don't
-        want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
         """
-        numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
-        self.updateNumberDensities(numberDensities)
+        raise NotImplementedError
 
     def updateNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
-
-        This changes a nuclide number density only on children that already have that
-        nuclide, thereby allowing, for example, actinides to stay in the fuel component
-        when setting block-level values.
-
-        The complication is that various number densities are distributed among various
-        components. This sets the number density for each nuclide evenly across all
-        components that contain it.
 
         Parameters
         ----------
@@ -1466,53 +1243,11 @@ class ArmiObject(metaclass=CompositeModelType):
             nucName: ndens pairs.
 
         """
-        children, volFracs = zip(*self.getVolumeFractions())
-        childNucs = tuple(set(child.getNuclides()) for child in children)
-
-        allDehomogenizedNDens = collections.defaultdict(dict)
-
-        # compute potentially-different homogenization factors for each child.  evenly
-        # distribute entire number density over the subset of active children.
-        for nuc, dens in numberDensities.items():
-            # get "active" indices, i.e., indices of children containing nuc
-            # NOTE: this is one of the rare instances in which (imo), using explicit
-            # indexing clarifies subsequent code since it's not necessary to zip +
-            # filter + extract individual components (just extract by filtered index).
-            indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
-
-            if not indiciesToSet:
-                if dens == 0:
-                    # density is zero, skip
-                    continue
-
-                # This nuc doesn't exist in any children but is to be set.
-                # Evenly distribute it everywhere.
-                childrenToSet = children
-                dehomogenizedNDens = dens / sum(volFracs)
-
-            else:
-                childrenToSet = tuple(children[i] for i in indiciesToSet)
-                dehomogenizedNDens = dens / sum(volFracs[i] for i in indiciesToSet)
-
-            for child in childrenToSet:
-                allDehomogenizedNDens[child][nuc] = dehomogenizedNDens
-
-        # apply the child-dependent ndens vectors to the children
-        for child, ndens in allDehomogenizedNDens.items():
-            child.updateNumberDensities(ndens)
+        raise NotImplementedError
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
-        self.setNumberDensities(densitiesScaled)
-
-        # Update detailedNDens if it exists (Components only)
-        if self.p.get("detailedNDens", None) is not None:
-            self.p.detailedNDens *= factor
-
-        # Update pinNDens if it exists (Components only)
-        if self.p.get("pinNDens", None) is not None:
-            self.p.pinNDens *= factor
+        raise NotImplementedError
 
     def clearNumberDensities(self):
         """
@@ -1556,10 +1291,6 @@ class ArmiObject(metaclass=CompositeModelType):
     def setLumpedFissionProducts(self, lfpCollection):
         self._lumpedFissionProducts = lfpCollection
 
-    def setChildrenLumpedFissionProducts(self, lfpCollection):
-        for c in self:
-            c.setLumpedFissionProducts(lfpCollection)
-
     def getFissileMassEnrich(self):
         """Returns the fissile mass enrichment."""
         hm = self.getHMMass()
@@ -1578,262 +1309,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return fissileU / totalU
 
-    def calcTotalParam(
-        self,
-        param,
-        objs=None,
-        volumeIntegrated=False,
-        addSymmetricPositions=False,
-        typeSpec: TypeSpec = None,
-        generationNum=1,
-        calcBasedOnFullObj=False,
-    ):
-        """
-        Sums up a parameter throughout the object's children or list of objects.
-
-        Parameters
-        ----------
-        param : str
-            Name of the block parameter to sum
-
-        objs : iterable, optional
-            A list of objects to sum over. If none, all children in object will be used
-
-        volumeIntegrated : bool, optional
-            Integrate over volume
-
-        addSymmetricPositions : bool, optional
-            If True, will multiply by the symmetry factor of the core (3 for 1/3 models,
-            1 for full core models)
-
-        typeSpec : TypeSpec
-            object types to restrict to
-
-        generationNum : int, optional
-            Which generation to consider. 1 means direct children, 2 means children of
-            children. Default: Just return direct children.
-
-        calcBasedOnFullObj : bool, optional
-            Some assemblies or blocks, such as the center assembly in a third core
-            model, are not modeled as full assemblies or blocks. In the third core model
-            objects at these positions are modeled as having 1/3 the volume and thus 1/3
-            the power. Setting this argument to True will apply the full value of the
-            parameter as if it was a full block or assembly.
-        """
-        tot = 0.0
-        if objs is None:
-            objs = self.getChildren(generationNum=generationNum)
-
-        if addSymmetricPositions:
-            if calcBasedOnFullObj:
-                raise ValueError(
-                    "AddSymmetricPositions is Incompatible with calcBasedOnFullObj. Will result in double counting."
-                )
-            try:
-                coreMult = self.powerMultiplier
-            except AttributeError:
-                coreMult = self.parent.powerMultiplier
-            if not coreMult:
-                raise ValueError(f"powerMultiplier is equal to {coreMult}")
-        else:
-            coreMult = 1.0
-
-        for a in objs:
-            if not a.hasFlags(typeSpec):
-                continue
-
-            mult = a.getVolume() if volumeIntegrated else 1.0
-            if calcBasedOnFullObj:
-                mult *= a.getSymmetryFactor()
-
-            tot += a.p[param] * mult
-
-        return tot * coreMult
-
-    def calcAvgParam(
-        self,
-        param,
-        typeSpec: TypeSpec = None,
-        weightingParam=None,
-        volumeAveraged=True,
-        absolute=True,
-        generationNum=1,
-    ):
-        r"""
-        Calculate the child-wide average of a parameter.
-
-        Parameters
-        ----------
-        param : str
-            The ARMI block parameter that you want the average from
-
-        typeSpec : TypeSpec
-            The child types that should be included in the calculation. Restrict average
-            to a certain child type with this parameter.
-
-        weightingParam : None or str, optional
-             An optional block param that the average will be weighted against
-
-        volumeAveraged : bool, optional
-            volume (or height, or area) average this param
-
-        absolute : bool, optional
-            Returns the average of the absolute value of param
-
-        generationNum : int, optional
-            Which generation to average over (1 for children, 2 for grandchildren)
-
-
-        The weighted sum is:
-
-        .. math::
-
-            \left<\text{x}\right> = \frac{\sum_{i} x_i w_i}{\sum_i w_i}
-
-        where :math:`i` is each child, :math:`x_i` is the param value of the i-th child,
-        and :math:`w_i` is the weighting param value of the i-th child.
-
-        Warning
-        -------
-        If a param is unset/zero on any of the children, this will be included in the
-        average and may significantly perturb results.
-
-        Returns
-        -------
-        float
-            The average parameter value.
-        """
-        total = 0.0
-        weightSum = 0.0
-        for child in self.getChildren(generationNum=generationNum):
-            if child.hasFlags(typeSpec):
-                if weightingParam:
-                    weight = child.p[weightingParam]
-                    if weight < 0:
-                        # Just for conservatism, do not allow negative weights.
-                        raise ValueError(f"Weighting value ({weightingParam},{weight}) cannot be negative.")
-                else:
-                    weight = 1.0
-
-                if volumeAveraged:
-                    weight *= child.getVolume()
-
-                weightSum += weight
-                if absolute:
-                    total += abs(child.p[param]) * weight
-                else:
-                    total += child.p[param] * weight
-        if not weightSum:
-            raise ValueError(
-                f"Cannot calculate {weightingParam}-weighted average of {param} in {self}. "
-                f"Weights sum to zero. typeSpec is {typeSpec}"
-            )
-        return total / weightSum
-
-    def getMaxParam(
-        self,
-        param,
-        typeSpec: TypeSpec = None,
-        absolute=True,
-        generationNum=1,
-        returnObj=False,
-    ):
-        """
-        Find the maximum value for the parameter in this container.
-
-        Parameters
-        ----------
-        param : str
-            block parameter that will be sought.
-
-        typeSpec : TypeSpec
-            restricts the search to cover a variety of block types.
-
-        absolute : bool
-            looks for the largest magnitude value, regardless of sign, default: true
-
-        returnObj : bool, optional
-            If true, returns the child object as well as the value.
-
-        Returns
-        -------
-        maxVal : float
-            The maximum value of the parameter asked for
-        obj : child object
-            The object that has the max (only returned if ``returnObj==True``)
-        """
-        compartor = lambda x, y: x > y
-        return self._minMaxHelper(
-            param,
-            typeSpec,
-            absolute,
-            generationNum,
-            returnObj,
-            -float("inf"),
-            compartor,
-        )
-
-    def getMinParam(
-        self,
-        param,
-        typeSpec: TypeSpec = None,
-        absolute=True,
-        generationNum=1,
-        returnObj=False,
-    ):
-        """
-        Find the minimum value for the parameter in this container.
-
-        See Also
-        --------
-        getMaxParam : details
-        """
-        compartor = lambda x, y: x < y
-        return self._minMaxHelper(param, typeSpec, absolute, generationNum, returnObj, float("inf"), compartor)
-
-    def _minMaxHelper(
-        self,
-        param,
-        typeSpec: TypeSpec,
-        absolute,
-        generationNum,
-        returnObj,
-        startingNum,
-        compartor,
-    ):
-        """Helper for getMinParam and getMaxParam."""
-        maxP = (startingNum, None)
-        realVal = 0.0
-        objs = self.getChildren(generationNum=generationNum)
-        for b in objs:
-            if b.hasFlags(typeSpec):
-                try:
-                    val = b.p[param]
-                except parameters.UnknownParameterError:
-                    # No worries; not all Composite types are guaranteed to have the
-                    # relevant parameter. It might be a good idea to more strongly
-                    # type-check this, perhaps by passing the paramDef,
-                    # rather than its name?
-                    continue
-                if val is None:
-                    # Neither bigger or smaller than anything (also illegal in Python3)
-                    continue
-                if absolute:
-                    absVal = abs(val)
-                else:
-                    absVal = val
-                if compartor(absVal, maxP[0]):
-                    maxP = (absVal, b)
-                    realVal = val
-        if returnObj:
-            return realVal, maxP[1]
-        else:
-            return realVal
-
-    def getChildParamValues(self, param):
-        """Get the child parameter values in a numpy array."""
-        return np.array([child.p[param] for child in self])
-
     def isFuel(self):
         """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
@@ -1844,13 +1319,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        list
-            List of nuclide names that exist in this
+        nucs : list of str
+            Nuclide names that exist in this ArmiObject
         """
-        nucs = set()
-        for child in self:
-            nucs.update(child.getNuclides())
-        return nucs
+        raise NotImplementedError()
 
     def getFissileMass(self):
         """Returns fissile mass in grams."""
@@ -1902,7 +1374,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getFuelMass(self):
         """Returns mass of fuel in grams."""
-        return sum((c.getFuelMass() for c in self))
+        raise NotImplementedError
 
     def constituentReport(self):
         """A print out of some pertinent constituent information."""
@@ -2079,38 +1551,1017 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return 1.0
 
-    def getBoundingIndices(self):
+    def expandAllElementalsToIsotopics(self):
+        reactorNucs = self.getNuclides()
+        for elemental in self.nuclideBases.where(
+            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
+        ):
+            self.expandElementalToIsotopics(elemental)
+
+
+class Composite(ArmiObject):
+    """
+    An ArmiObject that has children.
+
+    This class implements an interface for accessing and managing child objects.
+
+    This is a fundamental ARMI state object that generally represents some piece of the
+    nuclear reactor that is made up of other smaller pieces. This object can cache
+    information about its children to help performance.
+
+    **Details about spatial representation**
+
+    Spatial representation of a ``Composite`` is handled through a combination of the
+    ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy
+    triple representing either:
+
+    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype is int.
+
+    2. Coordinates in the parent's universe in cm, used when the dtype is float.
+
+    The top parent of any composite must have a coordinate-based ``spatialLocator``. For
+    example, a Reactor and a Pump should both have coordinates based on how far apart
+    they are.
+
+    The traversal of indices and grids is recursive. The Reactor/Core/Assembly/Block
+    model is handled by putting a 2-D grid (either Theta-R, Hex, or Cartesian) on the
+    Core and individual 1-D Z-meshes on the assemblies. Then, Assemblies have 2-D
+    spatialLocators (i,j,0) and Blocks have 1-D spatiaLocators (0,0,k). These get added
+    to form the global indices. This way, if an assembly is moved, all the blocks
+    immediately and naturally move with it. Individual children may have
+    coordinate-based spatialLocators mixed with siblings in a grid. This allows mixing
+    grid-representation with explicit representation, often useful in advanced
+    assemblies and thermal reactors.
+
+    .. impl:: Composites are a physical part of the reactor in a hierarchical data model.
+        :id: I_ARMI_CMP0
+        :implements: R_ARMI_CMP
+
+        An ARMI reactor model is composed of collections of ARMIObject objects. This
+        class is a child-class of the ARMIObject class and provides a structure
+        allowing a reactor model to be composed of Composites.
+
+        This class provides various methods to query and modify the hierarchical ARMI
+        reactor model, including but not limited to, iterating, sorting, and adding or
+        removing child Composites.
+
+    """
+
+    _children: list["Composite"]
+
+    def __init__(self, name):
+        ArmiObject.__init__(self, name)
+        self.childrenByLocator = {}
+        self._children = []
+
+    def __setstate__(self, state):
+        """Sets the state of this Composite."""
+        ArmiObject.__setstate__(self, state)
+
+        if self.spatialGrid is not None:
+            # Spatial locators also get disassociated with their grids when detached;
+            # make sure they get hooked back up.
+            for c in self:
+                c.spatialLocator.associate(self.spatialGrid)
+
+        # now "reattach" children
+        for c in self:
+            c.parent = self
+
+    def __getitem__(self, index):
+        return self._children[index]
+
+    def __setitem__(self, index, obj):
+        raise NotImplementedError("Unsafe to insert elements directly")
+
+    def __add__(self, other):
+        """Return a list of all children in this and another object."""
+        return self.getChildren() + other.getChildren()
+
+    def __iter__(self):
+        return iter(self._children)
+
+    def __len__(self):
+        return len(self._children)
+
+    def __contains__(self, item):
         """
-        Find the 3-D index bounds (min, max) of all children in the spatial grid of this object.
+        Membership check.
+
+        This does not use quality checks for membership checking because equality
+        operations can be fairly heavy. Rather, this only checks direct identity
+        matches.
+        """
+        return id(item) in set(id(c) for c in self._children)
+
+    def sort(self):
+        """Sort the children of this object."""
+        # sort the top-level children of this Composite
+        self._children.sort()
+
+        # recursively sort the children below it.
+        for c in self._children:
+            if issubclass(c.__class__, Composite):
+                c.sort()
+
+    def index(self, obj):
+        """Obtain the list index of a particular child."""
+        return self._children.index(obj)
+
+    def append(self, obj):
+        """Append a child to this object."""
+        self._children.append(obj)
+
+    def extend(self, seq):
+        """Add a list of children to this object."""
+        for item in seq:
+            self.add(item)
+
+    def add(self, obj):
+        """Add one new child."""
+        if obj in self:
+            raise RuntimeError(f"Cannot add {obj} because it has already been added to {self}.")
+        obj.parent = self
+        self._children.append(obj)
+
+    def remove(self, obj):
+        """Remove a particular child."""
+        obj.parent = None
+        obj.spatialLocator = obj.spatialLocator.detachedCopy()
+        self._children.remove(obj)
+
+    def moveTo(self, locator):
+        """Move to specific location in parent. Often in a grid."""
+        if locator.grid.armiObject is not self.parent:
+            raise ValueError(
+                f"Cannot move {self} to a location in  {locator.grid.armiObject}"
+                ", which is not its parent ({self.parent})."
+            )
+        self.spatialLocator = locator
+
+    def insert(self, index, obj):
+        """Insert an object into the list of children at a particular index."""
+        if obj in self._children:
+            raise RuntimeError(f"Cannot insert {obj} because it has already been added to {self}.")
+        obj.parent = self
+        self._children.insert(index, obj)
+
+    def clearCache(self):
+        """Clear the cache so all new values are recomputed."""
+        ArmiObject.clearCache(self)
+        for child in self:
+            child.clearCache()
+
+    def getVolume(self):
+        return sum(child.getVolume() for child in self)
+
+    def getArea(self, cold=False, Tc=None):
+        """Get the area of a Composite in cm^2.
+
+        Parameters
+        ----------
+        cold : bool, optional
+            Compute the area with as-input dimensions instead of thermally-expanded
+        Tc : float, optional
+            Temperature to compute the area at
+        """
+        return sum(child.getArea(cold=cold, Tc=Tc) for child in self)
+
+    def _updateVolume(self):
+        """Recompute and store volume."""
+        children = self.getChildren()
+        # Derived shapes must come last so we temporarily change the order if we have one.
+        from armi.reactor.components import DerivedShape
+
+        for child in children[:]:
+            if isinstance(child, DerivedShape):
+                children.remove(child)
+                children.append(child)
+        for child in children:
+            child._updateVolume()
+
+    def getVolumeFractions(self):
+        """
+        Return volume fractions of each child.
+
+        Sets volume or area of missing piece (like coolant) if it exists.
 
         Returns
         -------
-        bounds : tuple
-            ((minI, maxI), (minJ, maxJ), (minK, maxK))
+        fracs : list
+            list of (component, volFrac) tuples
+
+        See Also
+        --------
+        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
+
+        Notes
+        -----
+        void areas can be negative in gaps between fuel/clad/liner(s), but these
+        negative areas are intended to account for overlapping positive areas to insure
+        the total area of components inside the clad is accurate. See
+        test_block.TestBlock.test_consistentAreaWithOverlappingComponents
         """
-        minI = minJ = minK = float("inf")
-        maxI = maxJ = maxK = -float("inf")
-        for obj in self:
-            i, j, k = obj.spatialLocator.getCompleteIndices()
-            if i >= maxI:
-                maxI = i
-            if i <= minI:
-                minI = i
+        children = self.getChildren()
+        numerator = [c.getVolume() for c in children]
+        denom = sum(numerator)
+        if denom == 0.0:
+            numerator = [c.getArea() for c in children]
+            denom = sum(numerator)
 
-            if j >= maxJ:
-                maxJ = j
-            if j <= minJ:
-                minJ = j
+        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
+        return fracs
 
-            if k >= maxK:
-                maxK = k
-            if k <= minK:
-                minK = k
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
+        """
+        Determine the mass in grams of nuclide(s) and/or elements in this object.
 
-        return ((minI, maxI), (minJ, maxJ), (minK, maxK))
+        .. impl:: Return mass of composite.
+            :id: I_ARMI_CMP_GET_MASS
+            :implements: R_ARMI_CMP_GET_MASS
+
+            This method allows for the querying of the mass of a Composite.
+            If the ``nuclideNames`` argument is included, it will filter for the mass
+            of those nuclide names and provide the sum of the mass of those nuclides.
+
+        Parameters
+        ----------
+        nuclideNames
+            The nuclide/element specifier to get the mass of in the object.
+            If omitted, total mass is returned.
+
+        Returns
+        -------
+        mass : float
+            The mass in grams.
+        """
+        return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
+
+    def getFuelMass(self):
+        """Returns mass of fuel in grams."""
+        return sum((c.getFuelMass() for c in self))
+
+    def getNumberDensity(self, nucName):
+        """
+        Return the number density of a nuclide in atoms/barn-cm.
+
+        .. impl:: Get number density for a specific nuclide
+            :id: I_ARMI_CMP_NUC0
+            :implements: R_ARMI_CMP_NUC
+
+            This method queries the number density
+            of a specific nuclide within the Composite. It invokes the
+            ``getNuclideNumberDensities`` method for just the requested nuclide.
+
+        Parameters
+        ----------
+        nucName : str
+            Nuclide name to get number densities for, e.g. 'U233'
+
+        Notes
+        -----
+        This can get called very frequently and has to do volume computations so should
+        use some kind of caching that is invalidated by any temperature, composition,
+        etc. changes. Even with caching the volume calls are still somewhat expensive so
+        prefer the methods in see also.
+
+        See Also
+        --------
+        ArmiObject.getNuclideNumberDensities: More efficient for >1 specific nuc density is needed.
+        ArmiObject.getNumberDensities: More efficient for when all nucs in object is needed.
+        """
+        return self.getNuclideNumberDensities([nucName])[0]
+
+    def getNuclideNumberDensities(self, nucNames):
+        """Return a list of number densities in atoms/barn-cm for the nuc names requested.
+
+        .. impl:: Get number densities for specific nuclides.
+            :id: I_ARMI_CMP_NUC1
+            :implements: R_ARMI_CMP_NUC
+
+        Parameters
+        ----------
+        nucNames : list of str
+            Nuclide names to get number densities for, e.g. ['U233', 'U235', 'Pu239']
+
+        Notes
+        -----
+        This method provides the capability to query the volume weighted number
+        densities for a list of nuclides within a given Composite. It provides the
+        result in units of atoms/barn-cm. The volume weighting is accomplished by
+        multiplying the number densities within each child Composite by the volume
+        of the child Composite and dividing by the total volume of the Composite.
+        """
+        volumes = np.array([c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0) for c in self])  # c x 1
+        totalVol = volumes.sum()
+        if totalVol == 0.0:
+            # there are no children so no volume or number density
+            return [0.0] * len(nucNames)
+
+        nucDensForEachComp = np.array([c.getNuclideNumberDensities(nucNames) for c in self])  # c x n
+        return volumes.dot(nucDensForEachComp) / totalVol
+
+    def _getNdensHelper(self):
+        """
+        Return a number densities dict with unexpanded lfps.
+
+        Notes
+        -----
+        This is implemented more simply on the component level.
+        """
+        nucNames = self.getNuclides()
+        return dict(zip(nucNames, self.getNuclideNumberDensities(nucNames)))
+
+    def setNumberDensity(self, nucName, val):
+        """
+        Set the number density of this nuclide to this value.
+
+        This distributes atom density evenly across all children that contain nucName.
+        If the nuclide doesn't exist in any of the children, then that's actually an
+        error. This would only happen if some unnatural nuclide like Pu239 built up in
+        fresh UZr. That should be anticipated and dealt with elsewhere.
+
+        Parameters
+        ----------
+        nucName : str
+            Nuclide number density to modify
+        val : float
+            Number density to set in atoms/bn-cm (heterogeneous)
+
+        """
+        activeChildren = self.getChildrenWithNuclides({nucName})
+        if not activeChildren:
+            activeVolumeFrac = 1.0
+            if val:
+                raise ValueError(
+                    f"The nuclide {nucName} does not exist in any children of {self}; "
+                    f"cannot set its number density to {val}. The nuclides here are: {self.getNuclides()}"
+                )
+        else:
+            activeVolumeFrac = sum(vf for ci, vf in self.getVolumeFractions() if ci in activeChildren)
+        dehomogenizedNdens = val / activeVolumeFrac  # scale up to dehomogenize on children.
+        for child in activeChildren:
+            child.setNumberDensity(nucName, dehomogenizedNdens)
+
+    def setNumberDensities(self, numberDensities):
+        """
+        Set one or more multiple number densities. Reset any non-listed nuclides to 0.0.
+
+        Parameters
+        ----------
+        numberDensities : dict
+            nucName: ndens pairs.
+
+        Notes
+        -----
+        We'd like to not have to call setNumberDensity for each nuclide because we don't
+        want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
+        """
+        numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
+        self.updateNumberDensities(numberDensities)
+
+    def updateNumberDensities(self, numberDensities):
+        """
+        Set one or more multiple number densities. Leaves unlisted number densities alone.
+
+        This changes a nuclide number density only on children that already have that
+        nuclide, thereby allowing, for example, actinides to stay in the fuel component
+        when setting block-level values.
+
+        The complication is that various number densities are distributed among various
+        components. This sets the number density for each nuclide evenly across all
+        components that contain it.
+
+        Parameters
+        ----------
+        numberDensities : dict
+            nucName: ndens pairs.
+
+        """
+        children, volFracs = zip(*self.getVolumeFractions())
+        childNucs = tuple(set(child.getNuclides()) for child in children)
+
+        allDehomogenizedNDens = collections.defaultdict(dict)
+
+        # compute potentially-different homogenization factors for each child.  evenly
+        # distribute entire number density over the subset of active children.
+        for nuc, dens in numberDensities.items():
+            # Get "active" indices, i.e. indices of children containing nuclide.
+            # NOTE: This uses explicit indexing to clarify subsequent code, since it is not necessary to zip + filter +
+            # extract individual components (we just extract by filtered index).
+            indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
+
+            if not indiciesToSet:
+                if dens == 0:
+                    # density is zero, skip
+                    continue
+
+                # This nuc doesn't exist in any children but is to be set.
+                # Evenly distribute it everywhere.
+                childrenToSet = children
+                dehomogenizedNDens = dens / sum(volFracs)
+
+            else:
+                childrenToSet = tuple(children[i] for i in indiciesToSet)
+                dehomogenizedNDens = dens / sum(volFracs[i] for i in indiciesToSet)
+
+            for child in childrenToSet:
+                allDehomogenizedNDens[child][nuc] = dehomogenizedNDens
+
+        # apply the child-dependent ndens vectors to the children
+        for child, ndens in allDehomogenizedNDens.items():
+            child.updateNumberDensities(ndens)
+
+    def changeNDensByFactor(self, factor):
+        """Change the number density of all nuclides within the object by a multiplicative factor."""
+        densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
+        self.setNumberDensities(densitiesScaled)
+
+        # Update detailedNDens if it exists (Components only)
+        if self.p.get("detailedNDens", None) is not None:
+            self.p.detailedNDens *= factor
+
+        # Update pinNDens if it exists (Components only)
+        if self.p.get("pinNDens", None) is not None:
+            self.p.pinNDens *= factor
+
+    def calcTotalParam(
+        self,
+        param,
+        objs=None,
+        volumeIntegrated=False,
+        addSymmetricPositions=False,
+        typeSpec: TypeSpec = None,
+        generationNum=1,
+        calcBasedOnFullObj=False,
+    ):
+        """
+        Sums up a parameter throughout the object's children or list of objects.
+
+        Parameters
+        ----------
+        param : str
+            Name of the block parameter to sum
+
+        objs : iterable, optional
+            A list of objects to sum over. If None, all children in object will be used
+        volumeIntegrated : bool, optional
+            Integrate over volume
+        addSymmetricPositions : bool, optional
+            If True, will multiply by the symmetry factor of the core (3 for 1/3 models, 1 for full core models)
+        typeSpec : TypeSpec
+            object types to restrict to
+        generationNum : int, optional
+            Which generation to consider. 1 means direct children, 2 means grandchildren. Default: 1.
+        calcBasedOnFullObj : bool, optional
+            Some assemblies or blocks, such as the center assembly in a third-core model, are not modeled as full
+            assemblies or blocks. In the third-core model, objects at these positions are modeled as having 1/3 the
+            volume and thus 1/3 the power. Setting this argument to True will apply the full value of the parameter as
+            if it was a full block or assembly.
+        """
+        tot = 0.0
+        if objs is None:
+            objs = self.getChildren(generationNum=generationNum)
+
+        if addSymmetricPositions:
+            if calcBasedOnFullObj:
+                raise ValueError(
+                    "AddSymmetricPositions is Incompatible with calcBasedOnFullObj. Will result in double counting."
+                )
+            try:
+                coreMult = self.powerMultiplier
+            except AttributeError:
+                coreMult = self.parent.powerMultiplier
+            if not coreMult:
+                raise ValueError(f"powerMultiplier is equal to {coreMult}")
+        else:
+            coreMult = 1.0
+
+        for a in objs:
+            if not a.hasFlags(typeSpec):
+                continue
+
+            mult = a.getVolume() if volumeIntegrated else 1.0
+            if calcBasedOnFullObj:
+                mult *= a.getSymmetryFactor()
+
+            tot += a.p[param] * mult
+
+        return tot * coreMult
+
+    def calcAvgParam(
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        weightingParam=None,
+        volumeAveraged=True,
+        absolute=True,
+        generationNum=1,
+    ):
+        r"""
+        Calculate the child-wide average of a parameter.
+
+        Parameters
+        ----------
+        param : str
+            The ARMI block parameter that you want to average
+        typeSpec : TypeSpec
+            The child types that should be included in the calculation. Restrict average
+            to a certain child type with this parameter.
+        weightingParam : None or str, optional
+             An optional block param that the average will be weighted against
+        volumeAveraged : bool, optional
+            volume (or height, or area) average this param
+        absolute : bool, optional
+            Returns the average of the absolute value of param
+        generationNum : int, optional
+            Which generation to average over (1 for children, 2 for grandchildren)
+
+        The weighted sum is:
+
+        .. math::
+
+            \left<\text{x}\right> = \frac{\sum_{i} x_i w_i}{\sum_i w_i}
+
+        where :math:`i` is each child, :math:`x_i` is the param value of the i-th child,
+        and :math:`w_i` is the weighting param value of the i-th child.
+
+        Warning
+        -------
+        If a param is unset/zero on any of the children, this will be included in the
+        average and may significantly perturb results.
+
+        Returns
+        -------
+        float
+            The average parameter value.
+        """
+        total = 0.0
+        weightSum = 0.0
+        for child in self.getChildren(generationNum=generationNum):
+            if child.hasFlags(typeSpec):
+                if weightingParam:
+                    weight = child.p[weightingParam]
+                    if weight < 0:
+                        # Just for conservatism, do not allow negative weights.
+                        raise ValueError(f"Weighting value ({weightingParam},{weight}) cannot be negative.")
+                else:
+                    weight = 1.0
+
+                if volumeAveraged:
+                    weight *= child.getVolume()
+
+                weightSum += weight
+                if absolute:
+                    total += abs(child.p[param]) * weight
+                else:
+                    total += child.p[param] * weight
+        if not weightSum:
+            raise ValueError(
+                f"Cannot calculate {weightingParam}-weighted average of {param} in {self}. "
+                f"Weights sum to zero. typeSpec is {typeSpec}"
+            )
+        return total / weightSum
+
+    def getMaxParam(
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        absolute=True,
+        generationNum=1,
+        returnObj=False,
+    ):
+        """
+        Find the maximum value for the parameter in this container.
+
+        Parameters
+        ----------
+        param : str
+            block parameter that will be sought.
+
+        typeSpec : TypeSpec
+            restricts the search to cover a variety of block types.
+
+        absolute : bool
+            looks for the largest magnitude value, regardless of sign, default: true
+
+        returnObj : bool, optional
+            If true, returns the child object as well as the value.
+
+        Returns
+        -------
+        maxVal : float
+            The maximum value of the parameter asked for
+        obj : child object
+            The object that has the max (only returned if ``returnObj==True``)
+        """
+        compartor = lambda x, y: x > y
+        return self._minMaxHelper(
+            param,
+            typeSpec,
+            absolute,
+            generationNum,
+            returnObj,
+            -float("inf"),
+            compartor,
+        )
+
+    def getMinParam(
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        absolute=True,
+        generationNum=1,
+        returnObj=False,
+    ):
+        """
+        Find the minimum value for the parameter in this container.
+
+        See Also
+        --------
+        getMaxParam : details
+        """
+        compartor = lambda x, y: x < y
+        return self._minMaxHelper(param, typeSpec, absolute, generationNum, returnObj, float("inf"), compartor)
+
+    def _minMaxHelper(
+        self,
+        param,
+        typeSpec: TypeSpec,
+        absolute,
+        generationNum,
+        returnObj,
+        startingNum,
+        compartor,
+    ):
+        """Helper for getMinParam and getMaxParam."""
+        maxP = (startingNum, None)
+        realVal = 0.0
+        objs = self.getChildren(generationNum=generationNum)
+        for b in objs:
+            if b.hasFlags(typeSpec):
+                try:
+                    val = b.p[param]
+                except parameters.UnknownParameterError:
+                    # No worries; not all Composite types are guaranteed to have the
+                    # relevant parameter. It might be a good idea to more strongly
+                    # type-check this, perhaps by passing the paramDef,
+                    # rather than its name?
+                    continue
+                if val is None:
+                    # Neither bigger or smaller than anything (also illegal in Python3)
+                    continue
+                if absolute:
+                    absVal = abs(val)
+                else:
+                    absVal = val
+                if compartor(absVal, maxP[0]):
+                    maxP = (absVal, b)
+                    realVal = val
+        if returnObj:
+            return realVal, maxP[1]
+        else:
+            return realVal
+
+    def getNuclides(self):
+        """
+        Determine which nuclides are present in this armi object.
+
+        Returns
+        -------
+        nucs : list of str
+            Nuclide names that exist in this ArmiObject
+        """
+        nucs = set()
+        for child in self:
+            nucs.update(child.getNuclides())
+        return nucs
+
+    def removeAll(self):
+        """Remove all children."""
+        for c in self.getChildren()[:]:
+            self.remove(c)
+
+    def setChildren(self, items):
+        """Clear this container and fills it with new children."""
+        self.removeAll()
+        for c in items:
+            self.add(c)
+
+    def iterChildren(
+        self,
+        deep=False,
+        generationNum=1,
+        predicate: Optional[Callable[["Composite"], bool]] = None,
+    ) -> Iterator["Composite"]:
+        """Iterate over children objects of this composite.
+
+        Parameters
+        ----------
+        deep : bool, optional
+            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
+        generationNum: int, optional
+            Produce composites at this depth. A depth of ``1`` includes children of ``self``, ``2``
+            is children of children, and so on.
+        predicate: f(Composite) -> bool, optional
+            Function to check on a composite before producing it. All items in the iteration
+            will pass this check.
+
+        Returns
+        -------
+        iterator of Composite
+
+        See Also
+        --------
+        :meth:`getChildren` produces a list for situations where you need to perform
+        multiple iterations or do list operations (append, indexing, sorting, containment, etc.)
+
+        Composites are naturally iterable. The following are identical::
+
+            >>> for child in c.getChildren():
+            ...     pass
+            >>> for child in c.iterChildren():
+            ...     pass
+            >>> for child in c:
+            ...     pass
+
+        If you do not need any depth-traversal, natural iteration should be sufficient.
+
+        The :func:`filter` command may be sufficient if you do not wish to pass a predicate. The following
+        are identical::
+            >>> checker = lambda c: len(c.name) % 3
+            >>> for child in c.getChildren(predicate=checker):
+            ...     pass
+            >>> for child in c.iterChildren(predicate=checker):
+            ...     pass
+            >>> for child in filter(checker, c):
+            ...     pass
+
+        If you're going to be doing traversal beyond the first generation, this method will help you.
+        """
+        if deep and generationNum > 1:
+            raise RuntimeError("Cannot get children with a generation number set and the deep flag set")
+        if predicate is None:
+            checker = lambda _: True
+        else:
+            checker = predicate
+        yield from self._iterChildren(deep, generationNum, checker)
+
+    def _iterChildren(
+        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
+    ) -> Iterator["Composite"]:
+        if deep or generationNum == 1:
+            yield from filter(checker, self)
+        if deep or generationNum > 1:
+            for c in self:
+                yield from c._iterChildren(deep, generationNum - 1, checker)
+
+    def iterChildrenWithMaterials(self, *args, **kwargs) -> Iterator:
+        """Produce an iterator that also includes any materials found on descendants.
+
+        Arguments are forwarded to :meth:`iterChildren` and control the depth of traversal
+        and filtering of objects.
+
+        This is useful for sending state across MPI tasks where you need a more full
+        representation of the composite tree. Which includes the materials attached
+        to components.
+        """
+        children = self.iterChildren(*args, **kwargs)
+        # Each entry is either (c, ) or (c, c.material) if the child has a material attribute
+        stitched = map(
+            lambda c: ((c,) if getattr(c, "material", None) is None else (c, c.material)),
+            children,
+        )
+        # Iterator that iterates over each "sub" iterator. If we have ((c0, ), (c1, m1)), this produces a single
+        # iterator of (c0, c1, m1)
+        return itertools.chain.from_iterable(stitched)
+
+    def getChildren(
+        self,
+        deep=False,
+        generationNum=1,
+        includeMaterials=False,
+        predicate: Optional[Callable[["Composite"], bool]] = None,
+    ) -> list["Composite"]:
+        """
+        Return the children objects of this composite.
+
+        .. impl:: Composites have children in the hierarchical data model.
+            :id: I_ARMI_CMP1
+            :implements: R_ARMI_CMP
+
+            This method retrieves all children within a given Composite object. Children of any
+            generation can be retrieved. This is achieved by visiting all children and calling this
+            method recursively for each generation requested.
+
+            If the method is called with ``includeMaterials``, it will additionally include
+            information about the material for each child. If a function is supplied as the
+            ``predicate`` argument, then this method will be used to evaluate all children as a
+            filter to include or not. For example, if the caller of this method only desires
+            children with a certain flag, or children which only contain a certain material, then
+            the ``predicate`` function can be used to perform this filtering.
+
+        Parameters
+        ----------
+        deep : boolean, optional
+            Return all children of all levels.
+
+        generationNum : int, optional
+            Which generation to return. 1 means direct children, 2 means children of children.
+            Setting this parameter will only return children of this generation, not their parents.
+            Default: Just return direct children.
+
+        includeMaterials : bool, optional
+            Include the material properties
+
+        predicate : callable, optional
+            An optional unary predicate to use for filtering results. This can be used to request
+            children of specific types, or with desired attributes. Not all ArmiObjects have the
+            same methods and members, so care should be taken to make sure that the predicate
+            executes gracefully in all cases (e.g., use ``getattr(obj, "attribute", None)`` to
+            access instance attributes). Failure to meet the predicate only affects the object in
+            question; children will still be considered.
+
+        See Also
+        --------
+        :meth:`iterChildren` if you do not need to produce a full list, e.g., just iterating
+        over objects.
+
+        Examples
+        --------
+        >>> obj.getChildren()
+        [child1, child2, child3]
+
+        >>> obj.getChildren(generationNum=2)
+        [grandchild1, grandchild2, grandchild3]
+
+        >>> obj.getChildren(deep=True)
+        [child1, child2, child3, grandchild1, grandchild2, grandchild3]
+
+        # Assuming that grandchild1 and grandchild3 are Component objects
+        >>> obj.getChildren(deep=True, predicate=lambda o: isinstance(o, Component))
+        [grandchild1, grandchild3]
+
+        """
+        if not includeMaterials:
+            items = self.iterChildren(deep=deep, generationNum=generationNum, predicate=predicate)
+        else:
+            items = self.iterChildrenWithMaterials(deep=deep, generationNum=generationNum, predicate=predicate)
+        return list(items)
+
+    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> Iterator["ArmiObject"]:
+        """Produce an iterator of children that have given flags."""
+        return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
+
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> list["ArmiObject"]:
+        """Get all children that have given flags."""
+        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
+
+    def getChildrenWithNuclides(self, nucNames):
+        """Return children that contain any nuclides in nucNames."""
+        nucNames = set(nucNames)  # only convert to set once
+        return [child for child in self if nucNames.intersection(child.getNuclides())]
+
+    def iterChildrenOfType(self, typeName: str) -> Iterator["ArmiObject"]:
+        """Iterate over children that have a specific input type name."""
+        return self.iterChildren(predicate=lambda o: o.getType() == typeName)
+
+    def getChildrenOfType(self, typeName: str) -> list["ArmiObject"]:
+        """Produce a list of children that have a specific input type name."""
+        return list(self.iterChildrenOfType(typeName))
+
+    def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
+        """
+        Generator that yields True if the next child has given flags.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Requested type of the child
+        """
+        for c in self.getChildren(deep):
+            if c.hasFlags(typeSpec, exact=False):
+                yield True
+            else:
+                yield False
+
+    def containsAtLeastOneChildWithFlags(self, typeSpec: TypeSpec):
+        """
+        Return True if any of the children are of a given type.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Requested type of the children
+
+        See Also
+        --------
+        self.doChildrenHaveFlags
+        self.containsOnlyChildrenWithFlags
+        """
+        return any(self.doChildrenHaveFlags(typeSpec))
+
+    def containsOnlyChildrenWithFlags(self, typeSpec: TypeSpec):
+        """
+        Return True if all of the children are of a given type.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Requested type of the children
+
+        See Also
+        --------
+        self.doChildrenHaveFlags
+        self.containsAtLeastOneChildWithFlags
+        """
+        return all(self.doChildrenHaveFlags(typeSpec))
+
+    def setChildrenLumpedFissionProducts(self, lfpCollection):
+        for c in self:
+            c.setLumpedFissionProducts(lfpCollection)
+
+    def getChildParamValues(self, param):
+        """Get the child parameter values in a numpy array."""
+        return np.array([child.p[param] for child in self])
+
+    def copyParamsToChildren(self, paramNames):
+        """
+        Copy param values in paramNames to all children.
+
+        Parameters
+        ----------
+        paramNames : list
+            List of param names to copy to children
+        """
+        for paramName in paramNames:
+            myVal = self.p[paramName]
+            for c in self:
+                c.p[paramName] = myVal
+
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return a list of Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        list of Component
+            items matching typeSpec and exact criteria
+        """
+        return list(self.iterComponents(typeSpec, exact))
+
+    def getFirstComponent(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Returns a single Component object within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        Component
+            The first item matching typeSpec and exact criteria
+        """
+        try:
+            return next(self.iterComponents(typeSpec, exact))
+        except StopIteration:
+            raise ValueError(f"No component matches {typeSpec} {exact}")
+
+    def iterComponents(self, typeSpec: TypeSpec = None, exact: bool = False) -> Iterator["Component"]:
+        """
+        Return an iterator of armi.reactor.component.Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'. This has no impact if typeSpec is None.
+
+        Returns
+        -------
+        iterator of Component
+            items matching typeSpec and exact criteria
+        """
+        return (c for child in self for c in child.iterComponents(typeSpec, exact))
 
     def getComponentNames(self):
-        r"""
+        """
         Get all unique component names of this Composite.
 
         Returns
@@ -2152,7 +2603,6 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         componentsWithThisMat : list
-
         """
         if materialName is None:
             materialName = material.getName()
@@ -2269,12 +2719,35 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return reportGroups
 
-    def expandAllElementalsToIsotopics(self):
-        reactorNucs = self.getNuclides()
-        for elemental in self.nuclideBases.where(
-            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
-        ):
-            self.expandElementalToIsotopics(elemental)
+    def getBoundingIndices(self):
+        """
+        Find the 3-D index bounds (min, max) of all children in the spatial grid of this object.
+
+        Returns
+        -------
+        bounds : tuple
+            ((minI, maxI), (minJ, maxJ), (minK, maxK))
+        """
+        minI = minJ = minK = float("inf")
+        maxI = maxJ = maxK = -float("inf")
+        for obj in self:
+            i, j, k = obj.spatialLocator.getCompleteIndices()
+            if i >= maxI:
+                maxI = i
+            if i <= minI:
+                minI = i
+
+            if j >= maxJ:
+                maxJ = j
+            if j <= minJ:
+                minJ = j
+
+            if k >= maxK:
+                maxK = k
+            if k <= minK:
+                minK = k
+
+        return ((minI, maxI), (minJ, maxJ), (minK, maxK))
 
     def expandElementalToIsotopics(self, elementalNuclide):
         """
@@ -2301,7 +2774,21 @@ class ArmiObject(metaclass=CompositeModelType):
                 component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
-        """Return the average temperature of the ArmiObject in C by averaging all components."""
+        """Return the volume-averaged temperature (in degrees Celsius) of the ArmiObject over all children.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        averageTemperature : float
+            Child-averaged temperature (in degrees Celsius)
+        """
         tempNumerator = 0.0
         totalVol = 0.0
         for component in self.iterComponents(typeSpec, exact):
@@ -2340,379 +2827,6 @@ class ArmiObject(metaclass=CompositeModelType):
             Classifies all materials by volume
         """
         return getDominantMaterial([self], typeSpec, exact)
-
-
-class Composite(ArmiObject):
-    """
-    An ArmiObject that has children.
-
-    This is a fundamental ARMI state object that generally represents some piece of the
-    nuclear reactor that is made up of other smaller pieces. This object can cache
-    information about its children to help performance.
-
-    **Details about spatial representation**
-
-    Spatial representation of a ``Composite`` is handled through a combination of the
-    ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy
-    triple representing either:
-
-    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype is int.
-
-    2. Coordinates in the parent's universe in cm, used when the dtype is float.
-
-    The top parent of any composite must have a coordinate-based ``spatialLocator``. For
-    example, a Reactor an a Pump should both have coordinates based on how far apart
-    they are.
-
-    The traversal of indices and grids is recursive. The Reactor/Core/Assembly/Block
-    model is handled by putting a 2-D grid (either Theta-R, Hex, or Cartesian) on the
-    Core and individual 1-D Z-meshes on the assemblies. Then, Assemblies have 2-D
-    spatialLocators (i,j,0) and Blocks have 1-D spatiaLocators (0,0,k). These get added
-    to form the global indices. This way, if an assembly is moved, all the blocks
-    immediately and naturally move with it. Individual children may have
-    coordinate-based spatialLocators mixed with siblings in a grid. This allows mixing
-    grid-representation with explicit representation, often useful in advanced
-    assemblies and thermal reactors.
-
-    The traversal of indices and grids is recursive. The
-    Reactor/Core/Assembly/Block model is handled by putting a 2-D grid (either
-    Theta-R, Hex, or Cartesian) on the Core and individual 1-D Z-meshes on the
-    assemblies. Then, Assemblies have 2-D spatialLocators (i,j,0) and Blocks
-    have 1-D spatiaLocators (0,0,k). These get added to form the global indices.
-    This way, if an assembly is moved, all the blocks immediately and naturally
-    move with it. Individual children may have coordinate-based spatialLocators
-    mixed with siblings in a grid. This allows mixing grid-representation with
-    explicit representation, often useful in advanced assemblies and thermal
-    reactors.
-
-    .. impl:: Composites are a physical part of the reactor in a hierarchical data model.
-        :id: I_ARMI_CMP0
-        :implements: R_ARMI_CMP
-
-        An ARMI reactor model is composed of collections of ARMIObject objects. This
-        class is a child-class of the ARMIObject class and provides a structure
-        allowing a reactor model to be composed of Composites.
-
-        This class provides various methods to query and modify the hierarchical ARMI
-        reactor model, including but not limited to, iterating, sorting, and adding or
-        removing child Composites.
-
-    """
-
-    _children: list["Composite"]
-
-    def __init__(self, name):
-        ArmiObject.__init__(self, name)
-        self.childrenByLocator = {}
-        self._children = []
-
-    def __getitem__(self, index):
-        return self._children[index]
-
-    def __setitem__(self, index, obj):
-        raise NotImplementedError("Unsafe to insert elements directly")
-
-    def __iter__(self):
-        return iter(self._children)
-
-    def __len__(self):
-        return len(self._children)
-
-    def __contains__(self, item):
-        """
-        Membership check.
-
-        This does not use quality checks for membership checking because equality
-        operations can be fairly heavy. Rather, this only checks direct identity
-        matches.
-        """
-        return id(item) in set(id(c) for c in self._children)
-
-    def sort(self):
-        """Sort the children of this object."""
-        # sort the top-level children of this Composite
-        self._children.sort()
-
-        # recursively sort the children below it.
-        for c in self._children:
-            if issubclass(c.__class__, Composite):
-                c.sort()
-
-    def index(self, obj):
-        """Obtain the list index of a particular child."""
-        return self._children.index(obj)
-
-    def append(self, obj):
-        """Append a child to this object."""
-        self._children.append(obj)
-
-    def extend(self, seq):
-        """Add a list of children to this object."""
-        for item in seq:
-            self.add(item)
-
-    def add(self, obj):
-        """Add one new child."""
-        if obj in self:
-            raise RuntimeError(f"Cannot add {obj} because it has already been added to {self}.")
-        obj.parent = self
-        self._children.append(obj)
-
-    def remove(self, obj):
-        """Remove a particular child."""
-        obj.parent = None
-        obj.spatialLocator = obj.spatialLocator.detachedCopy()
-        self._children.remove(obj)
-
-    def moveTo(self, locator):
-        """Move to specific location in parent. Often in a grid."""
-        if locator.grid.armiObject is not self.parent:
-            raise ValueError(
-                f"Cannot move {self} to a location in  {locator.grid.armiObject}"
-                ", which is not its parent ({self.parent})."
-            )
-        self.spatialLocator = locator
-
-    def insert(self, index, obj):
-        """Insert an object into the list of children at a particular index."""
-        if obj in self._children:
-            raise RuntimeError(f"Cannot insert {obj} because it has already been added to {self}.")
-        obj.parent = self
-        self._children.insert(index, obj)
-
-    def removeAll(self):
-        """Remove all children."""
-        for c in self.getChildren()[:]:
-            self.remove(c)
-
-    def setChildren(self, items):
-        """Clear this container and fills it with new children."""
-        self.removeAll()
-        for c in items:
-            self.add(c)
-
-    def iterChildren(
-        self,
-        deep=False,
-        generationNum=1,
-        predicate: Optional[Callable[["Composite"], bool]] = None,
-    ) -> Iterator["Composite"]:
-        """Iterate over children objects of this composite.
-
-        Parameters
-        ----------
-        deep : bool, optional
-            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
-        generationNum: int, optional
-            Produce composites at this depth. A depth of ``1`` includes children of ``self``, ``2``
-            is children of children, and so on.
-        predicate: f(Composite) -> bool, optional
-            Function to check on a composite before producing it. All items in the iteration
-            will pass this check.
-
-        Returns
-        -------
-        iterator of Composite
-
-        See Also
-        --------
-        :meth:`getChildren` produces a list for situations where you need to perform
-        multiple iterations or do list operations (append, indexing, sorting, containment, etc.)
-
-        Composites are naturally iterable. The following are identical::
-
-            >>> for child in c.getChildren():
-            ...     pass
-            >>> for child in c.iterChildren():
-            ...     pass
-            >>> for child in c:
-            ...     pass
-
-        If you do not need any depth-traversal, natural iteration should be sufficient.
-
-        The :func:`filter` command may be sufficient if you do not wish to pass a predicate. The following
-        are identical::
-            >>> checker = lambda c: len(c.name) % 3
-            >>> for child in c.getChildren(predicate=checker):
-            ...     pass
-            >>> for child in c.iterChildren(predicate=checker):
-            ...     pass
-            >>> for child in filter(checker, c):
-            ...     pass
-
-        If you're going to be doing traversal beyond the first generation, this method will help you.
-
-        """
-        if deep and generationNum > 1:
-            raise RuntimeError("Cannot get children with a generation number set and the deep flag set")
-        if predicate is None:
-            checker = lambda _: True
-        else:
-            checker = predicate
-        yield from self._iterChildren(deep, generationNum, checker)
-
-    def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
-    ) -> Iterator["Composite"]:
-        if deep or generationNum == 1:
-            yield from filter(checker, self)
-        if deep or generationNum > 1:
-            for c in self:
-                yield from c._iterChildren(deep, generationNum - 1, checker)
-
-    def iterChildrenWithMaterials(self, *args, **kwargs) -> Iterator:
-        """Produce an iterator that also includes any materials found on descendants.
-
-        Arguments are forwarded to :meth:`iterChildren` and control the depth of traversal
-        and filtering of objects.
-
-        This is useful for sending state across MPI tasks where you need a more full
-        representation of the composite tree. Which includes the materials attached
-        to components.
-        """
-        children = self.iterChildren(*args, **kwargs)
-        # Each entry is either (c, ) or (c, c.material) if the child has a material attribute
-        stitched = map(
-            lambda c: ((c,) if getattr(c, "material", None) is None else (c, c.material)),
-            children,
-        )
-        # Iterator that iterates over each "sub" iterator. If we have ((c0, ), (c1, m1)), this produces a single
-        # iterator of (c0, c1, m1)
-        return itertools.chain.from_iterable(stitched)
-
-    def getChildren(
-        self,
-        deep=False,
-        generationNum=1,
-        includeMaterials=False,
-        predicate: Optional[Callable[["Composite"], bool]] = None,
-    ) -> list["Composite"]:
-        """
-        Return the children objects of this composite.
-
-        .. impl:: Composites have children in the hierarchical data model.
-            :id: I_ARMI_CMP1
-            :implements: R_ARMI_CMP
-
-            This method retrieves all children within a given Composite object. Children of any
-            generation can be retrieved. This is achieved by visiting all children and calling this
-            method recursively for each generation requested.
-
-            If the method is called with ``includeMaterials``, it will additionally include
-            information about the material for each child. If a function is supplied as the
-            ``predicate`` argument, then this method will be used to evaluate all children as a
-            filter to include or not. For example, if the caller of this method only desires
-            children with a certain flag, or children which only contain a certain material, then
-            the ``predicate`` function can be used to perform this filtering.
-
-        Parameters
-        ----------
-        deep : boolean, optional
-            Return all children of all levels.
-
-        generationNum : int, optional
-            Which generation to return. 1 means direct children, 2 means children of children.
-            Setting this parameter will only return children of this generation, not their parents.
-            Default: Just return direct children.
-
-        includeMaterials : bool, optional
-            Include the material properties
-
-        predicate : callable, optional
-            An optional unary predicate to use for filtering results. This can be used to request
-            children of specific types, or with desired attributes. Not all ArmiObjects have the
-            same methods and members, so care should be taken to make sure that the predicate
-            executes gracefully in all cases (e.g., use ``getattr(obj, "attribute", None)`` to
-            access instance attributes). Failure to meet the predicate only affects the object in
-            question; children will still be considered.
-
-        See Also
-        --------
-        :meth:`iterChildren` if you do not need to produce a full list, e.g., just iterating
-        over objects.
-
-        Examples
-        --------
-        >>> obj.getChildren()
-        [child1, child2, child3]
-
-        >>> obj.getChildren(generationNum=2)
-        [grandchild1, grandchild2, grandchild3]
-
-        >>> obj.getChildren(deep=True)
-        [child1, child2, child3, grandchild1, grandchild2, grandchild3]
-
-        # Assuming that grandchild1 and grandchild3 are Component objects
-        >>> obj.getChildren(deep=True, predicate=lambda o: isinstance(o, Component))
-        [grandchild1, grandchild3]
-
-        """
-        if not includeMaterials:
-            items = self.iterChildren(deep=deep, generationNum=generationNum, predicate=predicate)
-        else:
-            items = self.iterChildrenWithMaterials(deep=deep, generationNum=generationNum, predicate=predicate)
-        return list(items)
-
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return a list of Component objects within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
-            impact if typeSpec is None.
-
-        Returns
-        -------
-        list of Component
-            items matching typeSpec and exact criteria
-        """
-        return list(self.iterComponents(typeSpec, exact))
-
-    def getFirstComponent(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Returns a single Component object within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
-            impact if typeSpec is None.
-
-        Returns
-        -------
-        Component
-            The first item matching typeSpec and exact criteria
-        """
-        try:
-            return next(self.iterComponents(typeSpec, exact))
-        except StopIteration:
-            raise ValueError(f"No component matches {typeSpec} {exact}")
-
-    def iterComponents(self, typeSpec: TypeSpec = None, exact: bool = False) -> Iterator["Component"]:
-        """
-        Return an iterator of armi.reactor.component.Component objects within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
-
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'. This has no impact if typeSpec is None.
-
-        Returns
-        -------
-        iterator of Component
-            items matching typeSpec and exact criteria
-        """
-        return (c for child in self for c in child.iterComponents(typeSpec, exact))
 
     def syncMpiState(self):
         """

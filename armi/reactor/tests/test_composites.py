@@ -16,8 +16,11 @@
 
 import itertools
 import logging
+import math
 import unittest
-from copy import deepcopy
+from copy import copy, deepcopy
+
+import numpy as np
 
 from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir
@@ -25,7 +28,7 @@ from armi.nucDirectory.nuclideBases import NuclideBase, NuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies, components, composites, grids, parameters
+from armi.reactor import assemblies, blocks, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
@@ -354,6 +357,13 @@ class TestCompositePattern(unittest.TestCase):
             self.assertTrue(self.container.hasFlags(t))
             self.assertFalse(self.container.hasFlags(t, exact=True))
 
+    def test_isFuel(self):
+        """Ensure flags are queryable."""
+        self.container.setType("fuel")
+        self.assertTrue(self.container.isFuel())
+        self.container.setType("clad")
+        self.assertFalse(self.container.isFuel())
+
     def test_calcTotalParam(self):
         minSerialNumberCount = 21.0
         kids = self.container.getChildren()
@@ -372,7 +382,7 @@ class TestCompositePattern(unittest.TestCase):
                 "power", self.container.getChildren(), addSymmetricPositions=True, calcBasedOnFullObj=True
             )
 
-    def test_getBoundingCirlceOuterDiameter(self):
+    def test_getBoundingCircleOuterDiameter(self):
         od = self.container.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(od, len(list(self.container.iterComponents())))
 
@@ -553,12 +563,22 @@ class TestCompositePattern(unittest.TestCase):
             found.add(c)
         self.assertSetEqual(found, expectedChildren)
 
+    def test_getChildrenWithFlags(self):
+        expectedChildren = [c for c in self.container if c.hasFlags(Flags.DUCT)]
+        testChildren = self.container.getChildrenWithFlags(Flags.DUCT)
+        self.assertListEqual(testChildren, expectedChildren)
+
     def test_iterChildrenOfType(self):
         clads = self.container.iterChildrenOfType("clad")
         first = next(clads)
         self.assertIs(first, self.cladChild)
         with self.assertRaises(StopIteration):
             next(clads)
+
+    def test_getChildrenOfType(self):
+        clads = self.container.getChildrenOfType("clad")
+        assert len(clads) == 1
+        self.assertListEqual(clads, [self.cladChild])
 
     def test_removeAll(self):
         """Test the ability to remove all children of a composite."""
@@ -593,6 +613,12 @@ class TestCompositePattern(unittest.TestCase):
 
         # verify the container's size has increased by one
         self.assertEqual(len(self.container), lenContainer + 1)
+
+    def test__add(self):
+        """Test the internal __add__ function, which should just add the two children lists."""
+        refSum = self.container._children + self.container._children
+        testSum = self.container + self.container
+        self.assertListEqual(testSum, refSum)
 
     def test_extend(self):
         # generate a list of elements to add to this container
@@ -686,7 +712,6 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(self.refDict)
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
@@ -708,6 +733,17 @@ class TestCompositeTree(unittest.TestCase):
         otherBlock.spatialLocator = None
         with self.assertRaises(ValueError):
             otherBlock < self.block
+
+    def test_clearCache(self):
+        """Test that clearCache clears the volume parameter."""
+        # Force volume to be computed
+        for child in self.block:
+            child.getVolume()
+            self.assertIsInstance(child.p.volume, float)
+
+        self.block.clearCache()
+        for child in self.block:
+            self.assertIs(child.p.volume, None)
 
     def test_getAncestorWithFlags(self):
         # this test block is not part of an assembly, so it should not have a parent/ancestor
@@ -771,11 +807,80 @@ class TestCompositeTree(unittest.TestCase):
         The getNuclides should return all keys that have ever been in this block, including values
         that are at trace.
         """
-        cur = self.block.getNuclides()
-        ref = self.refDict.keys()
-        for key in ref:
-            self.assertIn(key, cur)
-        self.assertIn("FE", cur)  # this is in at trace value.
+        # Case: all nuclides known to be in the block should be present
+        refNucs = ["ZR", "NA", "MN", "W", "MO", "SI", "NI", "C", "V", "U235", "FE", "CR", "U238"]
+        testNucs = self.block.getNuclides()
+        for nuc in refNucs:
+            self.assertIn(nuc, testNucs)
+
+        # Case: old nuclides should still be present after setting new ones
+        refNucs += list(self.refDict.keys())
+        self.block.setNumberDensities(self.refDict)
+        testNucs = self.block.getNuclides()
+        for nuc in refNucs:
+            self.assertIn(nuc, testNucs)
+
+        # Case: nuclides known to not be in the block should not be present
+        refNucs = ["H1", "Tc99", "Pu239", "He4", "H2"]
+        for nuc in refNucs:
+            self.assertNotIn(nuc, testNucs)
+
+    def test_getChildrenWithNuclides(self):
+        """Test getChildrenWithNuclides."""
+        # Basic case: get fuel block via urainum nuclides
+        refChildren = [self.block._children[2]]  # fuel component
+        nuclideList = ["U235", "U238"]
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+        # try with just U235
+        nuclideList = ["U235"]
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+        # try with just U238
+        nuclideList = ["U238"]
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+        # Multi block: sodium coolant
+        refChildren = [self.block._children[1], self.block._children[10], self.block._children[12]]  # bond, sodium and
+        # inter-sodium components
+        nuclideList = ["NA"]
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+        # Empty list input
+        refChildren = []
+        nuclideList = []
+        testChildren = self.block.getChildrenWithNuclides(nuclideList)
+        self.assertListEqual(testChildren, refChildren)
+
+    def test_getChildParamValues(self):
+        """Test getChildParamValues."""
+        # Try the 'type' parameter
+        refTypes = [
+            "annular void",
+            "bond",
+            "fuel",
+            "gap1",
+            "inner liner",
+            "gap2",
+            "outer liner",
+            "gap3",
+            "clad",
+            "wire",
+            "coolant",
+            "duct",
+            "interCoolant",
+        ]
+        testTypes = self.block.getChildParamValues("type")
+        self.assertIsInstance(testTypes, np.ndarray)
+
+        self.assertSequenceEqual(list(testTypes), refTypes)
+
+        # Check error trips when unknown parameter passed in
+        with self.assertRaises(parameters.exceptions.UnknownParameterError):
+            testTypes = self.block.getChildParamValues("")
 
     def test_getFuelMass(self):
         """
@@ -860,7 +965,7 @@ class TestCompositeTree(unittest.TestCase):
         fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         c.add(fuelComponent)
 
-        # test initial state
+        # test initial state ang getMass, getFPMass, and getHMMass functions
         self.assertEqual(c.getFPMass(), 0.0)
         self.assertAlmostEqual(c.getHMMass(), 6.468105962375698, delta=1e-6)
         self.assertAlmostEqual(c.getMass(), 7.186784402639664, delta=1e-6)
@@ -890,6 +995,88 @@ class TestCompositeTree(unittest.TestCase):
 
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
+
+    def test_getAverageTempInC(self):
+        """Test getAverageTempInC."""
+        b = blocks.HexBlock("temperature-block", height=10.0)
+        componentDims = {"Tinput": 25.0, "Thot": 600, "od": 1.00, "id": 0.00, "mult": 1.00}
+        # Case: two components with identical dimensions should yield avg temperature equal to Thot
+        fuel = basicShapes.Circle("fuel", "UZr", **componentDims)
+        clad = basicShapes.Circle("clad", "HT9", **componentDims)
+
+        b.add(fuel)
+        b.add(clad)
+        self.assertAlmostEqual(componentDims["Thot"], b.getAverageTempInC(), 4)
+
+        # Case: two components with different temperatures should yield volume-weighted-averaged temperature
+        # vol = (od * teFactor)**2 * 0.25 * mult * height
+        # temp = sum (vol * temp) / sum(vol)
+        b.removeAll()
+        volFuel = fuel.getVolume()
+        avgTemp = volFuel * componentDims["Thot"]
+        componentDims["Thot"] = 400
+        clad = basicShapes.Circle("clad", "HT9", **componentDims)
+        b.add(fuel)
+        b.add(clad)
+        volClad = clad.getVolume()
+        totVol = volFuel + volClad
+        avgTemp += volClad * componentDims["Thot"]
+        avgTemp /= totVol
+        self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
+        # Case: same as above but components have different spatial dimensions and same temperatures should still
+        componentDims["Thot"] = 600
+        b.removeAll()
+        componentDims["od"] = 0.5
+        clad = basicShapes.Circle("clad", "HT9", **componentDims)
+        b.add(fuel)
+        b.add(clad)
+        volClad = clad.getVolume()
+        avgTemp = componentDims["Thot"]
+        self.assertAlmostEqual(avgTemp, b.getAverageTempInC(), 4)
+
+    def test_getDominantMaterial(self):
+        """Test getDominantMaterial."""
+        # Case: fuel flag should just be UZr
+        refFuel = self.block._children[2].material
+        testFuel = self.block.getDominantMaterial(Flags.FUEL)
+        self.assertEqual(refFuel, testFuel)
+
+        # Case: add a new fuel component that is WAY bigger
+
+        componentDims = {"Tinput": 25.0, "Thot": 600, "od": 100.00, "id": 0.00, "mult": 100.00}
+        refFuel = basicShapes.Circle("fuel", "UO2", **componentDims)
+        self.block.add(refFuel)
+        testFuel = self.block.getDominantMaterial(Flags.FUEL)
+        self.assertEqual(refFuel.material, testFuel)
+
+        # Cleanup
+        self.block.remove(refFuel)
+
+    def test_getVolume(self):
+        """Test getVolume."""
+        b = blocks.HexBlock("volume-block", height=10.0)
+        componentDims = {"Tinput": 25.0, "Thot": 600, "od": 1.00, "id": 0.00, "mult": 1}
+        fuel = basicShapes.Circle("fuel", "UZr", **componentDims)
+
+        # Case: one component
+        b.add(fuel)
+        od = fuel.getDimension("od")
+        volume = math.pi * od**2 * 0.25 * b.getHeight()
+        self.assertAlmostEqual(volume, b.getVolume(), 4)
+
+        # Case: two components (duplicated)
+        b.add(copy(fuel))
+        self.assertAlmostEqual(2 * volume, b.getVolume(), 4)
+
+        # Case: three components (multiplicity)
+        b.removeAll()
+        self.assertAlmostEqual(0.0000, b.getVolume(), 4)
+
+        componentDims["mult"] = 3
+        fuel = basicShapes.Circle("fuel", "UZr", **componentDims)
+        b.add(fuel)
+        self.assertAlmostEqual(3 * volume, b.getVolume(), 4)
 
     def test_getMaxParam(self):
         """Test getMaxParam().
@@ -1040,6 +1227,7 @@ class TestMiscMethods(unittest.TestCase):
         self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
         self.assertAlmostEqual(0.0000368, ndens["W"], 7)
 
+        # Test getNumberDensity
         ndens = self.obj.getNumberDensity("SI")
         self.assertAlmostEqual(0.0001096, ndens, 7)
 
@@ -1062,9 +1250,9 @@ class TestMiscMethods(unittest.TestCase):
     def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
 
-        .. test:: Get number densities.
-            :id: T_ARMI_CMP_NUC
-            :tests: R_ARMI_CMP_NUC
+        .. test:: Number density of composite is retrievable.
+            :id: T_ARMI_CMP_GET_NDENS1
+            :tests: R_ARMI_CMP_GET_NDENS
         """
         # verify the number densities from the composite
         ndens = self.obj.getNumberDensities(expandFissionProducts=True)
@@ -1102,6 +1290,64 @@ class TestMiscMethods(unittest.TestCase):
         # verify the children match this composite
         for nuc in ["FE", "SI"]:
             self.assertAlmostEqual(self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc)
+
+    def test_getNuclideNumberDensities(self):
+        """Get nuclide number densities from composite.
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
+        """
+        ndens = self.obj.getNuclideNumberDensities(["SI", "W"])
+        self.assertAlmostEqual(0.0001096, ndens[0], 7)
+        self.assertAlmostEqual(0.0000368, ndens[1], 7)
+
+        # Nuclide not present should have a zero density
+        ndens = self.obj.getNuclideNumberDensities(["He4", "bad-nuclide"])
+        self.assertEqual(0.00000, ndens[0])
+        self.assertEqual(0.00000, ndens[1])
+
+    def test_updateNumberDensities(self):
+        # Case: setting the number densities to the same quantites should allow them to be the same,
+        # and other number densities shouldn't be changed
+        refNdens = self.obj.getNumberDensities()
+        self.obj.updateNumberDensities({"SI": 0.0001096, "W": 0.0000368})
+        testNdens = self.obj.getNumberDensities()
+        for key, refValue in refNdens.items():
+            self.assertAlmostEqual(refValue, testNdens[key])
+
+        # Case: setting a new number density should add it to the nuclide densities
+        testNdens = self.obj.getNumberDensities()
+        self.assertTrue("H1" not in testNdens.keys())
+        self.obj.updateNumberDensities({"H1": 0.0001})
+        testNdens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(testNdens["H1"], 0.0001, 7)
+
+        # Cleanup
+        for child in self.obj:
+            i = np.where(child.p.nuclides == "H1".encode())[0]  # SHOULD just be a single value
+            if i.size > 0:
+                np.delete(child.p.nuclides, i[0])
+                np.delete(child.p.numberDensities, i[0])
+
+    def test_setNumberDensities(self):
+        # Case: setting the number densities to the same quantites should allow them to be the same,
+        # and other number densities should be set to zero
+        refNdens = self.obj.getNumberDensities()
+        self.obj.setNumberDensities({"SI": 0.0001096, "W": 0.0000368})
+        testNdens = self.obj.getNumberDensities()
+        for key, refValue in refNdens.items():
+            if key in ("SI", "W"):
+                self.assertAlmostEqual(refValue, testNdens[key])
+            else:
+                self.assertEqual(0.0000, testNdens[key])
+
+        # Case: setting a new number density should add it to the nuclide densities
+        testNdens = self.obj.getNumberDensities()
+        self.assertTrue("H1" not in testNdens.keys())
+        self.obj.setNumberDensities({"H1": 0.0001})
+        testNdens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(testNdens["H1"], 0.0001, 7)
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
