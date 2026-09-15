@@ -2064,24 +2064,18 @@ class Composite(ArmiObject):
         Parameters
         ----------
         param : str
-            The ARMI block parameter that you want the average from
-
+            The ARMI block parameter that you want to average
         typeSpec : TypeSpec
             The child types that should be included in the calculation. Restrict average
             to a certain child type with this parameter.
-
         weightingParam : None or str, optional
              An optional block param that the average will be weighted against
-
         volumeAveraged : bool, optional
             volume (or height, or area) average this param
-
         absolute : bool, optional
             Returns the average of the absolute value of param
-
         generationNum : int, optional
             Which generation to average over (1 for children, 2 for grandchildren)
-
 
         The weighted sum is:
 
