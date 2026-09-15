@@ -16,9 +16,10 @@
 
 import itertools
 import logging
+import math
 import unittest
 from copy import copy, deepcopy
-import math
+
 import numpy as np
 
 from armi import nuclearDataIO, runLog, settings, utils
@@ -1014,7 +1015,7 @@ class TestCompositeTree(unittest.TestCase):
         volFuel = fuel.getVolume()
         avgTemp = volFuel * componentDims["Thot"]
         componentDims["Thot"] = 400
-        clad = Circle("clad", "HT9", **componentDims)
+        clad = basicShapes.Circle("clad", "HT9", **componentDims)
         b.add(fuel)
         b.add(clad)
         volClad = clad.getVolume()
@@ -1027,7 +1028,7 @@ class TestCompositeTree(unittest.TestCase):
         componentDims["Thot"] = 600
         b.removeAll()
         componentDims["od"] = 0.5
-        clad = Circle("clad", "HT9", **componentDims)
+        clad = basicShapes.Circle("clad", "HT9", **componentDims)
         b.add(fuel)
         b.add(clad)
         volClad = clad.getVolume()
@@ -1044,7 +1045,7 @@ class TestCompositeTree(unittest.TestCase):
         # Case: add a new fuel component that is WAY bigger
 
         componentDims = {"Tinput": 25.0, "Thot": 600, "od": 100.00, "id": 0.00, "mult": 100.00}
-        refFuel = Circle("fuel", "UO2", **componentDims)
+        refFuel = basicShapes.Circle("fuel", "UO2", **componentDims)
         self.block.add(refFuel)
         testFuel = self.block.getDominantMaterial(Flags.FUEL)
         self.assertEqual(refFuel.material, testFuel)
@@ -1073,7 +1074,7 @@ class TestCompositeTree(unittest.TestCase):
         self.assertAlmostEqual(0.0000, b.getVolume(), 4)
 
         componentDims["mult"] = 3
-        fuel = Circle("fuel", "UZr", **componentDims)
+        fuel = basicShapes.Circle("fuel", "UZr", **componentDims)
         b.add(fuel)
         self.assertAlmostEqual(3 * volume, b.getVolume(), 4)
 
