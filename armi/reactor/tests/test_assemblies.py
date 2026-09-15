@@ -797,11 +797,11 @@ class TestAssembly(unittest.TestCase):
         self.assertGreater(len(powers), 2)
         refAvgPower = sum(powers) / len(powers)
         self.assertAlmostEqual(self.assembly.calcAvgParam("power"), refAvgPower)
-        ## All the children have the same volume, so turning off volume averaging should yield the same answer
+        # All the children have the same volume, so turning off volume averaging should yield the same answer
         self.assertAlmostEqual(self.assembly.calcAvgParam("power", volumeAveraged=False), refAvgPower)
-        ## All powers are positive, so turning off absolute should yield the same answer
+        # All powers are positive, so turning off absolute should yield the same answer
         self.assertAlmostEqual(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
-        ## All children have the same height, so weighting by the height should yield the same answer
+        # All children have the same height, so weighting by the height should yield the same answer
         self.assertAlmostEqual(self.assembly.calcAvgParam("power", weightingParam="height"), refAvgPower)
 
         # Add a dummy child that should skew the average up, ensure that the average power is greater than before
