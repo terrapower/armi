@@ -466,6 +466,10 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         self.cached[name] = val
 
+    def clearCache(self):
+        """Clear the cache so all new values are recomputed."""
+        self.cached = {}
+
     def copyParamsFrom(self, other):
         """
         Overwrite this object's params with other object's.
@@ -1707,7 +1711,7 @@ class Composite(ArmiObject):
 
     def clearCache(self):
         """Clear the cache so all new values are recomputed."""
-        self.cached = {}
+        ArmiObject.clearCache()
         for child in self:
             child.clearCache()
 
