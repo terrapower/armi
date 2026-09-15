@@ -2298,7 +2298,6 @@ class Composite(ArmiObject):
             ...     pass
 
         If you're going to be doing traversal beyond the first generation, this method will help you.
-
         """
         if deep and generationNum > 1:
             raise RuntimeError("Cannot get children with a generation number set and the deep flag set")
