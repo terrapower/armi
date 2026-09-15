@@ -17,7 +17,9 @@
 import itertools
 import logging
 import unittest
-from copy import deepcopy
+from copy import copy, deepcopy
+import math
+import numpy as np
 
 from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir
@@ -25,7 +27,7 @@ from armi.nucDirectory.nuclideBases import NuclideBase, NuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies, components, composites, grids, parameters
+from armi.reactor import assemblies, blocks, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
@@ -854,8 +856,6 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getChildParamValues(self):
         """Test getChildParamValues."""
-        import numpy as np
-
         ## Try the 'type' parameter
         refTypes = [
             "annular void",
@@ -997,14 +997,11 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getAverageTempInC(self):
         """Test getAverageTempInC."""
-        from armi.reactor import blocks
-        from armi.reactor.components import Circle
-
         b = blocks.HexBlock("temperature-block", height=10.0)
         componentDims = {"Tinput": 25.0, "Thot": 600, "od": 1.00, "id": 0.00, "mult": 1.00}
         ## Case: two components with identical dimensions should yield avg temperature equal to Thot
-        fuel = Circle("fuel", "UZr", **componentDims)
-        clad = Circle("clad", "HT9", **componentDims)
+        fuel = basicShapes.Circle("fuel", "UZr", **componentDims)
+        clad = basicShapes.Circle("clad", "HT9", **componentDims)
 
         b.add(fuel)
         b.add(clad)
@@ -1045,7 +1042,6 @@ class TestCompositeTree(unittest.TestCase):
         self.assertEqual(refFuel, testFuel)
 
         ## Case: add a new fuel component that is WAY bigger
-        from armi.reactor.components import Circle
 
         componentDims = {"Tinput": 25.0, "Thot": 600, "od": 100.00, "id": 0.00, "mult": 100.00}
         refFuel = Circle("fuel", "UO2", **componentDims)
@@ -1058,15 +1054,9 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getVolume(self):
         """Test getVolume."""
-        import math
-        from copy import copy
-
-        from armi.reactor import blocks
-        from armi.reactor.components import Circle
-
         b = blocks.HexBlock("volume-block", height=10.0)
         componentDims = {"Tinput": 25.0, "Thot": 600, "od": 1.00, "id": 0.00, "mult": 1}
-        fuel = Circle("fuel", "UZr", **componentDims)
+        fuel = basicShapes.Circle("fuel", "UZr", **componentDims)
 
         ## Case: one component
         b.add(fuel)
@@ -1333,8 +1323,6 @@ class TestMiscMethods(unittest.TestCase):
         self.assertAlmostEqual(testNdens["H1"], 0.0001, 7)
 
         ## Cleanup
-        import numpy as np
-
         for child in self.obj:
             i = np.where(child.p.nuclides == "H1".encode())[0]  ## SHOULD just be a single value
             if i.size > 0:
