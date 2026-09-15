@@ -2004,28 +2004,20 @@ class Composite(ArmiObject):
             Name of the block parameter to sum
 
         objs : iterable, optional
-            A list of objects to sum over. If none, all children in object will be used
-
+            A list of objects to sum over. If None, all children in object will be used
         volumeIntegrated : bool, optional
             Integrate over volume
-
         addSymmetricPositions : bool, optional
-            If True, will multiply by the symmetry factor of the core (3 for 1/3 models,
-            1 for full core models)
-
+            If True, will multiply by the symmetry factor of the core (3 for 1/3 models, 1 for full core models)
         typeSpec : TypeSpec
             object types to restrict to
-
         generationNum : int, optional
-            Which generation to consider. 1 means direct children, 2 means children of
-            children. Default: Just return direct children.
-
+            Which generation to consider. 1 means direct children, 2 means grandchildren. Default: 1.
         calcBasedOnFullObj : bool, optional
-            Some assemblies or blocks, such as the center assembly in a third core
-            model, are not modeled as full assemblies or blocks. In the third core model
-            objects at these positions are modeled as having 1/3 the volume and thus 1/3
-            the power. Setting this argument to True will apply the full value of the
-            parameter as if it was a full block or assembly.
+            Some assemblies or blocks, such as the center assembly in a third-core model, are not modeled as full
+            assemblies or blocks. In the third-core model, objects at these positions are modeled as having 1/3 the
+            volume and thus 1/3 the power. Setting this argument to True will apply the full value of the parameter as
+            if it was a full block or assembly.
         """
         tot = 0.0
         if objs is None:
