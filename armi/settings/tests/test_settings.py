@@ -489,6 +489,7 @@ class TestSettingsUtils(unittest.TestCase):
         names = {cs.caseTitle for cs in loadedSettings}
         self.assertIn("settings1", names)
         self.assertIn("settings2", names)
+        self.assertNotIn("notSettings", names)
         self.assertNotIn("settings3", names)
         self.assertNotIn("skipSettings", names)
 

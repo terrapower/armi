@@ -431,7 +431,7 @@ class TestCaseSuiteDiscovery(unittest.TestCase):
         self.dc.__exit__(None, None, None)
 
     def test_discover(self):
-        """Test CaseSuit.discover().
+        """Test CaseSuite.discover().
 
         Notes
         -----
