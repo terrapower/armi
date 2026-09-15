@@ -1946,10 +1946,9 @@ class Composite(ArmiObject):
         # compute potentially-different homogenization factors for each child.  evenly
         # distribute entire number density over the subset of active children.
         for nuc, dens in numberDensities.items():
-            # get "active" indices, i.e., indices of children containing nuc
-            # NOTE: this is one of the rare instances in which (imo), using explicit
-            # indexing clarifies subsequent code since it's not necessary to zip +
-            # filter + extract individual components (just extract by filtered index).
+            # Get "active" indices, i.e. indices of children containing nuclide.
+            # NOTE: This uses explicit indexing to clarify subsequent code, since it is not necessary to zip + filter +
+            # extract individual components (we just extract by filtered index).
             indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
 
             if not indiciesToSet:
