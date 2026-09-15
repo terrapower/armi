@@ -1708,7 +1708,7 @@ class Composite(ArmiObject):
 
     def clearCache(self):
         """Clear the cache so all new values are recomputed."""
-        ArmiObject.clearCache()
+        ArmiObject.clearCache(self)
         for child in self:
             child.clearCache()
 
