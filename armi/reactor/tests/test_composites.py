@@ -965,7 +965,7 @@ class TestCompositeTree(unittest.TestCase):
         fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         c.add(fuelComponent)
 
-        # test initial state ang getMass, getFPMass, and getHMMass functions
+        # test initial state and getMass, getFPMass, and getHMMass functions
         self.assertEqual(c.getFPMass(), 0.0)
         self.assertAlmostEqual(c.getHMMass(), 6.468105962375698, delta=1e-6)
         self.assertAlmostEqual(c.getMass(), 7.186784402639664, delta=1e-6)
