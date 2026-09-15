@@ -791,9 +791,9 @@ class TestAssembly(unittest.TestCase):
 
     def test_calcAvgParam(self):
         powers = []
-        for child in self.assembly:
+        for block in self.assembly:
             powers.append(random.random())
-            child.p.power = powers[-1]
+            block.p.power = powers[-1]
         self.assertGreater(len(powers), 2)
         refAvgPower = sum(powers) / len(powers)
         self.assertAlmostEqual(self.assembly.calcAvgParam("power"), refAvgPower)
