@@ -394,7 +394,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        This ArmiObject may have lost a reference to its parent. If the parent (a Composite, Assembly, or Block) was
+        This ArmiObject may have lost a reference to its parent. If the parent (a Composite or Composite
+        subclass) was
         also pickled (serialized), then the parent should update the ``.parent`` attribute during its own
         ``__setstate__`` call. That means within the context of ``__setstate__`` one should not rely upon
         ``self.parent``.
