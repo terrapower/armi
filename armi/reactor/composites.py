@@ -1376,40 +1376,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """Returns mass of fuel in grams."""
         raise NotImplementedError
 
-    def constituentReport(self):
-        """A print out of some pertinent constituent information."""
-        from armi.utils import iterables
-
-        elementz = self.nuclideBases.elements
-
-        rows = [["Constituent", "HMFrac", "FuelFrac"]]
-        columns = [-1, self.getHMMass(), self.getFuelMass()]
-
-        for base_ele in ["U", "PU"]:
-            total = sum([self.getMass(nuclide.name) for nuclide in elementz.bySymbol[base_ele]])
-            rows.append([base_ele, total, total])
-
-        fp_total = self.getFPMass()
-        rows.append(["FP", fp_total, fp_total])
-
-        ma_nuclides = iterables.flatten(
-            [ele.nuclides for ele in [elementz.byZ[key] for key in elementz.byZ.keys() if key > 94]]
-        )
-        ma_total = sum([self.getMass(nuclide.name) for nuclide in ma_nuclides])
-        rows.append(["MA", ma_total, ma_total])
-
-        for i, row in enumerate(rows):
-            for j, entry in enumerate(row):
-                try:
-                    percent = entry / columns[j] * 100.0
-                    rows[i][j] = percent or "-"
-                except ZeroDivisionError:
-                    rows[i][j] = "NaN"
-                except TypeError:
-                    pass  # trying to divide the string name
-
-        return "\n".join(["{:<14}{:<10}{:<10}".format(*row) for row in rows])
-
     def getAtomicWeight(self):
         r"""
         Calculate the atomic weight of this object in g/mole of atoms.
