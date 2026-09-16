@@ -591,9 +591,6 @@ class TestCompositePattern(unittest.TestCase):
         wires = self.container.getChildrenOfType("wire")
         assert len(wires) == 0
 
-        # check invalid type
-        bobs = self.container.getChildrenOfType("bob")
-
     def test_removeAll(self):
         """Test the ability to remove all children of a composite."""
         self.container.removeAll()
