@@ -1853,7 +1853,6 @@ class Composite(ArmiObject):
             Nuclide number density to modify
         val : float
             Number density to set in atoms/bn-cm (heterogeneous)
-
         """
         activeChildren = self.getChildrenWithNuclides({nucName})
         if not activeChildren:
@@ -1902,7 +1901,6 @@ class Composite(ArmiObject):
         ----------
         numberDensities : dict
             nucName: ndens pairs.
-
         """
         children, volFracs = zip(*self.getVolumeFractions())
         childNucs = tuple(set(child.getNuclides()) for child in children)
