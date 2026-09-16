@@ -575,10 +575,25 @@ class TestCompositePattern(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(clads)
 
+        # check for 'wire', which shouldn't exist in the block and result
+        # in an empty iterator
+        wires = self.container.iterChildrenOfType("wires")
+        with self.assertRaises(StopIteration):
+            next(wires)
+
     def test_getChildrenOfType(self):
         clads = self.container.getChildrenOfType("clad")
         assert len(clads) == 1
         self.assertListEqual(clads, [self.cladChild])
+
+        # check for 'wire', which shouldn't exist in the block and result
+        # in an empty list
+        wires = self.container.getChildrenOfType("wire")
+        assert len(wires) == 0
+
+        # check invalid type
+        bobs = self.container.getChildrenOfType("bob")
+        breakpoint()
 
     def test_removeAll(self):
         """Test the ability to remove all children of a composite."""
