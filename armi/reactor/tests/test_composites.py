@@ -593,7 +593,6 @@ class TestCompositePattern(unittest.TestCase):
 
         # check invalid type
         bobs = self.container.getChildrenOfType("bob")
-        breakpoint()
 
     def test_removeAll(self):
         """Test the ability to remove all children of a composite."""
@@ -810,12 +809,6 @@ class TestCompositeTree(unittest.TestCase):
         self.assertIn("Circle", str(b[0]))
         self.assertFalse(b[-1].is3D)
         self.assertIn("Hexagon", str(b[-1]))
-
-    def test_constituentReport(self):
-        runLog.info(self.r.core.constituentReport())
-        runLog.info(self.r.core.getFirstAssembly().constituentReport())
-        runLog.info(self.r.core.getFirstBlock().constituentReport())
-        runLog.info(self.r.core.getFirstBlock().getComponents()[0].constituentReport())
 
     def test_getNuclides(self):
         """
