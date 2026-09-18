@@ -570,7 +570,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return s.lower() in name
 
     def getName(self):
-        """Get composite name."""
+        """Get ArmiObject name."""
         return self.name
 
     def setName(self, name):
@@ -712,6 +712,34 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         self.p.flags = flags or Flags.fromStringIgnoreErrors(typ)
         self.p.type = typ
+
+    def backUp(self):
+        """
+        Create and store a backup of the state.
+
+        This needed to be overridden due to linked components which actually have a parameter value
+        of another ARMI component.
+        """
+        self._backupCache = (self.cached, self._backupCache)
+        self.cached = {}  # don't .clear(), using reference above!
+        self.p.backUp()
+        if self.spatialGrid:
+            self.spatialGrid.backUp()
+
+    def restoreBackup(self, paramsToApply):
+        """
+        Restore the parameters from previously created backup.
+
+        Parameters
+        ----------
+        paramsToApply : list of ParmeterDefinitions
+            restores the state of all parameters not in `paramsToApply`
+        """
+        self.p.restoreBackup(paramsToApply)
+        self.cached, self._backupCache = self._backupCache
+        if self.spatialGrid:
+            self.spatialGrid.restoreBackup()
+
 
     def getVolume(self):
         raise NotImplementedError()
@@ -2945,33 +2973,6 @@ class Composite(ArmiObject):
         This should be used in a `with` statement.
         """
         return StateRetainer(self, paramsToApply)
-
-    def backUp(self):
-        """
-        Create and store a backup of the state.
-
-        This needed to be overridden due to linked components which actually have a parameter value
-        of another ARMI component.
-        """
-        self._backupCache = (self.cached, self._backupCache)
-        self.cached = {}  # don't .clear(), using reference above!
-        self.p.backUp()
-        if self.spatialGrid:
-            self.spatialGrid.backUp()
-
-    def restoreBackup(self, paramsToApply):
-        """
-        Restore the parameters from previously created backup.
-
-        Parameters
-        ----------
-        paramsToApply : list of ParmeterDefinitions
-            restores the state of all parameters not in `paramsToApply`
-        """
-        self.p.restoreBackup(paramsToApply)
-        self.cached, self._backupCache = self._backupCache
-        if self.spatialGrid:
-            self.spatialGrid.restoreBackup()
 
     def getLumpedFissionProductsIfNecessary(self, nuclides=None):
         """Return Lumped Fission Product objects that belong to this object or any of its children."""
