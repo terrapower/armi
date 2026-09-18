@@ -18,7 +18,7 @@ import numpy as np
 
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyF32Array
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyArrayNotNone, isNumpyF32Array
 from armi.utils import units
 
 
@@ -61,14 +61,14 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "numberDensities",
-            setter=isNumpyArray("numberDensities"),
+            setter=isNumpyArrayNotNone("numberDensities"),
             units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
         )
 
         pb.defParam(
             "nuclides",
-            setter=isNumpyArray("nuclides"),
+            setter=isNumpyArrayNotNone("nuclides"),
             units=units.UNITLESS,
             description="Nuclide names corresponding to numberDensities array.",
         )
