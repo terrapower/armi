@@ -130,7 +130,7 @@ class ComponentType(composites.CompositeModelType):
         return newType
 
 
-class Component(composites.Composite, metaclass=ComponentType):
+class Component(composites.ArmiObject, metaclass=ComponentType):
     """
     A primitive object in a reactor that has definite area/volume, material and composition.
 
@@ -209,7 +209,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if components and name in components:
             raise ValueError(f"Non-unique component name {name} repeated in same block.")
 
-        composites.Composite.__init__(self, str(name))
+        composites.ArmiObject.__init__(self, str(name))
         self.p.area = area
         self.inputTemperatureInC = Tinput
         self.temperatureInC = Thot
@@ -264,7 +264,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 )
 
     def __setstate__(self, state):
-        composites.Composite.__setstate__(self, state)
+        composites.ArmiObject.__setstate__(self, state)
         self.material.parent = self
 
     def _linkAndStoreDimensions(self, components, **dims):
@@ -695,7 +695,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setName(self, name):
         """Components use name for type and name."""
-        composites.Composite.setName(self, name)
+        composites.ArmiObject.setName(self, name)
         self.setType(name)
 
     def setNumberDensity(self, nucName, val):
@@ -1169,7 +1169,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
-        composites.Composite.backUp(self)
+        composites.ArmiObject.backUp(self)
         self._restoreLinkedDims(linkedDims)
 
     def restoreBackup(self, paramsToApply):
@@ -1180,7 +1180,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
-        composites.Composite.restoreBackup(self, paramsToApply)
+        composites.ArmiObject.restoreBackup(self, paramsToApply)
         self._restoreLinkedDims(linkedDims)
 
     def _getLinkedDimsAndValues(self):
@@ -1395,7 +1395,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
-        density = composites.Composite.density(self)
+        density = composites.ArmiObject.density(self)
 
         if not density:
             # It is possible that there are no nuclides in this component yet. In that case, we defer to the Material.
