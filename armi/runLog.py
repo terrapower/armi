@@ -305,13 +305,23 @@ def close(mpiRank=None):
             error(ee)
     else:
         if LOG.stderrLogger:
-            _ = [h.close() for h in LOG.stderrLogger.handlers]
+            _ = [safeCloseFileHandler(h) for h in LOG.stderrLogger.handlers]
         if LOG.logger:
-            _ = [h.close() for h in LOG.logger.handlers]
+            _ = [safeCloseFileHandler(h) for h in LOG.logger.handlers]
 
     LOG.setNullLoggers()
     LOG.restoreStandardStreams()
 
+def safeCloseFileHandler(handle):
+    try: 
+        if handle:
+            handle.close()
+    except OSError as e:
+        # file handle is stale; connection to networked drive may have been 
+        # interrupted during the run
+        pass
+    finally:
+        handle = None
 
 def concatenateLogs(logDir=None):
     """
