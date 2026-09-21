@@ -20,7 +20,12 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Union
+from typing import (
+    Callable,
+    Iterator,
+    Union,
+)
+
 
 import numpy as np
 
@@ -219,6 +224,14 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+
+    def _iterChildren(
+        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
+    ) -> Iterator["Composite"]:
+        """Generator function for Component classes. This yields an empty generator object as Component objects
+        have no children.
+        """
+        yield from ()
 
     @property
     def temperatureInC(self):

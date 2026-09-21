@@ -520,6 +520,24 @@ class ArmiObject(metaclass=CompositeModelType):
         """Yield components one by one in a generator."""
         raise NotImplementedError()
 
+    def _iterChildren(
+        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
+    ) -> Iterator["Composite"]:
+        """Generator function for composite tree children.
+
+        Parameters
+        ----------
+        deep : bool, optional
+            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
+        generationNum: int, optional
+            Generator depth. A depth of ``1`` includes children of ``self``, ``2``
+            excluisively is children of children, and so on.
+        checker: f(Composite) -> bool, optional
+            Function that filters what children are added to the generator object.
+        """
+        raise NotImplementedError()
+
+
     @classmethod
     def getParameterCollection(cls):
         """
@@ -2260,7 +2278,7 @@ class Composite(ArmiObject):
 
         Returns
         -------
-        iterator of Composite
+        iterator of Composite and/or Component objects
 
         See Also
         --------
@@ -2301,8 +2319,22 @@ class Composite(ArmiObject):
     def _iterChildren(
         self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
     ) -> Iterator["Composite"]:
+        """Generator function for iterating over composite tree children.
+
+        Parameters
+        ----------
+        deep : bool, optional
+            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
+        generationNum: int, optional
+            Generator depth. A depth of ``1`` includes children of ``self``, ``2``
+            excluisively is children of children, and so on.
+        checker: f(Composite) -> bool, optional
+            Function that filters what children ar added to the generator object.
+        """
+        ## Add the children at the 'base' level of the composite tree, if needed
         if deep or generationNum == 1:
             yield from filter(checker, self)
+        ## Add deeper children to the generator object recursively.
         if deep or generationNum > 1:
             for c in self:
                 yield from c._iterChildren(deep, generationNum - 1, checker)
