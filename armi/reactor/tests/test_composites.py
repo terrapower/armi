@@ -520,21 +520,25 @@ class TestCompositePattern(unittest.TestCase):
             self.assertAlmostEqual(rRatesReactor[key], val)
 
     def test_getFirstComponent(self):
+        # The dummy model's composite tree terminates
+        # with DummyLeaf objects
         c = self.container.getComponents()[0]
         c0 = self.container.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
         c = self.cladChild.getComponents()[0]
         c0 = self.cladChild.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
         c = self.secondGen.getComponents()[0]
         c0 = self.secondGen.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
+        # When using this function in a real composite model,
+        # we should get an actual Component object
         b = buildComplexHexBlock()
         c = b.getComponents()[0]
         c0 = b.getFirstComponent()
