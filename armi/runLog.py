@@ -42,6 +42,8 @@ Or change the log level the same way:
 .. code-block::
 
     runLog.setVerbosity('debug')
+
+TODO: JOHN: Testing: Can I reproduce this CI issue?
 """
 
 import collections
