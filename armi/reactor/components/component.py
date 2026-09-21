@@ -1455,6 +1455,35 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
 
+    def getReactionRates(self, nucName, nDensity=None):
+        """
+        Get the reaction rates of a certain nuclide on this ArmiObject.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number Density
+
+        Returns
+        -------
+        rxnRates : dict
+            reaction rates (1/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        This is volume integrated NOT (1/cm3-s).
+
+        If you set nDensity to 1 this makes 1-group cross section generation easier.
+        """
+        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+        for rxName, val in self._getReactionRates(nucName, nDensity).items():
+            rxnRates[rxName] += val
+
+        return rxnRates
+
+
     def finalizeLoadingFromDB(self):
         """Apply any final actions after creating the component from database.
 
