@@ -539,7 +539,7 @@ class TestCompositePattern(unittest.TestCase):
         c = b.getComponents()[0]
         c0 = b.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, components.Component)
 
         # covering edge case: someone passes in a flag that doesn't exist on on the object
         with self.assertRaises(ValueError):
