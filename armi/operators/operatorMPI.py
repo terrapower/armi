@@ -36,8 +36,6 @@ MPI. This can be optimized as needed.
 """
 
 import gc
-import os
-import re
 import time
 import traceback
 

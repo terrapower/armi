@@ -312,16 +312,18 @@ def close(mpiRank=None):
     LOG.setNullLoggers()
     LOG.restoreStandardStreams()
 
+
 def safeCloseFileHandler(handle):
-    try: 
+    try:
         if handle:
             handle.close()
-    except OSError as e:
-        # file handle is stale; connection to networked drive may have been 
+    except OSError:
+        # file handle is stale; connection to networked drive may have been
         # interrupted during the run
         pass
     finally:
         handle = None
+
 
 def concatenateLogs(logDir=None):
     """
