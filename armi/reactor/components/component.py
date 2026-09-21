@@ -20,7 +20,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Union
+from typing import Iterable, Union
 
 import numpy as np
 
@@ -622,8 +622,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        if self.p.nuclides is None:
-            return []
         return [nucName.decode() for nucName in self.p.nuclides]
 
     def getNumberDensity(self, nucName):
@@ -646,15 +644,23 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return 0.0
 
-    def getNuclideNumberDensities(self, nucNames: list[str]) -> list[float]:
-        """Return a list of number densities for the nuc names requested."""
+    def getNuclideNumberDensities(self, nucNames: Iterable[Union[str, np.bytes_]]) -> np.ndarray:
+        """
+        Return an array of number densities for the nuclide names requested.
+
+        Parameters
+        ----------
+        nucNames : Iterable[str, np.bytes_]
+            Nuclide names (as string or byte strings) for which to retrieve number densities.
+
+        Returns
+        -------
+        Numpy array of the requested nuclide number densities.
+        """
         if isinstance(nucNames, (list, tuple, np.ndarray)):
             byteNucs = np.asanyarray(nucNames, dtype="S6")
         else:
-            byteNucs = [nucName.encode() for nucName in nucNames]
-
-        if self.p.numberDensities is None:
-            return np.zeros(len(byteNucs), dtype=np.float64)
+            byteNucs = np.asanyarray([nucName.encode() for nucName in nucNames], dtype="S6")
 
         # trivial case where nucNames is the full set of nuclides in the same order
         if np.array_equal(byteNucs, self.p.nuclides):
@@ -664,7 +670,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             return self._getNumberDensitiesArray(byteNucs)
 
         nDensDict = dict(zip(self.p.nuclides, self.p.numberDensities))
-        return [nDensDict.get(nuc, 0.0) for nuc in byteNucs]
+        return np.array([nDensDict.get(nuc, 0.0) for nuc in byteNucs])
 
     def _getNumberDensitiesArray(self, byteNucs):
         """
@@ -770,7 +776,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # prepare to change the densities with knowledge that dims could change due to material
         # thermal expansion dependence on composition
-        if self.p.numberDensities is not None and self.p.numberDensities.size > 0:
+        if self.p.numberDensities.size > 0:
             dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             materialExpansion = True
         else:
@@ -825,8 +831,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        if self.p.numberDensities is not None:
-            self.p.numberDensities *= factor
+        self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):
