@@ -16,7 +16,7 @@
 
 import math
 
-from armi.reactor import components
+from armi.reactor import components, geometry
 from armi.reactor.blocks.block import Block
 from armi.reactor.flags import Flags
 
@@ -76,7 +76,7 @@ class CartesianBlock(Block):
 
     def getSymmetryFactor(self):
         """Return a factor between 1 and N where 1/N is how much cut-off by symmetry lines this mesh cell is."""
-        if self.core is not None:
+        if self.core is not None and self.core.symmetry.domain != geometry.DomainType.FULL_CORE:
             indices = self.spatialLocator.getCompleteIndices()
             if self.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
