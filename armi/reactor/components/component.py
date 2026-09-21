@@ -646,7 +646,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getNuclideNumberDensities(self, nucNames: Iterable[Union[str, np.bytes_]]) -> np.ndarray:
         """
-        Return a list of number densities for the nuc names requested.
+        Return an array of number densities for the nuclide names requested.
 
         Parameters
         ----------
