@@ -1213,7 +1213,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return self.parent.getAncestorAndDistance(fn, _distance + 1)
 
-    def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
+    def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False, excludeSelf=False):
         """
         Return the first ancestor that matches the passed flags.
 
@@ -1221,21 +1221,27 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         typeSpec : TypeSpec
             A collection of flags to match on candidate parents
-
         exactMatch : bool
             Whether the flags match should be exact
+        excludeSelf : bool
+            Whether to exclude the reciever object in the ancestor tree.
 
         Returns
         -------
         armi.composites.ArmiObject
             the first ancestor up the chain of parents that matches the passed flags
 
+        Warning
+        -------
+        The receiver object will return itself if it contains the flags in typeSpec and exlucdeSelf is False.
+
         See Also
         --------
         ArmiObject.hasFlags()
         """
-        if self.hasFlags(typeSpec, exact=exactMatch):
-            return self
+        if not(excludeSelf):
+            if self.hasFlags(typeSpec, exact=exactMatch):
+                return self
 
         if self.parent is None:
             return None

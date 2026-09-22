@@ -770,15 +770,14 @@ class TestCompositeTree(unittest.TestCase):
         child = grandchild.getAncestorWithFlags(Flags.FUEL)
         self.assertIsNone(child)
 
-        # test the usual case: get a ancestor with the fuel flag
+        # test that the passing the same flag results in the reciever object being returned
         child = self.block.getChildrenWithFlags(Flags.FUEL)[0]
-        grandchild = child.getFirstComponent()
-        child1 = grandchild.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(child1, grandchild)
+        child1 = child.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child1, child)
 
-        # default case: the only ancestor with the fuel flag is the composite itself, so return that
-        child2 = child.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(child2, child)
+        # now check that using excludeSelf changes this behavior
+        ancestor = child.getAncestorWithFlags(Flags.FUEL, excludeSelf=True)
+        self.assertIsNone(ancestor)
 
     def test_changeNDensByFactor(self):
         b = deepcopy(self.block.getChildrenWithFlags(Flags.FUEL)[0])
