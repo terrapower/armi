@@ -224,14 +224,15 @@ These settings come with a few caveats:
 
 Material Namespace Order
 ^^^^^^^^^^^^^^^^^^^^^^^^
-An ARMI application will need materials. Materials can be imported from any code the application has access to, like
-ARMI or external plugin packages. This leads to the situation where one ARMI application will want to import multiple
-collections of materials. To handle this, ARMI keeps an ordered list of Python namespaces and directories from
-which to import materials.
+An ARMI application will need materials. Materials can be defined in Python and imported from any code the application
+has access to, like ARMI or external plugin packages. Materials can also be defined in pure YAML files, and stored in a
+Python module, in the Python virtual environment (venv), or somewhere on the file system. This leads to the situation
+where one ARMI application may want to import multiple collections of materials. To handle this, ARMI keeps an ordered
+list of Python namespaces and directories from which to import materials.
 
 The user has the power to set the various places (namespaces) that materials might be found: in importable Python paths,
-or in specific places inside a Python virtual environment, or even in specific directories in the file system. The
-setting that controls all this is ``materialNamespaceOrder``.
+in specific places in the Python venv, or even in specific directories in the file system. The setting that controls all
+this is ``materialNamespaceOrder``.
 
 Here is the simplest example::
 
@@ -240,9 +241,9 @@ Here is the simplest example::
     materialNamespaceOrder:
         armi.materials
 
-This is a simple example where the only materials considered for the run are the ARMI default materials. ARMI does not
-come with thousands of materials, so this probably will not happen to you often for real world calculations, but this is
-essentially what is done for the ARMI unit tests.
+In the example above, the only materials considered for the run are the ARMI default materials. For various technical
+and legal reasons, ARMI does not come with enough material data to fully model a real world nuclear reactor. But the
+example above is common for unit tests.
 
 Of course, if you want to ignore the ARMI materials, in favor of a set of materials your team has created, you could do
 something like this::
@@ -268,9 +269,9 @@ but take some care that whatever location you pick is going to exist in a few mo
 might mean using a well-known location on your cluster, or using file system symbolic links to enforce that a location
 will always exist. Just because this feature works in ARMI does not mean a file on your laptop will never be deleted.
 
-Another way to include a directory of Python or YAML material files is to store them right in your Python virtual
-environment (venv). This would be a good way to enforce that if you a running from a known/correct Python venv, then
-you have the materials you want by default. For this we use a custom ``venv`` syntax::
+Another way to include a directory of Python or YAML material files is to store them right in your Python venv. This
+would be a good way to enforce that if you a running from a known/correct Python venv, then you have the materials you
+want by default. For this we use a custom ``venv`` syntax::
 
 .. code-block:: yaml
 
