@@ -253,8 +253,33 @@ could do something like this::
     materialNamespaceOrder:
         myArmiApp.materials
 
-Something like the above works for any importable Python path that includes Python-based ARMI materials (any class
-defined therein that subclasses ``armi.materials.Material``).
+The above works by importing all the subclasses of ``armi.materials.Material`` that are located within the file
+``myArmiApp/materials.py`` if the path you indentify is a file, or ``myArmiApp/materials/__init__.py`` if the path you
+identify is a module. There are a few common ways people do this. You can, obviously, define all your material classes
+in the file you specify. But that is often cumbersome and ugly if you have a lot of materials. So you can also just
+import all the material classes you define into the file, that looks something like this::
+
+.. code-block:: python
+
+    # this is myArmiApp/materials/__init__.py
+    from myArmiApp.materials.b4c import B4C
+    from myArmiApp.materials.he import HeliumGas
+    from myArmiApp.materials.steel import AcmeSteel
+    from myArmiApp.materials.uraniumOxide import uraniumOxide
+    from myArmiApp.materials.water import LiquidWater, SteamWater
+
+While the above is the gold standard and easy to accomplish, ARMI comes with a helper method to save you having to write
+all of that (and worse, having to maintain all of that)::
+
+.. code-block:: python
+
+    # this is myArmiApp/materials/__init__.py
+    from armi.materials import importMaterialsIntoModuleNamespace
+
+    importMaterialsIntoModuleNamespace(__path__, __name__, globals())
+
+And that, vaguely magical, line of code saves you from having to do all of the imports yourself, and maintain them as
+they change over time.
 
 Or perhaps your team is really on the ball and you just want to import a directory of YAML files::
 
