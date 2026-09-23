@@ -268,7 +268,7 @@ works, but take some care that whatever location you pick is going to exist when
 a well-known location on your cluster, or using file system symbolic links to enforce that a location will always exist.
 ARMI cannot guarantee that a file on your laptop will never move.
 
-Another way to include a directory of Python or YAML material files is to store them right in your Python venv. This is
+Another way to include a directory of YAML material files is to store them right in your Python venv. This is
 a good way to enforce that if, as long as your simulation runs from a correct Python venv, you have the correct
 materials. For this we use a custom ``venv`` syntax::
 
