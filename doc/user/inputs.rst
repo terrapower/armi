@@ -264,14 +264,14 @@ pure YAML files)::
     materialNamespaceOrder:
         dir:/mnt/materials/production/
 
-Here we use the ``dir:`` syntax to define a directory containing ARMI-formatted material YAML files. This feature works,
-but take some care that whatever location you pick is going to exist in a few months or when you need it next. This
-might mean using a well-known location on your cluster, or using file system symbolic links to enforce that a location
-will always exist. Just because this feature works in ARMI does not mean a file on your laptop will never be deleted.
+Here we use the ``dir:`` syntax to identify a directory containing ARMI-formatted material YAML files. This feature
+works, but take some care that whatever location you pick is going to exist when you need it next. This might mean using
+a well-known location on your cluster, or using file system symbolic links to enforce that a location will always exist.
+ARMI cannot guarantee that a file on your laptop will never move.
 
-Another way to include a directory of Python or YAML material files is to store them right in your Python venv. This
-would be a good way to enforce that if you a running from a known/correct Python venv, then you have the materials you
-want by default. For this we use a custom ``venv`` syntax::
+Another way to include a directory of Python or YAML material files is to store them right in your Python venv. This is
+a good way to enforce that if, as long as your simulation runs from a correct Python venv, you have the correct
+materials. For this we use a custom ``venv`` syntax::
 
 .. code-block:: yaml
 
@@ -279,7 +279,7 @@ want by default. For this we use a custom ``venv`` syntax::
         venv:materials_data/
 
 Of course, you can mix and match the above options. In the wild, we have seen people create complicated lists for their
-simulations where ``materialNamespaceOrder`` look something like this::
+simulations that something like this::
 
 .. code-block:: yaml
 
@@ -289,26 +289,26 @@ simulations where ``materialNamespaceOrder`` look something like this::
         venv:materials/data
         armi.materials
 
-In cases like this, we set up an order of precidence. For instance, perhaps all four of the namespaces above include a
-material named "Air". You simulation will use the first Air it finds in a namespace (so in ``myArmiApp.materials.prod``
-in the example above).
+In cases like the above, ARMI sets up an order of precedence. For instance, perhaps all four of the namespaces above
+include a material named "Air". Your simulation will use the first "Air" it finds in a namespace (in the example above
+that would be in ``myArmiApp.materials.prod``).
 
-Finally, while this setting is often the best way to run a simulation, often people are writing unit tests or
-otherwise working outside a simulation and want to invoke all the functionality of ``materialNamespaceOrder`` in pure
-Python code. This is easy to do with the method ``armi.materials.setMaterialNamespaceOrder``::
+Finally, while the setting ``materialNamespaceOrder`` is probably the best option for configuring a simulation, people
+are often running ARMI scripts or unit tests and want to do their configuration in Python code. The function you need to
+call do do that is ``armi.materials.setMaterialNamespaceOrder``::
 
 .. code-block:: python
 
 
-    from armi import materials
-    materials.setMaterialNamespaceOrder(["armi.materials"])
+    import armi
+    armi.materials.setMaterialNamespaceOrder(["armi.materials"])
 
 Or, duplicating the complex YAML example above::
 
 .. code-block:: python
 
-    from armi import materials
-    materials.setMaterialNamespaceOrder([
+    from armi.materials import setMaterialNamespaceOrder
+    setMaterialNamespaceOrder([
         "myArmiApp.materials.prod",
         "dir:/mnt/materials/prod/v2/",
         "venv:materials/data",
@@ -316,7 +316,7 @@ Or, duplicating the complex YAML example above::
     ])
 
 
-.. note:: Separate data from code. Is is recommended that, if possible, you define your materials in the matProps YAML format, rather than in Python. We have found this improves data quality.
+.. note:: Separate data from code. We recommend that, if possible, you define your materials in the matProps YAML format. We have found this improves data quality. See :ref:`mat-input-file`.
 
 .. _restart-cases:
 
@@ -1395,6 +1395,9 @@ A failure can also occur if the burn chain is missing a nuclide.
 
 .. |Tinput| replace:: T\ :sub:`input`
 .. |Thot| replace:: T\ :sub:`hot`
+
+
+.. _mat-input-file:
 
 The Materials Input File
 ========================
