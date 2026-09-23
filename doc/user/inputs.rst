@@ -86,53 +86,6 @@ Some special settings
 ---------------------
 A few settings warrant additional discussion.
 
-.. _detail-assems:
-
-Detail assemblies
-^^^^^^^^^^^^^^^^^
-Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins may treat detail assemblies differently, so it's important to read the plugin documentation as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies, while subchannel T/H is run on the others.
-
-Detail assemblies are specified by the user in a variety of ways, through the GUI or the settings system.
-
-.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush for serious multiphysics calculations with each plugin treating them differently. It is likely that this feature will be extended to be more flexible and less surprising in the future.
-
-Detail Assembly Locations BOL
-    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings (e.g. ``004-003`` for ring 4,
-    position 3). Assemblies that are in these locations at the beginning-of-life will be activated as detail assemblies.
-
-Detail assembly numbers
-    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous case and
-    specified, regardless of when the assemblies enter the core. This is useful for activating detailed treatment of
-    assemblies that enter the core at a later cycle.
-
-Detail all assemblies
-    The ``detailAllAssems`` setting makes all assemblies in the problem detail assemblies
-
-.. _kinetics-settings:
-
-Kinetics settings
-^^^^^^^^^^^^^^^^^
-In reactor physics analyses it is standard practice to represent reactivity in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To support this functionality, the framework supplies the ``beta`` and ``decayConstants`` settings to apply the delayed neutron fraction and precursor decay constants to the Core parameters during initialization.
-
-These settings come with a few caveats:
-
-    1. The ``beta`` setting supports two different meanings depending on the type that is provided. If a single value is
-       given, then this setting is interpreted as the effective delayed neutron fraction for the system. If a list of
-       values is provided, then this setting is interpreted as the group-wise (precursor family) delayed neutron
-       fractions (useful for reactor kinetics simulations).
-
-    2. The ``decayConstants`` setting is used to define the precursor decay constants for each group. When set, it must
-       be provided with a corresponding ``beta`` setting that has the same number of groups. For example, if six-group
-       delayed neutron fractions are provided, the decay constants must also be provided in the same six-group
-       structure.
-
-    3. If ``beta`` is interpreted as the effective delayed neutron fraction for the system, then the ``decayConstants``
-       setting will not be utilized.
-
-    4. If both the group-wise ``beta`` and ``decayConstants`` are provided and their number of groups are consistent,
-       then the effective delayed neutron fraction for the system is calculated as the summation of the group-wise
-       delayed neutron fractions.
-
 .. _cycle-history:
 
 Cycle history
@@ -221,6 +174,146 @@ As can be seen, the detailed cycle history option provides much flexibility for 
 .. note:: Cycles without names will be given the name ``None``
 
 .. warning:: When a detailed cycle history is combined with tight coupling, a subclass of :py:meth:`LatticePhysicsInterface.interactCoupled <armi.physics.neutronics.latticePhysics.latticePhysicsInterface.LatticePhysicsInterface.interactCoupled>` should be used.
+
+.. _detail-assems:
+
+Detail assemblies
+^^^^^^^^^^^^^^^^^
+Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins may treat detail assemblies differently, so it's important to read the plugin documentation as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies, while subchannel T/H is run on the others.
+
+Detail assemblies are specified by the user in a variety of ways, through the GUI or the settings system.
+
+.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush for serious multiphysics calculations with each plugin treating them differently. It is likely that this feature will be extended to be more flexible and less surprising in the future.
+
+Detail Assembly Locations BOL
+    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings (e.g. ``004-003`` for ring 4,
+    position 3). Assemblies that are in these locations at the beginning-of-life will be activated as detail assemblies.
+
+Detail assembly numbers
+    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous case and
+    specified, regardless of when the assemblies enter the core. This is useful for activating detailed treatment of
+    assemblies that enter the core at a later cycle.
+
+Detail all assemblies
+    The ``detailAllAssems`` setting makes all assemblies in the problem detail assemblies
+
+.. _kinetics-settings:
+
+Kinetics settings
+^^^^^^^^^^^^^^^^^
+In reactor physics analyses it is standard practice to represent reactivity in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To support this functionality, the framework supplies the ``beta`` and ``decayConstants`` settings to apply the delayed neutron fraction and precursor decay constants to the Core parameters during initialization.
+
+These settings come with a few caveats:
+
+    1. The ``beta`` setting supports two different meanings depending on the type that is provided. If a single value is
+       given, then this setting is interpreted as the effective delayed neutron fraction for the system. If a list of
+       values is provided, then this setting is interpreted as the group-wise (precursor family) delayed neutron
+       fractions (useful for reactor kinetics simulations).
+
+    2. The ``decayConstants`` setting is used to define the precursor decay constants for each group. When set, it must
+       be provided with a corresponding ``beta`` setting that has the same number of groups. For example, if six-group
+       delayed neutron fractions are provided, the decay constants must also be provided in the same six-group
+       structure.
+
+    3. If ``beta`` is interpreted as the effective delayed neutron fraction for the system, then the ``decayConstants``
+       setting will not be utilized.
+
+    4. If both the group-wise ``beta`` and ``decayConstants`` are provided and their number of groups are consistent,
+       then the effective delayed neutron fraction for the system is calculated as the summation of the group-wise
+       delayed neutron fractions.
+
+Material Namespace Order
+^^^^^^^^^^^^^^^^^^^^^^^^
+An ARMI application will need materials. Materials can be imported from any code the application has access to, like
+ARMI or external plugin packages. This leads to the situation where one ARMI application will want to import multiple
+collections of materials. To handle this, ARMI keeps an ordered list of Python namespaces and directories from
+which to import materials.
+
+The user has the power to set the various places (namespaces) that materials might be found: in importable Python paths,
+or in specific places inside a Python virtual environment, or even in specific directories in the file system. The
+setting that controls all this is ``materialNamespaceOrder``.
+
+Here is the simplest example::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+        armi.materials
+
+This is a simple example where the only materials considered for the run are the ARMI default materials. ARMI does not
+come with thousands of materials, so this probably will not happen to you often for real world calculations, but this is
+essentially what is done for the ARMI unit tests.
+
+Of course, if you want to ignore the ARMI materials, in favor of a set of materials your team has created, you could do
+something like this::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+        myArmiApp.materials
+
+Something like the above would work for any importable Python path that includes Python-based ARMI materials (any
+class defined therein that subclasses ``armi.materials.Material``).
+
+Or perhaps your team is really on the ball and you just want to import a directory of files (they could be Python or
+pure YAML files)::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+        dir:/mnt/materials/production/
+
+Here we use the ``dir:`` syntax to define a directory containing ARMI-formatted material YAML files. This feature works,
+but take some care that whatever location you pick is going to exist in a few months or when you need it next. This
+might mean using a well-known location on your cluster, or using file system symbolic links to enforce that a location
+will always exist. Just because this feature works in ARMI does not mean a file on your laptop will never be deleted.
+
+Another way to include a directory of Python or YAML material files is to store them right in your Python virtual
+environment (venv). This would be a good way to enforce that if you a running from a known/correct Python venv, then
+you have the materials you want by default. For this we use a custom ``venv`` syntax::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+        venv:materials_data/
+
+Of course, you can mix and match the above options. In the wild, we have seen people create complicated lists for their
+simulations where ``materialNamespaceOrder`` look something like this::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+        myArmiApp.materials.prod
+        dir:/mnt/materials/prod/v2/
+        venv:materials/data
+        armi.materials
+
+In cases like this, we set up an order of precidence. For instance, perhaps all four of the namespaces above include a
+material named "Air". You simulation will use the first Air it finds in a namespace (so in ``myArmiApp.materials.prod``
+in the example above).
+
+As a final note, while this setting is often the best way to run a simulation, often people are writing unit tests or
+otherwise working outside a simulation and want to invoke all the functionality of ``materialNamespaceOrder`` in pure
+Python code. This is easy to do with the method ``armi.materials.setMaterialNamespaceOrder``::
+
+.. code-block:: python
+
+
+    from armi import materials
+    materials.setMaterialNamespaceOrder(["armi.materials"])
+
+Or, duplicating the complex YAML example above::
+
+.. code-block:: python
+
+    from armi import materials
+    materials.setMaterialNamespaceOrder([
+        "myArmiApp.materials.prod",
+        "dir:/mnt/materials/prod/v2/",
+        "venv:materials/data",
+        "armi.materials"
+    ])
+
 
 .. _restart-cases:
 
