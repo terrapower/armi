@@ -55,7 +55,10 @@ def isDepletable(obj: composites.ArmiObject):
     --------
     armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys
     """
-    return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(Flags.DEPLETABLE)
+    depletable = obj.hasFlags(Flags.DEPLETABLE)
+    if isinstance(obj, composites.Composite):
+        depletable = depletable or obj.containsAtLeastOneChildWithFlags(Flags.DEPLETABLE)
+    return depletable
 
 
 class AbstractIsotopicDepleter:
