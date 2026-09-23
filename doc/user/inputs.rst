@@ -256,8 +256,7 @@ could do something like this::
 Something like the above works for any importable Python path that includes Python-based ARMI materials (any class
 defined therein that subclasses ``armi.materials.Material``).
 
-Or perhaps your team is really on the ball and you just want to import a directory of files (they could be Python or
-pure YAML files)::
+Or perhaps your team is really on the ball and you just want to import a directory of YAML files::
 
 .. code-block:: yaml
 
