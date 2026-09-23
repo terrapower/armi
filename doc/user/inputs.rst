@@ -254,7 +254,7 @@ could do something like this::
         myArmiApp.materials
 
 The above works by importing all the subclasses of ``armi.materials.Material`` that are located within the file
-``myArmiApp/materials.py`` if the path you indentify is a file, or ``myArmiApp/materials/__init__.py`` if the path you
+``myArmiApp/materials.py`` if the path you identify is a file, or ``myArmiApp/materials/__init__.py`` if the path you
 identify is a module. There are a few common ways people do this. You can, obviously, define all your material classes
 in the file you specify. But that is often cumbersome and ugly if you have a lot of materials. So you can also just
 import all the material classes you define into the file, that looks something like this::
