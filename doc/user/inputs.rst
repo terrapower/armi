@@ -245,16 +245,16 @@ In the example above, the only materials considered for the run are the ARMI def
 and legal reasons, ARMI does not come with enough material data to fully model a real world nuclear reactor. But the
 example above is common for unit tests.
 
-Of course, if you want to ignore the ARMI materials, in favor of a set of materials your team has created, you could do
-something like this::
+Of course, if you want to ignore the ARMI materials, in favor of a set of only materials your team has created, you
+could do something like this::
 
 .. code-block:: yaml
 
     materialNamespaceOrder:
         myArmiApp.materials
 
-Something like the above would work for any importable Python path that includes Python-based ARMI materials (any
-class defined therein that subclasses ``armi.materials.Material``).
+Something like the above works for any importable Python path that includes Python-based ARMI materials (any class
+defined therein that subclasses ``armi.materials.Material``).
 
 Or perhaps your team is really on the ball and you just want to import a directory of files (they could be Python or
 pure YAML files)::
@@ -293,7 +293,7 @@ In cases like this, we set up an order of precidence. For instance, perhaps all 
 material named "Air". You simulation will use the first Air it finds in a namespace (so in ``myArmiApp.materials.prod``
 in the example above).
 
-As a final note, while this setting is often the best way to run a simulation, often people are writing unit tests or
+Finally, while this setting is often the best way to run a simulation, often people are writing unit tests or
 otherwise working outside a simulation and want to invoke all the functionality of ``materialNamespaceOrder`` in pure
 Python code. This is easy to do with the method ``armi.materials.setMaterialNamespaceOrder``::
 
@@ -315,6 +315,8 @@ Or, duplicating the complex YAML example above::
         "armi.materials"
     ])
 
+
+.. note:: Separate data from code. Is is recommended that, if possible, you define your materials in the matProps YAML format, rather than in Python. We have found this improves data quality.
 
 .. _restart-cases:
 
