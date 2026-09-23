@@ -335,6 +335,12 @@ class ArmiObject(metaclass=CompositeModelType):
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
 
+    def __iter__(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        raise NotImplementedError
+
     def __lt__(self, other):
         """
         Implement the less-than operator.

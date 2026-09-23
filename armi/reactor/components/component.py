@@ -233,6 +233,12 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         """
         yield from ()
 
+    def __iter__(self):
+        return iter([])
+
+    def __len__(self):
+        return 0
+
     @property
     def temperatureInC(self):
         """Return the hot temperature in Celsius."""
