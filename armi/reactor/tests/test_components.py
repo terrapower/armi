@@ -236,6 +236,14 @@ class TestComponentNDens(TestGeneralComponents):
         self.assertEqual(component.getNumberDensity("C"), 1.0)
         self.assertEqual(component.getNumberDensity("MN"), 0.58)
 
+    def test_setNullNumberDensity(self):
+        """Test setting a composition's number density to nothing."""
+        component = self.component
+        component.p.nuclides = None
+        component.p.numberDensities = None
+        self.assertEqual(len(component.p.nuclides), 0)
+        self.assertEqual(len(component.p.numberDensities), 0)
+
     def test_setNumberDensitiesWithExpansion(self):
         expansionMaterial = MockCompositionDependentExpander()
         expansionMaterial.parent = self.component
