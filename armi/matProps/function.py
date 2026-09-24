@@ -108,10 +108,13 @@ class Function:
                 f" correct independent variables: {self.independentVars}"
             )
         elif not self.inRange(data):
-            raise ValueError(
+            msg = (
                 f"Material {self.material.name}, Property {self.property.name}: Requested calculation point, {data} is "
-                "not in the valid range of the function"
+                "not in the valid range of the function. The valid range for each independent variable is below:\n"
             )
+            for var, bounds in self.independentVars.items():
+                msg += f"{var}\t{bounds}\n"
+            raise ValueError(msg)
 
         return self._calcSpecific(data)
 
