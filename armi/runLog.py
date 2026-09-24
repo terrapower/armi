@@ -51,9 +51,9 @@ import os
 import sys
 import time
 from glob import glob
+from logging import handlers
 
 from armi import context
-from logging import handlers
 
 # global constants
 _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
