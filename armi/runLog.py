@@ -51,6 +51,7 @@ import os
 import sys
 import time
 from glob import glob
+from logging import handlers
 
 from armi import context
 
@@ -270,7 +271,10 @@ class _RunLog:
             # init stderr intercepting logging
             filePath = os.path.join(getLogDir(), _RunLog.STDERR_NAME.format(name, self._mpiRank))
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
-            h = logging.FileHandler(filePath, delay=True)
+            if context.PLATFORM == context.Platform.WINDOWS:
+                h = logging.FileHandler(filePath, delay=True)
+            else:
+                h = handlers.WatchedFileHandler(filePath, delay=True)
             fmt = "%(message)s"
             form = logging.Formatter(fmt)
             h.setFormatter(form)
@@ -550,7 +554,10 @@ class RunLogger(logging.Logger):
             self.setLevel(logging.INFO)
         else:
             filePath = os.path.join(RunLogger.LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank))
-            handler = logging.FileHandler(filePath, delay=True)
+            if context.PLATFORM == context.Platform.WINDOWS:
+                handler = logging.FileHandler(filePath, delay=True)
+            else:
+                handler = handlers.WatchedFileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
 
