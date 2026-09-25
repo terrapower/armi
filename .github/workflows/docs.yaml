@@ -17,7 +17,7 @@ jobs:
   build:
     # Building and deploying docs is broken on forked repos
     if: github.repository == 'terrapower/armi'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
           python-version: 3.13
           persist-credentials: false
       - name: Install apt-get libs
-        run: sudo apt-get -y install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
+        run: sudo apt-get -y install texlive-xetex texlive-latex-base texlive-full pandoc libopenmpi-dev
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make html/pdf Docs
