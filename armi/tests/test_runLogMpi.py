@@ -29,13 +29,9 @@ class TestRunLoggerMPI(unittest.TestCase):
             self.rl = runLog.RunLogger("ARMI|things_and_stuff|1")
 
         # check the handler type
-        if context.PLATFORM == context.Platform.WINDOWS:
-            if context.MPI_RANK == 0:
-                self.assertEqual(type(self.rl.handlers[0]), logging.StreamHandler)
-            else:
-                self.assertEqual(type(self.rl.handlers[0]), logging.FileHandler)
+        if context.MPI_RANK == 0:
+            self.assertEqual(type(self.rl.handlers[0]), logging.StreamHandler)
+        elif context.PLATFORM == context.Platform.WINDOWS:
+            self.assertEqual(type(self.rl.handlers[0]), logging.FileHandler)
         else:
-            if context.MPI_RANK == 0:
-                self.assertEqual(type(self.rl.handlers[0]), logging.StreamHandler)
-            else:
-                self.assertEqual(type(self.rl.handlers[0]), handlers.WatchedFileHandler)
+            self.assertEqual(type(self.rl.handlers[0]), handlers.WatchedFileHandler)
