@@ -520,6 +520,43 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return list(self.iterComponents(typeSpec, exact))
 
+    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
+        """
+        Get a particular component from this object.
+
+        Be careful with multiple similar names in one object.
+
+        Parameters
+        ----------
+        typeSpec : flags.Flags or list of Flags
+            The type specification of the component to return
+        exact : boolean, optional
+            Demand that the component flags be exactly equal to the typespec. Default: False
+        quiet : boolean, optional
+            Log if the component is not found. Default: True
+
+        Returns
+        -------
+        Component : The component that matches the criteria or None
+
+        Raises
+        ------
+        ValueError: more than one Component matches the typeSpec
+        """
+        results = self.getComponents(typeSpec, exact=exact)
+        if len(results) == 1:
+            return results[0]
+        elif not results:
+            if not quiet:
+                runLog.debug(
+                    f"No component matched {typeSpec} in {self}. Returning None",
+                    single=True,
+                    label=f"None component returned instead of {typeSpec}",
+                )
+            return None
+        else:
+            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
+
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """Yield components one by one in a generator."""
         raise NotImplementedError()
@@ -2805,43 +2842,6 @@ class Composite(ArmiObject):
             raise ValueError(f"More than one component named '{name}' in {self}")
         else:
             return components[0]
-
-    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
-        """
-        Get a particular component from this object.
-
-        Be careful with multiple similar names in one object.
-
-        Parameters
-        ----------
-        typeSpec : flags.Flags or list of Flags
-            The type specification of the component to return
-        exact : boolean, optional
-            Demand that the component flags be exactly equal to the typespec. Default: False
-        quiet : boolean, optional
-            Log if the component is not found. Default: True
-
-        Returns
-        -------
-        Component : The component that matches the criteria or None
-
-        Raises
-        ------
-        ValueError: more than one Component matches the typeSpec
-        """
-        results = self.getComponents(typeSpec, exact=exact)
-        if len(results) == 1:
-            return results[0]
-        elif not results:
-            if not quiet:
-                runLog.debug(
-                    f"No component matched {typeSpec} in {self}. Returning None",
-                    single=True,
-                    label=f"None component returned instead of {typeSpec}",
-                )
-            return None
-        else:
-            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
 
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
