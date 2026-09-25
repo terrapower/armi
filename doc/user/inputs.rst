@@ -239,19 +239,76 @@ Here is the simplest example::
 .. code-block:: yaml
 
     materialNamespaceOrder:
-        armi.materials
+      - armi.materials
 
 In the example above, the only materials considered for the run are the ARMI default materials. For various technical
 and legal reasons, ARMI does not come with enough material data to fully model a real world nuclear reactor. But the
 example above is common for unit tests.
 
-Of course, if you want to ignore the ARMI materials, in favor of a set of only materials your team has created, you
-could do something like this::
+.. note:: Separate data from code. We recommend that, if possible, you define your materials in the matProps YAML format. We have found this improves data quality. See :ref:`mat-input-file`.
+
+Custom YAML Materials
+"""""""""""""""""""""
+Perhaps your team has a directory of YAML material files::
 
 .. code-block:: yaml
 
     materialNamespaceOrder:
-        myArmiApp.materials
+      - dir:/mnt/materials/production/
+
+Here we use the ``dir:`` syntax to identify a directory containing ARMI-formatted material YAML files. This feature
+works, but take some care that whatever location you pick is going to exist when you need it next. This might mean using
+a well-known location on your cluster, or using file system symbolic links to enforce that a location will always exist.
+ARMI cannot guarantee that a file on your laptop will never move.
+
+Another way to include a directory of YAML material files is to store them right in your Python venv. This is
+a good way to enforce that if, as long as your simulation runs from a correct Python venv, you have the correct
+materials. For this we use a custom ``venv`` syntax::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+      - venv:materials_data/
+
+Custom Python Materials
+"""""""""""""""""""""""
+Perhaps there is just one material a user would like to amend for their simulation. For example::
+
+.. code-block:: python
+
+    from armi.materials import uZr
+
+
+    class MyFuel(uZr.UZr):
+        """Edits to UZr fuel, which is an ARMI Material."""
+        DATA_SOURCE = "Not ARMI"
+
+        def someNewProperty(self):
+            return 1.0
+
+To use this material in a simulation:
+
+    * Create a material that inherits from ``armi.materials.Material``.
+    * Save it to a file, e.g., ``myFuel.py``.
+    * Move the file to the case run directory.
+    * Use it in the case blueprints as ``material: myFuel:MyFuel``.
+    * Include it in the ``materialNamespaceOrder`` setting, as below.
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+      - myFuel
+      - armi.materials
+
+ARMI Application Materials
+""""""""""""""""""""""""""
+If you want to ignore the ARMI materials, in favor of a set of only materials your team has created for an ARMI
+Application, you could do something like this::
+
+.. code-block:: yaml
+
+    materialNamespaceOrder:
+      - myArmiApp.materials
 
 The above works by importing all the subclasses of ``armi.materials.Material`` that are located within the file
 ``myArmiApp/materials.py`` if the path you identify is a file, or ``myArmiApp/materials/__init__.py`` if the path you
@@ -278,40 +335,21 @@ all of that (and worse, having to maintain all of that)::
 
     importMaterialsIntoModuleNamespace(__path__, __name__, globals())
 
-And that, vaguely magical, line of code saves you from having to do all of the imports yourself, and maintain them as
-they change over time.
+This allows the materials to be specified without a module in the blueprints, e.g.: ``material: AcmeSteel`` instead of
+above, where ``material: myArmiApp.materials:AcmeSteel`` would be required.
 
-Or perhaps your team is really on the ball and you just want to import a directory of YAML files::
-
-.. code-block:: yaml
-
-    materialNamespaceOrder:
-        dir:/mnt/materials/production/
-
-Here we use the ``dir:`` syntax to identify a directory containing ARMI-formatted material YAML files. This feature
-works, but take some care that whatever location you pick is going to exist when you need it next. This might mean using
-a well-known location on your cluster, or using file system symbolic links to enforce that a location will always exist.
-ARMI cannot guarantee that a file on your laptop will never move.
-
-Another way to include a directory of YAML material files is to store them right in your Python venv. This is
-a good way to enforce that if, as long as your simulation runs from a correct Python venv, you have the correct
-materials. For this we use a custom ``venv`` syntax::
-
-.. code-block:: yaml
-
-    materialNamespaceOrder:
-        venv:materials_data/
-
+Combining Multiple Custom Materials Sources
+"""""""""""""""""""""""""""""""""""""""""""
 Of course, you can mix and match the above options. In the wild, we have seen people create complicated lists for their
 simulations that something like this::
 
 .. code-block:: yaml
 
     materialNamespaceOrder:
-        myArmiApp.materials.prod
-        dir:/mnt/materials/prod/v2/
-        venv:materials/data
-        armi.materials
+      - myArmiApp.materials.prod
+      - dir:/mnt/materials/prod/v2/
+      - venv:materials/data
+      - armi.materials
 
 In cases like the above, ARMI sets up an order of precedence. For instance, perhaps all four of the namespaces above
 include a material named "Air". Your simulation will use the first "Air" it finds in a namespace (in the example above
@@ -338,9 +376,6 @@ Or, duplicating the complex YAML example above::
         "venv:materials/data",
         "armi.materials"
     ])
-
-
-.. note:: Separate data from code. We recommend that, if possible, you define your materials in the matProps YAML format. We have found this improves data quality. See :ref:`mat-input-file`.
 
 .. _restart-cases:
 
@@ -1501,10 +1536,10 @@ Below is an example material data file containing all the basic ``matProps`` con
 
     yield strength:
         function:
-            T: 
+            T:
                 min: 350
                 max: 500
-            D: 
+            D:
                 min: 0
                 max: 100
             type: symbolic
@@ -1532,14 +1567,14 @@ Below is an example material data file containing all the basic ``matProps`` con
 
 The only required entries in a material file are ``file format``, ``composition``, and ``material type``.
 
-File Format 
+File Format
 -----------
 The ``file format: version`` field defines the file format version. This is a required field. This version string is
 verified to see if it is supported for use by ``matProps``.
 
 .. _ref_matType:
 
-Material Type 
+Material Type
 -------------
 The ``material type`` field defines the type of material. Valid values for this key include Metal, Fuel, Fluid, Ceramic,
 ASME2015, ASME2017, SimpleSolid, and Composite. This is a required field. This field is meant to provide information to
@@ -1735,9 +1770,9 @@ A symbolic function is defined by supplying value ``symbolic`` for the key ``typ
 number of independent variables. The ``equation`` node must be supplied which contains a string with the equation
 function. The ``symbolicOperators`` field defines the set of operators that may be used in the symbolic equation
 string. These operators may be combined in any order to build a symbolic expression. While other operators outside of
-the table might function in ``matProps``, they are untested and may not be used in qualified scope. 
+the table might function in ``matProps``, they are untested and may not be used in qualified scope.
 
-.. note:: Both operators and variables are case sensitive. 
+.. note:: Both operators and variables are case sensitive.
 
 .. note:: Implicit multiplication will result in a Value Error. The multiplication operator must be used.
 
@@ -1746,7 +1781,7 @@ the table might function in ``matProps``, they are untested and may not be used 
     +-------------+----------------------------------+
     | Operator    | Definition                       |
     +=============+==================================+
-    | \*          | Multiplication                   |    
+    | \*          | Multiplication                   |
     +-------------+----------------------------------+
     | \*\*        | Exponent                         |
     +-------------+----------------------------------+
@@ -1787,7 +1822,7 @@ Table
 Providing ``table`` for the ``type`` key indicates a one dimensional tables that uses interpolation. This function type
 requires a set of tabulated data to be defined in the collection. The set of tabulated data is a list of lists of length
 2 with the first element being the independent variable, and the second element being the property value at that
-independent variable value. 
+independent variable value.
 
 Piecewise
 ---------
@@ -1800,7 +1835,7 @@ range defined.
     overlapping valid ranges or utilize different independent variables.
 
 .. note:: If the piecewise-defined function is discontinuous at a point (two child functions overlap at a point), the
-    function that is defined first in the input file will be used. 
+    function that is defined first in the input file will be used.
 
 Two Dimensional Table
 ---------------------
