@@ -29,7 +29,7 @@ class TestRunLoggerMPI(unittest.TestCase):
             self.rl = runLog.RunLogger("ARMI|things_and_stuff|1")
 
         # check the handler type
-        if context.Platform == context.Platform.WINDOWS:
+        if context.PLATFORM == context.Platform.WINDOWS:
             if context.MPI_RANK == 0:
                 self.assertEqual(type(self.rl.handlers[0]), logging.StreamHandler)
             else:
