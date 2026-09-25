@@ -26,14 +26,14 @@ from typing import (
     Union,
 )
 
-
 import numpy as np
 
 from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import Void, custom, material
-from armi.reactor import composites, flags, parameters
+from armi.reactor import flags, parameters
 from armi.reactor.components import componentParameters
+from armi.reactor.composites import ArmiObject, CompositeModelType
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
 
@@ -92,7 +92,7 @@ class _DimensionLink(tuple):
         return f"{self[0].name}.{self[1]}"
 
 
-class ComponentType(composites.CompositeModelType):
+class ComponentType(CompositeModelType):
     """
     ComponetType is a metaclass for storing and initializing Component subclass types.
 
@@ -122,7 +122,7 @@ class ComponentType(composites.CompositeModelType):
     )
 
     def __new__(cls, name, bases, attrs):
-        newType = composites.CompositeModelType.__new__(cls, name, bases, attrs)
+        newType = CompositeModelType.__new__(cls, name, bases, attrs)
         ComponentType.TYPES[name.lower()] = newType
 
         # the co_varnames attribute contains arguments and then locals so we must
@@ -135,7 +135,7 @@ class ComponentType(composites.CompositeModelType):
         return newType
 
 
-class Component(composites.ArmiObject, metaclass=ComponentType):
+class Component(ArmiObject, metaclass=ComponentType):
     """
     A primitive object in a reactor that has definite area/volume, material and composition.
 
@@ -214,7 +214,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         if components and name in components:
             raise ValueError(f"Non-unique component name {name} repeated in same block.")
 
-        composites.ArmiObject.__init__(self, str(name))
+        ArmiObject.__init__(self, str(name))
         self.p.area = area
         self.inputTemperatureInC = Tinput
         self.temperatureInC = Thot
@@ -226,8 +226,8 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         self.p.customIsotopicsName = isotopics
 
     def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
-    ) -> Iterator["Composite"]:
+        self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
+    ) -> Iterator["ArmiObject"]:
         """Generator function for Component classes. This yields an empty generator object as Component objects
         have no children.
         """
@@ -283,7 +283,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
                 )
 
     def __setstate__(self, state):
-        composites.ArmiObject.__setstate__(self, state)
+        ArmiObject.__setstate__(self, state)
         self.material.parent = self
 
     def _linkAndStoreDimensions(self, components, **dims):
@@ -714,7 +714,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
 
     def setName(self, name):
         """Components use name for type and name."""
-        composites.ArmiObject.setName(self, name)
+        ArmiObject.setName(self, name)
         self.setType(name)
 
     def setNumberDensity(self, nucName, val):
@@ -1188,7 +1188,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
-        composites.ArmiObject.backUp(self)
+        ArmiObject.backUp(self)
         self._restoreLinkedDims(linkedDims)
 
     def restoreBackup(self, paramsToApply):
@@ -1199,7 +1199,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
-        composites.ArmiObject.restoreBackup(self, paramsToApply)
+        ArmiObject.restoreBackup(self, paramsToApply)
         self._restoreLinkedDims(linkedDims)
 
     def _getLinkedDimsAndValues(self):
@@ -1414,7 +1414,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
-        density = composites.ArmiObject.density(self)
+        density = ArmiObject.density(self)
 
         if not density:
             # It is possible that there are no nuclides in this component yet. In that case, we defer to the Material.
@@ -1438,7 +1438,7 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         if self.parent:
             return self.parent.getLumpedFissionProductCollection()
         else:
-            return composites.ArmiObject.getLumpedFissionProductCollection(self)
+            return ArmiObject.getLumpedFissionProductCollection(self)
 
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
@@ -1488,7 +1488,6 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
             rxnRates[rxName] += val
 
         return rxnRates
-
 
     def finalizeLoadingFromDB(self):
         """Apply any final actions after creating the component from database.

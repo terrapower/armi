@@ -562,8 +562,8 @@ class ArmiObject(metaclass=CompositeModelType):
         raise NotImplementedError()
 
     def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
-    ) -> Iterator["Composite"]:
+        self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
+    ) -> Iterator["ArmiObject"]:
         """Generator function for composite tree children.
 
         Parameters
@@ -577,7 +577,6 @@ class ArmiObject(metaclass=CompositeModelType):
             Function that filters what children are added to the generator object.
         """
         raise NotImplementedError()
-
 
     @classmethod
     def getParameterCollection(cls):
@@ -798,7 +797,6 @@ class ArmiObject(metaclass=CompositeModelType):
         self.cached, self._backupCache = self._backupCache
         if self.spatialGrid:
             self.spatialGrid.restoreBackup()
-
 
     def getVolume(self):
         raise NotImplementedError()
@@ -1280,7 +1278,7 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         ArmiObject.hasFlags()
         """
-        if not(excludeSelf):
+        if not (excludeSelf):
             if self.hasFlags(typeSpec, exact=exactMatch):
                 return self
 
@@ -1640,7 +1638,6 @@ class ArmiObject(metaclass=CompositeModelType):
             for natNuc in elementalNuclide.getNaturalIsotopics():
                 component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
-
     def getReactionRates(self, nucName, nDensity=None):
         """
         Get the reaction rates of a certain nuclide on this ArmiObject.
@@ -1659,7 +1656,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         raise NotImplementedError()
-
 
     def _getReactionRates(self, nucName, nDensity=None):
         """
@@ -1803,7 +1799,7 @@ class Composite(ArmiObject):
 
     """
 
-    _children: list["Composite"]
+    _children: list["ArmiObject"]
 
     def __init__(self, name):
         ArmiObject.__init__(self, name)
@@ -2446,8 +2442,8 @@ class Composite(ArmiObject):
         self,
         deep=False,
         generationNum=1,
-        predicate: Optional[Callable[["Composite"], bool]] = None,
-    ) -> Iterator["Composite"]:
+        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
+    ) -> Iterator["ArmiObject"]:
         """Iterate over children objects of this composite.
 
         Parameters
@@ -2502,8 +2498,8 @@ class Composite(ArmiObject):
         yield from self._iterChildren(deep, generationNum, checker)
 
     def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
-    ) -> Iterator["Composite"]:
+        self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
+    ) -> Iterator["ArmiObject"]:
         """Generator function for iterating over composite tree children.
 
         Parameters
@@ -2549,8 +2545,8 @@ class Composite(ArmiObject):
         deep=False,
         generationNum=1,
         includeMaterials=False,
-        predicate: Optional[Callable[["Composite"], bool]] = None,
-    ) -> list["Composite"]:
+        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
+    ) -> list["ArmiObject"]:
         """
         Return the children objects of this composite.
 
@@ -3029,7 +3025,7 @@ class Composite(ArmiObject):
                 tabulate.tabulate(
                     errorData,
                     headers=[
-                        "Composite",
+                        "ArmiObject",
                         "Composite Type",
                         "Composite Parent",
                         "ParameterName",
