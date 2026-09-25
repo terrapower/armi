@@ -464,11 +464,11 @@ class TestRunLog(unittest.TestCase):
         log.startLog("test_handlerType")
         # verify the type of handler created
         if context.Platform == context.Platform.WINDOWS:
-            self.assertTrue(isinstance(log.logger.handlers[0], logging.FileHandler))
-            self.assertTrue(isinstance(log.stderrLogger.handlers[0], logging.FileHandler))
+            self.assertEqual(type(log.logger.handlers[0]), logging.StreamHandler)
+            self.assertEqual(type(log.stderrLogger.handlers[0]), logging.FileHandler)
         else:
-            self.assertTrue(isinstance(log.logger.handlers[0], handlers.WatchedFileHandler))
-            self.assertTrue(isinstance(log.stderrLogger.handlers[0], handlers.WatchedFileHandler))
+            self.assertEqual(type(log.logger.handlers[0]), handlers.WatchedFileHandler)
+            self.assertEqual(type(log.stderrLogger.handlers[0]), handlers.WatchedFileHandler)
 
 
 class TestRunLogEnvEdits(unittest.TestCase):

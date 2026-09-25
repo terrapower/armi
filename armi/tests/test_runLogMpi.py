@@ -31,11 +31,11 @@ class TestRunLoggerMPI(unittest.TestCase):
         # check the handler type
         if context.Platform == context.Platform.WINDOWS:
             if context.MPI_RANK == 0:
-                self.assertTrue(isinstance(self.rl.handlers[0], logging.StreamHandler))
+                self.assertEqual(type(self.rl.handlers[0]), logging.StreamHandler)
             else:
-                self.assertTrue(isinstance(self.rl.handlers[0], logging.FileHandler))
+                self.assertEqual(type(self.rl.handlers[0]), logging.FileHandler)
         else:
             if context.MPI_RANK == 0:
-                self.assertTrue(isinstance(self.rl.handlers[0], logging.StreamHandler))
+                self.assertEqual(type(self.rl.handlers[0]), logging.StreamHandler)
             else:
-                self.assertTrue(isinstance(self.rl.handlers[0], handlers.WatchedFileHandler))
+                self.assertEqual(type(self.rl.handlers[0]), handlers.WatchedFileHandler)
