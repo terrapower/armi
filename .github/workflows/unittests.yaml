@@ -39,3 +39,4 @@ jobs:
           mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiFeatures.py
           mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiParameters.py
           mpiexec -n 2 --use-hwthread-cpus pytest armi/utils/tests/test_directoryChangersMpi.py
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_runLog.py
