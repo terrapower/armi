@@ -17,7 +17,7 @@ jobs:
   build:
     # Building and deploying docs is broken on forked repos
     if: github.repository == 'terrapower/armi'
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
