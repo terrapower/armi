@@ -503,24 +503,22 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
-        Return all armi.reactor.component.Component within this Composite.
+        Return a list of Component objects within this Composite.
 
         Parameters
         ----------
         typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
-
+            Component flags. Will restrict Components to specific ones matching the flags specified.
         exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if compLabel is None.
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
 
         Returns
         -------
         list of Component
-            items matching compLabel and exact criteria
+            items matching typeSpec and exact criteria
         """
-        raise NotImplementedError()
+        return list(self.iterComponents(typeSpec, exact))
 
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """Yield components one by one in a generator."""
@@ -1580,6 +1578,30 @@ class ArmiObject(metaclass=CompositeModelType):
             lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
         ):
             self.expandElementalToIsotopics(elemental)
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expands the density of a specific elemental nuclides to its natural isotopics.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
+            replace.
+        """
+        natName = elementalNuclide.name
+        for component in self.iterComponents():
+            elementalDensity = component.getNumberDensity(natName)
+            if elementalDensity == 0.0:
+                continue
+
+            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
+            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
+            newNDens = component.p.numberDensities[keepIndex]
+            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
+
+            # add in isotopics
+            for natNuc in elementalNuclide.getNaturalIsotopics():
+                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
 
     def getReactionRates(self, nucName, nDensity=None):
@@ -2648,25 +2670,6 @@ class Composite(ArmiObject):
             for c in self:
                 c.p[paramName] = myVal
 
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return a list of Component objects within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
-            impact if typeSpec is None.
-
-        Returns
-        -------
-        list of Component
-            items matching typeSpec and exact criteria
-        """
-        return list(self.iterComponents(typeSpec, exact))
-
     def getFirstComponent(self, typeSpec: TypeSpec = None, exact=False):
         """
         Returns a single Component object within this Composite.
@@ -2897,30 +2900,6 @@ class Composite(ArmiObject):
                 minK = k
 
         return ((minI, maxI), (minJ, maxJ), (minK, maxK))
-
-    def expandElementalToIsotopics(self, elementalNuclide):
-        """
-        Expands the density of a specific elemental nuclides to its natural isotopics.
-
-        Parameters
-        ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
-            replace.
-        """
-        natName = elementalNuclide.name
-        for component in self.iterComponents():
-            elementalDensity = component.getNumberDensity(natName)
-            if elementalDensity == 0.0:
-                continue
-
-            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
-            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
-            newNDens = component.p.numberDensities[keepIndex]
-            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
-
-            # add in isotopics
-            for natNuc in elementalNuclide.getNaturalIsotopics():
-                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
         """Return the volume-averaged temperature (in degrees Celsius) of the ArmiObject over all children.
