@@ -560,6 +560,7 @@ class RunLogger(logging.Logger):
                 handler = handlers.WatchedFileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
+        print(mpiRank, handler)
 
         form = logging.Formatter(RunLogger.FMT)
         handler.setFormatter(form)

@@ -108,19 +108,6 @@ class TestRunLog(unittest.TestCase):
         self.assertGreater(space1, space0)
         self.assertEqual(space1, space9)
 
-    @unittest.skipIf(context.MPI_SIZE <= 1, "Parallel test only")
-    def test_handlerType(self):
-        # create the logger and do some logging
-        log = runLog.LOG = runLog._RunLog(321)
-        log.startLog("test_handlerType")
-        # verify the type of handler created
-        if context.Platform == context.Platform.WINDOWS:
-            self.assertTrue(isinstance(log.logger.handlers[0], logging.FileHandler))
-            self.assertTrue(isinstance(log.stderrLogger.handlers[0], logging.FileHandler))
-        else:
-            self.assertTrue(isinstance(log.logger.handlers[0], handlers.WatchedFileHandler))
-            self.assertTrue(isinstance(log.stderrLogger.handlers[0], handlers.WatchedFileHandler))
-
     def test_warningReport(self):
         """A simple test of the warning tracking and reporting logic.
 
@@ -471,6 +458,18 @@ class TestRunLog(unittest.TestCase):
                 runLog.createLogDir(logDir)
                 self.assertTrue(os.path.exists(logDir))
 
+    def test_handlerType(self):
+        # create the logger and do some logging
+        log = runLog.LOG = runLog._RunLog(321)
+        log.startLog("test_handlerType")
+        # verify the type of handler created
+        if context.Platform == context.Platform.WINDOWS:
+            self.assertTrue(isinstance(log.logger.handlers[0], logging.FileHandler))
+            self.assertTrue(isinstance(log.stderrLogger.handlers[0], logging.FileHandler))
+        else:
+            self.assertTrue(isinstance(log.logger.handlers[0], handlers.WatchedFileHandler))
+            self.assertTrue(isinstance(log.stderrLogger.handlers[0], handlers.WatchedFileHandler))
+
 
 class TestRunLogEnvEdits(unittest.TestCase):
     """Tests that will use monkeypatch to alter an environment variable."""
@@ -551,17 +550,3 @@ class TestRunLogger(unittest.TestCase):
         # test what was logged
         streamVal = stream.getvalue()
         self.assertIn(testName, streamVal, msg=streamVal)
-
-    @unittest.skipIf(context.MPI_SIZE <= 1, "Parallel test only")
-    def test_handlerType(self):
-        # check the handler type
-        if context.Platform == context.Platform.WINDOWS:
-            if context.MPI_RANK == 0:
-                self.assertTrue(isinstance(self.rl.handlers[0], logging.StreamHandler))
-            else:
-                self.assertTrue(isinstance(self.rl.handlers[0], logging.FileHandler))
-        else:
-            if context.MPI_RANK == 0:
-                self.assertTrue(isinstance(self.rl.handlers[0], logging.StreamHandler))
-            else:
-                self.assertTrue(isinstance(self.rl.handlers[0], handlers.WatchedFileHandler))
