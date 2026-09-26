@@ -45,7 +45,6 @@ dependencies = [
     "sympy>=1.14", # Used to represent mathematical curves for material properties
     "toml>0.9.5", # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1", # Used to validate YAML data files
-    "yamlize==0.7.1", # Custom YAML-to-object library
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
