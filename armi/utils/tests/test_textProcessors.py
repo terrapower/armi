@@ -94,6 +94,27 @@ class YamlIncludeTest(unittest.TestCase):
         # strip it because one method gives an extra newline we don't care about
         self.assertEqual(resolved.getvalue().strip(), expected.getvalue().strip())
 
+    def test_resolveIncludes_inlineAfterKeyIsRejected(self):
+        """An ``!include`` sharing a line with its key cannot be resolved, so say so.
+
+        Included content is indented to the first content column of the including line. For
+        ``core: !include foo.yaml`` that is the column of ``core``, so the included file would land
+        beside the key rather than under it, with its first line pasted onto the key line. The
+        result is unparseable, and used to be emitted silently.
+        """
+        src = StringIO("grids:\n    core: !include lower/includeA.yaml\n")
+        with self.assertRaises(ValueError) as cm:
+            textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR))
+
+        self.assertIn("core", str(cm.exception))
+        self.assertIn("own line", str(cm.exception))
+
+    def test_resolveIncludes_inSequenceItemIsAllowed(self):
+        """``- !include foo.yaml`` is fine: ``-`` is a block marker, not content."""
+        src = StringIO("stuff:\n    - !include lower/includeA.yaml\n")
+        resolved = textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR))
+        self.assertNotIn("!include", resolved.getvalue())
+
     def test_findIncludes(self):
         includes = textProcessors.findYamlInclusions(pathlib.Path(RES_DIR) / "root.yaml")
         for i, _mark in includes:

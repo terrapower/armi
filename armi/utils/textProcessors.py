@@ -99,8 +99,27 @@ def _processIncludes(
         m = _INCLUDE_RE.match(line)
         if m:
             # this line has an !include on it
-            if m.group(1) is not None:
-                out.write(leadingSpace + m.group(1))
+            prefix = m.group(1) or ""
+            if prefix.strip(" \t-?:"):
+                # There is a mapping key ahead of the !include, as in ``core: !include foo.yaml``.
+                # Included content is indented to the first content column of the including line,
+                # which for that form is the column of the key itself. The included file would land
+                # as a *sibling* of the key rather than its value, and its first line would be
+                # pasted onto the end of the key line, producing ``core: geom: hex``. That is not
+                # parseable, so reject it rather than emit it.
+                raise ValueError(
+                    "Cannot resolve `!include` on the same line as the key `{}` in {}, line {}. Put the "
+                    "`!include` on its own line, indented under the key:\n"
+                    "    {}\n"
+                    "        !include {}".format(
+                        prefix.strip(" \t-?:"),
+                        currentFile,
+                        i + 1,
+                        prefix.strip(),
+                        m.group(2),
+                    )
+                )
+            out.write(leadingSpace + prefix)
             fName = pathlib.Path(os.path.expandvars(m.group(2)))
             path = root / fName
             if not path.exists():
