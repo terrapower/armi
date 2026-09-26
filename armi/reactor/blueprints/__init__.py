@@ -75,7 +75,7 @@ import h5py
 import ordered_set
 import yamlize
 import yamlize.objects
-from ruamel.yaml import RoundTripDumper, RoundTripLoader
+from ruamel.yaml import RoundTripLoader
 
 from armi import (
     context,
@@ -88,7 +88,13 @@ from armi import (
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
-from armi.reactor.blueprints import isotopicOptions
+
+# importing this applies ARMI's patches to the unmaintained yamlize package; it has to happen before
+# any yamlize class is loaded or dumped
+from armi.reactor.blueprints import (
+    _yamlizeShims,  # noqa: F401
+    isotopicOptions,
+)
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
 from armi.reactor.blueprints.componentBlueprint import (
@@ -111,13 +117,6 @@ from armi.utils.customExceptions import InputError
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
-
-# ruamel.yaml 0.19.1 started reading ``max_depth`` off the loader during ``get_single_node()``, but
-# yamlize 0.7.1 builds its loaders in a way that never sets it, so every yamlize load raises
-# ``AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'``. Supplying the default
-# here covers every yamlize class in ARMI, not just ``Blueprints``. Remove once yamlize catches up.
-if not hasattr(RoundTripLoader, "max_depth"):
-    RoundTripLoader.max_depth = None
 
 
 def loadFromCs(cs, roundTrip=False):
@@ -522,66 +521,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return inp
 
     @classmethod
-    def dump(cls, data, stream=None, Dumper=RoundTripDumper):
-        """A modification of yamlize.Object.dump.
-
-        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
-        values incorrectly for the zero values to zero strings: '0.0'.
-        """
-        convertToYaml = stream is None
-        stream = stream or io.StringIO()
-        dumper = Dumper(stream)
-
-        try:
-            dumper._serializer.open()
-            root_node = cls.to_yaml(dumper, data)
-            dumper.serialize(root_node)
-            dumper._serializer.close()
-        finally:
-            try:
-                dumper._emitter.dispose()
-            except AttributeError:
-                raise
-                dumper.dispose()  # cyaml
-
-        try:
-            Blueprints.streamCleaner(stream)
-        except io.UnsupportedOperation:
-            # Not all streams are writable.
-            pass
-
-        if convertToYaml:
-            return stream.getvalue()
-
-        return None
-
-    @classmethod
-    def streamCleaner(cls, stream) -> None:
-        """Clean the zero strings into zero floats.
-
-        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
-        values incorrectly for the zero values to zero strings: '0.0'.
-        """
-        # must rewind to be able to read the entire stream
-        stream.seek(0)
-
-        # build the replacement string
-        txt = stream.read()
-        txt = txt.replace("'0.0'", "0.0")
-        txt = txt.replace('"0.0"', "0.0")
-
-        # wipe out the stream and then over-write it
-        stream.seek(0)
-        stream.truncate(0)
-        stream.write(txt)
-
-    @classmethod
     def load(cls, stream, roundTrip=False):
         """A wrapper around the `yamlize.Object.load()` method.
 
         This pins the loader to ``RoundTripLoader`` so that anchors, aliases and the like survive a
-        load/dump cycle. See the ``max_depth`` shim at the top of this module for why that loader
-        needs a nudge before yamlize will accept it.
+        load/dump cycle. See :py:mod:`armi.reactor.blueprints._yamlizeShims` for the patches that
+        loader needs before yamlize will accept it.
         """
         return super().load(stream, Loader=RoundTripLoader)
 
