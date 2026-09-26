@@ -64,6 +64,7 @@ import io
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
+from ruamel.yaml.scalarstring import LiteralScalarString, ScalarString
 
 # ARMI writes every YAML file it produces in one house style, and normalizes input to it on the way
 # back out. ruamel.yaml applies indentation globally at dump time, so matching a source file
@@ -531,6 +532,28 @@ def _writeValue(value):
     if isinstance(value, (YamlObject, Sequence)):
         return value.toData()
 
+    return _asBlockScalar(value)
+
+
+def _asBlockScalar(value):
+    r"""Mark a multi-line string to be written as a literal block scalar (``|``).
+
+    In a blueprint a multi-line string is a picture: a lattice map, a pin map, a core map. Its line
+    breaks and column alignment *are* the data, and people read and edit them in a text editor.
+
+    ruamel.yaml will only write a plain ``str`` as a block scalar if something tells it to.
+    Otherwise it picks a quoted style, escapes the newlines and folds the result at the emitter
+    width, which turns a legible map into an unreadable one::
+
+        lattice map: "P00  P01 ... P21\n    \  P22  P23 ...
+
+    Strings read from a ``|`` block already come back as ``LiteralScalarString`` and keep their
+    style on their own. This covers the other way in: a map assigned from code, where expecting
+    every caller to remember to wrap it is a trap that only shows up in the written file.
+    """
+    if isinstance(value, str) and not isinstance(value, ScalarString) and "\n" in value:
+        return LiteralScalarString(value)
+
     return value
 
 
@@ -548,6 +571,7 @@ def _writeInto(doc, key, value):
             doc[key] = rendered
         return
 
+    value = _asBlockScalar(value)
     if key in doc and _sameScalar(doc[key], value):
         return
 
