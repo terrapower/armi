@@ -20,7 +20,6 @@ import pathlib
 import shutil
 import unittest
 
-import yamlize
 from ruamel.yaml import YAML
 
 from armi import settings
@@ -35,6 +34,7 @@ from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers, textProcessors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.yamlSchema import YamlSchemaError
 
 
 class TestBlueprints(unittest.TestCase):
@@ -160,49 +160,18 @@ class TestBlueprints(unittest.TestCase):
         self.assertLess(fuel.getNumberDensity("AM241"), 1e-5)
 
 
-class TestYamlizeHashCollisionBug(unittest.TestCase):
+class TestZeroValuesInMaterialModifications(unittest.TestCase):
     """Values that merely hash alike must not swap YAML metadata on a round trip.
 
-    yamlize 0.7.1 caches round-trip metadata (tag, quote style, anchor, comments) keyed on
-    ``hash(value)``. Because ``hash("") == hash(0.0) == hash(0) == hash(False)`` and
-    ``hash(1) == hash(1.0) == hash(True)``, any two such values sharing a container swap metadata,
-    and the second one dumped comes back with the first one's YAML tag.
+    This was reported as a ruamel.yaml regression and papered over with a string replacement on the
+    dumped text. It was neither: yamlize cached round-trip metadata keyed on ``hash(value)``, and
+    ``hash("") == hash(0.0) == hash(0) == hash(False)``, so a material modification of
+    ``["", 0.0, 0.0, ""]`` came back as ``["", "0.0", "0.0", ""]``.
 
-    This was originally filed as a ruamel.yaml 0.19.1 regression, but ruamel.yaml is not at fault:
-    ``test_plainRuamelRoundTripsCollidingValues`` below shows plain ruamel.yaml handling every one
-    of these documents correctly. See :py:mod:`armi.reactor.blueprints._yamlizeShims` for the fix.
+    Nothing is keyed by value any more, so the whole class of collision is gone; see
+    ``TestValuesThatHashAlike`` in ``armi/utils/tests/test_yamlSchema.py``. This keeps an
+    end-to-end check on a real blueprint.
     """
-
-    def test_plainRuamelRoundTripsCollidingValues(self):
-        """ruamel.yaml on its own round trips hash-colliding values byte-for-byte."""
-        yaml = YAML(typ="rt")
-        yaml.preserve_quotes = True
-
-        for src in (
-            'v: ["", 0.0, 0.0, ""]',
-            "v: [0, 0.0]",
-            'v: ["a", 1.0, true]',
-            'v: [false, 0, "", 0.0]',
-        ):
-            with self.subTest(src=src):
-                buf = io.StringIO()
-                yaml.dump(yaml.load(src), buf)
-                self.assertEqual(buf.getvalue().strip(), src)
-
-    def test_yamlizeRoundTripsCollidingValues(self):
-        """With the shim applied, yamlize matches ruamel.yaml on the same documents."""
-
-        class Doc(yamlize.Object):
-            v = yamlize.Attribute(key="v", type=yamlize.Sequence)
-
-        for src in (
-            'v: ["", 0.0, 0.0, ""]',
-            "v: [0, 0.0]",
-            'v: ["a", 1.0, true]',
-            'v: [false, 0, "", 0.0]',
-        ):
-            with self.subTest(src=src):
-                self.assertEqual(Doc.dump(Doc.load(src)).strip(), src)
 
     def test_zerosInMaterialModifications(self):
         """A material modification of all zeros and blanks stays numeric through a round trip."""
@@ -518,20 +487,20 @@ assemblies:
         self.assertAlmostEqual(mergedBlock.getMass(), unmergedBlock.getMass())
 
     def test_nuclideFlags(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             NuclideFlags.load("{potato: {burn: true, xs: true}}")
 
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             NuclideFlags.load("{U238: {burn: 12, xs: 0}}")
 
     def test_customIsotopics(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             CustomIsotopics.load("MOX: {input format: applesauce}")
 
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             CustomIsotopics.load("MOX: {input format: number densities, density: -0.1}")
 
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             CustomIsotopics.load("MOX: {input format: number densities, density: 1.5, FAKENUC234: 0.000286}")
 
     def test_components(self):
@@ -582,7 +551,7 @@ assemblies:
             },
         ]
         for bad in bads:
-            with self.assertRaises(yamlize.YamlizingError):
+            with self.assertRaises(YamlSchemaError):
                 ComponentBlueprint.load(repr(bad))
 
     def test_cladding_invalid(self):
@@ -594,7 +563,7 @@ assemblies:
             "Tinput": 1.0,
             "Thot": 1.0,
         }
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             ComponentBlueprint.load(repr(bad))
 
     def test_withoutBlocks(self):

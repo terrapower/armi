@@ -204,9 +204,8 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     excludes = ["setUp", "setUpClass", "tearDown", "tearDownClass"]
 
     try:
-        # special logic to fix inherited docstrings from yamlize.Attribute
-        s = str(obj).strip()
-        if s.startswith("<Attribute") and "_yamlized_" in s:
+        # blueprint schema fields are descriptors, and autodoc otherwise documents each one's repr
+        if str(obj).strip().startswith("<Field "):
             return True
     except Exception:
         pass

@@ -73,9 +73,6 @@ import typing
 
 import h5py
 import ordered_set
-import yamlize
-import yamlize.objects
-from ruamel.yaml import RoundTripLoader
 
 from armi import (
     context,
@@ -88,13 +85,7 @@ from armi import (
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
-
-# importing this applies ARMI's patches to the unmaintained yamlize package; it has to happen before
-# any yamlize class is loaded or dumped
-from armi.reactor.blueprints import (
-    _yamlizeShims,  # noqa: F401
-    isotopicOptions,
-)
+from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
 from armi.reactor.blueprints.componentBlueprint import (
@@ -114,13 +105,21 @@ from armi.settings.fwSettings.globalSettings import (
 )
 from armi.utils import tabulate, textProcessors
 from armi.utils.customExceptions import InputError
+from armi.utils.yamlSchema import Field, YamlObject, YamlSchemaError
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
 def loadFromCs(cs, roundTrip=False):
-    """Function to load Blueprints based on supplied ``Settings``."""
+    """Function to load Blueprints based on supplied ``Settings``.
+
+    Notes
+    -----
+    ``roundTrip`` has no effect and is kept only so existing callers keep working. Every load is a
+    round-trip load now: the parsed document is retained so that comments, anchors and styles
+    survive a later dump.
+    """
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
@@ -141,8 +140,8 @@ def loadFromCs(cs, roundTrip=False):
                 root = bpPath.parent.absolute()
                 bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
                 try:
-                    bp = Blueprints.load(bpYaml, roundTrip=roundTrip)
-                except yamlize.yamlizing_error.YamlizingError as err:
+                    bp = Blueprints.load(bpYaml)
+                except YamlSchemaError as err:
                     if "cross sections" in err.args[0]:
                         runLog.error(
                             "The loading file {} contains invalid `cross sections` input. "
@@ -153,14 +152,13 @@ def loadFromCs(cs, roundTrip=False):
     return bp
 
 
-class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
+class _BlueprintsPluginCollector(type(YamlObject)):
     """
-    Simple metaclass for adding yamlize.Attributes from plugins to Blueprints.
+    Metaclass that folds plugin-defined sections into ``Blueprints``.
 
-    This calls the defineBlueprintsSections() plugin hook to discover new class
-    attributes to add before the yamlize code fires off to make the root yamlize.Object.
-    Since yamlize.Object itself uses a metaclass to define the attributes to turn into
-    yamlize.Attributes, these need to be folded in early.
+    Calls the ``defineBlueprintsSections()`` hook to discover new class attributes before the
+    schema machinery builds the class. :py:class:`~armi.utils.yamlSchema.YamlObject` collects its
+    fields in its own metaclass, so these have to be in place first.
     """
 
     def __new__(mcs, name, bases, attrs):
@@ -175,7 +173,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
             pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
                 for attrName, section, resolver in plug:
-                    assert isinstance(section, yamlize.Attribute)
+                    assert isinstance(section, Field)
                     if attrName in attrs:
                         raise plugins.PluginError(
                             "There is already a section called '{}' in the reactor blueprints".format(attrName)
@@ -183,30 +181,27 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
                     attrs[attrName] = section
                     attrs["_resolveFunctions"].append(resolver)
 
-        newType = yamlize.objects.ObjectType.__new__(mcs, name, bases, attrs)
-
-        return newType
+        return super().__new__(mcs, name, bases, attrs)
 
 
-class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
-    """Base Blueprintsobject representing all the subsections in the input file."""
+class Blueprints(YamlObject, metaclass=_BlueprintsPluginCollector):
+    """Base Blueprints object representing all the subsections in the input file."""
 
-    nuclideFlags = yamlize.Attribute(key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None)
-    customIsotopics = yamlize.Attribute(key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None)
-    blockDesigns = yamlize.Attribute(key="blocks", type=BlockKeyedList, default=None)
-    assemDesigns = yamlize.Attribute(key="assemblies", type=AssemblyKeyedList, default=None)
-    systemDesigns = yamlize.Attribute(key="systems", type=Systems, default=None)
-    gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
-    componentDesigns = yamlize.Attribute(key="components", type=ComponentKeyedList, default=None)
-    componentGroups = yamlize.Attribute(key="component groups", type=ComponentGroups, default=None)
+    nuclideFlags = Field(key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None)
+    customIsotopics = Field(key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None)
+    blockDesigns = Field(key="blocks", type=BlockKeyedList, default=None)
+    assemDesigns = Field(key="assemblies", type=AssemblyKeyedList, default=None)
+    systemDesigns = Field(key="systems", type=Systems, default=None)
+    gridDesigns = Field(key="grids", type=Grids, default=None)
+    componentDesigns = Field(key="components", type=ComponentKeyedList, default=None)
+    componentGroups = Field(key="component groups", type=ComponentGroups, default=None)
 
     # These are used to set up new attributes that come from plugins.
     _resolveFunctions = []
 
     def __new__(cls):
-        # yamlizable does not call __init__, so attributes that are not defined above need to be
-        # initialized here
-        self = yamlize.Object.__new__(cls)
+        # a load bypasses __init__, so attributes that are not fields are initialized here
+        self = YamlObject.__new__(cls)
         self.assemblies = {}
         self._prepped = False
         self._assembliesBySpecifier = {}
@@ -220,8 +215,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return self
 
     def __init__(self):
-        # Yamlize does not call __init__, instead we use Blueprints.load which creates and instance
-        # of a Blueprints object and initializes it with valuesconstructAssemusing setattr.
+        # A load bypasses __init__: Blueprints.load builds the instance and fills in its fields
+        # directly. This is only for building a Blueprints in code.
         self._assembliesBySpecifier = {}
         self._prepped = False
         self.systemDesigns = Systems()
@@ -519,16 +514,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 inp = mig.apply(version)
 
         return inp
-
-    @classmethod
-    def load(cls, stream, roundTrip=False):
-        """A wrapper around the `yamlize.Object.load()` method.
-
-        This pins the loader to ``RoundTripLoader`` so that anchors, aliases and the like survive a
-        load/dump cycle. See :py:mod:`armi.reactor.blueprints._yamlizeShims` for the patches that
-        loader needs before yamlize will accept it.
-        """
-        return super().load(stream, Loader=RoundTripLoader)
 
     def addDefaultSFP(self):
         """Create a default SFP if it's not in the blueprints."""

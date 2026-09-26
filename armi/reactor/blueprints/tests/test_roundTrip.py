@@ -14,9 +14,9 @@
 
 """Characterization tests for blueprint round tripping.
 
-ARMI is in the middle of replacing the unmaintained ``yamlize`` package with an in-tree schema
-layer over ``ruamel.yaml``. These tests pin down what a load/dump cycle does *today*, across every
-blueprint the repository ships, so that the replacement can be held to the same behavior.
+These exercise a load/dump cycle over every blueprint the repository ships. They were written to
+hold the replacement of the unmaintained ``yamlize`` package to the behavior it replaced, and they
+go on guarding the invariants afterwards.
 
 There are three invariants worth keeping honest here:
 
@@ -32,9 +32,9 @@ There are three invariants worth keeping honest here:
     The resolved content -- what the YAML *means* after anchors, aliases and merge keys are
     expanded -- must survive the cycle.
 
-Layout -- indentation width, comment columns, where a line wraps -- is deliberately not asserted;
-none of it changes what the file means. Comment preservation mostly works and is covered by the one
-case that does not, in ``TestKnownRoundTripLimitations``.
+Layout -- indentation width, comment columns, where a line wraps -- is deliberately not asserted
+here; none of it changes what the file means, and it is normalized to one house style on the way
+out. :py:mod:`armi.utils.tests.test_yamlSchema` covers the formatting rules themselves.
 """
 
 import io
@@ -60,11 +60,6 @@ BLUEPRINTS = [
     "thirdSmallHexReactor/thirdSmallHexReactor-bp.yaml",
     "zppr/1DslabXSByCompTest.yaml",
 ]
-
-#: Blueprints whose dump cannot currently be read back in. See
-#: ``TestKnownRoundTripLimitations.test_systemNameMatchingGridNameWithBlankLine`` for the mechanism.
-#: Remove entries here as the underlying defect is fixed; do not add to it.
-NOT_RELOADABLE = {"c5g7/c5g7-blueprints.yaml"}
 
 
 def _readResolved(relPath):
@@ -110,27 +105,13 @@ class TestBlueprintRoundTrip(unittest.TestCase):
     def test_dumpIsReloadable(self):
         """Anything ``dump`` writes, ``load`` must be able to read."""
         for relPath in BLUEPRINTS:
-            if relPath in NOT_RELOADABLE:
-                continue
-
             with self.subTest(blueprint=relPath):
                 dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(_readResolved(relPath))))
                 blueprints.Blueprints.load(io.StringIO(dumped))
 
-    def test_knownNotReloadableStillFails(self):
-        """Guard the ``NOT_RELOADABLE`` list, so entries get removed once they start working."""
-        for relPath in sorted(NOT_RELOADABLE):
-            with self.subTest(blueprint=relPath):
-                dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(_readResolved(relPath))))
-                with self.assertRaises(Exception, msg=f"{relPath} now reloads; drop it from NOT_RELOADABLE"):
-                    blueprints.Blueprints.load(io.StringIO(dumped))
-
     def test_dumpIsIdempotent(self):
         """A second dump must equal the first, so repeated round trips do not drift."""
         for relPath in BLUEPRINTS:
-            if relPath in NOT_RELOADABLE:
-                continue
-
             with self.subTest(blueprint=relPath):
                 first = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(_readResolved(relPath))))
                 second = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(first)))
@@ -139,39 +120,27 @@ class TestBlueprintRoundTrip(unittest.TestCase):
     def test_semanticContentPreserved(self):
         """The meaning of the document must survive a dump."""
         for relPath in BLUEPRINTS:
-            if relPath in NOT_RELOADABLE:
-                # a dump that cannot be parsed back cannot be compared against its source
-                continue
-
             with self.subTest(blueprint=relPath):
                 source = _readResolved(relPath)
                 dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(source)))
                 self.assertEqual(_semanticContent(source), _semanticContent(dumped))
 
 
-class TestKnownRoundTripLimitations(unittest.TestCase):
-    """Things a load/dump cycle gets wrong today.
+class TestFormerRoundTripDefects(unittest.TestCase):
+    """Two round-trip defects that blueprints carried until they moved off yamlize.
 
-    Each of these is expected to start passing when blueprints move off yamlize. ``unittest`` fails
-    an ``expectedFailure`` test that unexpectedly succeeds, so the suite will say so.
+    Both came from the same design: yamlize discarded the parsed document and reattached YAML
+    metadata at dump time from a cache keyed on the values, so equal values shared an entry. The
+    document is now kept and nothing is keyed by value, so neither can recur.
     """
 
-    @unittest.expectedFailure
-    def test_systemNameMatchingGridNameWithBlankLine(self):
-        """A blank line in a ``systems:`` entry produces YAML that ARMI cannot read back.
+    def test_blankLineInSystemsEntry(self):
+        """A blank line in a ``systems:`` entry used to produce YAML that ARMI could not read.
 
-        yamlize stashes each value's YAML metadata (tag, quote style, comments) in a per-container
-        cache keyed on the value itself. A system conventionally has the same name as its grid::
-
-            systems:
-                core:
-                    grid name: core
-
-                    origin: {...}
-
-        so the string ``"core"`` appears twice in one cache and the two entries collide. The blank
-        line -- which ruamel.yaml carries as a comment on the ``grid name`` value -- gets reapplied
-        to the system's *key* node on the way out, and the emitter splits the key from its colon::
+        A system conventionally has the same name as its grid, so ``"core"`` appeared twice in one
+        metadata cache. The blank line -- which ruamel.yaml carries as a comment on the ``grid
+        name`` value -- was reapplied to the system's *key* node, and the emitter split the key from
+        its colon::
 
             systems:
               core
@@ -179,61 +148,41 @@ class TestKnownRoundTripLimitations(unittest.TestCase):
             :
                 grid name: core
 
-        which is still valid YAML but no longer the mapping that ``Blueprints`` expects. This is
-        why ``c5g7-blueprints.yaml`` is in ``NOT_RELOADABLE``.
-
-        Unlike the hash collisions handled in :py:mod:`armi.reactor.blueprints._yamlizeShims`, this
-        one cannot be patched from the outside: the two colliding values are genuinely equal, so no
-        choice of cache key separates them. It goes away only when round-trip metadata stops being
-        keyed by value.
+        which is still valid YAML but no longer the mapping ``Blueprints`` expects. It is why
+        ``c5g7-blueprints.yaml`` could not be round tripped at all.
         """
-        source = "systems:\n    core:\n        grid name: core\n\n        origin:\n            x: 0.0\n"
+        source = "systems:\n  core:\n    grid name: core\n\n    origin:\n      x: 0.0\n"
         dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(source)))
-        blueprints.Blueprints.load(io.StringIO(dumped))
 
-    @unittest.expectedFailure
-    def test_commentFollowingAListValuedKeySurvives(self):
-        """A comment that follows a list-valued key is dropped.
+        self.assertEqual(dumped, source)
+        self.assertEqual(blueprints.Blueprints.load(io.StringIO(dumped)).systemDesigns["core"].gridName, "core")
 
-        Comments survive most positions -- above a key, at end of line, inside a block, at the top
-        of the file -- because yamlize copies ruamel.yaml's node metadata across. The exception is
-        a comment sitting between a *sequence* value and the next key. yamlize rebuilds sequence
-        nodes from scratch in ``Sequence.to_yaml``, and the parent mapping's comment record for
-        that slot does not come along.
+    def test_commentFollowingAListValuedKey(self):
+        """A comment between a sequence value and the next key used to be dropped.
 
-        A comment after the *last* key still survives, because it lands on the parent mapping
-        instead.
+        yamlize rebuilt sequence nodes from scratch, and the parent mapping's comment record for
+        that slot did not come along.
         """
-        dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(self._assemblyWithComment)))
-        self.assertIn(self._marker, dumped)
-
-    def test_plainRuamelKeepsCommentFollowingAListValuedKey(self):
-        """The same comment survives plain ruamel.yaml, showing the loss is not ruamel.yaml's."""
-        yaml = YAML(typ="rt")
-        buf = io.StringIO()
-        yaml.dump(yaml.load(io.StringIO(self._assemblyWithComment)), buf)
-        self.assertIn(self._marker, buf.getvalue())
-
-    _marker = "how tall each block is"
-
-    _assemblyWithComment = """\
+        source = """\
 blocks:
-    fuel: &block_fuel
-        fuel:
-            shape: Hexagon
-            material: UZr
-            Tinput: 25.0
-            Thot: 600.0
-            op: 1.0
+  fuel: &block_fuel
+    fuel:
+      shape: Hexagon
+      material: UZr
+      Tinput: 25.0
+      Thot: 600.0
+      op: 1.0
 assemblies:
-    ig:
-        specifier: IC
-        blocks: [*block_fuel]
-        height: [1.0]
-        # how tall each block is
-        axial mesh points: [1]
-        xs types: [A]
+  ig:
+    specifier: IC
+    blocks: [*block_fuel]
+    height: [1.0]
+    # how tall each block is
+    axial mesh points: [1]
+    xs types: [A]
 """
+        dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(source)))
+        self.assertIn("how tall each block is", dumped)
 
 
 if __name__ == "__main__":

@@ -407,8 +407,9 @@ class Database:
         these results may not be usable. Or if the database was written using a custom Application you do not have
         access to, the DB may not be usable.
         """
-        # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior through
-        # metaclassing. Therefore, we need to be able to import all plugins before importing blueprints.
+        # Blueprints use armi.utils.yamlSchema, which uses class attributes to define much of the
+        # class's behavior through metaclassing. Therefore, we need to be able to import all plugins
+        # before importing blueprints.
         from armi.reactor.blueprints import Blueprints
 
         bpString = None

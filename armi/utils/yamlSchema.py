@@ -60,7 +60,10 @@ Typical use::
     Grids.dump(grids, outStream)  # comments, anchors and styles all still there
 """
 
+import contextlib
+import copy
 import io
+import threading
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
@@ -113,6 +116,10 @@ def _yaml():
     yaml = YAML(typ="rt")
     yaml.preserve_quotes = True
     yaml.width = WIDTH
+    # Blueprints have always taken the last of a repeated key rather than refusing the file, and at
+    # least one test reactor relies on it. Turning that into a hard error would reject input that
+    # loads today, so it stays a separate decision from this migration.
+    yaml.allow_duplicate_keys = True
     yaml.indent(mapping=MAPPING_INDENT, sequence=SEQUENCE_INDENT, offset=SEQUENCE_OFFSET)
 
     return yaml
@@ -145,6 +152,69 @@ def _preserveAnchors(data, seen=None):
     elif isinstance(data, (list, tuple)):
         for value in data:
             _preserveAnchors(value, seen)
+
+
+_LOADING = threading.local()
+
+
+@contextlib.contextmanager
+def _identityRegistry():
+    """Make one load return one object per node, so YAML aliases share a Python object.
+
+    ``*block_fuel`` in an assembly's block list and ``fuel:`` in the ``blocks:`` section name the
+    same node, and ARMI treats them as the same block: code compares block designs by identity. A
+    load therefore has to hand back the object it already built for a node rather than a second
+    copy of it, which is what yamlize's ``constructed_objects`` did.
+
+    The registry is keyed on ``id()`` of the parsed data, which is only meaningful while that data
+    is alive -- true for the duration of a load, since the root document holds all of it.
+    """
+    outermost = getattr(_LOADING, "byId", None) is None
+    if outermost:
+        _LOADING.byId = {}
+
+    try:
+        yield _LOADING.byId
+    finally:
+        if outermost:
+            _LOADING.byId = None
+
+
+def _mergedKeys(data):
+    """The keys a mapping gets from a ``<<:`` merge rather than spelling out itself.
+
+    A merged key is not this mapping's own content; it points at the mapping that was merged in. So
+    the object already built for it over there is the object this mapping should use, which is what
+    makes ``block 4: {<<: *fuel_1}`` share ``fuel_1``'s components rather than get copies of them.
+    """
+    try:
+        return frozenset(data) - {key for key, _ in data.non_merged_items()}
+    except AttributeError:
+        # a plain dict, with no merge to speak of
+        return frozenset()
+
+
+def _alreadyBuilt(cls, data):
+    """The object this load already built for ``data``, if there is one."""
+    registry = getattr(_LOADING, "byId", None)
+    if registry is None:
+        return None
+
+    existing = registry.get(id(data))
+
+    return existing if type(existing) is cls else None
+
+
+def _remember(data, obj):
+    """Record ``obj`` as this load's object for ``data``, if nothing claimed it first.
+
+    First claim wins. A keyed-list entry that is a bare alias -- ``aclp plenum: *block_plenum`` --
+    builds its own object so that it can carry its own name, but the anchor still belongs to the
+    entry that defined it.
+    """
+    registry = getattr(_LOADING, "byId", None)
+    if registry is not None:
+        registry.setdefault(id(data), obj)
 
 
 def _load(stream):
@@ -293,6 +363,20 @@ class Field:
         if not self.isUnset(obj):
             delattr(obj, self.storageName)
 
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        """A field is class-level schema shared by every instance, so copying one is never right.
+
+        ``gridBlueprint.saveToStream`` deep-copies whole blueprints before canonicalizing them. Left
+        to itself, ``deepcopy`` would also duplicate the fields reached through instance attributes,
+        and the copies would no longer be the objects the class holds -- so identity checks against
+        them, such as "is this the field the mapping key fills in?", would quietly start answering
+        no, and every keyed-list entry would get its name written into its own body.
+        """
+        return self
+
 
 class FieldCollection:
     """The fields of one :py:class:`YamlObject` subclass, in declaration order."""
@@ -403,10 +487,52 @@ class YamlObject(metaclass=_SchemaMeta):
     #: the ``CommentedMap`` this object was loaded from, or None if it was built in code
     _doc = None
 
-    #: when this object is an entry of a :py:class:`KeyedList`, the field its key supplies. That
-    #: field is read from the key and is not written back into the value, so it does not appear
-    #: twice in the document.
-    _keyField = None
+    #: when this object is an entry of a :py:class:`KeyedList`, the *name* of the field its key
+    #: supplies. That field is read from the key and is not written back into the value, so it does
+    #: not appear twice in the document. Held by name rather than as the field itself so that these
+    #: objects stay picklable: a field carries its validator, and a validator defined in a class
+    #: body no longer pickles by reference once the field has taken its place on the class.
+    _keyFieldName = None
+
+    @property
+    def _keyField(self):
+        """The field an enclosing :py:class:`KeyedList` fills in from the mapping key, if any."""
+        if self._keyFieldName is None:
+            return None
+
+        return self._fields.byName.get(self._keyFieldName)
+
+    def __getstate__(self):
+        """Pickle without the parsed document.
+
+        ``ruamel.yaml``'s comment and anchor objects do not reliably pickle, and a round-trip record
+        is not something a pickled object needs to carry. An object restored from a pickle dumps
+        itself from its fields, the way one built in code does.
+        """
+        state = dict(self.__dict__)
+        state.pop("_doc", None)
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._doc = None
+
+    def __deepcopy__(self, memo):
+        """Copy the parsed document along with the object.
+
+        ``copy`` and ``pickle`` share the ``__getstate__`` protocol, and the document has to go one
+        way but not the other: a pickle cannot carry it, while a copy is useless without it --
+        ``gridBlueprint.saveToStream`` copies whole blueprints precisely so it can rewrite them.
+        Copying through the shared ``memo`` also keeps aliased nodes aliased in the copy, so the
+        anchors survive to the dump.
+        """
+        new = self.__class__.__new__(self.__class__)
+        memo[id(self)] = new
+        for name, value in self.__dict__.items():
+            new.__dict__[name] = copy.deepcopy(value, memo)
+
+        return new
 
     @classmethod
     def _getKeyField(cls):
@@ -420,7 +546,8 @@ class YamlObject(metaclass=_SchemaMeta):
     @classmethod
     def load(cls, stream):
         """Read an instance from a YAML stream, string, or open file."""
-        return cls.fromData(_load(stream))
+        with _identityRegistry():
+            return cls.fromData(_load(stream))
 
     @classmethod
     def dump(cls, obj, stream=None):
@@ -444,26 +571,79 @@ class YamlObject(metaclass=_SchemaMeta):
                 _location(data),
             )
 
+        existing = _alreadyBuilt(cls, data)
+        if existing is not None:
+            # this node has been read already. Under a key it needs to be its own object so it can
+            # carry its own name -- ``aclp plenum: *block_plenum`` names a second block -- but it
+            # is the same definition, so it shares everything else.
+            return existing if key is None else existing._aliasUnder(key, keyField)
+
         self = cls.__new__(cls)
         self._doc = data
-        self._keyField = keyField
+        self._keyFieldName = keyField.name if keyField is not None else None
+        _remember(data, self)
         self._readFields(data, key)
+        self._runAfterLoad(data)
 
         return self
+
+    #: True when this object was built as a second name for a node another object already owns, so
+    #: it must not write through to that node. See :py:meth:`_aliasUnder`.
+    _sharedDoc = False
+
+    def _aliasUnder(self, key, keyField):
+        """A second name for this object: same contents, its own key field."""
+        new = self.__class__.__new__(self.__class__)
+        new.__dict__.update(self.__dict__)
+        new._keyFieldName = keyField.name if keyField is not None else None
+        new._sharedDoc = True
+        if keyField is not None:
+            keyField.__set__(new, key)
+
+        return new
+
+    def _afterLoad(self):
+        """Hook for subclasses to validate or derive state once every field is populated.
+
+        Anything raised here is reported against the object's position in the document, so a
+        cross-field rule reads like the rest of the schema's errors rather than a bare traceback.
+        """
+
+    def _runAfterLoad(self, data):
+        try:
+            self._afterLoad()
+        except YamlSchemaError:
+            raise
+        except Exception as ee:
+            raise YamlSchemaError(str(ee), _location(data)) from ee
 
     def _readFields(self, data, key=None):
         """Populate fields from ``data``, then check that nothing required is missing."""
         keyField = self._keyField
         if keyField is not None and key is not None:
-            keyField.__set__(self, key)
+            try:
+                keyField.__set__(self, key)
+            except YamlSchemaError:
+                raise
+            except Exception as ee:
+                raise YamlSchemaError(str(ee), _location(data)) from ee
 
+        merged = _mergedKeys(data)
         for docKey, value in data.items():
             field = self._fields.byKey.get(docKey)
             if field is None:
-                self._readExtraKey(data, docKey, value)
+                self._readExtraKey(data, docKey, value, docKey in merged)
                 continue
 
-            field.__set__(self, _readValue(field.type, value, _location(data, docKey)))
+            location = _location(data, docKey)
+            try:
+                field.__set__(self, _readValue(field.type, value, location))
+            except YamlSchemaError:
+                raise
+            except Exception as ee:
+                # a validator rejecting the value, most often. Report it against the line it came
+                # from rather than letting a bare ValueError out of a load.
+                raise YamlSchemaError(str(ee), location) from ee
 
         missing = [f.key for f in self._fields if f.isRequired and f.isUnset(self) and f is not keyField]
         if missing:
@@ -474,7 +654,7 @@ class YamlObject(metaclass=_SchemaMeta):
                 _location(data),
             )
 
-    def _readExtraKey(self, data, docKey, value):
+    def _readExtraKey(self, data, docKey, value, merged=False):
         """Handle a key with no matching field. Mappings and keyed lists override this."""
         raise YamlSchemaError(
             "`{}` is not a recognized key for {}. Expected one of: {}".format(
@@ -496,31 +676,66 @@ class YamlObject(metaclass=_SchemaMeta):
         writing ``*anchor`` and ``<<:``. Updating in place is also idempotent, since afterwards the
         document already says what the fields say.
         """
-        doc = self._doc if self._doc is not None else CommentedMap()
-        self._writeFields(doc)
+        if self._doc is None:
+            doc = CommentedMap()
+            self._writeFields(doc)
 
-        return doc
+            return doc
+
+        if not self._sharedDoc:
+            self._writeFields(self._doc)
+
+            return self._doc
+
+        # This object is a second name for a node that another object owns -- ``*fuel_1_clad``
+        # pulled into a second block, say. While it still agrees with that node, it is written as
+        # the alias it came in as. The moment it disagrees, it needs a node of its own, or the edit
+        # would silently rewrite the original too.
+        candidate = copy.deepcopy(self._doc)
+        self._writeFields(candidate)
+        if candidate == self._doc:
+            return self._doc
+
+        _dropAnchor(candidate)
+        self._doc = candidate
+        self._sharedDoc = False
+
+        return candidate
 
     def _writeFields(self, doc):
+        """Write each field into ``doc``, leaving keys that are already right untouched."""
         keyField = self._keyField
         for field in self._fields:
-            if field is keyField or field.isUnset(self):
+            if field is keyField:
+                # the mapping key already carries this one; writing it here would say it twice
+                continue
+
+            if field.isUnset(self):
+                if field.key in doc:
+                    del doc[field.key]
                 continue
 
             value = field.__get__(self)
-            if value is None and field.default is None and field.key not in doc:
-                # an optional field that was never in the document and still holds its default
+            if value is None:
+                # Nothing to write. Either the key was never there, or the source spelled it out as
+                # empty and still means it -- leave that alone -- or code cleared a field that used
+                # to hold something, which is how ``gridBlueprint.saveToStream`` drops the lattice
+                # map or the grid contents once it has settled on which of the two to write. Only
+                # that last case has a key to remove.
+                if field.key in doc and doc[field.key] is not None:
+                    del doc[field.key]
                 continue
 
             _writeInto(doc, field.key, value)
 
-        for field in self._fields:
-            if field.isUnset(self) and field.key in doc and field is not keyField:
-                del doc[field.key]
-
 
 def _readValue(fieldType, value, location=None):
     """Turn one parsed YAML value into whatever the field's type calls for."""
+    if value is None:
+        # an explicitly empty key, as in ``expandTo:`` with nothing after it. Leave it as None and
+        # let the field decide whether that is an acceptable value.
+        return None
+
     if fieldType is not None and isinstance(fieldType, type) and issubclass(fieldType, (YamlObject, Sequence)):
         return fieldType.fromData(value)
 
@@ -528,9 +743,16 @@ def _readValue(fieldType, value, location=None):
 
 
 def _writeValue(value):
-    """Turn one Python value back into something ruamel.yaml can emit."""
-    if isinstance(value, (YamlObject, Sequence)):
-        return value.toData()
+    """Turn one Python value back into something ruamel.yaml can emit.
+
+    Anything with a ``toData`` method renders itself. That covers :py:class:`YamlObject` and
+    :py:class:`Sequence`, and also lets a plain helper class that stands in for a scalar -- a
+    component dimension that may be a number or a ``name.dimension`` reference, say -- say how it
+    goes back into the document.
+    """
+    render = getattr(value, "toData", None)
+    if render is not None:
+        return render()
 
     return _asBlockScalar(value)
 
@@ -571,11 +793,11 @@ def _writeInto(doc, key, value):
             doc[key] = rendered
         return
 
-    value = _asBlockScalar(value)
-    if key in doc and _sameScalar(doc[key], value):
+    rendered = _writeValue(value)
+    if key in doc and _sameScalar(doc[key], rendered):
         return
 
-    doc[key] = value
+    doc[key] = rendered
 
 
 def _sameScalar(docValue, value):
@@ -601,6 +823,33 @@ class Sequence:
     #: type each item is coerced to; ``None`` lets items through as YAML parsed them
     itemType = None
 
+    def __getstate__(self):
+        """Pickle without the parsed document; see :py:meth:`YamlObject.__getstate__`."""
+        state = dict(self.__dict__)
+        state.pop("_doc", None)
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._doc = None
+
+    def __deepcopy__(self, memo):
+        """Copy the parsed document along with the object.
+
+        ``copy`` and ``pickle`` share the ``__getstate__`` protocol, and the document has to go one
+        way but not the other: a pickle cannot carry it, while a copy is useless without it --
+        ``gridBlueprint.saveToStream`` copies whole blueprints precisely so it can rewrite them.
+        Copying through the shared ``memo`` also keeps aliased nodes aliased in the copy, so the
+        anchors survive to the dump.
+        """
+        new = self.__class__.__new__(self.__class__)
+        memo[id(self)] = new
+        for name, value in self.__dict__.items():
+            new.__dict__[name] = copy.deepcopy(value, memo)
+
+        return new
+
     def __init__(self, items=()):
         self._doc = None
         self._items = []
@@ -608,7 +857,8 @@ class Sequence:
 
     @classmethod
     def load(cls, stream):
-        return cls.fromData(_load(stream))
+        with _identityRegistry():
+            return cls.fromData(_load(stream))
 
     @classmethod
     def dump(cls, obj, stream=None):
@@ -739,20 +989,47 @@ class _MappingBase(YamlObject):
                 _location(data),
             )
 
+        existing = _alreadyBuilt(cls, data)
+        if existing is not None:
+            return existing if key is None else existing._aliasUnder(key, keyField)
+
         self = cls.__new__(cls)
         self._doc = data
-        self._keyField = keyField
+        self._keyFieldName = keyField.name if keyField is not None else None
         self._data = {}
+        _remember(data, self)
         self._readFields(data, key)
+        self._runAfterLoad(data)
 
         return self
 
     def toData(self):
+        if self._doc is not None and self._sharedDoc:
+            candidate = copy.deepcopy(self._doc)
+            self._writeFields(candidate)
+            self._writeItems(candidate)
+            if candidate == self._doc:
+                return self._doc
+
+            _dropAnchor(candidate)
+            self._doc = candidate
+            self._sharedDoc = False
+
+            return candidate
+
         doc = self._doc if self._doc is not None else CommentedMap()
         self._writeFields(doc)
         self._writeItems(doc)
 
         return doc
+
+    def _aliasUnder(self, key, keyField):
+        new = super()._aliasUnder(key, keyField)
+        # its own dict, holding the very same entries: editing one definition through either name
+        # reaches the same objects, but adding an entry to one does not appear under the other
+        new._data = dict(self._data)
+
+        return new
 
     def _writeItems(self, doc):
         raise NotImplementedError
@@ -796,10 +1073,13 @@ class Map(_MappingBase):
     keyType = None
     valueType = None
 
-    def _readExtraKey(self, data, docKey, value):
-        self._data[_coerceTo(self.keyType, docKey, _location(data, docKey))] = _readValue(
-            self.valueType, value, _location(data, docKey)
-        )
+    def _readExtraKey(self, data, docKey, value, merged=False):
+        location = _location(data, docKey)
+        key = _coerceTo(self.keyType, docKey, location)
+        shared = _alreadyBuilt(self.valueType, value) if merged else None
+        # through __setitem__, not self._data, so a subclass that validates its keys or values sees
+        # what was loaded and not just what was later assigned in code
+        _setItem(self, key, shared if shared is not None else _readValue(self.valueType, value, location), location)
 
     def _writeItems(self, doc):
         for key, value in self._data.items():
@@ -830,8 +1110,13 @@ class KeyedList(_MappingBase):
     #: the field of ``itemType`` that the mapping key supplies
     keyField = None
 
-    def _readExtraKey(self, data, docKey, value):
-        self._data[docKey] = self.itemType.fromData(value, key=docKey, keyField=type(self)._getKeyField())
+    def _readExtraKey(self, data, docKey, value, merged=False):
+        item = _alreadyBuilt(self.itemType, value) if merged else None
+        if item is None:
+            item = self.itemType.fromData(value, key=docKey, keyField=type(self)._getKeyField())
+
+        # see the note in Map._readExtraKey
+        _setItem(self, docKey, item, _location(data, docKey))
 
     def _writeItems(self, doc):
         for key, value in self._data.items():
@@ -849,7 +1134,7 @@ class KeyedList(_MappingBase):
                 )
             )
 
-        value._keyField = type(self)._getKeyField()
+        value._keyFieldName = type(self)._getKeyField().name
         self._data[key] = value
 
     def add(self, item):
@@ -885,3 +1170,24 @@ def _sameItem(docItem, item):
         return docItem is item._doc
 
     return _sameScalar(docItem, item)
+
+
+def _setItem(mapping, key, value, location=None):
+    """Insert through ``__setitem__``, reporting a rejection against the document."""
+    try:
+        mapping[key] = value
+    except YamlSchemaError:
+        raise
+    except Exception as ee:
+        raise YamlSchemaError(str(ee), location) from ee
+
+
+def _dropAnchor(data):
+    """Take the anchor off a node that has just been split away from the one it was aliasing."""
+    try:
+        anchor = data.yaml_anchor()
+    except AttributeError:
+        return
+
+    if anchor is not None and anchor.value:
+        data.yaml_set_anchor(None, always_dump=False)
