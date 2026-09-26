@@ -332,6 +332,78 @@ class TestFormattingIsNormalized(unittest.TestCase):
         self.assertIn("&unused", Grids.dump(Grids.load(source)))
 
 
+class TestLatticeMapsKeepTheirLayout(unittest.TestCase):
+    """A multi-line string in a blueprint is a picture, and must survive as one.
+
+    Lattice maps, pin maps and core maps are read and edited in a text editor. Their line breaks
+    and column alignment are the data. They must come back as literal block scalars (``|``), never
+    quoted-and-folded, no matter how wide the rows are or how the value got there.
+    """
+
+    #: 70 pins across -- rows well past :py:data:`WIDTH`
+    WIDE_PIN_MAP = "\n".join("  ".join("A{:03d}".format(c) for c in range(70)) for _ in range(4)) + "\n"
+
+    HEX_MAP = "-   -   SH\n  -   SH  SH\n-   SH  OC  SH\n  SH  OC  OC  SH\n"
+
+    @staticmethod
+    def _grids(latticeMap):
+        grids = Grids()
+        grid = Grid()
+        grid.name = "core"
+        grid.latticeMap = latticeMap
+        grids.add(grid)
+
+        return grids
+
+    def test_wideMapIsNotWrapped(self):
+        dumped = Grids.dump(self._grids(self.WIDE_PIN_MAP))
+
+        self.assertIn("lattice map: |", dumped)
+        self.assertEqual(Grids.load(dumped)["core"].latticeMap, self.WIDE_PIN_MAP)
+
+    def test_everyRowStaysOnItsOwnLine(self):
+        """The row count and each row's exact text must be untouched."""
+        dumped = Grids.dump(self._grids(self.WIDE_PIN_MAP))
+        rows = [line.strip() for line in dumped.splitlines() if line.strip().startswith("A")]
+
+        self.assertEqual(rows, self.WIDE_PIN_MAP.strip().splitlines())
+        self.assertGreater(max(len(row) for row in rows), WIDTH)
+
+    def test_mapAssignedFromCodeIsStillABlockScalar(self):
+        """Callers must not have to remember ``LiteralScalarString`` to get a readable file."""
+        loaded = Grids.load("core:\n  lattice map: |\n    IC  IC\n")
+        loaded["core"].latticeMap = self.WIDE_PIN_MAP
+        dumped = Grids.dump(loaded)
+
+        self.assertIn("lattice map: |", dumped)
+        self.assertNotIn("\\n", dumped)
+        self.assertEqual(Grids.load(dumped)["core"].latticeMap, self.WIDE_PIN_MAP)
+
+    def test_awkwardMapsStayLiteral(self):
+        """Shapes that can push ruamel.yaml off block style."""
+        maps = {
+            "leading dashes": self.HEX_MAP,
+            "first row indented deepest": "    IC  IC\n  IC  IC  IC\nIC  IC\n",
+            "trailing spaces": "IC  IC   \nIC  IC\n",
+            "tabs": "IC\tIC\nIC\tIC\n",
+        }
+        for label, latticeMap in maps.items():
+            with self.subTest(shape=label):
+                dumped = Grids.dump(self._grids(latticeMap))
+                self.assertIn("lattice map: |", dumped)
+                self.assertEqual(Grids.load(dumped)["core"].latticeMap, latticeMap)
+
+    def test_loadedMapIsByteIdentical(self):
+        source = "core:\n  lattice map: |\n" + "".join(
+            "    " + row + "\n" for row in self.WIDE_PIN_MAP.strip().splitlines()
+        )
+        self.assertEqual(Grids.dump(Grids.load(source)), source)
+
+    def test_singleLineStringIsNotTurnedIntoABlock(self):
+        """Only multi-line strings become blocks; ordinary values are left alone."""
+        self.assertEqual(Grids.dump(self._grids("IC IC IC")), "core:\n  lattice map: IC IC IC\n")
+
+
 class TestValuesThatHashAlike(unittest.TestCase):
     """The yamlize defect this module is designed to make structurally impossible.
 
