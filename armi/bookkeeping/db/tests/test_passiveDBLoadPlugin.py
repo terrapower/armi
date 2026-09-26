@@ -16,10 +16,6 @@
 
 import unittest
 from copy import deepcopy
-from io import StringIO
-
-from ruamel.yaml import RoundTripLoader
-from ruamel.yaml.nodes import MappingNode, ScalarNode
 
 from armi import context, getApp
 from armi.bookkeeping.db.passiveDBLoadPlugin import (
@@ -75,43 +71,28 @@ class TestPassiveDBLoadPlugin(unittest.TestCase):
 
 
 class TestPassThroughYamlize(unittest.TestCase):
-    def test_passThroughYamlizeExample1(self):
-        # create node from known BP-style YAML object
-        node = MappingNode(
-            "test_passThroughYamlizeExample1",
-            [
-                (
-                    ScalarNode(tag="tag:yaml.org,2002:str", value="core-wide"),
-                    MappingNode(
-                        tag="tag:yaml.org,2002:map",
-                        value=[
-                            (
-                                ScalarNode(
-                                    tag="tag:yaml.org,2002:str",
-                                    value="fuel axial expansion",
-                                ),
-                                ScalarNode(tag="tag:yaml.org,2002:bool", value="False"),
-                            ),
-                            (
-                                ScalarNode(
-                                    tag="tag:yaml.org,2002:str",
-                                    value="grid plate radial expansion",
-                                ),
-                                ScalarNode(tag="tag:yaml.org,2002:bool", value="True"),
-                            ),
-                        ],
-                    ),
-                )
-            ],
+    def test_unknownSectionIsAcceptedAndDiscarded(self):
+        """A skipped section loads without complaint and keeps nothing from it."""
+        section = PassThroughYamlize.fromData(
+            {
+                "core-wide": {
+                    "fuel axial expansion": False,
+                    "grid plate radial expansion": True,
+                }
+            }
         )
 
-        # test that node is non-zero and has the "core-wide" section
-        self.assertEqual(node.value[0][0].value, "core-wide")
+        self.assertIsInstance(section, PassThroughYamlize)
+        self.assertEqual(len(section._fields), 0)
+        self.assertFalse([a for a in vars(section) if not a.startswith("_")])
 
-        # pass the YAML string through the known YAML
-        pty = PassThroughYamlize()
-        loader = RoundTripLoader(StringIO(""))
-        _p = pty.from_yaml(loader, node)
-
-        # prove the section has been cleared
-        self.assertEqual(len(node.value), 0)
+    def test_unknownSectionInABlueprint(self):
+        """A blueprint carrying a section this application does not know still loads."""
+        PassiveDBLoadPlugin.SKIP_BP_SECTIONS = ["custom section"]
+        try:
+            self.assertEqual(
+                PassiveDBLoadPlugin.defineBlueprintsSections()[0][0],
+                "customsection",
+            )
+        finally:
+            PassiveDBLoadPlugin.SKIP_BP_SECTIONS = []

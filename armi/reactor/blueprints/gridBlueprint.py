@@ -105,7 +105,6 @@ from io import StringIO
 from typing import Tuple
 
 import numpy as np
-import yamlize
 from ruamel.yaml import scalarstring
 
 from armi import runLog
@@ -113,14 +112,15 @@ from armi.reactor import blueprints, geometry, grids
 from armi.utils import asciimaps
 from armi.utils.customExceptions import InputError
 from armi.utils.mathematics import isMonotonic
+from armi.utils.yamlSchema import Field, KeyedList, YamlObject
 
 
-class Triplet(yamlize.Object):
+class Triplet(YamlObject):
     """A x, y, z triplet for coordinates or lattice pitch."""
 
-    x = yamlize.Attribute(type=float)
-    y = yamlize.Attribute(type=float, default=0.0)
-    z = yamlize.Attribute(type=float, default=0.0)
+    x = Field(type=float)
+    y = Field(type=float, default=0.0)
+    z = Field(type=float, default=0.0)
 
     def __init__(self, x=0.0, y=0.0, z=0.0):
         self.x = x
@@ -128,13 +128,13 @@ class Triplet(yamlize.Object):
         self.z = z
 
 
-class Pitch(yamlize.Object):
+class Pitch(YamlObject):
     """A x, y, z triplet or triangular hex pitch for coordinates or lattice pitch for hexagonal grids."""
 
-    hex = yamlize.Attribute(type=float, default=0.0)
-    x = yamlize.Attribute(type=float, default=0.0)
-    y = yamlize.Attribute(type=float, default=0.0)
-    z = yamlize.Attribute(type=float, default=0.0)
+    hex = Field(type=float, default=0.0)
+    x = Field(type=float, default=0.0)
+    y = Field(type=float, default=0.0)
+    z = Field(type=float, default=0.0)
 
     def __init__(self, hexPitch=0.0, x=0.0, y=0.0, z=0.0):
         """
@@ -168,7 +168,7 @@ class Pitch(yamlize.Object):
         self.z = z
 
 
-class GridBlueprint(yamlize.Object):
+class GridBlueprint(YamlObject):
     """
     A grid input blueprint.
 
@@ -186,7 +186,7 @@ class GridBlueprint(yamlize.Object):
         file, including a name, geometry, dimensions, symmetry, and a map with the relative
         locations of components within that grid.
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        Relies on :py:mod:`armi.utils.yamlSchema` for reading from text
         files, serialization, and internal storage of the data.
 
         Is implemented as part of a blueprints file by being used in key-value pairs within the
@@ -223,12 +223,12 @@ class GridBlueprint(yamlize.Object):
         what's supposed to be in the grid.
     """
 
-    name = yamlize.Attribute(key="name", type=str)
-    geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
-    latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
-    latticeDimensions = yamlize.Attribute(key="lattice pitch", type=Pitch, default=None)
-    gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
-    symmetry = yamlize.Attribute(
+    name = Field(key="name", type=str)
+    geom = Field(key="geom", type=str, default=geometry.HEX)
+    latticeMap = Field(key="lattice map", type=str, default=None)
+    latticeDimensions = Field(key="lattice pitch", type=Pitch, default=None)
+    gridBounds = Field(key="grid bounds", type=dict, default=None)
+    symmetry = Field(
         key="symmetry",
         type=str,
         default=str(geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)),
@@ -236,9 +236,9 @@ class GridBlueprint(yamlize.Object):
     # gridContents is the final form of grid contents information; it is set regardless of how the
     # input is read. When writing, we attempt to preserve the input mode and write ascii map if that
     # was what was originally provided.
-    gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
+    gridContents = Field(key="grid contents", type=dict, default=None)
     # allowing us to add custom orientations to the objects on this gritd, at BOL
-    orientationBOL = yamlize.Attribute(key="orientationBOL", type=dict, default=None)
+    orientationBOL = Field(key="orientationBOL", type=dict, default=None)
 
     @gridContents.validator
     def gridContents(self, value):
@@ -273,12 +273,8 @@ class GridBlueprint(yamlize.Object):
 
         Notes
         -----
-        yamlize does not call an ``__init__`` method, instead it uses ``__new__`` and setattr this
-        is only needed for when you want to make this object from a non-YAML source.
-
-        Warning
-        -------
-        This is a Yamlize object, so ``__init__`` never really gets called. Only ``__new__`` does.
+        A load bypasses ``__init__``; it is only needed for when you want to make this object from
+        a non-YAML source.
         """
         self.name = name
         self.geom = str(geom)
@@ -292,8 +288,8 @@ class GridBlueprint(yamlize.Object):
     @property
     def readFromLatticeMap(self):
         """
-        Decorated as a property because a Yamlize object, ``__init__`` is not always called and we have to lazily
-        evaluate its default value.
+        Decorated as a property because ``__init__`` is not always called -- a load bypasses it --
+        so the default has to be evaluated lazily.
         """
         return getattr(self, "_readFromLatticeMap", False)
 
@@ -515,8 +511,8 @@ class GridBlueprint(yamlize.Object):
             return []
         if self.gridContents is None:
             return []
-        # tried using yamlize to coerce ints to strings but failed after much struggle, so we just
-        # auto-convert here to deal with int-like specifications. (yamlize.StrList fails to coerce
+        # tried coercing ints to strings in the schema but failed after much struggle, so we just
+        # auto-convert here to deal with int-like specifications. (StrList fails to coerce
         # when ints are provided)
         latticeIDs = [str(i) for i in latticeIDs]
         locators = []
@@ -534,9 +530,9 @@ class GridBlueprint(yamlize.Object):
         return spatialLocator
 
 
-class Grids(yamlize.KeyedList):
-    item_type = GridBlueprint
-    key_attr = GridBlueprint.name
+class Grids(KeyedList):
+    itemType = GridBlueprint
+    keyField = GridBlueprint.name
 
 
 def _getGridSize(idx) -> Tuple[int, int]:
@@ -605,8 +601,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
         :implements: R_ARMI_BP_TO_DB
 
         First makes a copy of the blueprints that are passed in. Then modifies any grids specified in the blueprints
-        into a canonical lattice map style, if needed. Then uses the ``dump`` method that is inherent to all ``yamlize``
-        subclasses to write the blueprints to the given ``stream`` object.
+        into a canonical lattice map style, if needed. Then uses the ``dump`` method that every
+        schema class provides to write the blueprints to the given ``stream`` object.
 
         If called with the ``full`` argument, the entire blueprints is dumped. If not, only the grids portion is dumped.
 

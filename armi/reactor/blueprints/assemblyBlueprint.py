@@ -21,13 +21,21 @@ example, an assembly does not require a reactor to be constructed, or a geometry
 type as a surrogate).
 """
 
-import yamlize
-
 from armi import getPluginManagerOrFail, runLog
 from armi.reactor import assemblies, grids, parameters
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
+from armi.utils.yamlSchema import (
+    Field,
+    FloatList,
+    IntList,
+    KeyedList,
+    Map,
+    Sequence,
+    StrList,
+    YamlObject,
+)
 
 
 def _configureAssemblyTypes():
@@ -40,23 +48,23 @@ def _configureAssemblyTypes():
     return assemTypes
 
 
-class Modifications(yamlize.Map):
+class Modifications(Map):
     """The names of material modifications and lists of the modification values for each block in the assembly."""
 
-    key_type = yamlize.Typed(str)
-    value_type = yamlize.Sequence
+    keyType = str
+    valueType = Sequence
 
 
-class ByComponentModifications(yamlize.Map):
+class ByComponentModifications(Map):
     """The name of a component within the block and an associated Modifications object."""
 
-    key_type = yamlize.Typed(str)
-    value_type = Modifications
+    keyType = str
+    valueType = Modifications
 
 
-class MaterialModifications(yamlize.Map):
+class MaterialModifications(Map):
     """
-    A yamlize map for reading and holding material modifications.
+    A map for reading and holding material modifications.
 
     A user may specify material modifications directly as keys/values on this class, in which case
     these material modifications will be blanket applied to the entire block.
@@ -90,20 +98,20 @@ class MaterialModifications(yamlize.Map):
         :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`).
     """
 
-    key_type = yamlize.Typed(str)
-    value_type = yamlize.Sequence
-    byComponent = yamlize.Attribute(
+    keyType = str
+    valueType = Sequence
+    byComponent = Field(
         key="by component",
         type=ByComponentModifications,
         default=ByComponentModifications(),
     )
 
 
-class AssemblyBlueprint(yamlize.Object):
+class AssemblyBlueprint(YamlObject):
     """
     A data container for holding information needed to construct an ARMI assembly.
 
-    This class utilizes ``yamlize`` to enable serialization to and from the blueprints YAML file.
+    This class uses ``yamlSchema`` to enable serialization to and from the blueprints YAML file.
 
     .. impl:: Create assembly from blueprint file.
         :id: I_ARMI_BP_ASSEM
@@ -115,7 +123,7 @@ class AssemblyBlueprint(yamlize.Object):
         a list of axial mesh points in each block, a list of cross section identifiers
         for each block, and material options (see :need:`I_ARMI_MAT_USER_INPUT0`).
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for
+        Relies on :py:mod:`armi.utils.yamlSchema` for
         reading from text files, serialization, and internal storage of the data.
 
         Is implemented as part of a blueprints file by being imported and used
@@ -127,20 +135,20 @@ class AssemblyBlueprint(yamlize.Object):
         as specified in the blueprints.
     """
 
-    name = yamlize.Attribute(type=str)
-    flags = yamlize.Attribute(type=str, default=None)
-    specifier = yamlize.Attribute(type=str)
-    blocks = yamlize.Attribute(type=blockBlueprint.BlockList)
-    height = yamlize.Attribute(type=yamlize.FloatList)
-    axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList)
-    radialMeshPoints = yamlize.Attribute(key="radial mesh points", type=int, default=None)
-    azimuthalMeshPoints = yamlize.Attribute(key="azimuthal mesh points", type=int, default=None)
-    materialModifications = yamlize.Attribute(
+    name = Field(type=str)
+    flags = Field(type=str, default=None)
+    specifier = Field(type=str)
+    blocks = Field(type=blockBlueprint.BlockList)
+    height = Field(type=FloatList)
+    axialMeshPoints = Field(key="axial mesh points", type=IntList)
+    radialMeshPoints = Field(key="radial mesh points", type=int, default=None)
+    azimuthalMeshPoints = Field(key="azimuthal mesh points", type=int, default=None)
+    materialModifications = Field(
         key="material modifications",
         type=MaterialModifications,
         default=MaterialModifications(),
     )
-    xsTypes = yamlize.Attribute(key="xs types", type=yamlize.StrList)
+    xsTypes = Field(key="xs types", type=StrList)
     # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
 
     _assemTypes = _configureAssemblyTypes()
@@ -298,23 +306,21 @@ for paramDef in parameters.forType(assemblies.Assembly).inCategory(parameters.Ca
     setattr(
         AssemblyBlueprint,
         paramDef.name,
-        yamlize.Attribute(name=paramDef.name, default=None),
+        Field(name=paramDef.name, default=None),
     )
 
 
-class AssemblyKeyedList(yamlize.KeyedList):
+class AssemblyKeyedList(KeyedList):
     """
     Effectively and OrderedDict of assembly items, keyed on the assembly name.
 
-    This uses yamlize KeyedList for YAML serialization.
+    This uses a KeyedList for YAML serialization.
     """
 
-    item_type = AssemblyBlueprint
-    key_attr = AssemblyBlueprint.name
-    heights = yamlize.Attribute(type=yamlize.FloatList, default=None)
-    axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList, default=None)
-
-    # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
+    itemType = AssemblyBlueprint
+    keyField = AssemblyBlueprint.name
+    heights = Field(type=FloatList, default=None)
+    axialMeshPoints = Field(key="axial mesh points", type=IntList, default=None)
 
     @property
     def bySpecifier(self):

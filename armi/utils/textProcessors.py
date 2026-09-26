@@ -168,10 +168,10 @@ def resolveMarkupInclusions(src: Union[TextIO, pathlib.Path], root: Optional[pat
     part of the document parsing/composition that comes with ruamel.yaml could
     work, but has a number of prohibitive drawbacks (or at least reasons why it might
     not be worth doing). Using a custom constructor is more-or-less supported by
-    ruamel.yaml (which we do use, as it is what underpins the yamlize package), but it
+    ruamel.yaml (which we do use, as it is what underpins our YAML handling), but it
     carries limitations about how anchors and aliases can cross included-file
     boundaries. Getting around this requires either monkey-patching ruamel.yaml, or
-    subclassing it, which in turn would require monkey-patching yamlize.
+    subclassing it.
 
     Instead, we treat the ``!include``\ s as a sort of pre-processor directive, which
     essentially pastes the contents of the ``!include``\ d file into the location of the
