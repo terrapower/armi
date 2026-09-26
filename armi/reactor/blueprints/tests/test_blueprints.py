@@ -160,20 +160,59 @@ class TestBlueprints(unittest.TestCase):
         self.assertLess(fuel.getNumberDensity("AM241"), 1e-5)
 
 
-class TestRuamelYamlBug(unittest.TestCase):
-    def test_ruamelYamlBug(self):
-        """Testing that we are correctly fixing a bug in ruamel.yaml.
+class TestYamlizeHashCollisionBug(unittest.TestCase):
+    """Values that merely hash alike must not swap YAML metadata on a round trip.
 
-        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
-        values incorrectly for the zero values to zero strings: '0.0'.
-        """
+    yamlize 0.7.1 caches round-trip metadata (tag, quote style, anchor, comments) keyed on
+    ``hash(value)``. Because ``hash("") == hash(0.0) == hash(0) == hash(False)`` and
+    ``hash(1) == hash(1.0) == hash(True)``, any two such values sharing a container swap metadata,
+    and the second one dumped comes back with the first one's YAML tag.
+
+    This was originally filed as a ruamel.yaml 0.19.1 regression, but ruamel.yaml is not at fault:
+    ``test_plainRuamelRoundTripsCollidingValues`` below shows plain ruamel.yaml handling every one
+    of these documents correctly. See :py:mod:`armi.reactor.blueprints._yamlizeShims` for the fix.
+    """
+
+    def test_plainRuamelRoundTripsCollidingValues(self):
+        """ruamel.yaml on its own round trips hash-colliding values byte-for-byte."""
+        yaml = YAML(typ="rt")
+        yaml.preserve_quotes = True
+
+        for src in (
+            'v: ["", 0.0, 0.0, ""]',
+            "v: [0, 0.0]",
+            'v: ["a", 1.0, true]',
+            'v: [false, 0, "", 0.0]',
+        ):
+            with self.subTest(src=src):
+                buf = io.StringIO()
+                yaml.dump(yaml.load(src), buf)
+                self.assertEqual(buf.getvalue().strip(), src)
+
+    def test_yamlizeRoundTripsCollidingValues(self):
+        """With the shim applied, yamlize matches ruamel.yaml on the same documents."""
+
+        class Doc(yamlize.Object):
+            v = yamlize.Attribute(key="v", type=yamlize.Sequence)
+
+        for src in (
+            'v: ["", 0.0, 0.0, ""]',
+            "v: [0, 0.0]",
+            'v: ["a", 1.0, true]',
+            'v: [false, 0, "", 0.0]',
+        ):
+            with self.subTest(src=src):
+                self.assertEqual(Doc.dump(Doc.load(src)).strip(), src)
+
+    def test_zerosInMaterialModifications(self):
+        """A material modification of all zeros and blanks stays numeric through a round trip."""
         with TemporaryDirectoryChanger() as tmpDir:
             # copy the test reactor over so we can modify it
             oldDir = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
             newDir = os.path.join(tmpDir.destination, "sodiumHexReactor")
             shutil.copytree(oldDir, newDir)
 
-            # modify the test reactor to have the zeros problem that ruamel.yaml is chocking on
+            # modify the test reactor so that "" and 0.0 -- which hash identically -- share a list
             bpFile = os.path.join(newDir, "refSmallReactorBase.yaml")
             txt = open(bpFile, "r").read()
 
@@ -199,7 +238,7 @@ class TestRuamelYamlBug(unittest.TestCase):
             txt = bp.dump(bp)
             self.assertIn("0.0, 0.0, 0.0", txt)
             self.assertNotIn('"0.0"', txt)
-            self.assertNotIn('"0.0"', txt)
+            self.assertNotIn("'0.0'", txt)
 
 
 class TestBlueprintsSchema(unittest.TestCase):
