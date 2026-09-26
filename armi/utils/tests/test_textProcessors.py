@@ -94,26 +94,39 @@ class YamlIncludeTest(unittest.TestCase):
         # strip it because one method gives an extra newline we don't care about
         self.assertEqual(resolved.getvalue().strip(), expected.getvalue().strip())
 
-    def test_resolveIncludes_inlineAfterKeyIsRejected(self):
-        """An ``!include`` sharing a line with its key cannot be resolved, so say so.
+    def test_resolveIncludes_asTheValueOfAKey(self):
+        """``core: !include foo.yaml`` makes the file the value of ``core``.
 
-        Included content is indented to the first content column of the including line. For
-        ``core: !include foo.yaml`` that is the column of ``core``, so the included file would land
-        beside the key rather than under it, with its first line pasted onto the key line. The
-        result is unparseable, and used to be emitted silently.
+        The included file has to start on the next line and be indented past the key. Pasting it in
+        where the tag sits would run its first line onto the end of the key -- ``core: geom: hex``
+        -- and leave the rest as siblings of the key rather than its value.
         """
         src = StringIO("grids:\n    core: !include lower/includeA.yaml\n")
-        with self.assertRaises(ValueError) as cm:
-            textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR))
+        resolved = textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR)).getvalue()
 
-        self.assertIn("core", str(cm.exception))
-        self.assertIn("own line", str(cm.exception))
+        self.assertNotIn("!include", resolved)
+        data = ruamel.yaml.YAML().load(resolved)
+        self.assertEqual(data["grids"]["core"]["full_name"], "Jennifer Person")
 
-    def test_resolveIncludes_inSequenceItemIsAllowed(self):
-        """``- !include foo.yaml`` is fine: ``-`` is a block marker, not content."""
+    def test_resolveIncludes_inSequenceItem(self):
+        """``- !include foo.yaml`` puts the file where the tag is: ``-`` is a marker, not content."""
         src = StringIO("stuff:\n    - !include lower/includeA.yaml\n")
-        resolved = textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR))
-        self.assertNotIn("!include", resolved.getvalue())
+        resolved = textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR)).getvalue()
+
+        self.assertNotIn("!include", resolved)
+        data = ruamel.yaml.YAML().load(resolved)
+        self.assertEqual(data["stuff"][0]["full_name"], "Jennifer Person")
+
+    def test_resolveIncludes_onItsOwnLine(self):
+        """An ``!include`` indented under a key is the long form of the same thing."""
+        inline = StringIO("grids:\n    core: !include lower/includeA.yaml\n")
+        ownLine = StringIO("grids:\n    core:\n        !include lower/includeA.yaml\n")
+        yaml = ruamel.yaml.YAML()
+
+        self.assertEqual(
+            yaml.load(textProcessors.resolveMarkupInclusions(inline, root=pathlib.Path(RES_DIR))),
+            yaml.load(textProcessors.resolveMarkupInclusions(ownLine, root=pathlib.Path(RES_DIR))),
+        )
 
     def test_findIncludes(self):
         includes = textProcessors.findYamlInclusions(pathlib.Path(RES_DIR) / "root.yaml")

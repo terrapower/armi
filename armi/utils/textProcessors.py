@@ -25,6 +25,10 @@ _INCLUDE_CTOR = False
 _INCLUDE_RE = re.compile(r"^([^#]*\s+)?!include\s+(.*)\n?$")
 _INDENT_RE = re.compile(r"^[\s\-\?:]*([^\s\-\?:].*)?$")
 
+#: How far past its key an ``!include`` used as a mapping value is indented. Any amount deeper
+#: than the key is valid YAML; this matches what blueprints use elsewhere.
+_INCLUDED_VALUE_INDENT = 4
+
 # String constants
 SCIENTIFIC_PATTERN = r"[+-]?\d*\.\d+[eEdD][+-]\d+"
 """
@@ -64,6 +68,7 @@ def _processIncludes(
     root: pathlib.Path,
     indentation=0,
     currentFile="<stream>",
+    indentFirstLine=False,
 ):
     """
     Recursively inserts the contents of !included YAML files into the output stream,
@@ -95,31 +100,25 @@ def _processIncludes(
         # assume file stream or TextIOBase, and it has a readlines attr
         lines = src.readlines()
     for i, line in enumerate(lines):
-        leadingSpace = indentSpace if i > 0 else ""
+        leadingSpace = indentSpace if i > 0 or indentFirstLine else ""
         m = _INCLUDE_RE.match(line)
         if m:
             # this line has an !include on it
             prefix = m.group(1) or ""
-            if prefix.strip(" \t-?:"):
-                # There is a mapping key ahead of the !include, as in ``core: !include foo.yaml``.
-                # Included content is indented to the first content column of the including line,
-                # which for that form is the column of the key itself. The included file would land
-                # as a *sibling* of the key rather than its value, and its first line would be
-                # pasted onto the end of the key line, producing ``core: geom: hex``. That is not
-                # parseable, so reject it rather than emit it.
-                raise ValueError(
-                    "Cannot resolve `!include` on the same line as the key `{}` in {}, line {}. Put the "
-                    "`!include` on its own line, indented under the key:\n"
-                    "    {}\n"
-                    "        !include {}".format(
-                        prefix.strip(" \t-?:"),
-                        currentFile,
-                        i + 1,
-                        prefix.strip(),
-                        m.group(2),
-                    )
-                )
-            out.write(leadingSpace + prefix)
+            isValueOfAKey = bool(prefix.strip(" \t-?:"))
+            if isValueOfAKey:
+                # ``core: !include coremap.yaml``: the file is the value of ``core``, so it has to
+                # start on the next line and be indented past the key. Pasting it in where the tag
+                # sits would run its first line onto the end of the key -- ``core: geom: hex`` --
+                # and leave the rest as siblings of the key rather than its value.
+                out.write(leadingSpace + prefix.rstrip() + "\n")
+                newIndent = indentation + _beginningOfContent(line) + _INCLUDED_VALUE_INDENT
+            else:
+                # ``!include`` on its own line, or as a sequence item: the file goes exactly where
+                # the tag is, and its first line continues the line the tag was on.
+                out.write(leadingSpace + prefix)
+                newIndent = indentation + _beginningOfContent(line)
+
             fName = pathlib.Path(os.path.expandvars(m.group(2)))
             path = root / fName
             if not path.exists():
@@ -127,8 +126,6 @@ def _processIncludes(
             includes.append((fName, FileMark(currentFile, i, m.start(2), root)))
 
             with open(path, "r") as includedFile:
-                firstCharacterPos = _beginningOfContent(line)
-                newIndent = indentation + firstCharacterPos
                 _processIncludes(
                     includedFile,
                     out,
@@ -136,6 +133,7 @@ def _processIncludes(
                     path.parent,
                     indentation=newIndent,
                     currentFile=path,
+                    indentFirstLine=isValueOfAKey,
                 )
         else:
             out.write(leadingSpace + line)
@@ -192,6 +190,16 @@ def resolveMarkupInclusions(src: Union[TextIO, pathlib.Path], root: Optional[pat
     including line that contains meaningful YAML content. The only exception is the
     first line of the included file, which starts at the location of the ``!include``
     itself and is not deliberately indented.
+
+    An ``!include`` written as the value of a key, as in ``core: !include coremap.yaml``,
+    works differently, because there the file is not a continuation of the line it sits
+    on but the value of that key. The key is written out on its own and the file follows
+    on the next line, indented past it, so these two forms mean the same thing::
+
+        core: !include coremap.yaml
+
+        core:
+            !include coremap.yaml
 
     In the future, we may wish to do the more sophisticated processing of the
     ``!include``\ s as part of the YAML parse. For future reference, there is some pure
