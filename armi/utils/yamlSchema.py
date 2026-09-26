@@ -180,20 +180,6 @@ def _identityRegistry():
             _LOADING.byId = None
 
 
-def _mergedKeys(data):
-    """The keys a mapping gets from a ``<<:`` merge rather than spelling out itself.
-
-    A merged key is not this mapping's own content; it points at the mapping that was merged in. So
-    the object already built for it over there is the object this mapping should use, which is what
-    makes ``block 4: {<<: *fuel_1}`` share ``fuel_1``'s components rather than get copies of them.
-    """
-    try:
-        return frozenset(data) - {key for key, _ in data.non_merged_items()}
-    except AttributeError:
-        # a plain dict, with no merge to speak of
-        return frozenset()
-
-
 def _alreadyBuilt(cls, data):
     """The object this load already built for ``data``, if there is one."""
     registry = getattr(_LOADING, "byId", None)
@@ -572,35 +558,29 @@ class YamlObject(metaclass=_SchemaMeta):
             )
 
         existing = _alreadyBuilt(cls, data)
-        if existing is not None:
-            # this node has been read already. Under a key it needs to be its own object so it can
-            # carry its own name -- ``aclp plenum: *block_plenum`` names a second block -- but it
-            # is the same definition, so it shares everything else.
-            return existing if key is None else existing._aliasUnder(key, keyField)
+        if existing is not None and key is None:
+            # A bare alias in a list, or as the value of a field, *refers* to a definition made
+            # elsewhere: ``blocks: [*block_fuel]`` says "the block design called fuel goes here".
+            # So it is that object, and editing the design reaches every use of it.
+            return existing
 
         self = cls.__new__(cls)
         self._doc = data
         self._keyFieldName = keyField.name if keyField is not None else None
+        # Under a key, an alias *declares* something: ``fuel 2: *fuel_1`` is a second block design
+        # that starts out identical to the first, not another name for it. It gets its own objects,
+        # so editing one design cannot reach into the other, and shares only the node it was read
+        # from, so it still writes back as ``*fuel_1`` until it diverges.
+        self._sharedDoc = existing is not None
         _remember(data, self)
         self._readFields(data, key)
         self._runAfterLoad(data)
 
         return self
 
-    #: True when this object was built as a second name for a node another object already owns, so
-    #: it must not write through to that node. See :py:meth:`_aliasUnder`.
+    #: True when another object already owns the node this one was read from, so writing through
+    #: it would edit that object too. Such an object takes a node of its own when it diverges.
     _sharedDoc = False
-
-    def _aliasUnder(self, key, keyField):
-        """A second name for this object: same contents, its own key field."""
-        new = self.__class__.__new__(self.__class__)
-        new.__dict__.update(self.__dict__)
-        new._keyFieldName = keyField.name if keyField is not None else None
-        new._sharedDoc = True
-        if keyField is not None:
-            keyField.__set__(new, key)
-
-        return new
 
     def _afterLoad(self):
         """Hook for subclasses to validate or derive state once every field is populated.
@@ -628,11 +608,10 @@ class YamlObject(metaclass=_SchemaMeta):
             except Exception as ee:
                 raise YamlSchemaError(str(ee), _location(data)) from ee
 
-        merged = _mergedKeys(data)
         for docKey, value in data.items():
             field = self._fields.byKey.get(docKey)
             if field is None:
-                self._readExtraKey(data, docKey, value, docKey in merged)
+                self._readExtraKey(data, docKey, value)
                 continue
 
             location = _location(data, docKey)
@@ -654,7 +633,7 @@ class YamlObject(metaclass=_SchemaMeta):
                 _location(data),
             )
 
-    def _readExtraKey(self, data, docKey, value, merged=False):
+    def _readExtraKey(self, data, docKey, value):
         """Handle a key with no matching field. Mappings and keyed lists override this."""
         raise YamlSchemaError(
             "`{}` is not a recognized key for {}. Expected one of: {}".format(
@@ -990,12 +969,13 @@ class _MappingBase(YamlObject):
             )
 
         existing = _alreadyBuilt(cls, data)
-        if existing is not None:
-            return existing if key is None else existing._aliasUnder(key, keyField)
+        if existing is not None and key is None:
+            return existing
 
         self = cls.__new__(cls)
         self._doc = data
         self._keyFieldName = keyField.name if keyField is not None else None
+        self._sharedDoc = existing is not None
         self._data = {}
         _remember(data, self)
         self._readFields(data, key)
@@ -1022,14 +1002,6 @@ class _MappingBase(YamlObject):
         self._writeItems(doc)
 
         return doc
-
-    def _aliasUnder(self, key, keyField):
-        new = super()._aliasUnder(key, keyField)
-        # its own dict, holding the very same entries: editing one definition through either name
-        # reaches the same objects, but adding an entry to one does not appear under the other
-        new._data = dict(self._data)
-
-        return new
 
     def _writeItems(self, doc):
         raise NotImplementedError
@@ -1073,13 +1045,12 @@ class Map(_MappingBase):
     keyType = None
     valueType = None
 
-    def _readExtraKey(self, data, docKey, value, merged=False):
+    def _readExtraKey(self, data, docKey, value):
         location = _location(data, docKey)
         key = _coerceTo(self.keyType, docKey, location)
-        shared = _alreadyBuilt(self.valueType, value) if merged else None
         # through __setitem__, not self._data, so a subclass that validates its keys or values sees
         # what was loaded and not just what was later assigned in code
-        _setItem(self, key, shared if shared is not None else _readValue(self.valueType, value, location), location)
+        _setItem(self, key, _readValue(self.valueType, value, location), location)
 
     def _writeItems(self, doc):
         for key, value in self._data.items():
@@ -1110,11 +1081,8 @@ class KeyedList(_MappingBase):
     #: the field of ``itemType`` that the mapping key supplies
     keyField = None
 
-    def _readExtraKey(self, data, docKey, value, merged=False):
-        item = _alreadyBuilt(self.itemType, value) if merged else None
-        if item is None:
-            item = self.itemType.fromData(value, key=docKey, keyField=type(self)._getKeyField())
-
+    def _readExtraKey(self, data, docKey, value):
+        item = self.itemType.fromData(value, key=docKey, keyField=type(self)._getKeyField())
         # see the note in Map._readExtraKey
         _setItem(self, docKey, item, _location(data, docKey))
 
