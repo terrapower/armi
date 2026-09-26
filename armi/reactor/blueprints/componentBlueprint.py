@@ -18,26 +18,30 @@ Define the ARMI input for a component definition, and code for constructing an A
 Special logic is required for handling component links.
 """
 
-import yamlize
-
 from armi import materials, runLog
 from armi.nucDirectory import nuclideBases
 from armi.reactor import components, composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
+from armi.utils.yamlSchema import Field, KeyedList, YamlObject
 
 COMPONENT_GROUP_SHAPE = "group"
 
 
-class ComponentDimension(yamlize.Object):
+class ComponentDimension:
     """
     Dummy object for ensuring well-formed component links are specified within the YAML input.
 
     This can be either a number (float or int), or a conformation string (``name.dimension``).
+
+    Notes
+    -----
+    This deliberately is not a :py:class:`~armi.utils.yamlSchema.YamlObject`. It stands in for a
+    single scalar rather than a mapping, so it is constructed straight from the value a field was
+    given and renders back to that value through :py:meth:`toData`.
     """
 
     def __init__(self, value):
-        # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
         self.value = value
         if isinstance(value, str):
             if not components.COMPONENT_LINK_REGEX.search(value):
@@ -46,35 +50,9 @@ class ComponentDimension(yamlize.Object):
     def __repr__(self):
         return f"<ComponentDimension value: {self.value}>"
 
-    @classmethod
-    def from_yaml(cls, loader, node, _rtd=None):
-        """
-        Override the ``Yamlizable.from_yaml`` to inject custom interpretation of component dimension.
-
-        This allows us to create a new object with either a string or numeric value.
-        """
-        try:
-            val = loader.construct_object(node)
-            self = ComponentDimension(val)
-            loader.constructed_objects[node] = self
-            return self
-        except ValueError as ve:
-            raise yamlize.YamlizingError(str(ve), node)
-
-    @classmethod
-    def to_yaml(cls, dumper, self, _rtd=None):
-        """
-        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end up with a
-        ``{value: ...}`` dictionary.
-
-        This allows someone to programmatically edit the component dimensions without using the ``ComponentDimension``
-        class.
-        """
-        if not isinstance(self, cls):
-            self = cls(self)
-        node = dumper.represent_data(self.value)
-        dumper.represented_objects[self] = node
-        return node
+    def toData(self):
+        """Render back to the bare number or link string, not a ``{value: ...}`` mapping."""
+        return self.value
 
     def __mul__(self, other):
         return self.value * other
@@ -110,10 +88,10 @@ class ComponentDimension(yamlize.Object):
         return id(self)
 
 
-class ComponentBlueprint(yamlize.Object):
+class ComponentBlueprint(YamlObject):
     """
-    Define the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization to and from
-    YAML.
+    Define the inputs necessary to build ARMI component objects. It uses ``yamlSchema`` to enable
+    serialization to and from YAML.
 
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
@@ -129,7 +107,7 @@ class ComponentBlueprint(yamlize.Object):
         Limited validation on the inputs is performed to ensure that the component shape corresponds to a valid shape
         defined by the ARMI application.
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text files, serialization,
+        Relies on :py:mod:`armi.utils.yamlSchema` for reading from text files, serialization,
         and internal storage of the data.
 
         Is implemented as part of a blueprints file by being imported and used as an attribute within the larger
@@ -142,8 +120,8 @@ class ComponentBlueprint(yamlize.Object):
         (see :need:`I_ARMI_MAT_USER_INPUT1`).
     """
 
-    name = yamlize.Attribute(type=str)
-    flags = yamlize.Attribute(type=str, default=None)
+    name = Field(type=str)
+    flags = Field(type=str, default=None)
 
     @name.validator
     def name(self, name):
@@ -153,7 +131,7 @@ class ComponentBlueprint(yamlize.Object):
             # clad.
             raise ValueError(f"Cannot set ComponentBlueprint.name to {name}. Prefer 'clad'.")
 
-    shape = yamlize.Attribute(type=str)
+    shape = Field(type=str)
 
     @shape.validator
     def shape(self, shape):
@@ -161,15 +139,15 @@ class ComponentBlueprint(yamlize.Object):
         if normalizedShape not in components.ComponentType.TYPES and normalizedShape != COMPONENT_GROUP_SHAPE:
             raise ValueError(f"Cannot set ComponentBlueprint.shape to unknown shape: {shape}")
 
-    material = yamlize.Attribute(type=str, default=None)
-    Tinput = yamlize.Attribute(type=float, default=None)
-    Thot = yamlize.Attribute(type=float, default=None)
-    isotopics = yamlize.Attribute(type=str, default=None)
-    latticeIDs = yamlize.Attribute(type=list, default=None)
-    origin = yamlize.Attribute(type=list, default=None)
-    orientation = yamlize.Attribute(type=str, default=None)
-    mergeWith = yamlize.Attribute(type=str, default=None)
-    area = yamlize.Attribute(type=float, default=None)
+    material = Field(type=str, default=None)
+    Tinput = Field(type=float, default=None)
+    Thot = Field(type=float, default=None)
+    isotopics = Field(type=str, default=None)
+    latticeIDs = Field(type=list, default=None)
+    origin = Field(type=list, default=None)
+    orientation = Field(type=str, default=None)
+    mergeWith = Field(type=str, default=None)
+    area = Field(type=float, default=None)
 
     def construct(self, blueprint, matMods, inputHeightsConsideredHot):
         """Construct a component or group.
@@ -306,8 +284,8 @@ class ComponentBlueprint(yamlize.Object):
         """Get the relevant kwargs to construct the component."""
         kwargs = {"mergeWith": self.mergeWith or "", "isotopics": self.isotopics or ""}
 
-        for attr in self.attributes:  # yamlize magic
-            val = attr.get_value(self)
+        for attr in self._fields:
+            val = attr.__get__(self)
 
             if attr.name == "shape" or val == attr.default:
                 continue
@@ -323,10 +301,9 @@ class ComponentBlueprint(yamlize.Object):
                 # override the flags derived from the type, if present.
                 continue
             else:
-                value = attr.get_value(self)
+                value = attr.__get__(self)
 
-            # Keep digging until the actual value is found. This is a bit of a hack to get around an issue in
-            # yamlize/ComponentDimension where Dimensions can end up chained.
+            # Keep digging until the actual value is found. ComponentDimensions can end up chained.
             while isinstance(value, ComponentDimension):
                 value = value.value
 
@@ -446,7 +423,7 @@ def insertDepletableNuclideKeys(c, blueprint):
         )
 
 
-class ComponentKeyedList(yamlize.KeyedList):
+class ComponentKeyedList(KeyedList):
     """
     An OrderedDict of ComponentBlueprints keyed on the name.
 
@@ -456,22 +433,22 @@ class ComponentKeyedList(yamlize.KeyedList):
     construct method.
     """
 
-    item_type = ComponentBlueprint
-    key_attr = ComponentBlueprint.name
+    itemType = ComponentBlueprint
+    keyField = ComponentBlueprint.name
 
 
-class GroupedComponent(yamlize.Object):
+class GroupedComponent(YamlObject):
     """
     A pointer to a component with a multiplicity to be used in a ComponentGroup.
 
     Multiplicity can be a fraction (e.g. to set volume fractions)
     """
 
-    name = yamlize.Attribute(type=str)
-    mult = yamlize.Attribute(type=float)
+    name = Field(type=str)
+    mult = Field(type=float)
 
 
-class ComponentGroup(yamlize.KeyedList):
+class ComponentGroup(KeyedList):
     """
     A single component group containing multiple GroupedComponents.
 
@@ -484,20 +461,20 @@ class ComponentGroup(yamlize.KeyedList):
         mult: 0.3
     """
 
-    group_name = yamlize.Attribute(type=str)
-    key_attr = GroupedComponent.name
-    item_type = GroupedComponent
+    group_name = Field(type=str)
+    keyField = GroupedComponent.name
+    itemType = GroupedComponent
 
 
-class ComponentGroups(yamlize.KeyedList):
+class ComponentGroups(KeyedList):
     """
     A list of component groups.
 
     This is used in the top-level blueprints file.
     """
 
-    key_attr = ComponentGroup.group_name
-    item_type = ComponentGroup
+    keyField = ComponentGroup.group_name
+    itemType = ComponentGroup
 
 
 # This import-time magic requires all possible components be imported before this module imports. The intent was to make
@@ -507,7 +484,7 @@ for dimName in set([kw for cType in components.ComponentType.TYPES.values() for 
     setattr(
         ComponentBlueprint,
         dimName,
-        yamlize.Attribute(name=dimName, type=ComponentDimension, default=None),
+        Field(name=dimName, type=ComponentDimension, default=None),
     )
 
 

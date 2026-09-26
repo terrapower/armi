@@ -504,8 +504,10 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertIn("shape: Circle", outText)
             self.assertIn("assemblies:", outText)
             self.assertIn("flags: fuel test", outText)
-            self.assertIn("grid contents:", outText)
             self.assertIn("lattice map:", outText)
+            # the grid is written as a map, so the grid contents it was expanded into are dropped
+            # rather than written out as an empty key
+            self.assertNotIn("grid contents:", outText)
             before, after = outText.split("lattice map:")
             self.assertGreater(len(before), 100)
             self.assertGreater(len(after), 20)
@@ -536,7 +538,8 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertIn("assemblies:", outText)
             self.assertIn("flags: fuel test", outText)
             self.assertIn("grid contents:", outText)
-            self.assertIn("lattice map:", outText)
+            # the grid is written as contents, so no empty lattice map key is left behind
+            self.assertNotIn("lattice map:", outText)
             before, after = outText.split("grid contents:")
             self.assertGreater(len(before), 100)
             self.assertGreater(len(after), 20)

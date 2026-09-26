@@ -18,8 +18,6 @@ import unittest
 from copy import deepcopy
 from typing import Optional
 
-import yamlize
-
 from armi import (
     configure,
     context,
@@ -40,6 +38,7 @@ from armi.reactor.flags import Flags
 from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import onlyRunOnce
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.yamlSchema import Field
 
 
 class PluginFlags1(plugins.ArmiPlugin):
@@ -294,7 +293,7 @@ class TestPlugin(unittest.TestCase):
             self.assertIsInstance(result, tuple)
             self.assertEqual(len(result), 3)
             self.assertIsInstance(result[0], str)
-            self.assertIsInstance(result[1], yamlize.Attribute)
+            self.assertIsInstance(result[1], Field)
             self.assertTrue(callable(result[2]))
 
     def test_exposeInterfaces(self):

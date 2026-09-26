@@ -51,11 +51,37 @@ class TestBlueprintModifiers(unittest.TestCase):
 
         pinTypeInputModifiers.SmearDensityModifier(0.5)(settings.Settings(), bp)
 
+        # The modifier only touches blocks whose flags say they are fuel, which it works out from
+        # the block name. Only the two called "fuel" qualify.
         self.assertEqual(math.sqrt(0.5), bp.blockDesigns["fuel 1"]["fuel"].od)
         self.assertEqual(math.sqrt(0.5), bp.blockDesigns["fuel 2"]["fuel"].od)
-        self.assertEqual(math.sqrt(0.5), bp.blockDesigns["block 3"]["fuel"].od)
-        self.assertEqual(math.sqrt(0.5), bp.blockDesigns["block 4"]["fuel"].od)
-        self.assertEqual(0.5, bp.blockDesigns["block 5"]["fuel"].od)  # unique instance
+
+        # `block 3: *fuel_1` and `block 4: {<<: *fuel_1}` declare their own block designs that
+        # happen to start out identical to `fuel 1`. They are not fuel, so they are left alone.
+        # They used to be modified anyway, because an alias under a key produced a second name for
+        # one shared set of component objects rather than a design of its own.
+        self.assertEqual(0.5, bp.blockDesigns["block 3"]["fuel"].od)
+        self.assertEqual(0.5, bp.blockDesigns["block 4"]["fuel"].od)
+        self.assertEqual(0.5, bp.blockDesigns["block 5"]["fuel"].od)
+
+    def test_blockDesignsAreIndependent(self):
+        """Editing one block design must not reach into another that aliased it.
+
+        ``fuel 2: *fuel_1`` says "same content as fuel 1", which is a convenience for writing the
+        input, not a statement that the two are forever the same object. ``BluePrintBlockModifier``
+        is documented as adjusting one named block, and a case suite sweeping a dimension on one
+        design must not silently sweep every design that was written as an alias of it.
+        """
+        bp = self.bp
+        for name in ("fuel 2", "block 3", "block 4", "block 5"):
+            with self.subTest(block=name):
+                self.assertIsNot(bp.blockDesigns[name], bp.blockDesigns["fuel 1"])
+                self.assertIsNot(bp.blockDesigns[name]["fuel"], bp.blockDesigns["fuel 1"]["fuel"])
+
+        bp.blockDesigns["fuel 1"]["fuel"].od = 0.25
+        for name in ("fuel 2", "block 3", "block 4", "block 5"):
+            with self.subTest(block=name):
+                self.assertEqual(0.5, bp.blockDesigns[name]["fuel"].od)
 
     def test_CladThickenessByODModifier(self):
         """

@@ -18,8 +18,6 @@ Defines nuclide flags and custom isotopics via input.
 Nuclide flags control meta-data about nuclides. Custom isotopics allow specification of arbitrary isotopic compositions.
 """
 
-import yamlize
-
 from armi import materials, runLog
 from armi.nucDirectory import elements, nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
@@ -33,9 +31,10 @@ from armi.physics.neutronics.settings import (
 )
 from armi.utils import densityTools, units
 from armi.utils.customExceptions import InputError
+from armi.utils.yamlSchema import Field, KeyedList, Map, StrList, YamlObject
 
 
-class NuclideFlag(yamlize.Object):
+class NuclideFlag(YamlObject):
     """
     Defines whether or not each nuclide is included in the burn chain and cross sections.
 
@@ -91,7 +90,7 @@ class NuclideFlag(yamlize.Object):
         be scaled up uniformly to account for any missing natural nuclides.
     """
 
-    nuclideName = yamlize.Attribute(type=str)
+    nuclideName = Field(type=str)
 
     @nuclideName.validator
     def nuclideName(self, value):
@@ -99,12 +98,12 @@ class NuclideFlag(yamlize.Object):
             allowedKeys = set(nuclideBases.byName.keys()).update(set(elements.bySymbol.keys()))
             raise ValueError(f"`{value}` is not a valid nuclide name, must be one of: {allowedKeys}")
 
-    burn = yamlize.Attribute(type=bool)
-    xs = yamlize.Attribute(type=bool)
-    expandTo = yamlize.Attribute(type=yamlize.StrList, default=None)
+    burn = Field(type=bool)
+    xs = Field(type=bool)
+    expandTo = Field(type=StrList, default=None)
 
     def __init__(self, nuclideName, burn, xs, expandTo):
-        # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
+        # a load bypasses __init__; this is only for building a flag in code
         self.nuclideName = nuclideName
         self.burn = burn
         self.xs = xs
@@ -140,14 +139,14 @@ class NuclideFlag(yamlize.Object):
         return expanded, undefBurnChainActiveNuclides
 
 
-class NuclideFlags(yamlize.KeyedList):
-    """An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``."""
+class NuclideFlags(KeyedList):
+    """An ordered mapping of ``NuclideFlag``, keyed by their ``nuclideName``."""
 
-    item_type = NuclideFlag
-    key_attr = NuclideFlag.nuclideName
+    itemType = NuclideFlag
+    keyField = NuclideFlag.nuclideName
 
 
-class CustomIsotopic(yamlize.Map):
+class CustomIsotopic(Map):
     """
     User specified, custom isotopics input defined by a name (such as MOX), and key/pairs of nuclide
     names and numeric values consistent with the ``input format``.
@@ -160,8 +159,8 @@ class CustomIsotopic(yamlize.Map):
         their blueprints file, including a name and key-value pairs corresponding to nuclide names
         and their concentrations.
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
-        files, serialization, and internal storage of the data.
+        Relies on :py:mod:`armi.utils.yamlSchema` for reading from text files, serialization, and
+        internal storage of the data.
 
         Is implemented as part of a blueprints file by being used in key-value pairs within the
         :py:class:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopics` class, which is
@@ -177,32 +176,31 @@ class CustomIsotopic(yamlize.Map):
         which adjusts the ``massFrac`` attribute of the component's material class.
     """
 
-    key_type = yamlize.Typed(str)
-    value_type = yamlize.Typed(float)
-    name = yamlize.Attribute(type=str)
-    inputFormat = yamlize.Attribute(key="input format", type=str)
+    keyType = str
+    valueType = float
+    name = Field(type=str)
+    inputFormat = Field(key="input format", type=str)
 
     @inputFormat.validator
     def inputFormat(self, value):
         if value not in self._allowedFormats:
             raise ValueError(f"Cannot set `inputFormat` to `{value}`, must be one of: {self._allowedFormats}")
 
-    _density = yamlize.Attribute(key="density", type=float, default=None)
+    _density = Field(key="density", type=float, default=None)
 
     _allowedFormats = {"number fractions", "number densities", "mass fractions"}
 
-    def __new__(cls, *args):
-        self = yamlize.Map.__new__(cls, *args)
+    #: density implied by the input, when it was given as number densities. A load bypasses
+    #: __init__, so this needs a class-level default.
+    _computedDensity = None
 
-        # the density as computed by source number densities
-        self._computedDensity = None
-        return self
+    #: mass fractions derived from the input; filled in by ``_initializeMassFracs``
+    massFracs = None
 
     def __init__(self, name, inputFormat, density):
-        # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        self._name = None
+        # a load bypasses __init__; this is only for building an isotopic vector in code
+        super().__init__()
         self.name = name
-        self._inputFormat = None
         self.inputFormat = inputFormat
         self.density = density
         self.massFracs = {}
@@ -212,7 +210,7 @@ class CustomIsotopic(yamlize.Map):
             allowedKeys = set(nuclideBases.byName.keys()).update(set(elements.bySymbol.keys()))
             raise ValueError(f"Key `{key}` is not valid, must be one of: {allowedKeys}")
 
-        yamlize.Map.__setitem__(self, key, value)
+        Map.__setitem__(self, key, value)
 
     @property
     def density(self):
@@ -226,39 +224,14 @@ class CustomIsotopic(yamlize.Map):
         if value is not None and value < 0:
             raise ValueError(f"Cannot set `density` to `{value}`, must greater than 0")
 
-    @classmethod
-    def from_yaml(cls, loader, node, rtd):
+    def _afterLoad(self):
+        """Derive mass fractions once the whole vector has been read.
+
+        These depend on every entry plus ``input format``, so they cannot be computed field by
+        field. Anything raised here is reported against this vector's position in the input.
         """
-        Override the ``Yamlizable.from_yaml`` to inject custom data validation logic, and complete initialization of the
-        object.
-        """
-        self = yamlize.Map.from_yaml.__func__(cls, loader, node, rtd)
-
-        try:
-            self._initializeMassFracs()
-            self._expandElementMassFracs()
-        except Exception as ex:
-            # use a YamlizingError to get line/column of erroneous input
-            raise yamlize.YamlizingError(str(ex), node)
-
-        return self
-
-    @classmethod
-    def from_yaml_key_val(cls, loader, key_node, val_node, key_attr, rtd):
-        """
-        Override the ``Yamlizable.from_yaml`` to inject custom data validation logic, and complete initialization of the
-        object.
-        """
-        self = yamlize.Map.from_yaml_key_val.__func__(cls, loader, key_node, val_node, key_attr, rtd)
-
-        try:
-            self._initializeMassFracs()
-            self._expandElementMassFracs()
-        except Exception as ex:
-            # use a YamlizingError to get line/column of erroneous input
-            raise yamlize.YamlizingError(str(ex), val_node)
-
-        return self
+        self._initializeMassFracs()
+        self._expandElementMassFracs()
 
     def _initializeMassFracs(self):
         self.massFracs = dict()  # defaults to 0.0, __init__ is not called
@@ -359,14 +332,12 @@ class CustomIsotopic(yamlize.Map):
             material.customDensity = self.density
 
 
-class CustomIsotopics(yamlize.KeyedList):
-    """OrderedDict of CustomIsotopic objects, keyed by their name."""
+class CustomIsotopics(KeyedList):
+    """An ordered mapping of ``CustomIsotopic`` objects, keyed by their name."""
 
-    item_type = CustomIsotopic
+    itemType = CustomIsotopic
 
-    key_attr = CustomIsotopic.name
-
-    # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
+    keyField = CustomIsotopic.name
 
     def apply(self, material, customIsotopicsName):
         """
@@ -558,7 +529,7 @@ def eleExpandInfoBasedOnCodeENDF(cs):
 
 
 def genDefaultNucFlags():
-    """Perform all the yamlize-required type conversions."""
+    """Perform all the schema-required type conversions."""
     flagsDict = getDefaultNuclideFlags()
     flags = NuclideFlags()
     for nucName, nucFlags in flagsDict.items():

@@ -20,7 +20,6 @@ import pathlib
 import shutil
 import unittest
 
-import yamlize
 from ruamel.yaml import YAML
 
 from armi import settings
@@ -35,6 +34,7 @@ from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 from armi.testing import TESTING_ROOT
 from armi.utils import directoryChangers, textProcessors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.yamlSchema import YamlSchemaError
 
 
 class TestBlueprints(unittest.TestCase):
@@ -160,20 +160,28 @@ class TestBlueprints(unittest.TestCase):
         self.assertLess(fuel.getNumberDensity("AM241"), 1e-5)
 
 
-class TestRuamelYamlBug(unittest.TestCase):
-    def test_ruamelYamlBug(self):
-        """Testing that we are correctly fixing a bug in ruamel.yaml.
+class TestZeroValuesInMaterialModifications(unittest.TestCase):
+    """Values that merely hash alike must not swap YAML metadata on a round trip.
 
-        With the release of ruamel.yaml 0.19.1, we began to get an error where lists that include only empty and 0.0
-        values incorrectly for the zero values to zero strings: '0.0'.
-        """
+    This was reported as a ruamel.yaml regression and papered over with a string replacement on the
+    dumped text. It was neither: yamlize cached round-trip metadata keyed on ``hash(value)``, and
+    ``hash("") == hash(0.0) == hash(0) == hash(False)``, so a material modification of
+    ``["", 0.0, 0.0, ""]`` came back as ``["", "0.0", "0.0", ""]``.
+
+    Nothing is keyed by value any more, so the whole class of collision is gone; see
+    ``TestValuesThatHashAlike`` in ``armi/utils/tests/test_yamlSchema.py``. This keeps an
+    end-to-end check on a real blueprint.
+    """
+
+    def test_zerosInMaterialModifications(self):
+        """A material modification of all zeros and blanks stays numeric through a round trip."""
         with TemporaryDirectoryChanger() as tmpDir:
             # copy the test reactor over so we can modify it
             oldDir = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
             newDir = os.path.join(tmpDir.destination, "sodiumHexReactor")
             shutil.copytree(oldDir, newDir)
 
-            # modify the test reactor to have the zeros problem that ruamel.yaml is chocking on
+            # modify the test reactor so that "" and 0.0 -- which hash identically -- share a list
             bpFile = os.path.join(newDir, "refSmallReactorBase.yaml")
             txt = open(bpFile, "r").read()
 
@@ -199,7 +207,7 @@ class TestRuamelYamlBug(unittest.TestCase):
             txt = bp.dump(bp)
             self.assertIn("0.0, 0.0, 0.0", txt)
             self.assertNotIn('"0.0"', txt)
-            self.assertNotIn('"0.0"', txt)
+            self.assertNotIn("'0.0'", txt)
 
 
 class TestBlueprintsSchema(unittest.TestCase):
@@ -479,20 +487,20 @@ assemblies:
         self.assertAlmostEqual(mergedBlock.getMass(), unmergedBlock.getMass())
 
     def test_nuclideFlags(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             NuclideFlags.load("{potato: {burn: true, xs: true}}")
 
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             NuclideFlags.load("{U238: {burn: 12, xs: 0}}")
 
     def test_customIsotopics(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             CustomIsotopics.load("MOX: {input format: applesauce}")
 
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             CustomIsotopics.load("MOX: {input format: number densities, density: -0.1}")
 
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             CustomIsotopics.load("MOX: {input format: number densities, density: 1.5, FAKENUC234: 0.000286}")
 
     def test_components(self):
@@ -543,7 +551,7 @@ assemblies:
             },
         ]
         for bad in bads:
-            with self.assertRaises(yamlize.YamlizingError):
+            with self.assertRaises(YamlSchemaError):
                 ComponentBlueprint.load(repr(bad))
 
     def test_cladding_invalid(self):
@@ -555,7 +563,7 @@ assemblies:
             "Tinput": 1.0,
             "Thot": 1.0,
         }
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             ComponentBlueprint.load(repr(bad))
 
     def test_withoutBlocks(self):

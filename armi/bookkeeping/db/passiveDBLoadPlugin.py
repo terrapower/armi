@@ -21,21 +21,22 @@ blueprint files, and ignore any parameters as you want.
 This was designed to allow loading an ARMI database without the application that created it.
 """
 
-import yamlize
-
 from armi import plugins
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
+from armi.utils.yamlSchema import Field, YamlObject
 
 
-class PassThroughYamlize(yamlize.Object):
-    """Just a helper for PassiveDBLoadPlugin, to allow for ignore unknown blueprints sections."""
+class PassThroughYamlize(YamlObject):
+    """Swallows a whole blueprints section without interpreting it.
 
-    @classmethod
-    def from_yaml(cls, loader, node, round_trip_data=None):
-        node.value = []
-        return yamlize.Object.from_yaml.__func__(PassThroughYamlize, loader, node, round_trip_data)
+    Used by :py:class:`PassiveDBLoadPlugin` to let a database load succeed when the application
+    that wrote it defined sections this application knows nothing about.
+    """
+
+    def _readFields(self, data, key=None):
+        """Accept whatever is there and keep none of it."""
 
 
 class PassiveDBLoadPlugin(plugins.ArmiPlugin):
@@ -71,7 +72,7 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
             skips.append(
                 (
                     skippedBp.replace(" ", ""),
-                    yamlize.Attribute(key=skippedBp, type=PassThroughYamlize, default=None),
+                    Field(key=skippedBp, type=PassThroughYamlize, default=None),
                     PassThroughYamlize,
                 )
             )

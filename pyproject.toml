@@ -24,7 +24,7 @@ name = "armi"
 version = "0.7.0"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license-files = ["LICENSE.md", "AUTHORS"]
-requires-python = ">3.8"
+requires-python = ">=3.9"
 readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
@@ -39,13 +39,11 @@ dependencies = [
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml>=0.19.1 ; python_version >= '3.11.0'", # Our foundational YAML library
-    "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml>=0.19.1", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
     "sympy>=1.14", # Used to represent mathematical curves for material properties
     "toml>0.9.5", # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1", # Used to validate YAML data files
-    "yamlize==0.7.1", # Custom YAML-to-object library
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
