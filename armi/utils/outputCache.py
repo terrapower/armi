@@ -16,13 +16,15 @@
 TerraPower Calculation Results Cache (CRC).
 
 This helps avoid duplicated time/energy in running cases.
-In test systems and analysis, it's possible that the same calc will be done
-over and over, always giving the same result. This system allows the results
-to be cached and returned instantly instead of re-running, for example, MC2.
+
+In test systems and analysis, it is possible that the same calc will be done over and over, always giving the same
+result. This system allows the results to be cached and returned instantly instead of re-running, for example, MC2.
 
 API usage
 ---------
 Getting a cached file::
+
+.. code-block:: python
 
     exe = "MC2-2018-blah.exe"
     inpFiles = ["mccAA.inp", "rmzflx"]
@@ -32,11 +34,10 @@ Getting a cached file::
 
 Storing a file to the cache::
 
+.. code-block:: python
+
     crc.store(exe, inp, outFiles)
 
-Notes
------
-Could probably be, like, a decorate on subprocess but we call subprocess a bunch of different ways.
 """
 
 import hashlib
@@ -67,13 +68,11 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
         successful = _copyOutputs(cachedFolder, locToRetrieveTo)
 
         if successful:
-            runLog.info("Retrieved cached outputs for {}".format(exePath))
+            runLog.info(f"Retrieved cached outputs for {exePath}")
             return True
         else:
-            # outputs didn't match manifest. Just delete to save checking next time.
-            runLog.warning(
-                "Outputs in {} were inconsistent with manifest. Deleting and reproducing".format(cachedFolder)
-            )
+            # Outputs did not match manifest. Just delete to save checking next time.
+            runLog.warning(f"Outputs in {cachedFolder} were inconsistent with manifest. Deleting and reproducing")
             try:
                 deleteCache(cachedFolder)
             except Exception as e:
@@ -145,10 +144,9 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
 
     Notes
     -----
-    Input paths need to be in the same order each time if the same cached folder is expected to be found.
-    It is difficult to know what outputs will exist from a specific run, so only
-    outputs that do exist will attempt to be copied.
-    This function should be supplied with a greedy list of outputs.
+    Input paths need to be in the same order each time if the same cached folder is expected to be found. It is
+    difficult to know what outputs will exist from a specific run, so only outputs that do exist will attempt to be
+    copied. This function should be supplied with a greedy list of outputs.
     """
     # outputFilePaths is a greedy list and they might not all be produced
     outputsThatExist = [outputFile for outputFile in outputFiles if os.path.exists(outputFile)]
@@ -164,7 +162,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
         cachedLoc = os.path.join(folderLoc, baseName)
         safeCopy(outputFile, cachedLoc)
 
-    runLog.info("Added outputs for {} to the cache.".format(exePath))
+    runLog.info(f"Added outputs for {exePath} to the cache.")
 
 
 def deleteCache(cachedFolder):
@@ -186,17 +184,15 @@ def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=Non
 
     Notes
     -----
-    It is non-trivial to determine the exact set of outputs an executable will produce
-    without running the executable. Therefore, ``outputFileNames`` is expected to be a
-    greedy list and cache will attempt to copy all the files, but not fail if the
-    file is not present. When copying outputs back, all files copied previously will
-    be targeted.
+    It is non-trivial to determine the exact set of outputs an executable will produce without running the executable.
+    Therefore, ``outputFileNames`` is expected to be a greedy list and cache will attempt to copy all the files, but not
+    fail if the file is not present. When copying outputs back, all files copied previously will be targeted.
     """
     if execute is None:
         execute = lambda: subprocess.call([executablePath] + inputPaths)
 
     if not cacheDir:
-        runLog.info("Executing {}".format(executablePath))
+        runLog.info(f"Executing {executablePath}")
         execute()
         return
 
@@ -210,7 +206,7 @@ def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=Non
             )
         )
 
-    runLog.warning("Cached outputs were not found, executing {}".format(executablePath))
+    runLog.warning(f"Cached outputs were not found, executing {executablePath}")
     execute()
     if tearDown is not None:
         tearDown()
@@ -218,7 +214,7 @@ def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=Non
     try:
         store(executablePath, inputPaths, outputFileNames, cacheDir)
     except Exception as e:
-        # something went wrong in storage.
+        # Something went wrong in storage.
         # This is okay as the manifest will be inconsistent with the outputs and not used in the future.
         runLog.warning(
             "Failed to store outputs in: {}\nerror: {}".format(
