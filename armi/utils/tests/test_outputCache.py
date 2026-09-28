@@ -157,10 +157,40 @@ class TestOutputCache(unittest.TestCase):
         # run the code and test that it worked
         folderLoc = outputCache._getCachedFolder(fakeExe, [inputPath], cacheDir)
         self.assertFalse(os.path.exists(folderLoc))
+
         outputCache.store(fakeExe, [inputPath], [outputFile], cacheDir)
+
         self.assertTrue(os.path.exists(folderLoc))
         self.assertTrue(os.path.exists(os.path.join(folderLoc, "CRC-manifest.json")))
         self.assertTrue(os.path.exists(os.path.join(folderLoc, "something_outFile1.txt")))
 
     def test_cacheCall(self):
-        pass
+        """Mock up a simple test for cacheCall() where we call a (non-existant) MC2-3 executable, but bypass it because
+        there are existing outputs already.
+        """
+        # create a dummy cache dir
+        cacheDir = "mc2CacheDir"
+
+        # create a dummy executable
+        executablePath = "mc2-3.py"
+        with open(executablePath, "w") as f:
+            f.write("print('This is an empty executable.')")
+
+        # create a dummy input file
+        inputPaths = [self._buildDirWithFiles("mc2-input123")]
+
+        # create a output file
+        outputFileNames = [self._buildDirWithFiles("mc2-output123")]
+
+        # create a dummy method that does not run the executable
+        execute = lambda: None
+
+        # run the code and test that it worked
+        folderLoc = outputCache._getCachedFolder(executablePath, inputPaths, cacheDir)
+        self.assertFalse(os.path.exists(folderLoc))
+
+        outputCache.cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute)
+
+        self.assertTrue(os.path.exists(folderLoc))
+        self.assertTrue(os.path.exists(os.path.join(folderLoc, "CRC-manifest.json")))
+        self.assertTrue(os.path.exists(os.path.join(folderLoc, "something_mc2-output123.txt")))
