@@ -29,7 +29,21 @@ class TestOutputCache(unittest.TestCase):
     def tearDown(self):
         self.td.__exit__(None, None, None)
 
-    def _buildOutputCache(self, arbitraryString):
+    @staticmethod
+    def _buildDirWithFiles(arbitraryString):
+        """Helper method, to create a directory with a single file in it."""
+        # create an output location
+        os.mkdir(arbitraryString)
+
+        # create some temp file
+        outFile = os.path.join(arbitraryString, f"something_{arbitraryString}.txt")
+        with open(outFile, "w") as f:
+            f.write("test")
+
+        return outFile
+
+    @staticmethod
+    def _buildOutputCache(arbitraryString):
         """
         Helper method, to set up a semi-stupid output cache directory.
 
@@ -130,7 +144,23 @@ class TestOutputCache(unittest.TestCase):
         self.assertFalse(result)
 
     def test_store(self):
-        pass
+        # create a dummy file (not executable), to stand in for the executable
+        cacheDir = "test_store"
+        fakeExe = f"what_{cacheDir}.exe"
+        with open(fakeExe, "w") as f:
+            f.write("hi")
+
+        # create some output files and directories
+        inputPath = self._buildDirWithFiles("inFile1")
+        outputFile = self._buildDirWithFiles("outFile1")
+
+        # run the code and test that it worked
+        folderLoc = outputCache._getCachedFolder(fakeExe, [inputPath], cacheDir)
+        self.assertFalse(os.path.exists(folderLoc))
+        outputCache.store(fakeExe, [inputPath], [outputFile], cacheDir)
+        self.assertTrue(os.path.exists(folderLoc))
+        self.assertTrue(os.path.exists(os.path.join(folderLoc, "CRC-manifest.json")))
+        self.assertTrue(os.path.exists(os.path.join(folderLoc, "something_outFile1.txt")))
 
     def test_cacheCall(self):
         pass
