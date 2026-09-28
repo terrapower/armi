@@ -501,62 +501,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return a list of Component objects within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
-            impact if typeSpec is None.
-
-        Returns
-        -------
-        list of Component
-            items matching typeSpec and exact criteria
-        """
-        return list(self.iterComponents(typeSpec, exact))
-
-    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
-        """
-        Get a particular component from this object.
-
-        Be careful with multiple similar names in one object.
-
-        Parameters
-        ----------
-        typeSpec : flags.Flags or list of Flags
-            The type specification of the component to return
-        exact : boolean, optional
-            Demand that the component flags be exactly equal to the typespec. Default: False
-        quiet : boolean, optional
-            Log if the component is not found. Default: True
-
-        Returns
-        -------
-        Component : The component that matches the criteria or None
-
-        Raises
-        ------
-        ValueError: more than one Component matches the typeSpec
-        """
-        results = self.getComponents(typeSpec, exact=exact)
-        if len(results) == 1:
-            return results[0]
-        elif not results:
-            if not quiet:
-                runLog.debug(
-                    f"No component matched {typeSpec} in {self}. Returning None",
-                    single=True,
-                    label=f"None component returned instead of {typeSpec}",
-                )
-            return None
-        else:
-            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
-
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """Yield components one by one in a generator."""
         raise NotImplementedError()
@@ -1614,21 +1558,20 @@ class ArmiObject(metaclass=CompositeModelType):
         ):
             self.expandElementalToIsotopics(elemental)
 
-    def expandElementalToIsotopics(self, elementalNuclide):
+    def _expandElementalToIsotopics(self, component: "armi.reactor.components.component.Component", elementalNuclide:
+                                    "armi.nucDirectory.nuclideBases.NaturalNuclideBase"):
         """
-        Expands the density of a specific elemental nuclides to its natural isotopics.
+        Expand the density of an element on a component to its natural isotopic distribution.
 
         Parameters
         ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
-            replace.
+        component : :class:`armi.reactor.components.component.Component` in which to expand the element
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclideBase` element to
+            expand into natural isotopic distribution.
         """
         natName = elementalNuclide.name
-        for component in self.iterComponents():
-            elementalDensity = component.getNumberDensity(natName)
-            if elementalDensity == 0.0:
-                continue
-
+        elementalDensity = component.getNumberDensity(natName)
+        if elementalDensity > 0.0:
             keepIndex = np.where(component.p.nuclides != natName.encode())[0]
             newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
             newNDens = component.p.numberDensities[keepIndex]
@@ -1637,6 +1580,17 @@ class ArmiObject(metaclass=CompositeModelType):
             # add in isotopics
             for natNuc in elementalNuclide.getNaturalIsotopics():
                 component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expand the density of a specific element to its natural isotopic distribution.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
+            expand into natural isotopic distribution.
+        """
+        raise NotImplementedError()
 
     def getReactionRates(self, nucName, nDensity=None):
         """
@@ -2839,6 +2793,62 @@ class Composite(ArmiObject):
         else:
             return components[0]
 
+    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = True) -> Optional["Component"]:
+        """
+        Get a particular component from this object.
+
+        Be careful with multiple similar names in one object.
+
+        Parameters
+        ----------
+        typeSpec : flags.Flags or list of Flags
+            The type specification of the component to return
+        exact : boolean, optional
+            Demand that the component flags be exactly equal to the typespec. Default: False
+        quiet : boolean, optional
+            Log if the component is not found. Default: True
+
+        Returns
+        -------
+        Component : The component that matches the criteria or None
+
+        Raises
+        ------
+        ValueError: more than one Component matches the typeSpec
+        """
+        results = self.getComponents(typeSpec, exact=exact)
+        if len(results) == 1:
+            return results[0]
+        elif not results:
+            if not quiet:
+                runLog.debug(
+                    f"No component matched {typeSpec} in {self}. Returning None",
+                    single=True,
+                    label=f"None component returned instead of {typeSpec}",
+                )
+            return None
+        else:
+            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
+
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return a list of Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        list of Component
+            items matching typeSpec and exact criteria
+        """
+        return list(self.iterComponents(typeSpec, exact))
+
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
         Get the number of components that have these flags, taking into account multiplicity. Useful
@@ -2896,6 +2906,18 @@ class Composite(ArmiObject):
                 minK = k
 
         return ((minI, maxI), (minJ, maxJ), (minK, maxK))
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expand the density of a specific element to its natural isotopic distribution.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
+            expand into natural isotopic distribution.
+        """
+        for component in self.iterComponents():
+            self._expandElementalToIsotopics(component, elementalNuclide)
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
         """Return the volume-averaged temperature (in degrees Celsius) of the ArmiObject over all children.

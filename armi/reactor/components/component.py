@@ -1489,6 +1489,17 @@ class Component(ArmiObject, metaclass=ComponentType):
 
         return rxnRates
 
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expand the density of a specific element to its natural isotopic distribution.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
+            expand into natural isotopic distribution.
+        """
+        self._expandElementalToIsotopics(self, elementalNuclide)
+
     def finalizeLoadingFromDB(self):
         """Apply any final actions after creating the component from database.
 
