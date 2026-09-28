@@ -40,19 +40,30 @@ Storing a file to the cache::
 
 """
 
+from __future__ import annotations
+
 import hashlib
 import json
 import os
 import subprocess
+from typing import TYPE_CHECKING
 
 from armi import runLog
 from armi.utils import safeCopy
 from armi.utils.pathTools import cleanPath
 
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Callable, List, Union
+
+    PathLike = Union[str, Path]
+
 MANIFEST_NAME = "CRC-manifest.json"
 
 
-def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
+def retrieveOutput(
+    exePath: PathLike, inputPaths: List[PathLike], cacheDir: PathLike, locToRetrieveTo: PathLike = None
+) -> bool:
     """
     Check the cache for a valid file and copy it if it exists.
 
@@ -81,7 +92,7 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
     return False
 
 
-def _copyOutputs(cachedFolder, locToRetrieveTo):
+def _copyOutputs(cachedFolder: PathLike, locToRetrieveTo: PathLike) -> bool:
     """Check that the outputs have the expectect hashes and copy them if they do."""
     manifest = os.path.join(cachedFolder, MANIFEST_NAME)
     if not os.path.exists(manifest):
@@ -108,7 +119,7 @@ def _copyOutputs(cachedFolder, locToRetrieveTo):
     return True
 
 
-def _getCachedFolder(exePath, inputPaths, cacheDir):
+def _getCachedFolder(exePath: PathLike, inputPaths: List[PathLike], cacheDir: PathLike) -> str:
     """Return the the folder name expected for this executable and set of inputs."""
     exeName = os.path.basename(os.path.splitext(exePath)[0])
     exeHash = _hashFiles([exePath])
@@ -119,7 +130,7 @@ def _getCachedFolder(exePath, inputPaths, cacheDir):
     return os.path.join(cacheDir, exeName, exeHash, first2, remainder)
 
 
-def _hashFiles(paths):
+def _hashFiles(paths: List[PathLike]):
     """Return a MD5 hash of a file's contents."""
     with open(paths[0], "rb") as binaryF:
         md5Hash = hashlib.md5(binaryF.read())
@@ -131,14 +142,14 @@ def _hashFiles(paths):
     return md5Hash.hexdigest()
 
 
-def _makeOutputManifest(outputFiles, folderLocation):
+def _makeOutputManifest(outputFiles: list, folderLocation: list) -> None:
     """Make a json file with the output names and expected hash."""
     manifest = {outputFile: _hashFiles([outputFile]) for outputFile in outputFiles}
     with open(os.path.join(folderLocation, MANIFEST_NAME), "w") as manifestJSON:
         json.dump(manifest, manifestJSON)
 
 
-def store(exePath, inputPaths, outputFiles, cacheDir):
+def store(exePath: PathLike, inputPaths: List[PathLike], outputFiles: List[PathLike], cacheDir: PathLike) -> None:
     """
     Store an output file in the cache.
 
@@ -165,7 +176,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
     runLog.info(f"Added outputs for {exePath} to the cache.")
 
 
-def deleteCache(cachedFolder):
+def deleteCache(cachedFolder: PathLike) -> None:
     """
     Remove this folder.
 
@@ -178,7 +189,14 @@ def deleteCache(cachedFolder):
     cleanPath(cachedFolder, forceClean=True)
 
 
-def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None):
+def cacheCall(
+    cacheDir: PathLike,
+    executablePath: PathLike,
+    inputPaths: List[PathLike],
+    outputFileNames: List[PathLike],
+    execute: Callable[[], None] = None,
+    tearDown: bool = None,
+) -> None:
     """
     Checks the cache to see if there are outputs for the run and returns them, otherwise calls the execute command.
 
@@ -217,7 +235,5 @@ def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=Non
         # Something went wrong in storage.
         # This is okay as the manifest will be inconsistent with the outputs and not used in the future.
         runLog.warning(
-            "Failed to store outputs in: {}\nerror: {}".format(
-                _getCachedFolder(executablePath, inputPaths, cacheDir), e
-            )
+            f"Failed to store outputs in: {_getCachedFolder(executablePath, inputPaths, cacheDir)}\nerror: {e}"
         )
