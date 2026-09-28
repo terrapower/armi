@@ -14,6 +14,7 @@
 """Tests of the output cache tools."""
 
 import os
+import shutil
 import time
 import unittest
 
@@ -168,25 +169,37 @@ class TestOutputCache(unittest.TestCase):
         """Mock up a simple test for cacheCall() where we call a (non-existant) MC2-3 executable, but bypass it because
         there are existing outputs already.
         """
-        # create a dummy cache dir
+        # create various inputs for the tests below
         cacheDir = "mc2CacheDir"
 
-        # create a dummy executable
+        inputPaths = [self._buildDirWithFiles("mc2-input123")]
+        outputFileNames = [self._buildDirWithFiles("mc2-output123")]
+
         executablePath = "mc2-3.py"
         with open(executablePath, "w") as f:
             f.write("print('This is an empty executable.')")
 
-        # create a dummy input file
-        inputPaths = [self._buildDirWithFiles("mc2-input123")]
+        exeOutputPath = "mc2_ran.txt"
+        execute = lambda: open(exeOutputPath, "w").write("Sum.")
 
-        # create a output file
-        outputFileNames = [self._buildDirWithFiles("mc2-output123")]
+        # Test Case 0: No cache dir is given, so we MUST run MC2-3.
+        self.assertFalse(os.path.exists(exeOutputPath))
 
-        # create a dummy method that does not run the executable
-        execute = lambda: None
+        outputCache.cacheCall(None, executablePath, [], [], execute)
 
-        # run the code and test that it worked
+        self.assertTrue(os.path.exists(exeOutputPath))
+        os.remove(exeOutputPath)
+
+        # Test Case 1: A cache dir is given, but the outputs we want are not in it, so we MUST run MC2-3.
+        self.assertFalse(os.path.exists(exeOutputPath))
+
+        outputCache.cacheCall(cacheDir, executablePath, inputPaths, ["output_that_does_not_exist.txt"], execute)
+        self.assertTrue(os.path.exists(exeOutputPath))
+        os.remove(exeOutputPath)
+
+        # Test Case 2: The outputs we want are already in the cache, do not run MC2-3.
         folderLoc = outputCache._getCachedFolder(executablePath, inputPaths, cacheDir)
+        shutil.rmtree(folderLoc)
         self.assertFalse(os.path.exists(folderLoc))
 
         outputCache.cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute)

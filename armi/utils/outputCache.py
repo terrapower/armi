@@ -195,7 +195,7 @@ def cacheCall(
     inputPaths: List[PathLike],
     outputFileNames: List[PathLike],
     execute: Callable[[], None] = None,
-    tearDown: bool = None,
+    tearDown: Callable[[], None] = None,
 ) -> None:
     """
     Checks the cache to see if there are outputs for the run and returns them, otherwise calls the execute command.
