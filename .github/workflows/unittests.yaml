@@ -30,7 +30,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install mpi libs
-        run: sudo apt-get -y install libopenmpi-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libopenmpi-dev
       - name: Run Tests
         run: |
           set -x
