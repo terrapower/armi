@@ -17,10 +17,11 @@ import logging
 import os
 import unittest
 from io import StringIO
+from logging import handlers
 from pathlib import Path
 from shutil import rmtree
 
-from armi import runLog
+from armi import context, runLog
 from armi.testing import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -456,6 +457,18 @@ class TestRunLog(unittest.TestCase):
             for _ in range(10):
                 runLog.createLogDir(logDir)
                 self.assertTrue(os.path.exists(logDir))
+
+    def test_handlerType(self):
+        # create the logger and do some logging
+        log = runLog.LOG = runLog._RunLog(321)
+        log.startLog("test_handlerType")
+        # verify the type of handler created
+        if context.PLATFORM == context.Platform.WINDOWS:
+            self.assertEqual(type(log.logger.handlers[0]), logging.FileHandler)
+            self.assertEqual(type(log.stderrLogger.handlers[0]), logging.FileHandler)
+        else:
+            self.assertEqual(type(log.logger.handlers[0]), handlers.WatchedFileHandler)
+            self.assertEqual(type(log.stderrLogger.handlers[0]), handlers.WatchedFileHandler)
 
 
 class TestRunLogEnvEdits(unittest.TestCase):
