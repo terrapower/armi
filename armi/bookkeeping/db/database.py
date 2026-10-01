@@ -743,6 +743,9 @@ class Database:
         parameterCollections.GLOBAL_SERIAL_NUM = max(parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max())
         root = comps[0][0]
 
+        if bp is not None:
+            self._assignBlueprintsMatMods(bp, root)
+
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
             root.sort()
@@ -795,6 +798,60 @@ class Database:
                     val = getattr(design, pName)
                     if val is not None:
                         comp.p[pName] = val
+
+    @staticmethod
+    def _assignBlueprintsMatMods(blueprints, reactor):
+        """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
+
+        Parameters
+        ----------
+        blueprints : Blueprints
+            Fully initialized Blueprints object, from the DB we are loading.
+        reactor : Reactor
+            Fully initialized Reactor object, we are trying to load from DB.
+        """
+        from armi.reactor.blueprints.componentBlueprint import expandElementals
+
+        for assem in reactor.core.getAssemblies():
+            assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
+            if assemDesign is None:
+                # There are no material modifications here.
+                continue
+
+            for axialIndex, block in enumerate(assem):
+                blockDesign = blueprints.blockDesigns[block.p.type]
+
+                # TODO: byBlock, is this too specific or fragile?
+                blockMods = {
+                    "byBlock": {**assemDesign.materialModifications},
+                    **assemDesign.materialModifications.byComponent,
+                }
+                matInput = {}
+                for byWhat, mods in blockMods.items():
+                    # byWhat will be things like: "byBlock"
+                    # mods will be things like: {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
+                    matInput[byWhat] = {
+                        modName: modList[axialIndex]
+                        for modName, modList in mods.items()
+                        if modList[axialIndex] not in {"", None}
+                    }
+
+                for comp in block:
+                    compDesign = blockDesign[comp.name]
+                    filteredMatInput, _ = blockDesign._filterMaterialInput(matInput, compDesign)
+                    if not filteredMatInput:
+                        continue
+
+                    mat = comp.material
+                    if mat is None:
+                        continue
+
+                    mat.applyInputParams(
+                        customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
+                        **filteredMatInput,
+                    )
+                    expandElementals(mat, blueprints)
+                    # TODO: Do we need to re-calculate anything in the containing Composite or futher upstream?
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
