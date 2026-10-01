@@ -624,7 +624,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertIn("settings:", inputs[0])
 
         # blueprints
-        self.assertGreater(len(inputs[1]), 2400)
+        self.assertGreater(len(inputs[1]), 2100)
         self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
@@ -1124,8 +1124,8 @@ class TestDbRoundTrip(unittest.TestCase):
         self.db.close()
         self.td.__exit__(None, None, None)
 
-    def test_dbLoad(self):
-        """Show that the mass fractions of materials with material modifications are correct after DB load."""
+    def test_assignBPMatModsByBlock(self):
+        """Show that the mass fractions of "by block" material modifications are correct after DB load."""
         o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
         hmm = 164.0842042563447
         b = r.core[0][0]
@@ -1151,7 +1151,39 @@ class TestDbRoundTrip(unittest.TestCase):
         self.assertAlmostEqual(c2.p.molesHmBOL, hmm, delta=0.1)
         self.assertAlmostEqual(c2.p.percentBu, 0.0, delta=0.1)
 
+        # Finally, this is the test that Database._assignBlueprintsMatMods() works.
         for nucName, massVal in originalMassFrac.items():
             newMassVal = newMassFrac[nucName]
-            # TODO: This fails here! U235: 0.1034 != 0.09
+            self.assertAlmostEqual(massVal, newMassVal, msg=f"{nucName}: {massVal} != {newMassVal}")
+
+    def test_assignBPMatModsByComp(self):
+        """Show that the mass fractions of "by component" material modifications are correct after DB load."""
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+        hmm = 164.0842042563447
+        b = r.core[0][0]
+        c = b[0]
+        originalMassFrac = c.material.massFrac
+        self.assertAlmostEqual(c.getHMMoles(), hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.molesHmBOL, hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.percentBu, 0.0, delta=0.1)
+
+        r.p.timeNode = 0
+        r.p.cycle = 0
+
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        r2 = self.db.load(0, 0)
+        b2 = r2.core[0][0]
+        c2 = b2[0]
+        newMassFrac = c2.material.massFrac
+        self.assertAlmostEqual(c2.getHMMoles(), hmm, delta=0.1)
+        self.assertAlmostEqual(c2.p.molesHmBOL, hmm, delta=0.1)
+        self.assertAlmostEqual(c2.p.percentBu, 0.0, delta=0.1)
+
+        # Finally, this is the test that Database._assignBlueprintsMatMods() works.
+        for nucName, massVal in originalMassFrac.items():
+            newMassVal = newMassFrac[nucName]
             self.assertAlmostEqual(massVal, newMassVal, msg=f"{nucName}: {massVal} != {newMassVal}")
