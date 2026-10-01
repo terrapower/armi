@@ -263,6 +263,12 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     if _ignoreConfigures:
         return
 
+    # Python discovery is curtailed when a user invokes armi as the `armi` script rather than `python -m armi`. This
+    # ensures that no matter how armi is run, the CWD is in sys.path.
+    cwd = os.getcwd()
+    if cwd not in sys.path:
+        sys.path.insert(0, cwd)
+
     app = app or apps.App()
 
     if _app is not None:
