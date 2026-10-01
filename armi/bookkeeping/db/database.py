@@ -821,7 +821,7 @@ class Database:
             for axialIndex, block in enumerate(assem):
                 blockDesign = blueprints.blockDesigns[block.p.type]
 
-                # TODO: byBlock, is this too specific or fragile?
+                # TODO: byBlock, is this too specific or fragile? What about byComponent?
                 blockMods = {
                     "byBlock": {**assemDesign.materialModifications},
                     **assemDesign.materialModifications.byComponent,
@@ -847,8 +847,8 @@ class Database:
                         continue
 
                     mat.applyInputParams(
-                        customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
                         **filteredMatInput,
+                        customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
                     )
                     expandElementals(mat, blueprints)
                     # TODO: Do we need to re-calculate anything in the containing Composite or futher upstream?
