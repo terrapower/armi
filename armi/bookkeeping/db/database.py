@@ -851,6 +851,7 @@ class Database:
                         customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
                     )
                     expandElementals(mat, blueprints)
+                    comp.clearCache()
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
