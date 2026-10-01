@@ -821,15 +821,15 @@ class Database:
             for axialIndex, block in enumerate(assem):
                 blockDesign = blueprints.blockDesigns[block.p.type]
 
-                # TODO: byBlock, is this too specific or fragile? What about byComponent?
+                # Grab by-block and by-component mat mods
                 blockMods = {
                     "byBlock": {**assemDesign.materialModifications},
                     **assemDesign.materialModifications.byComponent,
                 }
                 matInput = {}
                 for byWhat, mods in blockMods.items():
-                    # byWhat will be things like: "byBlock"
-                    # mods will be things like: {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
+                    # byWhat: will be things like "byBlock"
+                    # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
                     matInput[byWhat] = {
                         modName: modList[axialIndex]
                         for modName, modList in mods.items()
@@ -851,7 +851,6 @@ class Database:
                         customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
                     )
                     expandElementals(mat, blueprints)
-                    # TODO: Do we need to re-calculate anything in the containing Composite or futher upstream?
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
