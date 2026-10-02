@@ -743,7 +743,9 @@ class Database:
         parameterCollections.GLOBAL_SERIAL_NUM = max(parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max())
         root = comps[0][0]
 
-        self._assignBlueprintsMatMods(bp, root)
+        # assign material modifications from blueprints
+        if bp is not None:
+            self._assignBlueprintsMatMods(bp, root)
 
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
@@ -814,8 +816,18 @@ class Database:
         for assem in reactor.core.getAssemblies(includeSFP=True):
             assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
             if assemDesign is None:
-                # There are no material modifications here.
+                # There are no material modifications here, this is an empty/test block.
                 continue
+
+            # only apply mat mods if the number of blocks in the reactor matches those in the blueprints
+            bpBlocks = assemDesign.blocks
+            if len(assem) != len(bpBlocks):
+                runLog.warning(
+                    f"{assem} has a different number of blocks ({len(assem)}) then are in the blueprints "
+                    f"({len(bpBlocks)}). This is probably due to a bespoke mesh converter. But this means that we "
+                    f"cannot apply material modifications to the Components in the Assembly. Be warned, going forward "
+                    f"the mat.massFrac in this Assembly could be wrong."
+                )
 
             for axialIndex, block in enumerate(assem):
                 blockDesign = blueprints.blockDesigns[block.p.type]
