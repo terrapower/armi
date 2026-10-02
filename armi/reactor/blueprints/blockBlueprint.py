@@ -141,7 +141,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
         allLatticeIds = set()
         for componentDesign in self:
-            filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(materialInput, componentDesign)
+            filteredMaterialInput, byComponentMatModKeys = self.filterMaterialInput(materialInput, componentDesign)
             c = componentDesign.construct(
                 blueprint,
                 filteredMaterialInput,
@@ -285,8 +285,7 @@ class BlockBlueprint(yamlize.KeyedList):
         if isinstance(child, Component):
             yield child.material
             return
-        # Don't apply modifications to other things that could reside
-        # in a block e.g., component groups
+        # Don't apply modifications to other things that could reside in a block e.g., component groups
 
     def _checkByComponentMaterialInput(self, materialInput):
         for component in materialInput:
@@ -299,13 +298,12 @@ class BlockBlueprint(yamlize.KeyedList):
                         )
 
     @staticmethod
-    def _filterMaterialInput(materialInput, componentDesign):
+    def filterMaterialInput(materialInput, componentDesign):
         """
-        Get the by-block material modifications and those specifically for this
-        component.
+        Get the by-block material modifications and those specifically for this component.
 
-        If a material modification is specified both by-block and by-component
-        for a given component, the by-component value will be used.
+        If a material modification is specified both by-block and by-component for a given component, the by-component
+        value will be used.
         """
         filteredMaterialInput = {}
         byComponentMatModKeys = set()

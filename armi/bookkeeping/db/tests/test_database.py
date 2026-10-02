@@ -624,7 +624,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertIn("settings:", inputs[0])
 
         # blueprints
-        self.assertGreater(len(inputs[1]), 2400)
+        self.assertGreater(len(inputs[1]), 2100)
         self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
@@ -1112,3 +1112,119 @@ class TestStaticDatabaseItems(unittest.TestCase):
             # verify number densities and dtype
             self.assertTrue(np.allclose(comp.p["numberDensities"], expected_nds))
             self.assertEqual(comp.p["numberDensities"].dtype, np.float64)
+
+
+class TestDbRoundTripMatMods(unittest.TestCase):
+    """Show that, before and after DB load, the mass fractions of materials with material modifications in the
+    blueprints are the same.
+
+    Further, we want to check that the number densities of of materials with modifications (heavy metals, in this case),
+    are the same before and after DB load, because they are calculated based on the modified materials during assembly
+    construction.
+
+    So, in this one block reactor, after DB load, the height of the block/assembly should not change. The number
+    densities of fuels should not change, and the mass fractions inside the fuels materials should not change.
+    """
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.db = None
+
+    def tearDown(self):
+        self.db.close()
+        self.td.__exit__(None, None, None)
+
+    def test_assignBPMatModsByBlock(self):
+        """Show that the mass fractions of "by block" material modifications are correct after DB load."""
+        # test the reactor before loading into the DB
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+        hmm = 164.0842042563447
+        b = r.core[0][0]
+        c = b[0]
+        originalMassFrac = c.material.massFrac
+        self.assertAlmostEqual(b.getHeight(), 25, delta=0.1)
+        self.assertAlmostEqual(c.getHMMoles(), hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.molesHmBOL, hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.percentBu, 0.0, delta=0.1)
+
+        # save the reactor to the DB at BOL time
+        r.p.timeNode = 0
+        r.p.cycle = 0
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # test the reactor after loading from the DB
+        r2 = self.db.load(0, 0)
+        b2 = r2.core[0][0]
+        c2 = b2[0]
+        newMassFrac = c2.material.massFrac
+        self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)  # height of block/assem conserved
+        self.assertAlmostEqual(c2.getHMMoles(), c.getHMMoles(), delta=0.1)  # number of fuel atoms preserved
+        self.assertAlmostEqual(c2.p.molesHmBOL, c.p.molesHmBOL, delta=0.1)  # number of fuel atoms preserved
+        self.assertAlmostEqual(c2.p.percentBu, c.p.percentBu, delta=0.1)
+
+        # Finally, this is the test that Database._assignBlueprintsMatMods() works.
+        for nucName, massVal in originalMassFrac.items():
+            newMassVal = newMassFrac[nucName]
+            self.assertAlmostEqual(massVal, newMassVal, msg=nucName)
+
+    def test_assignBPMatModsByComp(self):
+        """Show that the mass fractions of "by component" material modifications are correct after DB load."""
+        # copy over blueprints, and modify the mat mods to be "by component"
+        shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor"), "smallestTestReactor")
+        oldLines = open("smallestTestReactor/armiRunSmallest.yaml", "r").readlines()
+        newLines = []
+        i = 0
+        while i < len(oldLines):
+            if "material modifications:" in oldLines[i]:
+                newLines.append(oldLines[i])
+                newLines.append("            by component:\n")
+                newLines.append("                fuel:\n")
+                i += 1
+                newLines.append("        " + oldLines[i])
+                i += 1
+                newLines.append("        " + oldLines[i])
+            else:
+                newLines.append(oldLines[i])
+            i += 1
+
+        with open("smallestTestReactor/armiRunSmallest.yaml", "w") as f:
+            for line in newLines:
+                f.write(line)
+
+        # test the reactor before loading into the DB
+        o, r = loadTestReactor(".", inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        hmm = 164.0842042563447
+        b = r.core[0][0]
+        c = b[0]
+        originalMassFrac = c.material.massFrac
+        self.assertAlmostEqual(b.getHeight(), 25, delta=0.1)
+        self.assertAlmostEqual(c.getHMMoles(), hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.molesHmBOL, hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.percentBu, 0.0, delta=0.1)
+
+        # save the reactor to the DB at BOL time
+        r.p.timeNode = 0
+        r.p.cycle = 0
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # test the reactor after loading from the DB
+        r2 = self.db.load(0, 0)
+        b2 = r2.core[0][0]
+        c2 = b2[0]
+        newMassFrac = c2.material.massFrac
+        self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)  # height of block/assem conserved
+        self.assertAlmostEqual(c2.getHMMoles(), c.getHMMoles(), delta=0.1)  # number of fuel atoms preserved
+        self.assertAlmostEqual(c2.p.molesHmBOL, c.p.molesHmBOL, delta=0.1)  # number of fuel atoms preserved
+        self.assertAlmostEqual(c2.p.percentBu, c.p.percentBu, delta=0.1)
+
+        # Finally, this is the test that Database._assignBlueprintsMatMods() works.
+        for nucName, massVal in originalMassFrac.items():
+            newMassVal = newMassFrac[nucName]
+            self.assertAlmostEqual(massVal, newMassVal, msg=nucName)

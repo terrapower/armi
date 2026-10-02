@@ -743,6 +743,10 @@ class Database:
         parameterCollections.GLOBAL_SERIAL_NUM = max(parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max())
         root = comps[0][0]
 
+        # assign material modifications from blueprints
+        if bp is not None:
+            self._assignBlueprintsMatMods(bp, root)
+
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
             root.sort()
@@ -795,6 +799,70 @@ class Database:
                     val = getattr(design, pName)
                     if val is not None:
                         comp.p[pName] = val
+
+    @staticmethod
+    def _assignBlueprintsMatMods(blueprints, reactor):
+        """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
+
+        Parameters
+        ----------
+        blueprints : Blueprints
+            Fully initialized Blueprints object, from the DB we are loading.
+        reactor : Reactor
+            Fully initialized Reactor object, we are trying to load from DB.
+        """
+        from armi.reactor.blueprints.componentBlueprint import expandElementals
+
+        for assem in reactor.core.getAssemblies(includeSFP=True):
+            assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
+            if assemDesign is None:
+                # There are no material modifications here, this is an empty/test block.
+                continue
+
+            # only apply mat mods if the number of blocks in the reactor matches those in the blueprints
+            bpBlocks = assemDesign.blocks
+            if len(assem) != len(bpBlocks):
+                runLog.warning(
+                    f"{assem} has a different number of blocks ({len(assem)}) then are in the blueprints "
+                    f"({len(bpBlocks)}). This is due to a blueprints error or a bespoke mesh converter. But we cannot "
+                    "apply material modifications to the Components in the Assembly. Be warned, going forward the "
+                    "mat.massFrac in this Assembly could be wrong."
+                )
+
+            for axialIndex, block in enumerate(assem):
+                blockDesign = blueprints.blockDesigns[block.p.type]
+
+                # Grab by-block and by-component mat mods
+                blockMods = {
+                    "byBlock": {**assemDesign.materialModifications},
+                    **assemDesign.materialModifications.byComponent,
+                }
+                matInput = {}
+                for byWhat, mods in blockMods.items():
+                    # byWhat: will be things like "byBlock"
+                    # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
+                    matInput[byWhat] = {
+                        modName: modList[axialIndex]
+                        for modName, modList in mods.items()
+                        if modList[axialIndex] not in {"", None}
+                    }
+
+                for comp in block:
+                    compDesign = blockDesign[comp.name]
+                    filteredMatInput, _ = blockDesign.filterMaterialInput(matInput, compDesign)
+                    if not filteredMatInput:
+                        continue
+
+                    mat = comp.material
+                    if mat is None:
+                        continue
+
+                    mat.applyInputParams(
+                        **filteredMatInput,
+                        customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
+                    )
+                    expandElementals(mat, blueprints)
+                    comp.clearCache()
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
