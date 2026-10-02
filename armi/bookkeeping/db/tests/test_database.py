@@ -1161,9 +1161,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         b2 = r2.core[0][0]
         c2 = b2[0]
         newMassFrac = c2.material.massFrac
-        self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)
-        self.assertAlmostEqual(c2.getHMMoles(), c.getHMMoles(), delta=0.1)
-        self.assertAlmostEqual(c2.p.molesHmBOL, c.p.molesHmBOL, delta=0.1)
+        self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)  # height of block/assem conserved
+        self.assertAlmostEqual(c2.getHMMoles(), c.getHMMoles(), delta=0.1)  # number of fuel atoms preserved
+        self.assertAlmostEqual(c2.p.molesHmBOL, c.p.molesHmBOL, delta=0.1)  # number of fuel atoms preserved
         self.assertAlmostEqual(c2.p.percentBu, c.p.percentBu, delta=0.1)
 
         # Finally, this is the test that Database._assignBlueprintsMatMods() works.
@@ -1219,9 +1219,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         b2 = r2.core[0][0]
         c2 = b2[0]
         newMassFrac = c2.material.massFrac
-        self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)
-        self.assertAlmostEqual(c2.getHMMoles(), c.getHMMoles(), delta=0.1)
-        self.assertAlmostEqual(c2.p.molesHmBOL, c.p.molesHmBOL, delta=0.1)
+        self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)  # height of block/assem conserved
+        self.assertAlmostEqual(c2.getHMMoles(), c.getHMMoles(), delta=0.1)  # number of fuel atoms preserved
+        self.assertAlmostEqual(c2.p.molesHmBOL, c.p.molesHmBOL, delta=0.1)  # number of fuel atoms preserved
         self.assertAlmostEqual(c2.p.percentBu, c.p.percentBu, delta=0.1)
 
         # Finally, this is the test that Database._assignBlueprintsMatMods() works.
