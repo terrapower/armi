@@ -837,7 +837,7 @@ class Database:
 
                 for comp in block:
                     compDesign = blockDesign[comp.name]
-                    filteredMatInput, _ = blockDesign._filterMaterialInput(matInput, compDesign)
+                    filteredMatInput, _ = blockDesign.filterMaterialInput(matInput, compDesign)
                     if not filteredMatInput:
                         continue
 
