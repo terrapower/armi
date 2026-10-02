@@ -335,13 +335,10 @@ class Component(composites.Composite, metaclass=ComponentType):
           self.inputTemperatureInC and self.temperatureInC
         - After the expansion, the density of the component should reflect the 3D density of the material
         """
-        densityBasedOnParentComposition = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
         self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(
-            densityBasedOnParentComposition, self.material.massFrac
-self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(
-    self.material.getProperty("pseudoDensity", Tc=self.temperatureInC), 
-    self.material.massFrac,
-)
+            self.material.getProperty("pseudoDensity", Tc=self.temperatureInC),
+            self.material.massFrac,
+        )
 
         # Material needs to be expanded from the material's cold temp to hot, not components cold temp, so we don not
         # use mat.linearExpansionFactor or component.getThermalExpansionFactor. Materials don't typically define the
