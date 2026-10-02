@@ -824,9 +824,9 @@ class Database:
             if len(assem) != len(bpBlocks):
                 runLog.warning(
                     f"{assem} has a different number of blocks ({len(assem)}) then are in the blueprints "
-                    f"({len(bpBlocks)}). This is probably due to a bespoke mesh converter. But this means that we "
-                    f"cannot apply material modifications to the Components in the Assembly. Be warned, going forward "
-                    f"the mat.massFrac in this Assembly could be wrong."
+                    f"({len(bpBlocks)}). This is due to a blueprints error or a bespoke mesh converter. But we cannot "
+                    "apply material modifications to the Components in the Assembly. Be warned, going forward the "
+                    "mat.massFrac in this Assembly could be wrong."
                 )
 
             for axialIndex, block in enumerate(assem):
