@@ -143,13 +143,9 @@ class TestMaterialFinding(unittest.TestCase):
     def test_namespacing(self):
         """Test loading materials with different material namespaces, to cover how they work.
 
-        .. test:: Material can be found in defined packages.
+        .. test:: Material namespaces register materials with an order of priority.
             :id: T_ARMI_MAT_NAMESPACE1
             :tests: R_ARMI_MAT_NAMESPACE
-
-        .. test:: Material namespaces register materials with an order of priority.
-            :id: T_ARMI_MAT_ORDER
-            :tests: R_ARMI_MAT_ORDER
         """
         # let's do a quick test of getting a material from the default namespace
         setMaterialNamespaceOrder(["armi.materials"])
