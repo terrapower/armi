@@ -1122,8 +1122,8 @@ class TestDbRoundTripMatMods(unittest.TestCase):
     are the same before and after DB load, because they are calculated based on the modified materials during assembly
     construction.
 
-    So, in this one block reactor, afte DB load, the height of the block/assembly should not change. The number
-    densities of fuels should not change, and the mass fractions in side the fuels materials should not change.
+    So, in this one block reactor, after DB load, the height of the block/assembly should not change. The number
+    densities of fuels should not change, and the mass fractions inside the fuels materials should not change.
     """
 
     def setUp(self):
