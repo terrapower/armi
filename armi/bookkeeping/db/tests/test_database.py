@@ -1115,6 +1115,17 @@ class TestStaticDatabaseItems(unittest.TestCase):
 
 
 class TestDbRoundTripMatMods(unittest.TestCase):
+    """Show that, before and after DB load, the mass fractions of materials with material modifications in the
+    blueprints are the same.
+
+    Further, we want to check that the number densities of of materials with modifications (heavy metals, in this case),
+    are the same before and after DB load, because they are calculated based on the modified materials during assembly
+    construction.
+
+    So, in this one block reactor, afte DB load, the height of the block/assembly should not change. The number
+    densities of fuels should not change, and the mass fractions in side the fuels materials should not change.
+    """
+
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
