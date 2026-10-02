@@ -743,8 +743,7 @@ class Database:
         parameterCollections.GLOBAL_SERIAL_NUM = max(parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max())
         root = comps[0][0]
 
-        if bp is not None:
-            self._assignBlueprintsMatMods(bp, root)
+        self._assignBlueprintsMatMods(bp, root)
 
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
@@ -812,7 +811,7 @@ class Database:
         """
         from armi.reactor.blueprints.componentBlueprint import expandElementals
 
-        for assem in reactor.core.getAssemblies():
+        for assem in reactor.core.getAssemblies(includeSFP=True):
             assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
             if assemDesign is None:
                 # There are no material modifications here.
