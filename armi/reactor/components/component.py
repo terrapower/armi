@@ -331,17 +331,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        - the density returned accounts for the expansion of the component
-          due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - After the expansion, the density of the component should reflect the 3d
-          density of the material
+        - the density returned accounts for the expansion of the component due to the difference in
+          self.inputTemperatureInC and self.temperatureInC
+        - After the expansion, the density of the component should reflect the 3D density of the material
         """
-        # note, that this is not the actual material density, but rather 2D expanded
-        # `density` is 3D density
-        # call getProperty to cache and improve speed
-        density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-        self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
-
         # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
         # setting number densities can sometimes change thermal expansion behavior. Call again so
         # the material has access to its parent's comp when providing the reference initial density.
@@ -350,11 +343,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             densityBasedOnParentComposition, self.material.massFrac
         )
 
-        # material needs to be expanded from the material's cold temp to hot,
-        # not components cold temp, so we don't use mat.linearExpansionFactor or
-        # component.getThermalExpansionFactor.
-        # Materials don't typically define the temperature for which their references
-        # density is defined so linearExpansionPercent must be called
+        # Material needs to be expanded from the material's cold temp to hot, not components cold temp, so we don not
+        # use mat.linearExpansionFactor or component.getThermalExpansionFactor. Materials don't typically define the
+        # temperature for which their references density is defined so linearExpansionPercent must be called
         coldMatAxialExpansionFactor = 1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
