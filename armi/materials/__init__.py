@@ -291,8 +291,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     global _MATERIAL_NAMESPACE_ORDER
 
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
-    # In practice, this is the primary logic used to allow for custom python materials. This bypasses the namespace
-    # order loop below because if a material is defined in this way it would override any namespace order anyway.
+    #     This is the primary logic used to allow for custom python materials.
     if ":" in name:
         modPath, clsName = name.split(":")
         mod = importlib.import_module(modPath)
