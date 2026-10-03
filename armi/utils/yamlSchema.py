@@ -106,7 +106,7 @@ class YamlSchemaError(ValueError):
     def __init__(self, message, location=None):
         self.location = location
         if location is not None:
-            message = "{}\n  at {}".format(message, location)
+            message = f"{message}\n  at {location}"
 
         super().__init__(message)
 
@@ -223,12 +223,12 @@ def _location(data, key=None):
     if key is not None and isinstance(data, CommentedMap):
         try:
             mark = data.lc.key(key)
-            return "line {}, column {}".format(mark[0] + 1, mark[1] + 1)
+            return f"line {mark[0] + 1}, column {mark[1] + 1}"
         except (AttributeError, KeyError, TypeError):
             pass
 
     try:
-        return "line {}, column {}".format(data.lc.line + 1, data.lc.col + 1)
+        return f"line {data.lc.line + 1}, column {data.lc.col + 1}"
     except AttributeError:
         return None
 
@@ -278,7 +278,7 @@ class Field:
             self.key = name
 
     def __repr__(self):
-        return "<Field {} (key={!r})>".format(self.name, self.key)
+        return f"<Field {self.name} (key={self.key!r})>"
 
     @property
     def isRequired(self):
@@ -313,15 +313,13 @@ class Field:
             converted = self.type(value)
         except Exception as ee:
             raise YamlSchemaError(
-                "Cannot read `{}` as the {} that `{}` requires: {}".format(value, self.type.__name__, self.key, ee),
+                f"Cannot read `{value}` as the {self.type.__name__} that `{self.key}` requires: {ee}",
                 location,
             )
 
         if converted != value:
             raise YamlSchemaError(
-                "Reading `{}` as the {} that `{}` requires would change it to `{}`".format(
-                    value, self.type.__name__, self.key, converted
-                ),
+                f"Reading `{value}` as the {self.type.__name__} that `{self.key}` requires would change it to `{converted}`",
                 location,
             )
 
@@ -333,7 +331,7 @@ class Field:
 
         value = getattr(obj, self.storageName, self.default)
         if value is NODEFAULT:
-            raise AttributeError("`{}` was never set on {}".format(self.name, obj))
+            raise AttributeError(f"`{self.name}` was never set on {obj}")
 
         return value
 
@@ -341,7 +339,7 @@ class Field:
         value = self.coerce(value)
 
         if self.validatorFunc is not None and self.validatorFunc(obj, value) is False:
-            raise ValueError("`{}` is not a valid {}.{}".format(value, type(obj).__name__, self.name))
+            raise ValueError(f"`{value}` is not a valid {type(obj).__name__}.{self.name}")
 
         setattr(obj, self.storageName, value)
 
@@ -385,7 +383,7 @@ class FieldCollection:
     def add(self, field):
         existing = self.byKey.get(field.key)
         if existing is not None and existing is not field:
-            raise KeyError("Two fields claim the YAML key `{}`: {} and {}".format(field.key, existing, field))
+            raise KeyError(f"Two fields claim the YAML key `{field.key}`: {existing} and {field}")
 
         if existing is field:
             return
@@ -553,7 +551,7 @@ class YamlObject(metaclass=_SchemaMeta):
         """
         if not isinstance(data, dict):
             raise YamlSchemaError(
-                "Expected a mapping to read a {} from, got {}".format(cls.__name__, type(data).__name__),
+                f"Expected a mapping to read a {cls.__name__} from, got {type(data).__name__}",
                 _location(data),
             )
 
@@ -851,7 +849,7 @@ class Sequence:
     def fromData(cls, data):
         if not isinstance(data, (list, tuple)):
             raise YamlSchemaError(
-                "Expected a list to read a {} from, got {}".format(cls.__name__, type(data).__name__),
+                f"Expected a list to read a {cls.__name__} from, got {type(data).__name__}",
                 _location(data),
             )
 
@@ -885,17 +883,13 @@ class Sequence:
             converted = self.itemType(item)
         except Exception as ee:
             raise YamlSchemaError(
-                "Cannot read `{}` as the {} that {} holds: {}".format(
-                    item, self.itemType.__name__, type(self).__name__, ee
-                ),
+                f"Cannot read `{item}` as the {self.itemType.__name__} that {type(self).__name__} holds: {ee}",
                 _location(item),
             )
 
         if converted != item:
             raise YamlSchemaError(
-                "Reading `{}` as the {} that {} holds would change it to `{}`".format(
-                    item, self.itemType.__name__, type(self).__name__, converted
-                ),
+                f"Reading `{item}` as the {self.itemType.__name__} that {type(self).__name__} holds would change it to `{converted}`",
                 _location(item),
             )
 
@@ -932,7 +926,7 @@ class Sequence:
         return self._items == list(other)
 
     def __repr__(self):
-        return "{}({!r})".format(type(self).__name__, self._items)
+        return f"{type(self).__name__}({self._items!r})"
 
 
 class StrList(Sequence):
@@ -964,7 +958,7 @@ class _MappingBase(YamlObject):
     def fromData(cls, data, key=None, keyField=None):
         if not isinstance(data, dict):
             raise YamlSchemaError(
-                "Expected a mapping to read a {} from, got {}".format(cls.__name__, type(data).__name__),
+                f"Expected a mapping to read a {cls.__name__} from, got {type(data).__name__}",
                 _location(data),
             )
 
@@ -1031,7 +1025,7 @@ class _MappingBase(YamlObject):
         del self._data[key]
 
     def __repr__(self):
-        return "{}({!r})".format(type(self).__name__, self._data)
+        return f"{type(self).__name__}({self._data!r})"
 
 
 class Map(_MappingBase):
@@ -1097,9 +1091,7 @@ class KeyedList(_MappingBase):
         actual = type(self)._getKeyField().__get__(value)
         if actual != key:
             raise KeyError(
-                "Cannot file a {} named `{}` under the key `{}`; the two have to match.".format(
-                    type(value).__name__, actual, key
-                )
+                f"Cannot file a {type(value).__name__} named `{actual}` under the key `{key}`; the two have to match."
             )
 
         value._keyFieldName = type(self)._getKeyField().name
@@ -1122,11 +1114,11 @@ def _coerceTo(type_, value, location=None):
     try:
         converted = type_(value)
     except Exception as ee:
-        raise YamlSchemaError("Cannot read `{}` as a {}: {}".format(value, type_.__name__, ee), location)
+        raise YamlSchemaError(f"Cannot read `{value}` as a {type_.__name__}: {ee}", location)
 
     if converted != value:
         raise YamlSchemaError(
-            "Reading `{}` as a {} would change it to `{}`".format(value, type_.__name__, converted), location
+            f"Reading `{value}` as a {type_.__name__} would change it to `{converted}`", location
         )
 
     return converted

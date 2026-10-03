@@ -301,7 +301,7 @@ class TestFormattingIsNormalized(unittest.TestCase):
             name = Field(type=str)
             values = Field(type=StrList, default=None)
 
-        source = "name: a\nvalues: [{}]\n".format(", ".join("block_{}".format(i) for i in range(40)))
+        source = "name: a\nvalues: [{}]\n".format(", ".join(f"block_{i}" for i in range(40)))
         dumped = Holder.dump(Holder.load(source))
 
         self.assertTrue(all(len(line) <= WIDTH for line in dumped.splitlines()))
@@ -314,7 +314,7 @@ class TestFormattingIsNormalized(unittest.TestCase):
             name = Field(type=str)
             values = Field(type=StrList, default=None)
 
-        source = "name: a\nvalues: [{}]\n".format(", ".join("block_{}".format(i) for i in range(40)))
+        source = "name: a\nvalues: [{}]\n".format(", ".join(f"block_{i}" for i in range(40)))
         once = Holder.dump(Holder.load(source))
         self.assertEqual(Holder.dump(Holder.load(once)), once)
 
@@ -341,7 +341,7 @@ class TestLatticeMapsKeepTheirLayout(unittest.TestCase):
     """
 
     #: 70 pins across -- rows well past :py:data:`WIDTH`
-    WIDE_PIN_MAP = "\n".join("  ".join("A{:03d}".format(c) for c in range(70)) for _ in range(4)) + "\n"
+    WIDE_PIN_MAP = "\n".join("  ".join(f"A{c:03d}" for c in range(70)) for _ in range(4)) + "\n"
 
     HEX_MAP = "-   -   SH\n  -   SH  SH\n-   SH  OC  SH\n  SH  OC  OC  SH\n"
 
