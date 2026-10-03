@@ -18,7 +18,6 @@ import unittest
 from logging import DEBUG
 
 import numpy as np
-import yamlize
 
 from armi import runLog, settings
 from armi.materials import Fluid, Sodium
@@ -33,6 +32,7 @@ from armi.reactor.flags import Flags
 from armi.testing import mockRunLogs
 from armi.utils.customExceptions import InputError
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.yamlSchema import YamlSchemaError
 
 
 class TestCustomIsotopics(unittest.TestCase):
@@ -280,13 +280,13 @@ blocks:
             material: UraniumOxide
             isotopics: uranium isotopic number densities
 
-    no density uo2: &block_4
+    no density uo2 bad mass fracs: &block_4
         fuel:
             <<: *basic_fuel
             material: UraniumOxide
             isotopics: bad uranium isotopic mass fractions
 
-    no density uo2: &block_5
+    no density uo2 bad mass fracs 2: &block_5
         fuel:
             <<: *basic_fuel
             material: UraniumOxide
@@ -550,7 +550,7 @@ assemblies:
 
 class TestCustomIsotopicsErrors(unittest.TestCase):
     def test_densityMustBePositive(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: atom repellent
@@ -563,7 +563,7 @@ class TestCustomIsotopicsErrors(unittest.TestCase):
             )
 
     def test_nonConformantElementName(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: non-upper case
@@ -573,7 +573,7 @@ class TestCustomIsotopicsErrors(unittest.TestCase):
             )
 
     def test_numberDensitiesCannotSpecifyDensity(self):
-        with self.assertRaises(yamlize.YamlizingError):
+        with self.assertRaises(YamlSchemaError):
             _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: over-specified isotopics

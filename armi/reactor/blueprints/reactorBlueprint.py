@@ -31,14 +31,13 @@ See Also
 armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layouts.
 """
 
-import yamlize
-
 from armi import context, getPluginManagerOrFail, runLog
 from armi.reactor import geometry, grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
+from armi.utils.yamlSchema import Field, KeyedList, YamlObject
 
 
-class SystemBlueprint(yamlize.Object):
+class SystemBlueprint(YamlObject):
     """
     The reactor-level structure input blueprint.
 
@@ -65,10 +64,10 @@ class SystemBlueprint(yamlize.Object):
     which use YAML anchors. YAML anchors have proven to be problematic and difficult to work with.
     """
 
-    name = yamlize.Attribute(key="name", type=str)
-    typ = yamlize.Attribute(key="type", type=str, default="core")
-    gridName = yamlize.Attribute(key="grid name", type=str)
-    origin = yamlize.Attribute(key="origin", type=Triplet, default=None)
+    name = Field(key="name", type=str)
+    typ = Field(key="type", type=str, default="core")
+    gridName = Field(key="grid name", type=str)
+    origin = Field(key="origin", type=Triplet, default=None)
 
     def __init__(self, name=None, gridName=None, origin=None):
         """
@@ -76,7 +75,7 @@ class SystemBlueprint(yamlize.Object):
 
         Notes
         -----
-        yamlize does not call an __init__ method, instead it uses __new__ and setattr this is only needed for when you
+        A load bypasses __init__; this is only needed for when you
         want to make this object from a non-YAML source.
         """
         self.name = name
@@ -257,6 +256,6 @@ class SystemBlueprint(yamlize.Object):
                 container.spatialGrid.changePitch(xw, yw)
 
 
-class Systems(yamlize.KeyedList):
-    item_type = SystemBlueprint
-    key_attr = SystemBlueprint.name
+class Systems(KeyedList):
+    itemType = SystemBlueprint
+    keyField = SystemBlueprint.name

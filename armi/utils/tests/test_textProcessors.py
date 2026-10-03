@@ -94,6 +94,40 @@ class YamlIncludeTest(unittest.TestCase):
         # strip it because one method gives an extra newline we don't care about
         self.assertEqual(resolved.getvalue().strip(), expected.getvalue().strip())
 
+    def test_resolveIncludes_asTheValueOfAKey(self):
+        """``core: !include foo.yaml`` makes the file the value of ``core``.
+
+        The included file has to start on the next line and be indented past the key. Pasting it in
+        where the tag sits would run its first line onto the end of the key -- ``core: geom: hex``
+        -- and leave the rest as siblings of the key rather than its value.
+        """
+        src = StringIO("grids:\n    core: !include lower/includeA.yaml\n")
+        resolved = textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR)).getvalue()
+
+        self.assertNotIn("!include", resolved)
+        data = ruamel.yaml.YAML().load(resolved)
+        self.assertEqual(data["grids"]["core"]["full_name"], "Jennifer Person")
+
+    def test_resolveIncludes_inSequenceItem(self):
+        """``- !include foo.yaml`` puts the file where the tag is: ``-`` is a marker, not content."""
+        src = StringIO("stuff:\n    - !include lower/includeA.yaml\n")
+        resolved = textProcessors.resolveMarkupInclusions(src, root=pathlib.Path(RES_DIR)).getvalue()
+
+        self.assertNotIn("!include", resolved)
+        data = ruamel.yaml.YAML().load(resolved)
+        self.assertEqual(data["stuff"][0]["full_name"], "Jennifer Person")
+
+    def test_resolveIncludes_onItsOwnLine(self):
+        """An ``!include`` indented under a key is the long form of the same thing."""
+        inline = StringIO("grids:\n    core: !include lower/includeA.yaml\n")
+        ownLine = StringIO("grids:\n    core:\n        !include lower/includeA.yaml\n")
+        yaml = ruamel.yaml.YAML()
+
+        self.assertEqual(
+            yaml.load(textProcessors.resolveMarkupInclusions(inline, root=pathlib.Path(RES_DIR))),
+            yaml.load(textProcessors.resolveMarkupInclusions(ownLine, root=pathlib.Path(RES_DIR))),
+        )
+
     def test_findIncludes(self):
         includes = textProcessors.findYamlInclusions(pathlib.Path(RES_DIR) / "root.yaml")
         for i, _mark in includes:

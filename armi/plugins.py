@@ -66,9 +66,9 @@ imported (lest we endeavor to redesign them considerably). Examples:
     we have before making instances.
 
   - Blueprints: Since blueprints should be extendable with new sections, we must also be able to provide new *class*
-    attributes to extend their behavior. This is because blueprints use the yamlize package, which uses class attributes
-    to define much of the class's behavior through metaclassing. Therefore, we need to be able to import all plugins
-    *before* importing blueprints.
+    attributes to extend their behavior. This is because blueprints use ``armi.utils.yamlSchema``,
+    which uses class attributes to define much of the class's behavior through metaclassing.
+    Therefore, we need to be able to import all plugins *before* importing blueprints.
 
 Plugins are currently stateless. They do not have ``__init__()`` methods, and when they are registered with the
 PluginMagager, the PluginManager gets the Plugin's class object rather than an instance of that class. Also notice that
@@ -371,7 +371,8 @@ class ArmiPlugin:
 
             - name : The name of the attribute to add to the Blueprints class; this should be a valid Python identifier.
 
-            - section : An instance of ``yaml.Attribute`` defining the data that is described by the Blueprints section.
+            - section : An instance of :py:class:`armi.utils.yamlSchema.Field` defining the data that is
+              described by the Blueprints section.
 
             - resolutionMethod : A callable that takes a Blueprints object and case settings as arguments. This will be
               called like an unbound instance method on the passed Blueprints object to initialize the state of the new

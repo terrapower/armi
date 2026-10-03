@@ -18,8 +18,6 @@ import collections
 from inspect import signature
 from typing import Iterable, Iterator, Set
 
-import yamlize
-
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
 from armi.reactor import blocks, parameters
@@ -29,6 +27,7 @@ from armi.reactor.composites import Composite
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
+from armi.utils.yamlSchema import Field, KeyedList, Sequence
 
 
 def _configureGeomOptions():
@@ -41,7 +40,7 @@ def _configureGeomOptions():
     return blockTypes
 
 
-class BlockBlueprint(yamlize.KeyedList):
+class BlockBlueprint(KeyedList):
     """Input definition for Block.
 
     .. impl:: Create a Block from blueprint file.
@@ -57,7 +56,7 @@ class BlockBlueprint(yamlize.KeyedList):
         the block, where the keys are component names and the values are component blueprints (see
         :py:class:`~armi.reactor.blueprints.ComponentBlueprint.ComponentBlueprint`).
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        Relies on :py:mod:`armi.utils.yamlSchema` for reading from text
         files, serialization, and internal storage of the data.
 
         Is implemented into a blueprints file by being imported and used as an attribute within the
@@ -67,12 +66,12 @@ class BlockBlueprint(yamlize.KeyedList):
         :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the blueprints.
     """
 
-    item_type = componentBlueprint.ComponentBlueprint
-    key_attr = componentBlueprint.ComponentBlueprint.name
-    name = yamlize.Attribute(key="name", type=str)
-    gridName = yamlize.Attribute(key="grid name", type=str, default=None)
-    flags = yamlize.Attribute(type=str, default=None)
-    axialExpTargetComponent = yamlize.Attribute(key="axial expansion target component", type=str, default=None)
+    itemType = componentBlueprint.ComponentBlueprint
+    keyField = componentBlueprint.ComponentBlueprint.name
+    name = Field(key="name", type=str)
+    gridName = Field(key="grid name", type=str, default=None)
+    flags = Field(type=str, default=None)
+    axialExpTargetComponent = Field(key="axial expansion target component", type=str, default=None)
     _geomOptions = None
 
     def _getBlockClass(self, outerComponent):
@@ -378,7 +377,7 @@ for paramDef in parameters.forType(blocks.Block).inCategory(parameters.Category.
     setattr(
         BlockBlueprint,
         paramDef.name,
-        yamlize.Attribute(name=paramDef.name, default=None),
+        Field(name=paramDef.name, default=None),
     )
 
 
@@ -397,22 +396,22 @@ def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
     return int(meshPoints) * factor
 
 
-class BlockKeyedList(yamlize.KeyedList):
+class BlockKeyedList(KeyedList):
     """
-    An OrderedDict of BlockBlueprints keyed on the name. Utilizes yamlize for serialization to and from YAML.
+    An ordered mapping of BlockBlueprints keyed on the name.
 
     This is used within the ``blocks:`` main entry of the blueprints.
     """
 
-    item_type = BlockBlueprint
-    key_attr = BlockBlueprint.name
+    itemType = BlockBlueprint
+    keyField = BlockBlueprint.name
 
 
-class BlockList(yamlize.Sequence):
+class BlockList(Sequence):
     """
-    A list of BlockBlueprints keyed on the name. Utilizes yamlize for serialization to and from YAML.
+    A list of BlockBlueprints.
 
     This is used to define the ``blocks:`` attribute of the assembly definitions.
     """
 
-    item_type = BlockBlueprint
+    itemType = BlockBlueprint
