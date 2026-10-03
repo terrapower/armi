@@ -467,6 +467,3 @@ class TestBuildingInCode(unittest.TestCase):
         self.assertIsNone(Grids.dump(Grids.load("core:\n    geom: hex\n"), stream))
         self.assertIn("core:", stream.getvalue())
 
-
-if __name__ == "__main__":
-    unittest.main()
