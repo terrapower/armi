@@ -390,6 +390,32 @@ class BinaryRecordReader(IORecord):
         (s,) = struct.unpack("%ds" % length, self._stream.read(length))
         return s.rstrip().decode()  # convert bytes to string on reading.
 
+    def rwMatrix(self, contents, *shape):
+        return self._readMatrix(contents, "f", *shape)
+
+    def rwDoubleMatrix(self, contents, *shape):
+        return self._readMatrix(contents, "d", *shape)
+
+    def rwIntMatrix(self, contents, *shape):
+        return self._readMatrix(contents, "i", *shape)
+
+    def _readMatrix(self, contents, typeCode, *shape):
+        """
+        Read a whole matrix in one call rather than value by value.
+
+        Values are stored in column-major (FORTRAN) order, so this matches
+        :py:meth:`IORecord._rwMatrix`, including filling ``contents`` in place when given.
+        """
+        fortranShape = tuple(reversed(shape))
+        dtype = np.dtype(typeCode)
+        count = int(np.prod(shape))
+        self.byteCount += count * dtype.itemsize
+        values = np.frombuffer(self._stream.read(count * dtype.itemsize), dtype=dtype, count=count)
+        if contents is None or contents.size == 0:
+            contents = np.empty(fortranShape)
+        contents[...] = values.reshape(fortranShape, order="F")
+        return contents
+
 
 class BinaryRecordWriter(IORecord):
     """
@@ -461,6 +487,11 @@ class AsciiRecordReader(BinaryRecordReader):
     --------
     AsciiRecordWriter
     """
+
+    # the binary reader's whole-matrix reads don't apply to ASCII
+    rwMatrix = IORecord.rwMatrix
+    rwDoubleMatrix = IORecord.rwDoubleMatrix
+    rwIntMatrix = IORecord.rwIntMatrix
 
     def close(self):
         BinaryRecordReader.close(self)
