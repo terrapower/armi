@@ -184,6 +184,3 @@ assemblies:
         dumped = blueprints.Blueprints.dump(blueprints.Blueprints.load(io.StringIO(source)))
         self.assertIn("how tall each block is", dumped)
 
-
-if __name__ == "__main__":
-    unittest.main()
