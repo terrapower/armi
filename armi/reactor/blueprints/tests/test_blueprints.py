@@ -164,7 +164,7 @@ class TestZeroValuesInMaterialModifications(unittest.TestCase):
     """Values that merely hash alike must not swap YAML metadata on a round trip.
 
     This was reported as a ruamel.yaml regression and papered over with a string replacement on the
-    dumped text. It was neither: yamlize cached round-trip metadata keyed on ``hash(value)``, and
+    dumped text. It was neither: the previous YAML library cached round-trip metadata keyed on ``hash(value)``, and
     ``hash("") == hash(0.0) == hash(0) == hash(False)``, so a material modification of
     ``["", 0.0, 0.0, ""]`` came back as ``["", "0.0", "0.0", ""]``.
 

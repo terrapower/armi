@@ -14,9 +14,8 @@
 
 """Characterization tests for blueprint round tripping.
 
-These exercise a load/dump cycle over every blueprint the repository ships. They were written to
-hold the replacement of the unmaintained ``yamlize`` package to the behavior it replaced, and they
-go on guarding the invariants afterwards.
+These exercise a load/dump cycle over every blueprint the repository ships, and guard the
+invariants that keep user input intact across repeated round trips.
 
 There are three invariants worth keeping honest here:
 
@@ -127,9 +126,9 @@ class TestBlueprintRoundTrip(unittest.TestCase):
 
 
 class TestFormerRoundTripDefects(unittest.TestCase):
-    """Two round-trip defects that blueprints carried until they moved off yamlize.
+    """Two round-trip defects that blueprints carried until they moved to :py:mod:`armi.utils.yamlSchema`.
 
-    Both came from the same design: yamlize discarded the parsed document and reattached YAML
+    Both came from the same design: the previous YAML library discarded the parsed document and reattached YAML
     metadata at dump time from a cache keyed on the values, so equal values shared an entry. The
     document is now kept and nothing is keyed by value, so neither can recur.
     """
@@ -160,7 +159,7 @@ class TestFormerRoundTripDefects(unittest.TestCase):
     def test_commentFollowingAListValuedKey(self):
         """A comment between a sequence value and the next key used to be dropped.
 
-        yamlize rebuilt sequence nodes from scratch, and the parent mapping's comment record for
+        The previous YAML library rebuilt sequence nodes from scratch, and the parent mapping's comment record for
         that slot did not come along.
         """
         source = """\

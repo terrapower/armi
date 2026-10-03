@@ -20,7 +20,7 @@ from copy import deepcopy
 from armi import context, getApp
 from armi.bookkeeping.db.passiveDBLoadPlugin import (
     PassiveDBLoadPlugin,
-    PassThroughYamlize,
+    PassThroughSection,
 )
 from armi.reactor.blocks import Block
 
@@ -70,10 +70,10 @@ class TestPassiveDBLoadPlugin(unittest.TestCase):
         self.assertIn(Block, params)
 
 
-class TestPassThroughYamlize(unittest.TestCase):
+class TestPassThroughSection(unittest.TestCase):
     def test_unknownSectionIsAcceptedAndDiscarded(self):
         """A skipped section loads without complaint and keeps nothing from it."""
-        section = PassThroughYamlize.fromData(
+        section = PassThroughSection.fromData(
             {
                 "core-wide": {
                     "fuel axial expansion": False,
@@ -82,7 +82,7 @@ class TestPassThroughYamlize(unittest.TestCase):
             }
         )
 
-        self.assertIsInstance(section, PassThroughYamlize)
+        self.assertIsInstance(section, PassThroughSection)
         self.assertEqual(len(section._fields), 0)
         self.assertFalse([a for a in vars(section) if not a.startswith("_")])
 

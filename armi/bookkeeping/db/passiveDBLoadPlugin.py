@@ -28,7 +28,7 @@ from armi.utils import units
 from armi.utils.yamlSchema import Field, YamlObject
 
 
-class PassThroughYamlize(YamlObject):
+class PassThroughSection(YamlObject):
     """Swallows a whole blueprints section without interpreting it.
 
     Used by :py:class:`PassiveDBLoadPlugin` to let a database load succeed when the application
@@ -72,8 +72,8 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
             skips.append(
                 (
                     skippedBp.replace(" ", ""),
-                    Field(key=skippedBp, type=PassThroughYamlize, default=None),
-                    PassThroughYamlize,
+                    Field(key=skippedBp, type=PassThroughSection, default=None),
+                    PassThroughSection,
                 )
             )
 

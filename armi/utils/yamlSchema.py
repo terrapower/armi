@@ -14,28 +14,48 @@
 
 """Map YAML documents onto typed Python objects, without losing the document.
 
-This is ARMI's replacement for the unmaintained ``yamlize`` package. It covers the same ground --
-declare a class with typed, keyed, defaulted attributes and load/dump it -- with one structural
-difference that matters a great deal for round tripping.
+This is how ARMI reads and writes blueprints and other structured YAML input. A class declares its
+schema with :py:class:`Field` attributes (typed, optionally keyed under a different YAML name,
+defaulted and validated), and the module turns a YAML document into instances of that class and
+back again. :py:class:`YamlObject` maps a YAML mapping onto an object; :py:class:`Map` and
+:py:class:`KeyedList` map a YAML mapping onto a dict-like collection, the latter for collections
+whose keys are a field of their values (``blocks:``, ``assemblies:``, ``grids:``);
+:py:class:`Sequence` and its subclasses map typed lists.
 
-yamlize parses YAML into its own objects, throws the parsed document away, and then tries to
-reconstruct the original formatting at dump time from a cache of node metadata. That cache is keyed
-on the *values*, so values that compare equal share an entry and end up wearing each other's YAML
-tags and comments. It is the source of a long tail of corruption bugs; see
-:py:mod:`armi.reactor.blueprints._yamlizeShims`.
-
-Here the parsed document *is* the round-trip record. ``ruamel.yaml`` already preserves comments,
+**The parsed document is the round-trip record.** ``ruamel.yaml`` already preserves comments,
 anchors, aliases, merge keys, quote and flow styles, and literal block scalars in the
-``CommentedMap``/``CommentedSeq`` it hands back. So a load keeps that structure attached to the
-object it produced, and a dump starts from it and writes back only the fields that actually
-changed. The content of anything untouched comes back exactly as it went in, because it was never
-taken apart.
+``CommentedMap``/``CommentedSeq`` it returns. A load keeps that structure attached to the object it
+produced, and a dump starts from it and writes back only the fields that actually changed. Anything
+untouched is never taken apart, so its content comes back exactly as it went in. Nothing is keyed
+by value, so values that are equal in Python but distinct in YAML (``0``, ``0.0``, ``False``,
+``""``) can never swap tags, styles or comments; scalars are compared by type as well as value.
 
-Indentation is the one thing deliberately not preserved. ruamel.yaml sets it globally at dump time,
-so reproducing a source file would mean guessing its conventions, and hand-written blueprints are
-not consistent enough for a guess to be right -- some mix two- and four-space mappings within one
-file. Every document is instead written in one house style, so ARMI's output is uniform and input
-files converge on a single layout rather than preserving each file's accidents forever.
+**Aliases.** A load builds one object per YAML node, so an alias that *refers* to a definition --
+``blocks: [*block_fuel]`` in an assembly -- yields the very object defined elsewhere, and editing
+that design reaches every use. An alias under a key *declares* something new instead: ``fuel 2:
+*fuel_1`` is a second design that starts out identical to the first and is its own object, so
+modifying one never silently modifies the other. An object built over a shared node keeps the
+alias for as long as it still agrees with that node, and takes a node of its own the moment it
+diverges, so an unedited file round trips byte for byte, aliases and merge keys included.
+
+**Output style.** Indentation is deliberately not preserved: ruamel.yaml sets it globally at dump
+time, and hand-written blueprints are not consistent enough to guess from. Everything is written in
+one house style -- ruamel.yaml's own 2/4/2 indentation, which ARMI's settings writer already uses,
+and a 120-column line width -- so input files converge on one layout. In addition:
+
+- Every anchor present at load is written back, even one nothing in the file aliases yet, since
+  blueprints define anchors for users to alias from their own files.
+- Any multi-line string is written as a literal block scalar. Lattice, pin and core maps are
+  pictures whose line breaks and column alignment are the data, and must never be quoted, escaped
+  or folded.
+- An optional field with no value is omitted rather than written as an empty key.
+
+**Errors and hooks.** Problems found while reading raise :py:class:`YamlSchemaError` carrying the
+line and column they came from. Classes that need more than field-by-field mapping can override
+``_afterLoad`` to derive state from the whole object once its fields are read, or provide a
+``toData`` method to render themselves as plain data. Fields are class-level schema and are never
+copied, so deep-copying or pickling a loaded object is safe; the document is dropped on pickle but
+kept on copy.
 
 Typical use::
 
@@ -164,7 +184,7 @@ def _identityRegistry():
     ``*block_fuel`` in an assembly's block list and ``fuel:`` in the ``blocks:`` section name the
     same node, and ARMI treats them as the same block: code compares block designs by identity. A
     load therefore has to hand back the object it already built for a node rather than a second
-    copy of it, which is what yamlize's ``constructed_objects`` did.
+    copy of it.
 
     The registry is keyed on ``id()`` of the parsed data, which is only meaningful while that data
     is alive -- true for the duration of a load, since the root document holds all of it.
@@ -291,8 +311,8 @@ class Field:
     def validator(self, func):
         """Attach a validator, as a decorator.
 
-        Returns a new :py:class:`Field` rather than mutating this one, matching how ``yamlize``
-        behaved: the decorated name rebinds the class attribute.
+        Returns a new :py:class:`Field` rather than mutating this one: the decorated name rebinds the
+        class attribute.
         """
         return type(self)(self.name, self.key, self.type or NODEFAULT, self.default, func, self.doc)
 
@@ -782,7 +802,7 @@ def _sameScalar(docValue, value):
 
     Compared by type as well as equality, because ``0``, ``0.0``, ``False`` and ``""`` are all
     equal to one another in Python but mean different things in YAML. Conflating them is precisely
-    the yamlize defect this module exists to avoid.
+    the round-trip defect this module exists to avoid.
     """
     if type(docValue) is not type(value):
         return False

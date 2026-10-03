@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the YAML-to-object mapping that replaces yamlize."""
+"""Tests for the document-backed YAML-to-object mapping."""
 
 import io
 import unittest
@@ -405,10 +405,10 @@ class TestLatticeMapsKeepTheirLayout(unittest.TestCase):
 
 
 class TestValuesThatHashAlike(unittest.TestCase):
-    """The yamlize defect this module is designed to make structurally impossible.
+    """The round-trip defect this module is designed to make structurally impossible.
 
     ``hash("") == hash(0.0) == hash(0) == hash(False)`` and ``hash(1) == hash(1.0) == hash(True)``.
-    yamlize keyed its round-trip metadata on those hashes, so colliding values swapped YAML tags
+    The previous YAML library keyed its round-trip metadata on those hashes, so colliding values swapped YAML tags
     and quote styles. Here nothing is keyed by value, because the document is never taken apart.
     """
 

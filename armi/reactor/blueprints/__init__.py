@@ -283,7 +283,7 @@ class Blueprints(YamlObject, metaclass=_BlueprintsPluginCollector):
         resolving the nuclides in the problem, and pre-populating assemblies.
 
         Ideally, it would not be necessary at all, but the ``cs`` currently contains a bunch of information necessary to
-        create the applicable model. If it were possible, it would be terrific to override the Yamlizable.from_yaml
+        create the applicable model. If it were possible, it would be terrific to override YamlObject._afterLoad
         method to run this code after the instance has been created, but we need additional information in order to
         build the assemblies that is not within the YAML file.
 

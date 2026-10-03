@@ -149,7 +149,7 @@ class AssemblyBlueprint(YamlObject):
         default=MaterialModifications(),
     )
     xsTypes = Field(key="xs types", type=StrList)
-    # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
+    # note: loading a YamlObject does not call an __init__ method, instead it uses __new__ and setattr
 
     _assemTypes = _configureAssemblyTypes()
 
