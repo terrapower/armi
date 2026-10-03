@@ -466,4 +466,3 @@ class TestBuildingInCode(unittest.TestCase):
         stream = io.StringIO()
         self.assertIsNone(Grids.dump(Grids.load("core:\n    geom: hex\n"), stream))
         self.assertIn("core:", stream.getvalue())
-

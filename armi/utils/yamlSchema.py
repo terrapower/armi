@@ -339,7 +339,8 @@ class Field:
 
         if converted != value:
             raise YamlSchemaError(
-                f"Reading `{value}` as the {self.type.__name__} that `{self.key}` requires would change it to `{converted}`",
+                f"Reading `{value}` as the {self.type.__name__} that `{self.key}` requires "
+                f"would change it to `{converted}`",
                 location,
             )
 
@@ -909,7 +910,8 @@ class Sequence:
 
         if converted != item:
             raise YamlSchemaError(
-                f"Reading `{item}` as the {self.itemType.__name__} that {type(self).__name__} holds would change it to `{converted}`",
+                f"Reading `{item}` as the {self.itemType.__name__} that {type(self).__name__} holds "
+                f"would change it to `{converted}`",
                 _location(item),
             )
 
@@ -1137,9 +1139,7 @@ def _coerceTo(type_, value, location=None):
         raise YamlSchemaError(f"Cannot read `{value}` as a {type_.__name__}: {ee}", location)
 
     if converted != value:
-        raise YamlSchemaError(
-            f"Reading `{value}` as a {type_.__name__} would change it to `{converted}`", location
-        )
+        raise YamlSchemaError(f"Reading `{value}` as a {type_.__name__} would change it to `{converted}`", location)
 
     return converted
 
