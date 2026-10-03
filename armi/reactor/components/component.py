@@ -622,7 +622,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        return [nucName.decode() for nucName in self.p.nuclides]
+        # tolist() first avoids creating a numpy scalar per element
+        return [nucName.decode() for nucName in self.p.nuclides.tolist()]
 
     def getNumberDensity(self, nucName):
         """
@@ -800,15 +801,19 @@ class Component(composites.Composite, metaclass=ComponentType):
             newNumDens = []
             nucs = self.p.nuclides
             ndens = self.p.numberDensities
+            # build the index once rather than doing an O(n) np.where scan per nuclide
+            nucIndex = {nuc: i for i, nuc in enumerate(nucs.tolist())}
             for nucName, dens in numberDensities.items():
-                i = np.where(nucs == nucName.encode())[0]
-                if i.size > 0:
-                    ndens[i[0]] = dens
+                byteName = nucName.encode()
+                i = nucIndex.get(byteName)
+                if i is not None:
+                    ndens[i] = dens
                 else:
-                    newNucs.append(nucName.encode())
+                    newNucs.append(byteName)
                     newNumDens.append(dens)
-            self.p.nuclides = np.append(nucs, newNucs)
-            self.p.numberDensities = np.append(ndens, newNumDens)
+            if newNucs:
+                self.p.nuclides = np.append(nucs, newNucs)
+                self.p.numberDensities = np.append(ndens, newNumDens)
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0

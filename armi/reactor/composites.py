@@ -1817,12 +1817,17 @@ class Composite(ArmiObject):
         multiplying the number densities within each child Composite by the volume
         of the child Composite and dividing by the total volume of the Composite.
         """
-        volumes = np.array([c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0) for c in self])  # c x 1
+        # every child's parent is self, so the symmetry factor only needs to be computed once
+        symmetryFactor = self.getSymmetryFactor()
+        volumes = np.array([c.getVolume() / symmetryFactor for c in self])  # c x 1
         totalVol = volumes.sum()
         if totalVol == 0.0:
             # there are no children so no volume or number density
             return [0.0] * len(nucNames)
 
+        # encode once here rather than once per child
+        if not isinstance(nucNames, np.ndarray):
+            nucNames = np.asanyarray([n.encode() if isinstance(n, str) else n for n in nucNames], dtype="S6")
         nucDensForEachComp = np.array([c.getNuclideNumberDensities(nucNames) for c in self])  # c x n
         return volumes.dot(nucDensForEachComp) / totalVol
 
@@ -1833,9 +1838,22 @@ class Composite(ArmiObject):
         Notes
         -----
         This is implemented more simply on the component level.
+
+        Since every nuclide in every child is wanted, accumulate each child's own (nuclide, density)
+        pairs, volume-weighted, rather than looking up the union of nuclide names in every child.
         """
-        nucNames = self.getNuclides()
-        return dict(zip(nucNames, self.getNuclideNumberDensities(nucNames)))
+        children = list(self)
+        symmetryFactor = self.getSymmetryFactor()
+        volumes = [c.getVolume() / symmetryFactor for c in children]
+        totalVol = sum(volumes)
+        if totalVol == 0.0:
+            return dict.fromkeys(self.getNuclides(), 0.0)
+
+        ndens = {}
+        for child, vol in zip(children, volumes):
+            for nuc, dens in child._getNdensHelper().items():
+                ndens[nuc] = ndens.get(nuc, 0.0) + dens * vol
+        return {nuc: val / totalVol for nuc, val in ndens.items()}
 
     def setNumberDensity(self, nucName, val):
         """
@@ -1902,17 +1920,22 @@ class Composite(ArmiObject):
             nucName: ndens pairs.
         """
         children, volFracs = zip(*self.getVolumeFractions())
-        childNucs = tuple(set(child.getNuclides()) for child in children)
+
+        # Map each nuclide to the indices of the "active" children containing it in a single pass,
+        # rather than scanning every child for every nuclide.
+        nucToIndices = collections.defaultdict(list)
+        for i, child in enumerate(children):
+            for nuc in set(child.getNuclides()):
+                nucToIndices[nuc].append(i)
+        # many nuclides share the same set of active children, so cache their volume fraction sums
+        activeVolFracs = {}
 
         allDehomogenizedNDens = collections.defaultdict(dict)
 
         # compute potentially-different homogenization factors for each child.  evenly
         # distribute entire number density over the subset of active children.
         for nuc, dens in numberDensities.items():
-            # Get "active" indices, i.e. indices of children containing nuclide.
-            # NOTE: This uses explicit indexing to clarify subsequent code, since it is not necessary to zip + filter +
-            # extract individual components (we just extract by filtered index).
-            indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
+            indiciesToSet = nucToIndices.get(nuc)
 
             if not indiciesToSet:
                 if dens == 0:
@@ -1925,8 +1948,12 @@ class Composite(ArmiObject):
                 dehomogenizedNDens = dens / sum(volFracs)
 
             else:
-                childrenToSet = tuple(children[i] for i in indiciesToSet)
-                dehomogenizedNDens = dens / sum(volFracs[i] for i in indiciesToSet)
+                key = tuple(indiciesToSet)
+                activeVolFrac = activeVolFracs.get(key)
+                if activeVolFrac is None:
+                    activeVolFrac = activeVolFracs[key] = sum(volFracs[i] for i in key)
+                childrenToSet = [children[i] for i in key]
+                dehomogenizedNDens = dens / activeVolFrac
 
             for child in childrenToSet:
                 allDehomogenizedNDens[child][nuc] = dehomogenizedNDens
