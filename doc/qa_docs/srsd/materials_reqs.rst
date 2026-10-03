@@ -17,18 +17,18 @@ support nearly any material definition needs.
 Functional Requirements
 +++++++++++++++++++++++
 
-.. req:: The materials package shall allow for material classes to be searched across packages in a defined namespace.
+.. req:: The materials package shall define a namespace to allow for multiple material collections to be defined with an order of precedence in the case of duplicates.
     :id: R_ARMI_MAT_NAMESPACE
     :subtype: functional
-    :basis: This is just a design choice in ARMI, to define how new material definitions are added to a simulation.
-    :acceptance_criteria: Import a material class from a package in the ARMI default namespace.
+    :basis: The ability to represent physical material properties is a basic need for nuclear modeling.
+    :acceptance_criteria: Only the preferred material class is returned when multiple material classes with the same name are defined. Import a material class from a package in the ARMI default namespace.
     :status: accepted
 
-.. req:: The materials package shall allow for multiple material collections to be defined with an order of precedence in the case of duplicates.
-    :id: R_ARMI_MAT_ORDER
+.. req:: The materials package shall allow users to define custom materials in either Python or YAML formats.
+    :id: R_ARMI_MAT_CUSTOM
     :subtype: functional
-    :basis: The ability to represent physical material properties is a basic need for nuclear modeling.
-    :acceptance_criteria: Only the preferred material class is returned when multiple material classes with the same name are defined.
+    :basis: ARMI users should have the ability to supply their own materials for simulations.
+    :acceptance_criteria: Confirm that both custom Python and YAML materials can be created successfully.
     :status: accepted
 
 .. req:: The materials package shall provide the capability to retrieve material properties given one or more independent variables.
