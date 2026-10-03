@@ -14,9 +14,23 @@
 """Test CCCC."""
 
 import io
+import struct
 import unittest
 
+import numpy as np
+
 from armi.nuclearDataIO import cccc
+
+# A non-square shape so that transposed or misordered reads fail. Matrices are passed in
+# as (outer, inner) and come back as (inner, outer), stored column-major (FORTRAN order).
+MATRIX_SHAPE = (3, 4)
+FORTRAN_SHAPE = (4, 3)
+MATRIX_TYPES = (("rwMatrix", "f"), ("rwDoubleMatrix", "d"), ("rwIntMatrix", "i"))
+
+
+def _expectedMatrix(typeCode):
+    """Values that are exact in every type, where element [i, j] is the (i + 4j)-th stored."""
+    return (np.arange(12) * 0.5 - 2.0 if typeCode != "i" else np.arange(12) - 5).reshape(FORTRAN_SHAPE, order="F")
 
 
 class TestCcccIOStream(unittest.TestCase):
@@ -95,6 +109,63 @@ class TestCcccBinaryRecord(unittest.TestCase):
             with self.readerClass(self.streamCls(stream.getvalue())) as reader:
                 self.assertEqual(value, reader.rwInt(None))
                 self.assertEqual(4, reader.rwInt(None))
+
+    def test_writeAndReadMatrices(self):
+        for methodName, typeCode in MATRIX_TYPES:
+            with self.subTest(methodName):
+                expected = _expectedMatrix(typeCode)
+                stream = self.streamCls()
+                with self.writerClass(stream) as writer:
+                    getattr(writer, methodName)(expected, *MATRIX_SHAPE)
+                with self.readerClass(self.streamCls(stream.getvalue())) as reader:
+                    actual = getattr(reader, methodName)(None, *MATRIX_SHAPE)
+                self.assertEqual(writer.numBytes, reader.numBytes)
+                np.testing.assert_array_equal(actual, expected)
+
+
+class TestCcccBinaryMatrixRead(unittest.TestCase):
+    """Check binary matrix reads against a known byte layout and the generic per-value read."""
+
+    @staticmethod
+    def _packRecord(typeCode, values):
+        """Pack a record with leading and trailing byte counts, like a sequential FORTRAN file."""
+        payload = struct.pack(f"{len(values)}{typeCode}", *values)
+        size = struct.pack("i", len(payload))
+        return size + payload + size
+
+    def _storedValues(self, typeCode):
+        return _expectedMatrix(typeCode).ravel(order="F").tolist()
+
+    def test_readKnownLayout(self):
+        for methodName, typeCode in MATRIX_TYPES:
+            with self.subTest(methodName):
+                record = self._packRecord(typeCode, self._storedValues(typeCode))
+                with cccc.BinaryRecordReader(io.BytesIO(record)) as reader:
+                    actual = getattr(reader, methodName)(None, *MATRIX_SHAPE)
+                self.assertEqual(actual.shape, FORTRAN_SHAPE)
+                np.testing.assert_array_equal(actual, _expectedMatrix(typeCode))
+
+    def test_matchesGenericRead(self):
+        """The whole-matrix read must give the same result as reading value by value."""
+        for methodName, typeCode in MATRIX_TYPES:
+            with self.subTest(methodName):
+                record = self._packRecord(typeCode, self._storedValues(typeCode))
+                with cccc.BinaryRecordReader(io.BytesIO(record)) as reader:
+                    fast = getattr(reader, methodName)(None, *MATRIX_SHAPE)
+                with cccc.BinaryRecordReader(io.BytesIO(record)) as reader:
+                    generic = getattr(cccc.IORecord, methodName)(reader, None, *MATRIX_SHAPE)
+                self.assertEqual(fast.dtype, generic.dtype)
+                np.testing.assert_array_equal(fast, generic)
+
+    def test_readIntoExistingArray(self):
+        """Reads fill a provided array in place and keep its dtype."""
+        record = self._packRecord("f", self._storedValues("f"))
+        contents = np.zeros(FORTRAN_SHAPE, dtype=np.float32)
+        with cccc.BinaryRecordReader(io.BytesIO(record)) as reader:
+            actual = reader.rwMatrix(contents, *MATRIX_SHAPE)
+        self.assertIs(actual, contents)
+        self.assertEqual(actual.dtype, np.float32)
+        np.testing.assert_array_equal(actual, _expectedMatrix("f"))
 
 
 class TestCcccAsciiRecord(TestCcccBinaryRecord):
