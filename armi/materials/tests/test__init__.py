@@ -31,7 +31,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor
 from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
-from armi.testing import loadTestReactor, TESTING_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import directoryChangers
 
 
