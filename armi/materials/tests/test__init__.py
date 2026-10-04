@@ -31,7 +31,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor
 from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
-from armi.testing import _ARMI_RUN_DIR, loadTestReactor
+from armi.testing import loadTestReactor, TESTING_ROOT
 from armi.utils import directoryChangers
 
 
@@ -185,7 +185,9 @@ class UZr(uZr.UZr):
         materials.setMaterialNamespaceOrder(self.namespaceOrder)
 
         # Write BP file with customFuel edits
-        testRxtrSettings = caseSettings.Settings(fName=os.path.join(_ARMI_RUN_DIR, "armiRun.yaml"))
+        testRxtrSettings = caseSettings.Settings(
+            os.path.join(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+        )
         bp = loadFromCs(testRxtrSettings)
         for block in bp.blockDesigns:
             for component in block:
