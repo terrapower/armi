@@ -102,8 +102,8 @@ class TestYamlMaterial(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
 
-        shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", os.getcwd())
-        self.namespaceOrder = [f"dir:{os.getcwd()}", "armi.materials"]
+        shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", self.td.destination)
+        self.namespaceOrder = [f"dir:{self.td.destination}", "armi.materials"]
         materials.setMaterialNamespaceOrder(self.namespaceOrder)
 
     def tearDown(self):
@@ -115,7 +115,7 @@ class TestYamlMaterial(unittest.TestCase):
         mat = materials.createMaterialByName("HT9")
         self.assertIsInstance(mat, Material)
         self.assertNotIsInstance(mat, HT9)
-        self.assertEqual(mat.YAML_PATH, os.path.join(os.getcwd(), "HT9.yaml"))
+        self.assertEqual(mat.YAML_PATH, os.path.join(self.td.destination, "HT9.yaml"))
 
     def test_loadReactor(self):
         """Verifies that a reactor can be loaded from case settings with custom YAML materials."""
@@ -173,20 +173,20 @@ class TestPythonMaterial(unittest.TestCase):
         self.td.__enter__()
 
         # Create the custom Python material
-        self._monkeypatch.syspath_prepend(str(os.getcwd()))
+        self._monkeypatch.syspath_prepend(str(self.td.destination))
         customStr = """from armi.materials import uZr
 
 class UZr(uZr.UZr):
     DATA_SOURCE = "Custom"
 """
-        with open(os.path.join(os.getcwd(), "customFuel.py"), "w") as file:
+        with open(os.path.join(self.td.destination, "customFuel.py"), "w") as file:
             file.write(customStr)
         self.namespaceOrder = ["customFuel", "armi.materials"]
         materials.setMaterialNamespaceOrder(self.namespaceOrder)
 
         # Write BP file with customFuel edits
         testRxtrSettings = caseSettings.Settings(
-            os.path.join(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+            os.path.join(TESTING_ROOT, "reactors/smallestTestReactor/armiRunSmallest.yaml")
         )
         bp = loadFromCs(testRxtrSettings)
         for block in bp.blockDesigns:
@@ -217,7 +217,7 @@ class UZr(uZr.UZr):
             useCache=False,
             customSettings={
                 CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder,
-                "loadingFile": os.path.join(os.getcwd(), "newBlueprints.yaml"),
+                "loadingFile": os.path.join(self.td.destination, "newBlueprints.yaml"),
             },
         )
         self.assertIsInstance(r, Reactor)
@@ -231,7 +231,7 @@ class UZr(uZr.UZr):
             useCache=False,
             customSettings={
                 CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder,
-                "loadingFile": os.path.join(os.getcwd(), "newBlueprints.yaml"),
+                "loadingFile": os.path.join(self.td.destination, "newBlueprints.yaml"),
             },
         )
         # Write this reactor to a database file.
