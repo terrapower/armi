@@ -205,8 +205,8 @@ class UZr(uZr.UZr):
         mat = materials.createMaterialByName("customFuel:UZr")
         self.assertTrue(issubclass(type(mat), FuelMaterial))
         self.assertTrue(issubclass(type(mat), uZr.UZr))
-        # __repr__ is same class is not
-        self.assertTrue(mat.__repr__() == uZr.UZr().__repr__())
+        # __name__ is same, class objects are not
+        self.assertTrue(mat.__class__.__name__ == uZr.UZr().__class__.__name__)
         self.assertFalse(mat == uZr.UZr())
         # and of course the data source is what we expect
         self.assertEqual(mat.DATA_SOURCE, "Custom")
@@ -251,8 +251,8 @@ class UZr(uZr.UZr):
             for c in b:
                 # Verify the ARMI UZr is not being used
                 if c.getProperties().name == "UZr":
-                    # __repr__ is same class is not
-                    self.assertTrue(c.material.__repr__() == uZr.UZr().__repr__())
+                    # __name__ is same, class objects are not
+                    self.assertTrue(c.material.__class__.__name__ == uZr.UZr().__class__.__name__)
                     self.assertFalse(c.material == uZr.UZr())
                     # and of course the data source is what we expect
                     self.assertEqual(c.material.DATA_SOURCE, "Custom")
