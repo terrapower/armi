@@ -800,6 +800,64 @@ class Database:
                     if val is not None:
                         comp.p[pName] = val
 
+    @staticmethod
+    def assemblyHasUniformMatMods(assemDesign, blockMods):
+        """Because a user might apply a mesh converter of unknown complexity to .
+
+        The detailed process here goes something like this::
+
+        * In an assembly, group all the Blocks by type
+        * If there are material modifications to one Block of a given type, THEN
+        * all the Blocks of that type must have the same mat mods
+
+        TODO: Document work-around, if you want un-uniform. Not much of a limitation, IMO.
+        """
+        # TODO: This only verifies by-block.
+
+        # verify by-block mat mods are uniform
+        blockNames = [b.name for b in assemDesign.blocks]
+        blockMods = blockMods.get("byBlock", {})
+        for _moddingWhat, modList in blockMods.items():
+            if len(modList) != len(blockNames):
+                runLog.warning(
+                    f"In the blueprints, the number of blocks in {assemDesign.name} ({len(blockNames)}) does not "
+                    f"match the number of material modifications for those blocks ({len(modList)}). Be warned, "
+                    "your blueprints may be malformed or incorrect"
+                )
+
+            # build a mapping of all the block mat mods
+            modMap = {}
+            for i, modVal in enumerate(modList):
+                blockName = blockNames[i]
+                if blockName not in modMap:
+                    modMap[blockName] = []
+                modMap[blockName].append(modVal)
+
+            # verify uniform block mat mods
+            for blockName, mods in modMap.items():
+                isNone = [m in ("", None) for m in mods]
+                if all(isNone):
+                    # this whole list is None, move on
+                    continue
+
+                sameAsFirst = [m == mods[0] for m in mods]
+                if not all(sameAsFirst):
+                    msg = (
+                        f"The blueprints for Assembly {assemDesign.name} the material modifications are not "
+                        + f"uniform for block type {blockName}. As such, it is not generally possible to read this "
+                        + "database. Because of mesh converters, there is no way to definitely map the blueprints to "
+                        + "the data in the Database."
+                    )
+                    runLog.error(msg)
+                    raise ValueError(msg)
+
+        # verify by-component mat mods are uniform
+        for byWhat, mods in blockMods.items():
+            if byWhat == "byBlock":
+                continue
+
+            print(mods)
+
     # TODO: This appears to work, but (1) test with buildMixedPinAssembly, and (2) find a way to shoe-horn in an error.
     @staticmethod
     def _assignBlueprintsMatMods(blueprints, reactor):
@@ -815,19 +873,18 @@ class Database:
         from armi.reactor.blueprints.componentBlueprint import expandElementals
 
         for assem in reactor.core.getAssemblies(includeSFP=True):
-            assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
-            if assemDesign is None:
-                # There are no material modifications here, this is an empty/test block.
-                continue
+            assemDesign = blueprints.assemDesigns[assem.p.type]
+
+            # Do some validation of mat mods
+            blockMods = {
+                "byBlock": {**assemDesign.materialModifications},
+                **assemDesign.materialModifications.byComponent,
+            }
+            Database.assemblyHasUniformMatMods(assemDesign, blockMods)
 
             for block in assem:
                 blockDesign = blueprints.blockDesigns[block.p.type]
 
-                # Grab by-block and by-component mat mods
-                blockMods = {
-                    "byBlock": {**assemDesign.materialModifications},
-                    **assemDesign.materialModifications.byComponent,
-                }
                 matInput = {}
                 for byWhat, mods in blockMods.items():
                     # byWhat: will be things like "byBlock"
@@ -856,6 +913,7 @@ class Database:
                     )
                     expandElementals(mat, blueprints)
                     comp.clearCache()
+        # assert False
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
