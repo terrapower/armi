@@ -23,11 +23,15 @@ from pytest import MonkeyPatch
 from armi import getPluginManagerOrFail, materials, plugins
 from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.materials.material import Material
+from armi.materials import uZr
+from armi.materials.material import FuelMaterial, Material
 from armi.materials.mostlyYaml import _RESOURCES_DIR, HT9
+from armi.reactor.blueprints import loadFromCs
+from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor
+from armi.settings import caseSettings
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
-from armi.testing import loadTestReactor
+from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.utils import directoryChangers
 
 
@@ -47,7 +51,7 @@ class TestMaterialsInit(unittest.TestCase):
         self.assertEqual(materials.Water, materials.water.Water)
 
 
-class TestMaterial(Material):
+class FakeMaterial(Material):
     pass
 
 
@@ -56,7 +60,7 @@ class PluginMaterialA(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def setMaterialBaseClass(materialType):
         """Set material base class."""
-        return TestMaterial
+        return FakeMaterial
 
 
 class TestMaterialBaseClassHook(unittest.TestCase):
@@ -79,10 +83,17 @@ class TestMaterialBaseClassHook(unittest.TestCase):
         """Verify materials are created with the right base class."""
         materials.setMaterialNamespaceOrder(["dir:" + _RESOURCES_DIR])
         mat = materials.createMaterialByName("Air")
-        self.assertIsInstance(mat, TestMaterial)
+        self.assertIsInstance(mat, FakeMaterial)
 
 
 class TestYamlMaterial(unittest.TestCase):
+    """Test a custom YAML material.
+
+    .. test:: Test a custom YAML material is able to be created, loaded with a reactor, and loaded from a database.
+        :id: T_ARMI_MAT_CUSTOM1
+        :tests: R_ARMI_MAT_CUSTOM
+    """
+
     def setUp(self):
         self._monkeypatch = MonkeyPatch()
         origNamespace = materials._MATERIAL_NAMESPACE_ORDER
@@ -91,8 +102,8 @@ class TestYamlMaterial(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
 
-        shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", os.getcwd())
-        self.namespaceOrder = [f"dir:{os.getcwd()}", "armi.materials"]
+        shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", self.td.destination)
+        self.namespaceOrder = [f"dir:{self.td.destination}", "armi.materials"]
         materials.setMaterialNamespaceOrder(self.namespaceOrder)
 
     def tearDown(self):
@@ -100,27 +111,30 @@ class TestYamlMaterial(unittest.TestCase):
         self._monkeypatch.undo()
 
     def test_materialClass(self):
-        # Verify the directory HT9 is being used not the HT9 class in ARMI.
+        """Verify the directory HT9 is being used not the HT9 class in ARMI."""
         mat = materials.createMaterialByName("HT9")
         self.assertIsInstance(mat, Material)
         self.assertNotIsInstance(mat, HT9)
+        self.assertEqual(mat.YAML_PATH, os.path.join(self.td.destination, "HT9.yaml"))
 
     def test_loadReactor(self):
-        # verifies that a reactor can be loaded from case settings with YAML materials
+        """Verifies that a reactor can be loaded from case settings with custom YAML materials."""
         _, r = loadTestReactor(
             useCache=False,
             customSettings={CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder},
         )
         self.assertIsInstance(r, Reactor)
+        fuelBlock = r.core.getFirstBlock(Flags.FUEL)
+        cladComp = fuelBlock.getFirstComponent(Flags.CLAD)
+        mat = materials.createMaterialByName("HT9")
+        self.assertEqual(cladComp.material.YAML_PATH, mat.YAML_PATH)
 
     def test_loadDB(self):
-        # verifies that a reactor can be loaded from database with YAML materials
+        """Verifies that a reactor can be loaded from database with custom YAML materials."""
         o, r = loadTestReactor(
             useCache=False,
             customSettings={CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder},
         )
-        self.assertIsInstance(r, Reactor)
-
         # Write this reactor to a database file.
         dbi = DatabaseInterface(r, o.cs)
         dbi.initDB(fName="testDB1.h5")
@@ -140,3 +154,105 @@ class TestYamlMaterial(unittest.TestCase):
                     # Verify the directory HT9 is being used not the HT9 class in ARMI.
                     self.assertIsInstance(c.getProperties(), Material)
                     self.assertNotIsInstance(c.getProperties(), HT9)
+
+
+class TestPythonMaterial(unittest.TestCase):
+    """Test a custom Python material.
+
+    .. test:: Test a custom Python material is able to be created, loaded with a reactor, and loaded from a database.
+        :id: T_ARMI_MAT_CUSTOM0
+        :tests: R_ARMI_MAT_CUSTOM
+    """
+
+    def setUp(self):
+        self._monkeypatch = MonkeyPatch()
+        origNamespace = materials._MATERIAL_NAMESPACE_ORDER
+        self._monkeypatch.setattr(materials, "_MATERIAL_NAMESPACE_ORDER", origNamespace)
+
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+        # Create the custom Python material
+        self._monkeypatch.syspath_prepend(str(self.td.destination))
+        customStr = """from armi.materials import uZr
+
+class UZr(uZr.UZr):
+    DATA_SOURCE = "Custom"
+"""
+        with open(os.path.join(self.td.destination, "customFuel.py"), "w") as file:
+            file.write(customStr)
+        self.namespaceOrder = ["customFuel", "armi.materials"]
+        materials.setMaterialNamespaceOrder(self.namespaceOrder)
+
+        # Write BP file with customFuel edits
+        testRxtrSettings = caseSettings.Settings(
+            os.path.join(TESTING_ROOT, "reactors/smallestTestReactor/armiRunSmallest.yaml")
+        )
+        bp = loadFromCs(testRxtrSettings)
+        for block in bp.blockDesigns:
+            for component in block:
+                if component.material == "UZr":
+                    component.material = "customFuel:UZr"
+        with open("newBlueprints.yaml", "w") as f:
+            bp.dump(bp, f)
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+        self._monkeypatch.undo()
+
+    def test_materialClass(self):
+        """Verify the custom UZr material can load and is what we expect."""
+        mat = materials.createMaterialByName("customFuel:UZr")
+        self.assertTrue(issubclass(type(mat), FuelMaterial))
+        self.assertTrue(issubclass(type(mat), uZr.UZr))
+        # __name__ is same, class objects are not
+        self.assertTrue(mat.__class__.__name__ == uZr.UZr().__class__.__name__)
+        self.assertFalse(mat == uZr.UZr())
+        # and of course the data source is what we expect
+        self.assertEqual(mat.DATA_SOURCE, "Custom")
+
+    def test_loadReactor(self):
+        """Verifies that a reactor can be loaded from case settings with custom Python materials."""
+        _, r = loadTestReactor(
+            useCache=False,
+            customSettings={
+                CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder,
+                "loadingFile": os.path.join(self.td.destination, "newBlueprints.yaml"),
+            },
+        )
+        self.assertIsInstance(r, Reactor)
+        fuelBlock = r.core.getFirstBlock(Flags.FUEL)
+        fuelComp = fuelBlock.getFirstComponent(Flags.FUEL)
+        self.assertEqual(fuelComp.material.DATA_SOURCE, "Custom")
+
+    def test_loadDB(self):
+        """Verifies that a reactor can be loaded from database with custom Python materials."""
+        o, r = loadTestReactor(
+            useCache=False,
+            customSettings={
+                CONF_MATERIAL_NAMESPACE_ORDER: self.namespaceOrder,
+                "loadingFile": os.path.join(self.td.destination, "newBlueprints.yaml"),
+            },
+        )
+        # Write this reactor to a database file.
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName="testDB1.h5")
+        db = dbi.database
+        db.writeToDB(r)
+        db.close()
+
+        with Database("testDB1.h5", "r") as db:
+            cs2 = db.loadCS()
+            r2 = db.load(0, 0, cs=cs2)
+
+        # Verify the reactor loaded successfully
+        self.assertIsInstance(r2, Reactor)
+        for b in r2.core.getBlocks():
+            for c in b:
+                # Verify the ARMI UZr is not being used
+                if c.getProperties().name == "UZr":
+                    # __name__ is same, class objects are not
+                    self.assertTrue(c.material.__class__.__name__ == uZr.UZr().__class__.__name__)
+                    self.assertFalse(c.material == uZr.UZr())
+                    # and of course the data source is what we expect
+                    self.assertEqual(c.material.DATA_SOURCE, "Custom")
