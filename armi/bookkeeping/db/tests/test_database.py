@@ -1185,10 +1185,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
                 newLines.append(oldLines[i])
                 newLines.append("            by component:\n")
                 newLines.append("                fuel:\n")
-                i += 1
-                newLines.append("        " + oldLines[i])
-                i += 1
-                newLines.append("        " + oldLines[i])
+                newLines.append("                    U235_wt_frac: [0.11]\n")
+                newLines.append("                    ZR_wt_frac: [0.06]\n")
+                i += 2
             else:
                 newLines.append(oldLines[i])
             i += 1

@@ -801,7 +801,7 @@ class Database:
                         comp.p[pName] = val
 
     @staticmethod
-    def assemblyHasUniformMatMods(assemDesign, blockMods):
+    def assemblyHasUniformMatMods(assemDesign, matMods):
         """Because a user might apply a mesh converter of unknown complexity to .
 
         The detailed process here goes something like this::
@@ -812,17 +812,15 @@ class Database:
 
         TODO: Document work-around, if you want un-uniform. Not much of a limitation, IMO.
         """
-        # TODO: This only verifies by-block.
-
         # verify by-block mat mods are uniform
         blockNames = [b.name for b in assemDesign.blocks]
-        blockMods = blockMods.get("byBlock", {})
-        for _moddingWhat, modList in blockMods.items():
+        byBlockMods = matMods.get("byBlock", {})
+        for modWhat, modList in byBlockMods.items():
             if len(modList) != len(blockNames):
                 runLog.warning(
                     f"In the blueprints, the number of blocks in {assemDesign.name} ({len(blockNames)}) does not "
-                    f"match the number of material modifications for those blocks ({len(modList)}). Be warned, "
-                    "your blueprints may be malformed or incorrect"
+                    f"match the number of material modifications for those blocks ({len(modList)}) for {modWhat}. Be "
+                    "warned, your blueprints may be malformed or incorrect for by-block material modifications."
                 )
 
             # build a mapping of all the block mat mods
@@ -836,7 +834,7 @@ class Database:
             # verify uniform block mat mods
             for blockName, mods in modMap.items():
                 isNone = [m in ("", None) for m in mods]
-                if all(isNone):
+                if not (len(mods)) or all(isNone):
                     # this whole list is None, move on
                     continue
 
@@ -852,11 +850,68 @@ class Database:
                     raise ValueError(msg)
 
         # verify by-component mat mods are uniform
-        for byWhat, mods in blockMods.items():
+        for byWhat, mods in matMods.items():
             if byWhat == "byBlock":
                 continue
 
+            for _modWhat, modVals in mods.items():
+                if not len(modVals) or all(m in ("", None) for m in modVals):
+                    continue
+
+            bDesign = None
+            for b in assemDesign.blocks:
+                if b.name == byWhat:
+                    bDesign = b
+                    break
+
+            if bDesign is None:
+                # TODO: This shouldn't be possible...
+                pass
+
+            if len(modVals) != len(blockNames):
+                runLog.warning(
+                    f"In the blueprints, the number of Components in {bDesign.name} ({len(bDesign)}) does not "
+                    f"match the number of material modifications for that blocks ({len(modVals)}) for {modWhat}. Be "
+                    "warned, your blueprints may be malformed or incorrect for by-component material modifications."
+                )
+
+            # TODO: one line comprehension
+            # validate the by-component
+            validName = False
+            for cDesign in bDesign:
+                if byWhat == cDesign.name:
+                    validName = True
+
+            if not validName:
+                raise IOError(f"The name {byWhat} is not a valid by-component material modification name.")
+
+            # build a mapping of all the by-comp mat mods
+            modMap = {}
+            print(blocknames)
             print(mods)
+            for i, modVal in enumerate(mods):
+                blockName = blockNames[i]
+                if blockName not in modMap:
+                    modMap[blockName] = []
+                modMap[blockName].append(modVal)
+
+            # verify uniform block mat mods
+            for blockName, mods in modMap.items():
+                isNone = [m in ("", None) for m in mods]
+                if not (len(mods)) or all(isNone):
+                    # this whole list is None, move on
+                    continue
+
+                sameAsFirst = [m == mods[0] for m in mods]
+                if not all(sameAsFirst):
+                    msg = (
+                        f"The blueprints for Assembly {assemDesign.name} the material modifications are not "
+                        + f"uniform for component type {byWhat}. As such, it is not generally possible to read this "
+                        + "database. Because of mesh converters, there is no way to definitely map the blueprints to "
+                        + "the data in the Database."
+                    )
+                    runLog.error(msg)
+                    raise ValueError(msg)
 
     # TODO: This appears to work, but (1) test with buildMixedPinAssembly, and (2) find a way to shoe-horn in an error.
     @staticmethod
@@ -876,17 +931,17 @@ class Database:
             assemDesign = blueprints.assemDesigns[assem.p.type]
 
             # Do some validation of mat mods
-            blockMods = {
+            matMods = {
                 "byBlock": {**assemDesign.materialModifications},
                 **assemDesign.materialModifications.byComponent,
             }
-            Database.assemblyHasUniformMatMods(assemDesign, blockMods)
+            Database.assemblyHasUniformMatMods(assemDesign, matMods)
 
             for block in assem:
                 blockDesign = blueprints.blockDesigns[block.p.type]
 
                 matInput = {}
-                for byWhat, mods in blockMods.items():
+                for byWhat, mods in matMods.items():
                     # byWhat: will be things like "byBlock"
                     # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
                     matInput[byWhat] = {}
