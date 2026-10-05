@@ -1275,8 +1275,8 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             newMassVal = newMassFrac[nucName]
             self.assertAlmostEqual(massVal, newMassVal, msg=nucName)
 
-    def test_unsupportedMatMods(self):
-        """Test that the code fails conclusively if bad material modifications are provided."""
+    def test_nonUniformMatMods(self):
+        """Test that the code fails if non-uniform material modifications are provided."""
         # copy over blueprints, and modify the mat mods to be "by component"
         shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"), "detailedAxialExpansion")
         oldLines = open("detailedAxialExpansion/refSmallReactorBase.yaml", "r").readlines()

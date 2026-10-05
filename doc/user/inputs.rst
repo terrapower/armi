@@ -1110,6 +1110,11 @@ material modifications
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
 
+Please note that all the blocks of the same type in an assembly are expected to have the same material modifications
+applied to them. (This is a logic limit necessary to support certain types of mesh converters.) To get around this
+limitation, just copy/paste your block in the blueprints so that if two blocks have different material modifications,
+they are given different names.
+
 .. _systems:
 
 Systems

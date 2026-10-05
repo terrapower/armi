@@ -293,6 +293,52 @@ class AssemblyBlueprint(yamlize.Object):
                 runLog.error(msg)
                 raise ValueError(msg)
 
+    def checkMatModConsistency(self):
+        """Because an assembly in a database is not guaranteed to match the blueprints.
+
+        The detailed process here goes something like this::
+
+        * In an assembly, group all the Blocks by type
+        * If there are material modifications to one Block of a given type,
+        * then all the Blocks of that type must have the same mat mods
+
+        Notes
+        -----
+        If you want to work around this limitation, it is extremely easy. Each block with a different material
+        modification will need to be defined separately in the blueprints.
+        """
+        matMods = {"byBlock": {**self.materialModifications}, **self.materialModifications.byComponent}
+        blockNames = [b.name for b in self.blocks]
+
+        for byWhat, blockMods in matMods.items():
+            # byWhat = byBlock or it is a Component name (fuel, wire, clad, etc)
+            # blockMods = things like {'U235_wt_frac': [0.11, ''], 'ZR_wt_frac': [0.06, '']}
+            for modWhat, modList in blockMods.items():
+                # build a mapping of all the block mat mods
+                modMap = {}
+                for i, modVal in enumerate(modList):
+                    blockName = blockNames[i]
+                    if blockName not in modMap:
+                        modMap[blockName] = []
+                    modMap[blockName].append(modVal)
+
+                # verify uniform block mat mods
+                for blockName, mods in modMap.items():
+                    isNone = [m in ("", None) for m in mods]
+                    if not (len(mods)) or all(isNone):
+                        # this whole list is None, move on
+                        continue
+
+                    sameAsFirst = [m == mods[0] for m in mods]
+                    if not all(sameAsFirst):
+                        msg = (
+                            f"The material modifications provided in the blueprints for Assembly {self.name} "
+                            f"are not uniform for block type {byWhat} and {modWhat}. Performing a database load for "
+                            "this scenario is not supported."
+                        )
+                        runLog.error(msg)
+                        raise ValueError(msg)
+
 
 for paramDef in parameters.forType(assemblies.Assembly).inCategory(parameters.Category.assignInBlueprints):
     setattr(

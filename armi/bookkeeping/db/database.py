@@ -801,56 +801,6 @@ class Database:
                         comp.p[pName] = val
 
     @staticmethod
-    def assemblyHasUniformMatMods(assemDesign, matMods):
-        """Because an assembly in a database is not guaranteed to match the blueprints.
-
-        The detailed process here goes something like this::
-
-        * In an assembly, group all the Blocks by type
-        * If there are material modifications to one Block of a given type, THEN
-        * all the Blocks of that type must have the same mat mods
-
-        TODO: Document work-around, if you want un-uniform. Not much of a limitation, IMO.
-        """
-        blockNames = [b.name for b in assemDesign.blocks]
-
-        for byWhat, blockMods in matMods.items():
-            # byWhat = byBlock or it is a Component name (fuel, wire, clad, etc)
-            # blockMods = things like {'U235_wt_frac': [0.11, ''], 'ZR_wt_frac': [0.06, '']}
-            for modWhat, modList in blockMods.items():
-                if len(modList) != len(blockNames):
-                    runLog.warning(
-                        f"In the blueprints, the number of blocks in {assemDesign.name} ({len(blockNames)}) does not "
-                        f"match the number of material modifications ({len(modList)}) for {byWhat} and {modWhat}. "
-                        "Your blueprints may be malformed or incorrect for by-block material modifications."
-                    )
-
-                # build a mapping of all the block mat mods
-                modMap = {}
-                for i, modVal in enumerate(modList):
-                    blockName = blockNames[i]
-                    if blockName not in modMap:
-                        modMap[blockName] = []
-                    modMap[blockName].append(modVal)
-
-                # verify uniform block mat mods
-                for blockName, mods in modMap.items():
-                    isNone = [m in ("", None) for m in mods]
-                    if not (len(mods)) or all(isNone):
-                        # this whole list is None, move on
-                        continue
-
-                    sameAsFirst = [m == mods[0] for m in mods]
-                    if not all(sameAsFirst):
-                        msg = (
-                            f"The material modifications provided in the blueprints for Assembly {assemDesign.name} "
-                            f"are not uniform for block type {byWhat} and {modWhat}. Performing a database load for "
-                            "this scenario is not supported."
-                        )
-                        runLog.error(msg)
-                        raise ValueError(msg)
-
-    @staticmethod
     def _assignBlueprintsMatMods(blueprints, reactor):
         """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
 
@@ -869,15 +819,14 @@ class Database:
                 # There are no material modifications here, this is an empty/test block.
                 continue
 
-            # Do some validation of mat mods
+            assemDesign.checkMatModConsistency()
+
+            # collate the material modifications for this Block
+            matInput = {}
             matMods = {
                 "byBlock": {**assemDesign.materialModifications},
                 **assemDesign.materialModifications.byComponent,
             }
-            Database.assemblyHasUniformMatMods(assemDesign, matMods)
-
-            # collate the material modifications for this Block
-            matInput = {}
             for byWhat, mods in matMods.items():
                 # byWhat: for by-block is "byBlock" or for by-component will be comp names, like "fuel" or "clad"
                 # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
