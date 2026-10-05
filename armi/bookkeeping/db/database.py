@@ -880,6 +880,7 @@ class Database:
             for block in assem:
                 blockDesign = blueprints.blockDesigns[block.p.type]
 
+                # TODO: This can be move up, out of the block loop, for performance.
                 matInput = {}
                 for byWhat, mods in matMods.items():
                     # byWhat: for by-block is "byBlock" or for by-component will be comp names, like "fuel" or "clad"
