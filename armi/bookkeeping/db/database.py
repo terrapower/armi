@@ -802,7 +802,7 @@ class Database:
 
     @staticmethod
     def assemblyHasUniformMatMods(assemDesign, matMods):
-        """Because a user might apply a mesh converter of unknown complexity to .
+        """Because an assembly in a database is not guaranteed to match the blueprints.
 
         The detailed process here goes something like this::
 
@@ -843,10 +843,9 @@ class Database:
                     sameAsFirst = [m == mods[0] for m in mods]
                     if not all(sameAsFirst):
                         msg = (
-                            f"The blueprints for Assembly {assemDesign.name} the material modifications are not "
-                            + f"uniform for block type {byWhat} and {modWhat}. As such, it is not generally possible "
-                            + "to read this database. Because of mesh converters, there is no way to definitely map "
-                            + "the blueprints to the data in the Database."
+                            f"The material modifications provided in the blueprints for Assembly {assemDesign.name} "
+                            f"are not uniform for block type {byWhat} and {modWhat}. Performing a database load for "
+                            "this scenario is not supported."
                         )
                         runLog.error(msg)
                         raise ValueError(msg)

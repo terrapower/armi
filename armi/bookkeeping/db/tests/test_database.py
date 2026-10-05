@@ -1146,9 +1146,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         originalMassFrac = c.material.massFrac
         hmm = c.getHMMoles()
         self.assertGreater(hmm, 0.0)
-        self.assertAlmostEqual(b.getHeight(), 25, delta=0.1)
-        self.assertAlmostEqual(c.p.molesHmBOL, hmm, delta=0.1)
-        self.assertAlmostEqual(c.p.percentBu, 0.0, delta=0.1)
+        self.assertAlmostEqual(b.getHeight(), 25)
+        self.assertAlmostEqual(c.p.molesHmBOL, hmm)
+        self.assertAlmostEqual(c.p.percentBu, 0.0)
 
         # save the reactor to the DB at BOL time
         r.p.timeNode = 0
