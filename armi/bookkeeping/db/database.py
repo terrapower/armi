@@ -865,7 +865,10 @@ class Database:
         from armi.reactor.blueprints.componentBlueprint import expandElementals
 
         for assem in reactor.core.getAssemblies(includeSFP=True):
-            assemDesign = blueprints.assemDesigns[assem.p.type]
+            assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
+            if assemDesign is None:
+                # There are no material modifications here, this is an empty/test block.
+                continue
 
             # Do some validation of mat mods
             matMods = {
@@ -879,7 +882,7 @@ class Database:
 
                 matInput = {}
                 for byWhat, mods in matMods.items():
-                    # byWhat: will be things like "byBlock"
+                    # byWhat: for by-block is "byBlock" or for by-component will be comp names, like "fuel" or "clad"
                     # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
                     matInput[byWhat] = {}
                     for modName, modList in mods.items():
@@ -888,6 +891,11 @@ class Database:
                             if modVal not in ("", None):
                                 matInput[byWhat][modName] = modVal
                                 break
+
+                # skip if this block has no mat mods
+                numMods = sum([len(m) for m in matInput.values()])
+                if not numMods:
+                    continue
 
                 for comp in block:
                     compDesign = blockDesign[comp.name]
