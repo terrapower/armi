@@ -325,7 +325,7 @@ class AssemblyBlueprint(yamlize.Object):
                 # verify uniform block mat mods
                 for blockName, mods in modMap.items():
                     isNone = [m in ("", None) for m in mods]
-                    if not (len(mods)) or all(isNone):
+                    if not len(mods) or all(isNone):
                         # this whole list is None, move on
                         continue
 
