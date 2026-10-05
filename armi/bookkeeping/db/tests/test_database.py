@@ -30,6 +30,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.flags import Flags
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -1235,11 +1236,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         """Test by-block mat mods again, but with a more complex input reactor."""
         # test the reactor before loading into the DB
         o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
-        a = r.core[0]
-        self.assertIn("igniter fuel", str(a))
-        b = a[2]
-        self.assertIn("fuel", str(b))
-        c = b[0]
+        a = r.core.getFirstAssembly(Flags.FUEL)
+        b = a.getFirstBlock(Flags.FUEL)
+        c = b.getFirstComponent(Flags.FUEL)
         self.assertIn("fuel", str(c))
         originalMassFrac = c.material.massFrac
         hmm = c.getHMMoles()
@@ -1258,12 +1257,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
 
         # test the reactor after loading from the DB
         r2 = self.db.load(0, 0)
-        a2 = r2.core[0]
-        self.assertIn("igniter fuel", str(a2))
-        b2 = a2[2]
-        self.assertIn("fuel", str(b2))
-        c2 = b2[0]
-        self.assertIn("fuel", str(c2))
+        a2 = r2.core.getFirstAssembly(Flags.FUEL)
+        b2 = a2.getFirstBlock(Flags.FUEL)
+        c2 = b2.getFirstComponent(Flags.FUEL)
         newMassFrac = c2.material.massFrac
         self.assertAlmostEqual(b2.getHeight(), b.getHeight(), delta=0.1)  # height of block/assem conserved
         self.assertAlmostEqual(c2.getHMMoles(), hmm, delta=0.1)  # number of fuel atoms preserved
