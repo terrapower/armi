@@ -812,108 +812,45 @@ class Database:
 
         TODO: Document work-around, if you want un-uniform. Not much of a limitation, IMO.
         """
-        # verify by-block mat mods are uniform
         blockNames = [b.name for b in assemDesign.blocks]
-        byBlockMods = matMods.get("byBlock", {})
-        for modWhat, modList in byBlockMods.items():
-            if len(modList) != len(blockNames):
-                runLog.warning(
-                    f"In the blueprints, the number of blocks in {assemDesign.name} ({len(blockNames)}) does not "
-                    f"match the number of material modifications for those blocks ({len(modList)}) for {modWhat}. Be "
-                    "warned, your blueprints may be malformed or incorrect for by-block material modifications."
-                )
 
-            # build a mapping of all the block mat mods
-            modMap = {}
-            for i, modVal in enumerate(modList):
-                blockName = blockNames[i]
-                if blockName not in modMap:
-                    modMap[blockName] = []
-                modMap[blockName].append(modVal)
-
-            # verify uniform block mat mods
-            for blockName, mods in modMap.items():
-                isNone = [m in ("", None) for m in mods]
-                if not (len(mods)) or all(isNone):
-                    # this whole list is None, move on
-                    continue
-
-                sameAsFirst = [m == mods[0] for m in mods]
-                if not all(sameAsFirst):
-                    msg = (
-                        f"The blueprints for Assembly {assemDesign.name} the material modifications are not "
-                        + f"uniform for block type {blockName}. As such, it is not generally possible to read this "
-                        + "database. Because of mesh converters, there is no way to definitely map the blueprints to "
-                        + "the data in the Database."
+        for byWhat, blockMods in matMods.items():
+            # byWhat = byBlock or it is a Component name (fuel, wire, clad, etc)
+            # blockMods = things like {'U235_wt_frac': [0.11, ''], 'ZR_wt_frac': [0.06, '']}
+            for modWhat, modList in blockMods.items():
+                if len(modList) != len(blockNames):
+                    runLog.warning(
+                        f"In the blueprints, the number of blocks in {assemDesign.name} ({len(blockNames)}) does not "
+                        f"match the number of material modifications ({len(modList)}) for {byWhat} and {modWhat}. "
+                        "Your blueprints may be malformed or incorrect for by-block material modifications."
                     )
-                    runLog.error(msg)
-                    raise ValueError(msg)
 
-        # verify by-component mat mods are uniform
-        for byWhat, mods in matMods.items():
-            if byWhat == "byBlock":
-                continue
+                # build a mapping of all the block mat mods
+                modMap = {}
+                for i, modVal in enumerate(modList):
+                    blockName = blockNames[i]
+                    if blockName not in modMap:
+                        modMap[blockName] = []
+                    modMap[blockName].append(modVal)
 
-            for _modWhat, modVals in mods.items():
-                if not len(modVals) or all(m in ("", None) for m in modVals):
-                    continue
+                # verify uniform block mat mods
+                for blockName, mods in modMap.items():
+                    isNone = [m in ("", None) for m in mods]
+                    if not (len(mods)) or all(isNone):
+                        # this whole list is None, move on
+                        continue
 
-            bDesign = None
-            for b in assemDesign.blocks:
-                if b.name == byWhat:
-                    bDesign = b
-                    break
+                    sameAsFirst = [m == mods[0] for m in mods]
+                    if not all(sameAsFirst):
+                        msg = (
+                            f"The blueprints for Assembly {assemDesign.name} the material modifications are not "
+                            + f"uniform for block type {byWhat} and {modWhat}. As such, it is not generally possible "
+                            + "to read this database. Because of mesh converters, there is no way to definitely map "
+                            + "the blueprints to the data in the Database."
+                        )
+                        runLog.error(msg)
+                        raise ValueError(msg)
 
-            if bDesign is None:
-                # TODO: This shouldn't be possible...
-                pass
-
-            if len(modVals) != len(blockNames):
-                runLog.warning(
-                    f"In the blueprints, the number of Components in {bDesign.name} ({len(bDesign)}) does not "
-                    f"match the number of material modifications for that blocks ({len(modVals)}) for {modWhat}. Be "
-                    "warned, your blueprints may be malformed or incorrect for by-component material modifications."
-                )
-
-            # TODO: one line comprehension
-            # validate the by-component
-            validName = False
-            for cDesign in bDesign:
-                if byWhat == cDesign.name:
-                    validName = True
-
-            if not validName:
-                raise IOError(f"The name {byWhat} is not a valid by-component material modification name.")
-
-            # build a mapping of all the by-comp mat mods
-            modMap = {}
-            print(blocknames)
-            print(mods)
-            for i, modVal in enumerate(mods):
-                blockName = blockNames[i]
-                if blockName not in modMap:
-                    modMap[blockName] = []
-                modMap[blockName].append(modVal)
-
-            # verify uniform block mat mods
-            for blockName, mods in modMap.items():
-                isNone = [m in ("", None) for m in mods]
-                if not (len(mods)) or all(isNone):
-                    # this whole list is None, move on
-                    continue
-
-                sameAsFirst = [m == mods[0] for m in mods]
-                if not all(sameAsFirst):
-                    msg = (
-                        f"The blueprints for Assembly {assemDesign.name} the material modifications are not "
-                        + f"uniform for component type {byWhat}. As such, it is not generally possible to read this "
-                        + "database. Because of mesh converters, there is no way to definitely map the blueprints to "
-                        + "the data in the Database."
-                    )
-                    runLog.error(msg)
-                    raise ValueError(msg)
-
-    # TODO: This appears to work, but (1) test with buildMixedPinAssembly, and (2) find a way to shoe-horn in an error.
     @staticmethod
     def _assignBlueprintsMatMods(blueprints, reactor):
         """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
@@ -968,7 +905,6 @@ class Database:
                     )
                     expandElementals(mat, blueprints)
                     comp.clearCache()
-        # assert False
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""

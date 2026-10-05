@@ -1136,7 +1136,7 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             self.db.close()
         self.td.__exit__(None, None, None)
 
-    def test_assignBPMatModsByBlock(self):
+    def test_byBlock(self):
         """Show that the mass fractions of "by block" material modifications are correct after DB load."""
         # test the reactor before loading into the DB
         o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
@@ -1173,7 +1173,7 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             newMassVal = newMassFrac[nucName]
             self.assertAlmostEqual(massVal, newMassVal, msg=nucName)
 
-    def test_assignBPMatModsByComp(self):
+    def test_byComponent(self):
         """Show that the mass fractions of "by component" material modifications are correct after DB load."""
         # copy over blueprints, and modify the mat mods to be "by component"
         shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor"), "smallestTestReactor")
@@ -1231,7 +1231,7 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             newMassVal = newMassFrac[nucName]
             self.assertAlmostEqual(massVal, newMassVal, msg=nucName)
 
-    def test_assignBPMatModsByBlockComplex(self):
+    def test_complexReactor(self):
         """Test by-block mat mods again, but with a more complex input reactor."""
         # test the reactor before loading into the DB
         o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
@@ -1274,3 +1274,39 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         for nucName, massVal in originalMassFrac.items():
             newMassVal = newMassFrac[nucName]
             self.assertAlmostEqual(massVal, newMassVal, msg=nucName)
+
+    def test_nonUniformAssembly(self):
+        """Test that the code fails conclusively if bad material modifications are provided."""
+        # copy over blueprints, and modify the mat mods to be "by component"
+        shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"), "detailedAxialExpansion")
+        oldLines = open("detailedAxialExpansion/refSmallReactorBase.yaml", "r").readlines()
+        newLines = []
+        i = 0
+        foundFirst = False
+        while i < len(oldLines):
+            if not foundFirst and "material modifications:" in oldLines[i]:
+                newLines.append(oldLines[i])
+                # inject a non-uniform mat mod for this material
+                newLines.append("            U235_wt_frac: ['', '', 0.11, 0.12, 0.11, '', '', '', '', '']\n")
+                i += 1
+                foundFirst = True
+            else:
+                newLines.append(oldLines[i])
+            i += 1
+
+        with open("detailedAxialExpansion/refSmallReactorBase.yaml", "w") as f:
+            for line in newLines:
+                f.write(line)
+
+        # save the reactor to the DB at BOL time
+        o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")
+        r.p.timeNode = 0
+        r.p.cycle = 0
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # loading the bad blueprints from the DB should raise an error
+        with self.assertRaises(ValueError):
+            self.db.load(0, 0)
