@@ -801,6 +801,21 @@ class Database:
                         comp.p[pName] = val
 
     @staticmethod
+    def assemblyHasUniformMatMods(assem, bpBlocks):
+        """Because a user might apply a mesh converter of unknown complexity to .
+
+        The detailed process here goes something like this::
+
+        * In an assembly, group all the Blocks by type
+        * If there are material modifications to one Block of a given type, THEN
+        * all the Blocks of that type must have the same mat mods
+ 
+        TODO: Document work-around, if you want un-uniform. Not much of a limitation, IMO.
+        """
+        pass
+
+
+    @staticmethod
     def _assignBlueprintsMatMods(blueprints, reactor):
         """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
 
@@ -828,6 +843,13 @@ class Database:
                     "apply material modifications to the Components in the Assembly. Be warned, going forward the "
                     "mat.massFrac in this Assembly could be wrong."
                 )
+
+            if not self.assemblyHasUniformMatMods(assem, bpBlocks):
+                msg = f"{assem} does not have uniforn enough material modifications that we can, with full confidence, "
+                    "correctly apply material modificaitons from the Database. The problem is that we cannot know, a "
+                    "priori, what mesh conversions were done on this Assembly before being written to the Database. "
+                runLog.error(msg)
+                raise ValueError(assem)
 
             for axialIndex, block in enumerate(assem):
                 blockDesign = blueprints.blockDesigns[block.p.type]
