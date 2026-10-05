@@ -800,21 +800,7 @@ class Database:
                     if val is not None:
                         comp.p[pName] = val
 
-    @staticmethod
-    def assemblyHasUniformMatMods(assem, bpBlocks):
-        """Because a user might apply a mesh converter of unknown complexity to .
-
-        The detailed process here goes something like this::
-
-        * In an assembly, group all the Blocks by type
-        * If there are material modifications to one Block of a given type, THEN
-        * all the Blocks of that type must have the same mat mods
- 
-        TODO: Document work-around, if you want un-uniform. Not much of a limitation, IMO.
-        """
-        pass
-
-
+    # TODO: This appears to work, but (1) test with buildMixedPinAssembly, and (2) find a way to shoe-horn in an error.
     @staticmethod
     def _assignBlueprintsMatMods(blueprints, reactor):
         """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
@@ -834,24 +820,7 @@ class Database:
                 # There are no material modifications here, this is an empty/test block.
                 continue
 
-            # only apply mat mods if the number of blocks in the reactor matches those in the blueprints
-            bpBlocks = assemDesign.blocks
-            if len(assem) != len(bpBlocks):
-                runLog.warning(
-                    f"{assem} has a different number of blocks ({len(assem)}) then are in the blueprints "
-                    f"({len(bpBlocks)}). This is due to a blueprints error or a bespoke mesh converter. But we cannot "
-                    "apply material modifications to the Components in the Assembly. Be warned, going forward the "
-                    "mat.massFrac in this Assembly could be wrong."
-                )
-
-            if not self.assemblyHasUniformMatMods(assem, bpBlocks):
-                msg = f"{assem} does not have uniforn enough material modifications that we can, with full confidence, "
-                    "correctly apply material modificaitons from the Database. The problem is that we cannot know, a "
-                    "priori, what mesh conversions were done on this Assembly before being written to the Database. "
-                runLog.error(msg)
-                raise ValueError(assem)
-
-            for axialIndex, block in enumerate(assem):
+            for block in assem:
                 blockDesign = blueprints.blockDesigns[block.p.type]
 
                 # Grab by-block and by-component mat mods
@@ -863,11 +832,13 @@ class Database:
                 for byWhat, mods in blockMods.items():
                     # byWhat: will be things like "byBlock"
                     # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
-                    matInput[byWhat] = {
-                        modName: modList[axialIndex]
-                        for modName, modList in mods.items()
-                        if modList[axialIndex] not in {"", None}
-                    }
+                    matInput[byWhat] = {}
+                    for modName, modList in mods.items():
+                        # find the first non-empty / non-None value in the list
+                        for modVal in modList:
+                            if modVal not in ("", None):
+                                matInput[byWhat][modName] = modVal
+                                break
 
                 for comp in block:
                     compDesign = blockDesign[comp.name]
