@@ -101,7 +101,7 @@ class RedistributeMass:
         -------
         False if incompatible; true otherwise.
         """
-        if self.fromComp.material.name is not self.toComp.material.name:
+        if self.fromComp.material.name != self.toComp.material.name:
             msg = f"""
             Cannot redistribute mass between components that are different materials!
                 Trying to redistribute mass between the following components in {self.assemblyName}:
