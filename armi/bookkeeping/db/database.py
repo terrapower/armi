@@ -877,26 +877,26 @@ class Database:
             }
             Database.assemblyHasUniformMatMods(assemDesign, matMods)
 
+            # collate the material modifications for this Block
+            matInput = {}
+            for byWhat, mods in matMods.items():
+                # byWhat: for by-block is "byBlock" or for by-component will be comp names, like "fuel" or "clad"
+                # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
+                matInput[byWhat] = {}
+                for modName, modList in mods.items():
+                    # find the first non-empty / non-None value in the list
+                    for modVal in modList:
+                        if modVal not in ("", None):
+                            matInput[byWhat][modName] = modVal
+                            break
+
+            # Skip this Assembly if it declares no mat mods
+            numMods = sum([len(m) for m in matInput.values()])
+            if not numMods:
+                continue
+
             for block in assem:
                 blockDesign = blueprints.blockDesigns[block.p.type]
-
-                # TODO: This can be move up, out of the block loop, for performance.
-                matInput = {}
-                for byWhat, mods in matMods.items():
-                    # byWhat: for by-block is "byBlock" or for by-component will be comp names, like "fuel" or "clad"
-                    # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
-                    matInput[byWhat] = {}
-                    for modName, modList in mods.items():
-                        # find the first non-empty / non-None value in the list
-                        for modVal in modList:
-                            if modVal not in ("", None):
-                                matInput[byWhat][modName] = modVal
-                                break
-
-                # skip if this block has no mat mods
-                numMods = sum([len(m) for m in matInput.values()])
-                if not numMods:
-                    continue
 
                 for comp in block:
                     compDesign = blockDesign[comp.name]
