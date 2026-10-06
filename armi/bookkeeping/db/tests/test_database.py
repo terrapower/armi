@@ -1137,8 +1137,19 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             self.db.close()
         self.td.__exit__(None, None, None)
 
-    def _compareTwoReactors(self, r, r2):
-        """A helper to compare the first fuel block between two reactors."""
+    def _compareReactorAfterDBLoad(self, r, o):
+        """A helper to compare the first fuel block in a given reactor before and after a DB load."""
+        # save the reactor to the DB at BOL time
+        r.p.timeNode = 0
+        r.p.cycle = 0
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # test the reactor after loading from the DB
+        r2 = self.db.load(0, 0)
+
         # pulling a fuel component from both reactors
         c = r.core.getFirstComponent(Flags.FUEL)
         c2 = r2.core.getFirstComponent(Flags.FUEL)
@@ -1158,20 +1169,13 @@ class TestDbRoundTripMatMods(unittest.TestCase):
 
     def test_byBlock(self):
         """Show that the mass fractions of "by block" material modifications are correct after DB load."""
-        # test the reactor before loading into the DB
         o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+        self._compareReactorAfterDBLoad(r, o)
 
-        # save the reactor to the DB at BOL time
-        r.p.timeNode = 0
-        r.p.cycle = 0
-        dbi = DatabaseInterface(r, o.cs)
-        dbi.initDB(fName=f"{self._testMethodName}.h5")
-        self.db = dbi.database
-        self.db.writeToDB(r)
-
-        # test the reactor after loading from the DB
-        r2 = self.db.load(0, 0)
-        self._compareTwoReactors(r, r2)
+    def test_complexReactor(self):
+        """Test by-block mat mods again, but with a more complex input reactor."""
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
+        self._compareReactorAfterDBLoad(r, o)
 
     def test_byComponent(self):
         """Show that the mass fractions of "by component" material modifications are correct after DB load."""
@@ -1199,34 +1203,8 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         # test the reactor before loading into the DB
         o, r = loadTestReactor(".", inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
-        # save the reactor to the DB at BOL time
-        r.p.timeNode = 0
-        r.p.cycle = 0
-        dbi = DatabaseInterface(r, o.cs)
-        dbi.initDB(fName=f"{self._testMethodName}.h5")
-        self.db = dbi.database
-        self.db.writeToDB(r)
-
         # test the reactor after loading from the DB
-        r2 = self.db.load(0, 0)
-        self._compareTwoReactors(r, r2)
-
-    def test_complexReactor(self):
-        """Test by-block mat mods again, but with a more complex input reactor."""
-        # test the reactor before loading into the DB
-        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
-
-        # save the reactor to the DB at BOL time
-        r.p.timeNode = 0
-        r.p.cycle = 0
-        dbi = DatabaseInterface(r, o.cs)
-        dbi.initDB(fName=f"{self._testMethodName}.h5")
-        self.db = dbi.database
-        self.db.writeToDB(r)
-
-        # test the reactor after loading from the DB
-        r2 = self.db.load(0, 0)
-        self._compareTwoReactors(r, r2)
+        self._compareReactorAfterDBLoad(r, o)
 
     def test_nonUniformMatMods(self):
         """Test that the code fails if non-uniform material modifications are provided."""
