@@ -22,6 +22,7 @@ import shutil
 from unittest import TestCase
 
 import numpy as np
+from pytest import MonkeyPatch
 
 from armi import materials
 from armi.materials.mostlyYaml import _RESOURCES_DIR
@@ -160,7 +161,8 @@ class TestMassRedistribution(TestCase):
         # These use the same material
         self.assertTrue(self.distributor.compatabilityCheck())
 
-        prevOrder = materials.getMaterialNamespaceOrder()
+        monkeypatch = MonkeyPatch()
+        monkeypatch.setattr(materials, "_MATERIAL_NAMESPACE_ORDER", None)
         td = directoryChangers.TemporaryDirectoryChanger()
         td.__enter__()
         try:
@@ -188,5 +190,5 @@ class TestMassRedistribution(TestCase):
 
             self.assertFalse(distributor.compatabilityCheck())
         finally:
-            materials.setMaterialNamespaceOrder(prevOrder)
+            monkeypatch.undo()
             td.__exit__(None, None, None)
