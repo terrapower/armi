@@ -1151,9 +1151,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
 
         # show the number of fuel atoms is preserved
         hmm = c.getHMMoles()
-        self.assertAlmostEqual(c.p.molesHmBOL, hmm, delta=0.1)
-        self.assertAlmostEqual(c2.getHMMoles(), hmm, delta=0.1)
-        self.assertAlmostEqual(c2.p.molesHmBOL, hmm, delta=0.1)
+        self.assertAlmostEqual(c.p.molesHmBOL, hmm)
+        self.assertAlmostEqual(c2.getHMMoles(), hmm)
+        self.assertAlmostEqual(c2.p.molesHmBOL, hmm)
 
         # Finally, this is the test that Database._assignBlueprintsMatMods() works and mat.massFrac is preserved
         originalMassFrac = c.material.massFrac
