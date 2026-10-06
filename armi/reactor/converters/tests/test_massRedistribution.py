@@ -19,6 +19,7 @@ These are limited in scope. More extensive testing is done in test_axialExpansio
 
 import os
 import shutil
+from pytest import MonkeyPatch
 from unittest import TestCase
 
 import numpy as np
@@ -160,7 +161,8 @@ class TestMassRedistribution(TestCase):
         # These use the same material
         self.assertTrue(self.distributor.compatabilityCheck())
 
-        prevOrder = materials.getMaterialNamespaceOrder()
+        monkeypatch = MonkeyPatch()
+        monkeypatch.setattr(materials, "_MATERIAL_NAMESPACE_ORDER", None)
         td = directoryChangers.TemporaryDirectoryChanger()
         td.__enter__()
         try:
@@ -188,5 +190,5 @@ class TestMassRedistribution(TestCase):
 
             self.assertFalse(distributor.compatabilityCheck())
         finally:
-            materials.setMaterialNamespaceOrder(prevOrder)
+            monkeypatch.undo()
             td.__exit__(None, None, None)
