@@ -17,13 +17,19 @@
 These are limited in scope. More extensive testing is done in test_axialExpansionChanger_MultiPin.py
 """
 
+import os
+import shutil
 from unittest import TestCase
 
 import numpy as np
+from pytest import MonkeyPatch
 
+from armi import materials
+from armi.materials.mostlyYaml import _RESOURCES_DIR
 from armi.reactor.components import Circle
 from armi.reactor.converters.axialExpansionChanger.redistributeMass import RedistributeMass
 from armi.testing import mockRunLogs
+from armi.utils import directoryChangers
 
 
 class BlockLike:
@@ -149,3 +155,40 @@ class TestMassRedistribution(TestCase):
             self.assertFalse(stat, msg=case)
             stdout = logs.getStdout()
             self.assertIn("Inconsistent detailedNDens", stdout, msg=case)
+
+    def test_compatabilityCheck(self):
+        """Test that only compatible materials can have mass redistributed."""
+        # These use the same material
+        self.assertTrue(self.distributor.compatabilityCheck())
+
+        monkeypatch = MonkeyPatch()
+        monkeypatch.setattr(materials, "_MATERIAL_NAMESPACE_ORDER", None)
+        td = directoryChangers.TemporaryDirectoryChanger()
+        td.__enter__()
+        try:
+            # Using YAML materials since these will have the same class just different names.
+            shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", td.destination)
+            shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'Inconel.yaml')}", td.destination)
+            namespaceOrder = [f"dir:{td.destination}", "armi.materials"]
+            materials.setMaterialNamespaceOrder(namespaceOrder)
+
+            # Now check incompatible materials
+            fromComp = Circle("fuel", "HT9", Tinput=500, Thot=500, od=1.0, mult=3)
+            fromComp.parent = BlockLike(7.3)
+            toComp = Circle("fuel", "Inconel", Tinput=500, Thot=500, od=1.0, mult=3)
+            # Arbitrary post-expansion height of the component prior to the truncation / extension
+            toComp.parent = BlockLike(self.toComp.height)
+
+            # Height of fromComp to be shifted to toComp
+            distributor = RedistributeMass(
+                fromComp=fromComp,
+                toComp=toComp,
+                deltaZTop=self.dz,
+                assemName=self._testMethodName,
+                initOnly=True,
+            )
+
+            self.assertFalse(distributor.compatabilityCheck())
+        finally:
+            monkeypatch.undo()
+            td.__exit__(None, None, None)
