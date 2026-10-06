@@ -19,10 +19,10 @@ These are limited in scope. More extensive testing is done in test_axialExpansio
 
 import os
 import shutil
-from pytest import MonkeyPatch
 from unittest import TestCase
 
 import numpy as np
+from pytest import MonkeyPatch
 
 from armi import materials
 from armi.materials.mostlyYaml import _RESOURCES_DIR
