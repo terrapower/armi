@@ -167,9 +167,9 @@ class TestMassRedistribution(TestCase):
         td.__enter__()
         try:
             # Using YAML materials since these will have the same class just different names.
-            shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", td.destination))
-            shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'Inconel.yaml')}", td.destination))
-            namespaceOrder = [f"dir:{td.destination)}", "armi.materials"]
+            shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'HT9.yaml')}", td.destination)
+            shutil.copy(f"{os.path.join(_RESOURCES_DIR, 'Inconel.yaml')}", td.destination)
+            namespaceOrder = [f"dir:{td.destination}", "armi.materials"]
             materials.setMaterialNamespaceOrder(namespaceOrder)
 
             # Now check incompatible materials
