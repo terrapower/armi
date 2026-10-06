@@ -1139,15 +1139,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
 
     def _compareTwoReactors(self, r, r2):
         """A helper to compare the first fuel block between two reactors."""
-        # pulling a fuel component from reactor one
-        a = r.core.getFirstAssembly(Flags.FUEL)
-        b = a.getFirstBlock(Flags.FUEL)
-        c = b.getFirstComponent(Flags.FUEL)
-
-        # pulling a fuel component from reactor one
-        a2 = r2.core.getFirstAssembly(Flags.FUEL)
-        b2 = a2.getFirstBlock(Flags.FUEL)
-        c2 = b2.getFirstComponent(Flags.FUEL)
+        # pulling a fuel component from both reactors
+        c = r.core.getFirstComponent(Flags.FUEL)
+        c2 = r2.core.getFirstComponent(Flags.FUEL)
 
         # show the number of fuel atoms is preserved
         hmm = c.getHMMoles()
