@@ -160,7 +160,6 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     @staticmethod
     def _copyLibraryFilesForCycle(cycle, libFiles):
-        runLog.extra(f"Current library files: {libFiles}")
         for baseName, cycleName in libFiles.items():
             if not os.path.exists(cycleName):
                 if not os.path.exists(baseName):
@@ -172,8 +171,10 @@ class LatticePhysicsInterface(interfaces.Interface):
                     f"Existing library {cycleName} for cycle {cycle} does not exist. The active library is {baseName}"
                 )
             else:
+                print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
                 runLog.info(f"Using {baseName} as an active library")
                 if cycleName != baseName:
+                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     safeCopy(cycleName, baseName)
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):

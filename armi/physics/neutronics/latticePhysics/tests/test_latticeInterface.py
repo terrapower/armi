@@ -14,29 +14,28 @@
 
 """Test the Lattice Interface."""
 
-import unittest
+import os
 from collections import OrderedDict
+from unittest import TestCase
+from unittest.mock import patch
 
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.operators.operator import Operator
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
-from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
-    LatticePhysicsInterface,
-)
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import LatticePhysicsInterface
 from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
-from armi.reactor.assemblies import (
-    HexAssembly,
-    grids,
-)
+from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.reactors import Core, Reactor
 from armi.testing import buildSimpleFuelHexBlock, mockRunLogs
 from armi.tests import ISOAA_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
-# As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
+    """As an interface, LatticePhysicsInterface must be subclassed to be used. So this is here for testing."""
+
     def __init__(self, r, cs):
         self.name = "LatticeInterfaceTester"
         super().__init__(r, cs)
@@ -56,7 +55,7 @@ class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
         return False
 
 
-class TestLatticePhysicsInterfaceBase(unittest.TestCase):
+class TestLatticePhysicsInterfaceBase(TestCase):
     @classmethod
     def setUpClass(cls):
         # create empty reactor core
@@ -74,7 +73,7 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
 
 
 class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
-    """Test Lattice Physics Interface."""
+    """Tests for the Lattice Physics Interface that require a Reactor and/or an Operator."""
 
     @classmethod
     def setUpClass(cls):
@@ -113,8 +112,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
-        self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses self.testVerification
+        instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
         self.latticeInterface.interactBOL()
@@ -132,8 +131,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
-        self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses self.testVerification
+        instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
         self.latticeInterface.interactBOC()
@@ -156,8 +155,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeWhenCoupled(self):
         """
-        Test that the XS lib is not cleared when coupled iterations are turned on
-        and XS will be generated during the coupled iterations.
+        Test that the XS lib is not cleared when coupled iterations are turned on and XS will be generated during the
+        coupled iterations.
         """
         self.o.couplingIsActive = lambda: True
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
@@ -170,8 +169,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeWhenCoupledButNot(self):
         """
-        Test that the XS lib is cleared when coupled iterations are turned on
-        but the lattice physics frequency is not high enough.
+        Test that the XS lib is cleared when coupled iterations are turned on but the lattice physics frequency is not
+        high enough.
         """
         self.o.couplingIsActive = lambda: True
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
@@ -289,3 +288,41 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
         self.assembly[0].p.xsType = "B"
         return self.latticeInterface._getBlocksAndXsIds()
+
+
+class TestLatticePhysicsInterfaceSimple(TestCase):
+    """Lattice Physics Interface tests that do not require a Reactor object."""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    @patch("armi.utils.safeCopy")
+    def test_copyLibraryFilesForCycle(self, mockCopy):
+        cycleFile = os.path.join(self.td.destination, "cycle.txt")
+        baseFile = os.path.join(self.td.destination, "base.txt")
+        libFiles = {baseFile: cycleFile}
+
+        # Test Case 0: Neither file exists
+        with self.assertRaises(ValueError):
+            LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+
+        # Test Case 1: cycleName does not exist
+        open(baseFile, "w").write("Hi, mom.")
+        with mockRunLogs.BufferLog() as mockLog:
+            LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+
+            stdOut = mockLog.getStdout()
+            self.assertIn("Existing library", stdOut)
+            self.assertIn("does not exist", stdOut)
+
+        # Test Case 2: cycleName exists, and we want to copy
+        open(cycleFile, "w").write("Data!")
+        with mockRunLogs.BufferLog() as mockLog:
+            LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+
+            stdOut = mockLog.getStdout()
+            self.assertIn(f"Using {baseFile} as an active library", stdOut)
