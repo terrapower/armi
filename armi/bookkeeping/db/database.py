@@ -816,7 +816,7 @@ class Database:
         for assem in reactor.core.getAssemblies(includeSFP=True):
             assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
             if assemDesign is None:
-                # There are no material modifications here, this is an empty/test block.
+                # Probably this is a unit test and your DB has no blueprints in it.
                 continue
 
             assemDesign.checkMatModConsistency()
