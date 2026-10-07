@@ -1118,7 +1118,7 @@ material modifications
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
 
-Please note that while the ``standard`` run types allow for material modifications to be heterogeneous. E.g., the following is a valid modification:
+Please note that the ``standard`` run types allow for material modifications to be heterogeneous. E.g., the following is a valid modification:
 
 .. code-block:: yaml
 
