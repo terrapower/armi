@@ -14,29 +14,29 @@
 
 """Test the Lattice Interface."""
 
-import unittest
+import os
 from collections import OrderedDict
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.operators.operator import Operator
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
-from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
-    LatticePhysicsInterface,
-)
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import LatticePhysicsInterface
 from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
-from armi.reactor.assemblies import (
-    HexAssembly,
-    grids,
-)
+from armi.reactor.assemblies import HexAssembly, grids
+from armi.reactor.blocks import HexBlock
 from armi.reactor.reactors import Core, Reactor
 from armi.testing import buildSimpleFuelHexBlock, mockRunLogs
 from armi.tests import ISOAA_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
-# As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
+    """As an interface, LatticePhysicsInterface must be subclassed to be used. So this is here for testing."""
+
     def __init__(self, r, cs):
         self.name = "LatticeInterfaceTester"
         super().__init__(r, cs)
@@ -47,6 +47,9 @@ class LatticeInterfaceTester(LatticePhysicsInterface):
     def readExistingXSLibraries(self, cycle, node):
         pass
 
+    def _getGeomDependentWriters(self, representativeBlock, xsID, geom, xsLibrarySuffix):
+        return ["FakeWriter1", "MockWriter2"]
+
 
 class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
     """Subclass setting _newLibraryShouldBeCreated = False."""
@@ -56,7 +59,7 @@ class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
         return False
 
 
-class TestLatticePhysicsInterfaceBase(unittest.TestCase):
+class TestLatticePhysicsInterfaceBase(TestCase):
     @classmethod
     def setUpClass(cls):
         # create empty reactor core
@@ -74,7 +77,7 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
 
 
 class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
-    """Test Lattice Physics Interface."""
+    """Tests for the Lattice Physics Interface that require a Reactor and/or an Operator."""
 
     @classmethod
     def setUpClass(cls):
@@ -113,8 +116,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
-        self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses self.testVerification
+        instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
         self.latticeInterface.interactBOL()
@@ -132,8 +135,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
-        self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses self.testVerification
+        instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
         self.latticeInterface.interactBOC()
@@ -156,8 +159,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeWhenCoupled(self):
         """
-        Test that the XS lib is not cleared when coupled iterations are turned on
-        and XS will be generated during the coupled iterations.
+        Test that the XS lib is not cleared when coupled iterations are turned on and XS will be generated during the
+        coupled iterations.
         """
         self.o.couplingIsActive = lambda: True
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
@@ -170,8 +173,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeWhenCoupledButNot(self):
         """
-        Test that the XS lib is cleared when coupled iterations are turned on
-        but the lattice physics frequency is not high enough.
+        Test that the XS lib is cleared when coupled iterations are turned on but the lattice physics frequency is not
+        high enough.
         """
         self.o.couplingIsActive = lambda: True
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
@@ -213,7 +216,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_getSuffix(self):
-        self.assertEqual(self.latticeInterface._getSuffix(7), "")
+        for cycle in range(5):
+            self.assertEqual(self.latticeInterface._getSuffix(cycle), "")
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
@@ -264,6 +268,11 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             )
             self.assertFalse(xsGen)
 
+    def _modifyXSType(self):
+        self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
+        self.assembly[0].p.xsType = "B"
+        return self.latticeInterface._getBlocksAndXsIds()
+
     def test_libCreation_GenXS_2(self):
         """ISOTXS present and does not have all of the necessary information."""
         self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
@@ -285,7 +294,62 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertIn("These will be generated on cycle ", mock.getStdout())
             self.assertTrue(xsGen)
 
-    def _modifyXSType(self):
-        self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
-        self.assembly[0].p.xsType = "B"
-        return self.latticeInterface._getBlocksAndXsIds()
+    def test_interactEOC(self):
+        self.assertIsNotNone(self.latticeInterface.r.core.lib)
+        self.latticeInterface.interactEOC()
+        self.assertIsNone(self.latticeInterface.r.core.lib)
+
+    def test_generateLatticePhysicsInputs(self):
+        with self.assertRaises(ValueError):
+            # null test
+            self.latticeInterface.generateLatticePhysicsInputs(None, "", [])
+
+        # This test Reactor is empty, mock up a Block.
+        b = HexBlock("AA", height=10.0)
+        blocks = [b]
+
+        # Mock over the writer, to make the test simpler.
+        mockWriter = MagicMock()
+        mockWriter.write.return_value = "result"
+        self.latticeInterface.getWriters = MagicMock(return_value=[mockWriter])
+
+        results = self.latticeInterface.generateLatticePhysicsInputs(["AA"], "test", blocks)
+        self.assertEqual(results[0], "result")
+
+
+class TestLatticePhysicsInterfaceStatic(TestCase):
+    """Lattice Physics Interface tests of static methods that do not require a Reactor object."""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    @patch("armi.utils.safeCopy")
+    def test_copyLibraryFilesForCycle(self, mockCopy):
+        cycleFile = os.path.join(self.td.destination, "cycle.txt")
+        baseFile = os.path.join(self.td.destination, "base.txt")
+        libFiles = {baseFile: cycleFile}
+
+        # Test Case 0: Neither file exists
+        with self.assertRaises(ValueError):
+            LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+
+        # Test Case 1: cycleName does not exist
+        open(baseFile, "w").write("Hi, mom.")
+        with mockRunLogs.BufferLog() as mockLog:
+            LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+
+            stdOut = mockLog.getStdout()
+            self.assertIn("Existing library", stdOut)
+            self.assertIn("does not exist", stdOut)
+
+        # Test Case 2: cycleName exists, and we want to copy
+        open(cycleFile, "w").write("Data!")
+        with mockRunLogs.BufferLog() as mockLog:
+            LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+
+            stdOut = mockLog.getStdout()
+            self.assertIn(f"Using {baseFile} as an active library", stdOut)
