@@ -853,9 +853,6 @@ class Database:
                         continue
 
                     mat = comp.material
-                    if mat is None:
-                        continue
-
                     mat.applyInputParams(
                         **filteredMatInput,
                         customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
