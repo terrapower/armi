@@ -23,9 +23,10 @@ from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.operators.operator import Operator
 from armi.physics.neutronics import LatticePhysicsFrequency
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import LatticePhysicsInterface
-from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
+from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE, CONF_XS_BLOCK_REPRESENTATION
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.reactors import Core, Reactor
@@ -46,6 +47,9 @@ class LatticeInterfaceTester(LatticePhysicsInterface):
 
     def readExistingXSLibraries(self, cycle, node):
         pass
+
+    def _getGeomDependentWriters(self, representativeBlock, xsID, geom, xsLibrarySuffix):
+        return ["FakeWriter1", "MockWriter2"]
 
 
 class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
@@ -312,6 +316,17 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
 
         results = self.latticeInterface.generateLatticePhysicsInputs(["AA"], "test", blocks)
         self.assertEqual(results[0], "result")
+
+    def test_getWriters(self):
+        # This test Reactor is empty, mock up a Block.
+        b = HexBlock("AA", height=10.0)
+
+        self.o.cs[CONF_CROSS_SECTION].setDefaults(
+            blockRepresentation=self.o.cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=None
+        )
+        writers = self.latticeInterface.getWriters(b, "test")
+        self.assertEqual(writers[0], "FakeWriter1")
+        self.assertEqual(writers[1], "MockWriter2")
 
 
 class TestLatticePhysicsInterfaceStatic(TestCase):
