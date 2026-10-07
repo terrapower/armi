@@ -212,7 +212,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_getSuffix(self):
-        self.assertEqual(self.latticeInterface._getSuffix(7), "")
+        for cycle in range(5):
+            self.assertEqual(self.latticeInterface._getSuffix(cycle), "")
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
@@ -263,6 +264,11 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             )
             self.assertFalse(xsGen)
 
+    def _modifyXSType(self):
+        self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
+        self.assembly[0].p.xsType = "B"
+        return self.latticeInterface._getBlocksAndXsIds()
+
     def test_libCreation_GenXS_2(self):
         """ISOTXS present and does not have all of the necessary information."""
         self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
@@ -284,10 +290,10 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertIn("These will be generated on cycle ", mock.getStdout())
             self.assertTrue(xsGen)
 
-    def _modifyXSType(self):
-        self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
-        self.assembly[0].p.xsType = "B"
-        return self.latticeInterface._getBlocksAndXsIds()
+    def test_interactEOC(self):
+        self.assertIsNotNone(self.latticeInterface.r.core.lib)
+        self.latticeInterface.interactEOC()
+        self.assertIsNone(self.latticeInterface.r.core.lib)
 
 
 class TestLatticePhysicsInterfaceSimple(TestCase):
