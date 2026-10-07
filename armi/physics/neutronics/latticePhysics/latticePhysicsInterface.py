@@ -15,7 +15,7 @@
 """
 Lattice Physics Interface.
 
-Parent classes for codes responsible for generating broad-group cross sections.
+Parent classes for external programs responsible for generating broad-group cross sections.
 """
 
 import os
@@ -65,7 +65,7 @@ def setBlockNeutronVelocities(r, neutronVelocities):
 
 
 class LatticePhysicsInterface(interfaces.Interface):
-    """Class for interacting with lattice physics codes."""
+    """Class for interacting with external lattice physics programs."""
 
     purpose = LATTICE_PHYSICS
 
@@ -295,9 +295,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         Returns
         -------
         returnedFromWriters: list
-            A list of what this specific writer instance returns for each representative block.
-            It is the responsibility of the subclassed interface to implement.
-            In many cases, it is the executing agent.
+            A list of what this specific writer instance returns for each representative block. It is the responsibility
+            of the subclassed interface to implement. In many cases, it is the executing agent.
         """
         returnedFromWriters = []
         baseList = set(baseList or [])
@@ -368,8 +367,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         #. CONF_GEN_XS setting is turned on
         #. We are beyond any requested skipCycles (restart cycles)
         #. The blocks have changed burnup beyond the burnup threshold
-        #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
-           (possible if it runs during fuel handling)
+        #. Kernel (e.g. MC2) hasn't already been executed for this cycle (possible if it runs during fuel handling)
         """
         executeXSGen = bool(self.cs[CONF_GEN_XS] and cycle >= self.cs["skipCycles"])
         idsChangedBurnup = self._checkBurnupThresholds(representativeBlockList)
