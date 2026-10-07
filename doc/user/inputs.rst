@@ -1124,7 +1124,7 @@ Please note that the ``standard`` run types allow for material modifications to 
 
     ``U235_wt_frac = ['', '', '', 0.05, 0.075, 0.10, '', '', '']``
 
-However, if you want to load a simulation from a Database, saying using ``Database.load()`` or with  ``restart`` and ``snapshot`` run types ahave a limitation in that material modifications must be homogeneous. The following is a valid modification:
+However, loading a reactor from a Database, say using ``Database.load()`` or with  ``restart`` or ``snapshot`` run types, has a limitation in that material modifications must be homogeneous. The following is a valid modification for database loading:
 
 .. code-block:: yaml
 
