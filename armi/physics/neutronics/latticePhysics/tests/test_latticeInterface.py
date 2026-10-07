@@ -17,7 +17,7 @@
 import os
 from collections import OrderedDict
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
@@ -27,6 +27,7 @@ from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupMa
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import LatticePhysicsInterface
 from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 from armi.reactor.assemblies import HexAssembly, grids
+from armi.reactor.blocks import HexBlock
 from armi.reactor.reactors import Core, Reactor
 from armi.testing import buildSimpleFuelHexBlock, mockRunLogs
 from armi.tests import ISOAA_PATH
@@ -295,9 +296,26 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.interactEOC()
         self.assertIsNone(self.latticeInterface.r.core.lib)
 
+    def test_generateLatticePhysicsInputs(self):
+        with self.assertRaises(ValueError):
+            # null test
+            self.latticeInterface.generateLatticePhysicsInputs(None, "", [])
 
-class TestLatticePhysicsInterfaceSimple(TestCase):
-    """Lattice Physics Interface tests that do not require a Reactor object."""
+        # This test Reactor is empty, mock up a Block.
+        b = HexBlock("AA", height=10.0)
+        blocks = [b]
+
+        # Mock over the writer, to make the test simpler.
+        mockWriter = MagicMock()
+        mockWriter.write.return_value = "result"
+        self.latticeInterface.getWriters = MagicMock(return_value=[mockWriter])
+
+        results = self.latticeInterface.generateLatticePhysicsInputs(["AA"], "test", blocks)
+        self.assertEqual(results[0], "result")
+
+
+class TestLatticePhysicsInterfaceStatic(TestCase):
+    """Lattice Physics Interface tests of static methods that do not require a Reactor object."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()

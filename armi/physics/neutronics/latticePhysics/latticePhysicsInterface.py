@@ -171,10 +171,8 @@ class LatticePhysicsInterface(interfaces.Interface):
                     f"Existing library {cycleName} for cycle {cycle} does not exist. The active library is {baseName}"
                 )
             else:
-                print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
                 runLog.info(f"Using {baseName} as an active library")
                 if cycleName != baseName:
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     safeCopy(cycleName, baseName)
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
