@@ -743,6 +743,10 @@ class Database:
         parameterCollections.GLOBAL_SERIAL_NUM = max(parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max())
         root = comps[0][0]
 
+        # assign material modifications from blueprints
+        if bp is not None:
+            self._assignBlueprintsMatMods(bp, root)
+
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
             root.sort()
@@ -795,6 +799,66 @@ class Database:
                     val = getattr(design, pName)
                     if val is not None:
                         comp.p[pName] = val
+
+    @staticmethod
+    def _assignBlueprintsMatMods(blueprints, reactor):
+        """Helper method, to retroactively apply material modifications to a Reactor, when loading from a DB.
+
+        Parameters
+        ----------
+        blueprints : Blueprints
+            Fully initialized Blueprints object, from the DB we are loading.
+        reactor : Reactor
+            Fully initialized Reactor object, we are trying to load from DB.
+        """
+        from armi.reactor.blueprints.componentBlueprint import expandElementals
+
+        for assem in reactor.core.getAssemblies(includeSFP=True):
+            assemDesign = blueprints.assemDesigns.get(assem.p.type, None)
+            if assemDesign is None:
+                # Probably this is a unit test and your DB has no blueprints in it.
+                continue
+
+            assemDesign.checkMatModConsistency()
+
+            # collate the material modifications for this Block
+            matInput = {}
+            matMods = {
+                "byBlock": {**assemDesign.materialModifications},
+                **assemDesign.materialModifications.byComponent,
+            }
+            for byWhat, mods in matMods.items():
+                # byWhat: for by-block is "byBlock" or for by-component will be comp names, like "fuel" or "clad"
+                # mods: will be things like {'U235_wt_frac': [0.11], 'ZR_wt_frac': [0.06]}
+                matInput[byWhat] = {}
+                for modName, modList in mods.items():
+                    # find the first non-empty / non-None value in the list
+                    for modVal in modList:
+                        if modVal not in ("", None):
+                            matInput[byWhat][modName] = modVal
+                            break
+
+            # Skip this Assembly if it declares no mat mods
+            numMods = sum([len(m) for m in matInput.values()])
+            if not numMods:
+                continue
+
+            for block in assem:
+                blockDesign = blueprints.blockDesigns[block.p.type]
+
+                for comp in block:
+                    compDesign = blockDesign[comp.name]
+                    filteredMatInput, _ = blockDesign.filterMaterialInput(matInput, compDesign)
+                    if not filteredMatInput:
+                        continue
+
+                    mat = comp.material
+                    mat.applyInputParams(
+                        **filteredMatInput,
+                        customIsotopics={k: v.massFracs for k, v in blueprints.customIsotopics.items()},
+                    )
+                    expandElementals(mat, blueprints)
+                    comp.clearCache()
 
     def _compose(self, comps, cs, parent=None):
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""

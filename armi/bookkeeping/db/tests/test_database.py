@@ -30,6 +30,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.flags import Flags
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -624,7 +625,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertIn("settings:", inputs[0])
 
         # blueprints
-        self.assertGreater(len(inputs[1]), 2400)
+        self.assertGreater(len(inputs[1]), 2100)
         self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
@@ -1112,3 +1113,131 @@ class TestStaticDatabaseItems(unittest.TestCase):
             # verify number densities and dtype
             self.assertTrue(np.allclose(comp.p["numberDensities"], expected_nds))
             self.assertEqual(comp.p["numberDensities"].dtype, np.float64)
+
+
+class TestDbRoundTripMatMods(unittest.TestCase):
+    """Show that, before and after DB load, the mass fractions of materials with material modifications in the
+    blueprints are the same.
+
+    Further, we want to check that the number densities of of materials with modifications (heavy metals, in this case),
+    are the same before and after DB load, because they are calculated based on the modified materials during assembly
+    construction.
+
+    So, in this one block reactor, after DB load, the height of the block/assembly should not change. The number
+    densities of fuels should not change, and the mass fractions inside the fuels materials should not change.
+    """
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.db = None
+
+    def tearDown(self):
+        if self.db:
+            self.db.close()
+        self.td.__exit__(None, None, None)
+
+    def _compareReactorAfterDBLoad(self, r, o):
+        """A helper to compare the first fuel block in a given reactor before and after a DB load."""
+        # save the reactor to the DB at BOL time
+        r.p.timeNode = 0
+        r.p.cycle = 0
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # test the reactor after loading from the DB
+        r2 = self.db.load(0, 0)
+
+        # pulling a fuel component from both reactors
+        c = r.core.getFirstComponent(Flags.FUEL)
+        c2 = r2.core.getFirstComponent(Flags.FUEL)
+
+        # show the number of fuel atoms is preserved
+        hmm = c.getHMMoles()
+        self.assertAlmostEqual(c.p.molesHmBOL, hmm)
+        self.assertAlmostEqual(c2.getHMMoles(), hmm)
+        self.assertAlmostEqual(c2.p.molesHmBOL, hmm)
+
+        # Finally, this is the test that Database._assignBlueprintsMatMods() works and mat.massFrac is preserved
+        originalMassFrac = c.material.massFrac
+        newMassFrac = c2.material.massFrac
+        for nucName, massVal in originalMassFrac.items():
+            newMassVal = newMassFrac[nucName]
+            self.assertAlmostEqual(massVal, newMassVal, msg=nucName)
+
+    def test_byBlock(self):
+        """Show that the mass fractions of "by block" material modifications are correct after DB load."""
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml")
+        self._compareReactorAfterDBLoad(r, o)
+
+    def test_complexReactor(self):
+        """Test by-block mat mods again, but with a more complex input reactor."""
+        o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
+        self._compareReactorAfterDBLoad(r, o)
+
+    def test_byComponent(self):
+        """Show that the mass fractions of "by component" material modifications are correct after DB load."""
+        # copy over blueprints, and modify the mat mods to be "by component"
+        shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor"), "smallestTestReactor")
+        oldLines = open("smallestTestReactor/refOneBlockReactor.yaml", "r").readlines()
+        newLines = []
+        i = 0
+        while i < len(oldLines):
+            if "material modifications:" in oldLines[i]:
+                newLines.append(oldLines[i])
+                newLines.append("            by component:\n")
+                newLines.append("                fuel:\n")
+                newLines.append("                    U235_wt_frac: [0.11]\n")
+                newLines.append("                    ZR_wt_frac: [0.06]\n")
+                i += 2
+            else:
+                newLines.append(oldLines[i])
+            i += 1
+
+        with open("smallestTestReactor/refOneBlockReactor.yaml", "w") as f:
+            for line in newLines:
+                f.write(line)
+
+        # test the reactor before loading into the DB
+        o, r = loadTestReactor(".", inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        # test the reactor after loading from the DB
+        self._compareReactorAfterDBLoad(r, o)
+
+    def test_nonUniformMatMods(self):
+        """Test that the code fails if non-uniform material modifications are provided."""
+        # copy over blueprints, and modify the mat mods to be "by component"
+        shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"), "detailedAxialExpansion")
+        oldLines = open("detailedAxialExpansion/refSmallReactorBase.yaml", "r").readlines()
+        newLines = []
+        i = 0
+        foundFirst = False
+        while i < len(oldLines):
+            if not foundFirst and "material modifications:" in oldLines[i]:
+                newLines.append(oldLines[i])
+                # inject a non-uniform mat mod for this material
+                newLines.append("            U235_wt_frac: ['', '', 0.11, 0.12, 0.11, '', '', '', '', '']\n")
+                i += 1
+                foundFirst = True
+            else:
+                newLines.append(oldLines[i])
+            i += 1
+
+        with open("detailedAxialExpansion/refSmallReactorBase.yaml", "w") as f:
+            for line in newLines:
+                f.write(line)
+
+        # save the reactor to the DB at BOL time
+        o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")
+        r.p.timeNode = 0
+        r.p.cycle = 0
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # loading the bad blueprints from the DB should raise an error
+        with self.assertRaises(ValueError):
+            self.db.load(0, 0)

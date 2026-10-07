@@ -824,7 +824,7 @@ Dimensions of a component may depend on the dimensions of a previously-defined c
 instance, the sodium bond between fuel and cladding. The format is simply ``<componentName>.<dimensionName>``. The
 dimension names are available in the table above.
 
-::
+.. code-block:: yaml
 
     blocks:
         fuel:                       # block name
@@ -868,6 +868,8 @@ block may assigned a grid name, and then each component may be assigned one or m
 For example, the following input section specifies that fuel pins will occupy all grid positions marked with a ``1`` and
 cladding components will occupy all grid positions marked with either a ``1`` or a ``2``. This situation may be
 desirable when some burnable poison pins use the same cladding as the fuel pins. ::
+
+.. code-block:: yaml
 
     blocks:
         fuel: &block_fuel
@@ -939,20 +941,22 @@ assemblies use YAML anchors to refer to the blocks defined in the previous secti
 
 A complete definition of an inner-core assembly may be seen below::
 
-        assemblies:
-            heights: &standard_heights [10.05, 20.10, 30.15, 20.10, 20.10, 30.15]
-            axial mesh points: &standard_axial_mesh_points [1, 2, 3, 4, 5, 6]
-            inner core:
-                specifier: IC
-                blocks: &inner_core_blocks [*block_shield, *block_fuel, *block_fuel, *block_fuel, *block_fuel, *block_plenum]
-                height: *standard_heights
-                axial mesh points: *standard_axial_mesh_points
-                hotChannelFactors: TWRPclad
-                material modifications:
-                    U235_wt_frac: ['', '', 0.001, 0.002, 0.03, '']
-                    ZR_wt_frac: ['', '', 0.1, 0.1, 0.1, 0.1]
-                nozzleType: Inner
-                xs types: [A, B, C, D, E, F]
+.. code-block:: yaml
+
+    assemblies:
+        heights: &standard_heights [10.05, 20.10, 30.15, 20.10, 20.10, 30.15]
+        axial mesh points: &standard_axial_mesh_points [1, 2, 3, 4, 5, 6]
+        inner core:
+            specifier: IC
+            blocks: &inner_core_blocks [*block_shield, *block_fuel, *block_fuel, *block_fuel, *block_fuel, *block_plenum]
+            height: *standard_heights
+            axial mesh points: *standard_axial_mesh_points
+            hotChannelFactors: TWRPclad
+            material modifications:
+                U235_wt_frac: ['', '', 0.001, 0.002, 0.03, '']
+                ZR_wt_frac: ['', '', 0.1, 0.1, 0.1, 0.1]
+            nozzleType: Inner
+            xs types: [A, B, C, D, E, F]
 
 .. note::
         While component dimensions are entered as cold dimensions, axial heights may be entered as either cold or hot
@@ -1033,38 +1037,40 @@ material modifications
   assembly are made of the same base material but have different fuel enrichments. This is done using the ``by
   component`` attribute to the material modifications. For example::
 
-        blocks:
-            fuel: &block_fuel
-                fuel1: &component_fuel_fuel1
-                    shape: Hexagon
-                    material: UZr
-                    Tinput: 600.0
-                    Thot: 600.0
-                    ip: 0.0
-                    mult: 1
-                    op: 10.0
-                fuel2: &component_fuel_fuel2
-                    shape: Hexagon
-                    material: UZr
-                    Tinput: 600.0
-                    Thot: 600.0
-                    ip: 0.0
-                    mult: 1
-                    op: 10.0
-        assemblies:
-            fuel a: &assembly_a
-                specifier: IC
-                blocks: [*block_fuel]
-                height: [1.0]
-                axial mesh points: [1]
-                xs types: [A]
-                material modifications:
-                    by component:
-                        fuel1:
-                            U235_wt_frac: [0.20]
-                        fuel2:
-                            Zr_wt_frac: [0.02]
-                    U235_wt_frac: [0.30]
+.. code-block:: yaml
+
+    blocks:
+        fuel: &block_fuel
+            fuel1: &component_fuel_fuel1
+                shape: Hexagon
+                material: UZr
+                Tinput: 600.0
+                Thot: 600.0
+                ip: 0.0
+                mult: 1
+                op: 10.0
+            fuel2: &component_fuel_fuel2
+                shape: Hexagon
+                material: UZr
+                Tinput: 600.0
+                Thot: 600.0
+                ip: 0.0
+                mult: 1
+                op: 10.0
+    assemblies:
+        fuel a: &assembly_a
+            specifier: IC
+            blocks: [*block_fuel]
+            height: [1.0]
+            axial mesh points: [1]
+            xs types: [A]
+            material modifications:
+                by component:
+                    fuel1:
+                        U235_wt_frac: [0.20]
+                    fuel2:
+                        Zr_wt_frac: [0.02]
+                U235_wt_frac: [0.30]
 
   Material modifications specified on the ``material modifications`` level are referred to as "block default" values
   and apply to all components on the block not associated with a by-component value. The example above would apply an
@@ -1075,40 +1081,56 @@ material modifications
   addition, any by-component entries omitted for a given axial block will revert to the block default (or material class
   default, if no block default value is provided and a material class default exists) value::
 
-        blocks:
-            fuel: &block_fuel
-                fuel1: &component_fuel_fuel1
-                    shape: Hexagon
-                    material: UZr
-                    Tinput: 600.0
-                    Thot: 600.0
-                    ip: 0.0
-                    mult: 1
-                    op: 10.0
-                fuel2: &component_fuel_fuel2
-                    shape: Hexagon
-                    material: UZr
-                    Tinput: 600.0
-                    Thot: 600.0
-                    ip: 0.0
-                    mult: 1
-                    op: 10.0
-        assemblies:
-            fuel a: &assembly_a
-                specifier: IC
-                blocks: [*block_fuel, *block_fuel]
-                height: [0.5, 0.5]
-                axial mesh points: [1, 1]
-                xs types: [A, A]
-                material modifications:
-                    by component:
-                        fuel1:
-                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block default value
-                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
-                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
-                    U235_wt_frac: [0.30, 0.30]
+.. code-block:: yaml
+
+    blocks:
+        fuel: &block_fuel
+            fuel1: &component_fuel_fuel1
+                shape: Hexagon
+                material: UZr
+                Tinput: 600.0
+                Thot: 600.0
+                ip: 0.0
+                mult: 1
+                op: 10.0
+            fuel2: &component_fuel_fuel2
+                shape: Hexagon
+                material: UZr
+                Tinput: 600.0
+                Thot: 600.0
+                ip: 0.0
+                mult: 1
+                op: 10.0
+    assemblies:
+        fuel a: &assembly_a
+            specifier: IC
+            blocks: [*block_fuel, *block_fuel]
+            height: [0.5, 0.5]
+            axial mesh points: [1, 1]
+            xs types: [A, A]
+            material modifications:
+                by component:
+                    fuel1:
+                        U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block default value
+                    fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
+                        Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
+                U235_wt_frac: [0.30, 0.30]
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
+
+Please note that the ``standard`` run types allow for material modifications to be heterogeneous. E.g., the following is a valid modification:
+
+.. code-block:: yaml
+
+    ``U235_wt_frac = ['', '', '', 0.05, 0.075, 0.10, '', '', '']``
+
+However, loading a reactor from a Database, say using ``Database.load()`` or with  ``restart`` or ``snapshot`` run types, has a limitation in that material modifications must be homogeneous. The following is a valid modification for database loading:
+
+.. code-block:: yaml
+
+    ``U235_wt_frac = ['', '', '', 0.05, 0.05, 0.05, '', '', '']``
+
+This is due to mesh modifiers, as their use provides no guarantee that the number of blocks for a given assembly in a database match those in the blueprints. However, it is very easy to get around this limitation, just copy/paste your block in the blueprints so that if two blocks have different material modifications, they are given different names.
 
 .. _systems:
 
@@ -1117,6 +1139,8 @@ Systems
 Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
+
+.. code-block:: yaml
 
     systems:
         core:
