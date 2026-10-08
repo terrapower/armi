@@ -1229,15 +1229,6 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             for line in newLines:
                 f.write(line)
 
-        # save the reactor to the DB at BOL time
-        o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")
-        r.p.timeNode = 0
-        r.p.cycle = 0
-        dbi = DatabaseInterface(r, o.cs)
-        dbi.initDB(fName=f"{self._testMethodName}.h5")
-        self.db = dbi.database
-        self.db.writeToDB(r)
-
-        # loading the bad blueprints from the DB should raise an error
+        # Trying to create a reactor from bad blueprints should raise an error.
         with self.assertRaises(ValueError):
-            self.db.load(0, 0)
+            o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")

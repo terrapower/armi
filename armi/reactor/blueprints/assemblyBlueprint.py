@@ -159,7 +159,7 @@ class AssemblyBlueprint(yamlize.Object):
         for bType, aType in cls._assemTypes.items():
             if bType in blockClasses:
                 return aType
-        raise ValueError('Unsupported block geometries in {}: "{}"'.format(cls.name, blocks))
+        raise ValueError(f'Unsupported block geometries in {cls.name}: "{blocks}"')
 
     def construct(self, cs, blueprint):
         """
@@ -172,8 +172,9 @@ class AssemblyBlueprint(yamlize.Object):
         blueprint : Blueprint
             Root blueprint object containing relevant modeling options.
         """
-        runLog.info("Constructing assembly `{}`".format(self.name))
+        runLog.info(f"Constructing assembly `{self.name}`")
         self._checkParamConsistency()
+        self.checkMatModConsistency()
         a = self._constructAssembly(cs, blueprint)
         a.calculateZCoords()
         return a
@@ -309,11 +310,13 @@ class AssemblyBlueprint(yamlize.Object):
         """
         matMods = {"byBlock": {**self.materialModifications}, **self.materialModifications.byComponent}
         blockNames = [b.name for b in self.blocks]
+        errorMsg = ""
 
         for byWhat, blockMods in matMods.items():
             # byWhat = byBlock or it is a Component name (fuel, wire, clad, etc)
             # blockMods = things like {'U235_wt_frac': [0.11, ''], 'ZR_wt_frac': [0.06, '']}
             for modWhat, modList in blockMods.items():
+                assert len(blockNames) == len(modList)
                 # build a mapping of all the block mat mods
                 modMap = {}
                 for i, modVal in enumerate(modList):
@@ -331,13 +334,16 @@ class AssemblyBlueprint(yamlize.Object):
 
                     sameAsFirst = [m == mods[0] for m in mods]
                     if not all(sameAsFirst):
-                        msg = (
-                            f"The material modifications provided in the blueprints for Assembly {self.name} "
-                            f"are not uniform for block type {byWhat} and {modWhat}. Performing a database load for "
-                            "this scenario is not supported."
+                        errorMsg = (
+                            f"The material modifications provided in the blueprints for Assembly `{self.name}` for "
+                            f"block type `{byWhat}` and `{modWhat}` are not uniform: {mods} .Performing a database "
+                            "load for this scenario is not supported."
                         )
-                        runLog.error(msg)
-                        raise ValueError(msg)
+                        runLog.error(errorMsg)
+
+        # If errors were found, raise the last one; they were all logged.
+        if errorMsg:
+            raise ValueError(errorMsg)
 
 
 for paramDef in parameters.forType(assemblies.Assembly).inCategory(parameters.Category.assignInBlueprints):
