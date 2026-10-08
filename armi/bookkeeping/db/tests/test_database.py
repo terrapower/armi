@@ -1267,10 +1267,8 @@ class TestYAMLSerialization(unittest.TestCase):
         while i < len(oldLines):
             if "U235_wt_frac" in oldLines[i]:
                 if not found:
-                    newLines.append("            by component:\n")
-                    newLines.append("                fuel:\n")
                     newLines.append(
-                        "                    U235_wt_frac: &testing ['', '', 0.11, 0.11, 0.11, '', '', '', '', '']\n"
+                        "            U235_wt_frac: &testing ['', '', 0.11, 0.11, 0.11, '', '', '', '', '']\n"
                     )
                     found += 1
                 else:
