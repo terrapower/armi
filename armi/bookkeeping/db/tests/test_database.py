@@ -1206,8 +1206,8 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         # test the reactor after loading from the DB
         self._compareReactorAfterDBLoad(r, o)
 
-    def test_nonUniformMatMods(self):
-        """Test that the code fails if non-uniform material modifications are provided."""
+    def test_nonUniformMatMods1(self):
+        """Test that the code fails if non-uniform material modifications are provided; unequal nubers."""
         # copy over blueprints, and modify the mat mods to be "by component"
         shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"), "detailedAxialExpansion")
         oldLines = open("detailedAxialExpansion/refSmallReactorBase.yaml", "r").readlines()
@@ -1217,8 +1217,35 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         while i < len(oldLines):
             if not foundFirst and "material modifications:" in oldLines[i]:
                 newLines.append(oldLines[i])
-                # inject a non-uniform mat mod for this material
+                # inject a non-uniform mat mod for this material; unequal numbers
                 newLines.append("            U235_wt_frac: ['', '', 0.11, 0.12, 0.11, '', '', '', '', '']\n")
+                i += 1
+                foundFirst = True
+            else:
+                newLines.append(oldLines[i])
+            i += 1
+
+        with open("detailedAxialExpansion/refSmallReactorBase.yaml", "w") as f:
+            for line in newLines:
+                f.write(line)
+
+        # Trying to create a reactor from bad blueprints should raise an error.
+        with self.assertRaises(ValueError):
+            o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")
+
+    def test_nonUniformMatMods2(self):
+        """Test that the code fails if non-uniform material modifications are provided; missing number."""
+        # copy over blueprints, and modify the mat mods to be "by component"
+        shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"), "detailedAxialExpansion")
+        oldLines = open("detailedAxialExpansion/refSmallReactorBase.yaml", "r").readlines()
+        newLines = []
+        i = 0
+        foundFirst = False
+        while i < len(oldLines):
+            if not foundFirst and "material modifications:" in oldLines[i]:
+                newLines.append(oldLines[i])
+                # inject a non-uniform mat mod for this material; missing number
+                newLines.append("            U235_wt_frac: ['', '', '', 0.11, 0.11, '', '', '', '', '']\n")
                 i += 1
                 foundFirst = True
             else:
