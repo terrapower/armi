@@ -85,7 +85,7 @@ blocks:
             od: 0.86602
         bond:
             shape: Circle
-            material: Sodium 
+            material: Sodium
             Tinput: 25.0
             Thot: 470.0
             id: shield.od
