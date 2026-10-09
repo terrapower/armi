@@ -174,7 +174,6 @@ class AssemblyBlueprint(yamlize.Object):
         """
         runLog.info(f"Constructing assembly `{self.name}`")
         self._checkParamConsistency()
-        self.checkMatModConsistency()
         a = self._constructAssembly(cs, blueprint)
         a.calculateZCoords()
         return a
