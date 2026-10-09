@@ -1206,7 +1206,7 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         # test the reactor after loading from the DB
         self.__compareReactorAfterDBLoad(r, o)
 
-    def __tryNonUniformMatMadLargeR(self, newText):
+    def __tryNonUniformMatMadLargeR(self, newText: str):
         """Helper method, to test some non-uniform mat mod on a larger test reactor."""
         # copy over blueprints, and modify the mat mods to be "by component"
         shutil.copytree(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"), "detailedAxialExpansion")
@@ -1229,9 +1229,18 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             for line in newLines:
                 f.write(line)
 
-        # Trying to create a reactor from bad blueprints should raise an error.
+        # load the reactor
+        o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")
+
+        # Trying to load a reactor with bad blueprints should raise an error.
+        dbi = DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=f"{self._testMethodName}.h5")
+        self.db = dbi.database
+        self.db.writeToDB(r)
+
+        # test the reactor after loading from the DB
         with self.assertRaises(ValueError):
-            o, r = loadTestReactor(".", inputFileName="detailedAxialExpansion/armiRun.yaml")
+            self.db.load(0, 0)
 
     def test_nonUniformMatMods1(self):
         """Test that the code fails if non-uniform material modifications are provided; unequal nubers."""
