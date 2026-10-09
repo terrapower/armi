@@ -18,6 +18,7 @@ import pathlib
 import random
 import shutil
 import string
+from functools import wraps
 
 from armi import context, runLog
 from armi.utils import pathTools, safeCopy, safeMove
@@ -338,9 +339,8 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
             try:
                 os.makedirs(self.destination)
             except OSError as ee:
-                # even though we checked exists, this still fails
-                # sometimes when multiple MPI nodes try
-                # to make the dirs due to I/O delays
+                # Even though we checked exists, this still fails sometimes when multiple MPI nodes try to make the dirs
+                # due to I/O delays.
                 runLog.error(f"Failed to make destination folder: {self.destination}. Exception: {ee}")
         else:
             runLog.extra(f"Destination folder already exists: {self.destination}")
@@ -356,3 +356,22 @@ def directoryChangerFactory():
         return MpiDirectoryChanger
     else:
         return DirectoryChanger
+
+
+def tmpDir(func):
+    """A decorator to allow TEST code to run in a temporary directory."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with TemporaryDirectoryChanger():
+            return func(*args, **kwargs)
+            """
+            startDir = os.getcwd()
+            os.chdir(tDir)
+            try:
+                return func(*args, **kwargs)
+            finally:
+                os.chdir(startDir)
+            """
+
+    return wrapper
