@@ -23,7 +23,7 @@ from shutil import rmtree
 
 from armi import context, runLog
 from armi.testing import mockRunLogs
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.directoryChangers import tmpDir
 
 
 class TestRunLog(unittest.TestCase):
@@ -378,6 +378,7 @@ class TestRunLog(unittest.TestCase):
             self.assertEqual(logs.count(msgInfo), 1)
             self.assertEqual(logs.count(msgWarn), 1)
 
+    @tmpDir
     def test_concatenateLogs(self):
         """
         Simple test of the concat logs function.
@@ -390,60 +391,60 @@ class TestRunLog(unittest.TestCase):
             :id: T_ARMI_LOG_IO1
             :tests: R_ARMI_LOG_IO
         """
-        with TemporaryDirectoryChanger():
-            # create the log dir
-            logDir = "test_concatenateLogs"
-            if os.path.exists(logDir):
-                rmtree(logDir)
-            runLog.createLogDir(logDir)
+        # create the log dir
+        logDir = "test_concatenateLogs"
+        if os.path.exists(logDir):
+            rmtree(logDir)
+        runLog.createLogDir(logDir)
 
-            # create as stdout file
-            stdoutFile1 = os.path.join(logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
-            with open(stdoutFile1, "w") as f:
-                f.write("hello world\n")
+        # create as stdout file
+        stdoutFile1 = os.path.join(logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
+        with open(stdoutFile1, "w") as f:
+            f.write("hello world\n")
 
-            stdoutFile2 = os.path.join(logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME))
-            with open(stdoutFile2, "w") as f:
-                f.write("hello other world\n")
+        stdoutFile2 = os.path.join(logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME))
+        with open(stdoutFile2, "w") as f:
+            f.write("hello other world\n")
 
-            # verify behavior for a corner case
-            stdoutFile3 = os.path.join(logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
-            with open(stdoutFile3, "w") as f:
-                f.write("hello world again\n")
+        # verify behavior for a corner case
+        stdoutFile3 = os.path.join(logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
+        with open(stdoutFile3, "w") as f:
+            f.write("hello world again\n")
 
-            self.assertTrue(os.path.exists(stdoutFile1))
-            self.assertTrue(os.path.exists(stdoutFile2))
-            self.assertTrue(os.path.exists(stdoutFile3))
+        self.assertTrue(os.path.exists(stdoutFile1))
+        self.assertTrue(os.path.exists(stdoutFile2))
+        self.assertTrue(os.path.exists(stdoutFile3))
 
-            # create a stderr file
-            stderrFile = os.path.join(logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME))
-            with open(stderrFile, "w") as f:
-                f.write("goodbye cruel world\n")
+        # create a stderr file
+        stderrFile = os.path.join(logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME))
+        with open(stderrFile, "w") as f:
+            f.write("goodbye cruel world\n")
 
-            self.assertTrue(os.path.exists(stderrFile))
+        self.assertTrue(os.path.exists(stderrFile))
 
-            # concat logs
-            runLog.concatenateLogs(logDir=logDir)
+        # concat logs
+        runLog.concatenateLogs(logDir=logDir)
 
-            # verify output
-            combinedLogFile = os.path.join(logDir, "runLogTest-mpi.log")
-            self.assertTrue(os.path.exists(combinedLogFile))
-            self.assertFalse(os.path.exists(stdoutFile1))
-            self.assertFalse(os.path.exists(stdoutFile2))
-            self.assertFalse(os.path.exists(stdoutFile3))
-            self.assertFalse(os.path.exists(stderrFile))
+        # verify output
+        combinedLogFile = os.path.join(logDir, "runLogTest-mpi.log")
+        self.assertTrue(os.path.exists(combinedLogFile))
+        self.assertFalse(os.path.exists(stdoutFile1))
+        self.assertFalse(os.path.exists(stdoutFile2))
+        self.assertFalse(os.path.exists(stdoutFile3))
+        self.assertFalse(os.path.exists(stderrFile))
 
-            # verify behavior for a corner case
-            stdoutFile3 = os.path.join(logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
-            with open(stdoutFile3, "w") as f:
-                f.write("hello world again\n")
-            # concat logs
-            runLog.concatenateLogs(logDir=logDir)
-            # verify output
-            combinedLogFile = os.path.join(logDir, "armi-workers-mpi.log")
-            self.assertTrue(os.path.exists(combinedLogFile))
-            self.assertFalse(os.path.exists(stdoutFile3))
+        # verify behavior for a corner case
+        stdoutFile3 = os.path.join(logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
+        with open(stdoutFile3, "w") as f:
+            f.write("hello world again\n")
+        # concat logs
+        runLog.concatenateLogs(logDir=logDir)
+        # verify output
+        combinedLogFile = os.path.join(logDir, "armi-workers-mpi.log")
+        self.assertTrue(os.path.exists(combinedLogFile))
+        self.assertFalse(os.path.exists(stdoutFile3))
 
+    @tmpDir
     def test_createLogDir(self):
         """Test the createLogDir() method.
 
@@ -451,12 +452,11 @@ class TestRunLog(unittest.TestCase):
             :id: T_ARMI_LOG6
             :tests: R_ARMI_LOG
         """
-        with TemporaryDirectoryChanger():
-            logDir = "test_createLogDir"
-            self.assertFalse(os.path.exists(logDir))
-            for _ in range(10):
-                runLog.createLogDir(logDir)
-                self.assertTrue(os.path.exists(logDir))
+        logDir = "test_createLogDir"
+        self.assertFalse(os.path.exists(logDir))
+        for _ in range(10):
+            runLog.createLogDir(logDir)
+            self.assertTrue(os.path.exists(logDir))
 
     def test_handlerType(self):
         # create the logger and do some logging
@@ -486,17 +486,17 @@ class TestRunLogEnvEdits(unittest.TestCase):
     def tearDown(self):
         self.monkeypatch.undo()
 
+    @tmpDir
     def test_createLogDirNonDefault(self):
         """Test the scenario where a user sets the environment variable that edits the log dir location."""
-        with TemporaryDirectoryChanger() as td:
-            self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(Path(td.destination) / "logzGoHere"))
-            runLog.createLogDir()
-            # assert the env variable-edits logs path exists
-            p = Path(td.destination) / "logzGoHere" / "logs"
-            self.assertTrue(p.exists())
-            # assert the default logs path doesn't exist
-            p = Path(os.getcwd()) / "logs"
-            self.assertFalse(p.exists())
+        self.monkeypatch.setenv("ARMI_TEMP_ROOT_PATH", str(Path(os.getcwd()) / "logzGoHere"))
+        runLog.createLogDir()
+        # assert the env variable-edits logs path exists
+        p = Path(os.getcwd()) / "logzGoHere" / "logs"
+        self.assertTrue(p.exists())
+        # assert the default logs path doesn't exist
+        p = Path(os.getcwd()) / "logs"
+        self.assertFalse(p.exists())
 
     def test_getLogDir(self):
         """Test getLogDir with and without an environment variable edit."""
