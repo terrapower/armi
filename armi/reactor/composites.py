@@ -1720,6 +1720,30 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return rxnRates
 
+    def _syncParameters(self, allSyncData, errors):
+        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
+        syncedKeys = set()
+        for nodeRank, nodeSyncData in enumerate(allSyncData):
+            if nodeSyncData is None:
+                continue
+
+            for key, val in nodeSyncData.items():
+                if key in syncedKeys:
+                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
+                    # was also globally modified and readjusted to the original value.
+                    curVal = self.p[key]
+                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
+                        if (val != curVal).any():
+                            errors[self, key].append(nodeRank)
+                    elif curVal != val:
+                        errors[self, key].append(nodeRank)
+                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
+                    continue
+                syncedKeys.add(key)
+                self.p[key] = val
+
+        self.clearCache()
+        return len(syncedKeys)
 
 class Composite(ArmiObject):
     """
@@ -3080,31 +3104,6 @@ class Composite(ArmiObject):
         )
 
         return syncCount
-
-    def _syncParameters(self, allSyncData, errors):
-        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
-        syncedKeys = set()
-        for nodeRank, nodeSyncData in enumerate(allSyncData):
-            if nodeSyncData is None:
-                continue
-
-            for key, val in nodeSyncData.items():
-                if key in syncedKeys:
-                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
-                    # was also globally modified and readjusted to the original value.
-                    curVal = self.p[key]
-                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
-                        if (val != curVal).any():
-                            errors[self, key].append(nodeRank)
-                    elif curVal != val:
-                        errors[self, key].append(nodeRank)
-                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
-                    continue
-                syncedKeys.add(key)
-                self.p[key] = val
-
-        self.clearCache()
-        return len(syncedKeys)
 
     def _markSynchronized(self):
         """
