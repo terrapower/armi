@@ -316,6 +316,14 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         results = self.latticeInterface.generateLatticePhysicsInputs(["AA"], "test", blocks)
         self.assertEqual(results[0], "result")
 
+        # Mock a second writer, for a less simple test.
+        mockWriter2 = MagicMock()
+        mockWriter.write.return_value = "result2"
+        self.latticeInterface.getWriters = MagicMock(return_value=[mockWriter, mockWriter2])
+
+        results = self.latticeInterface.generateLatticePhysicsInputs(["AA"], "test", blocks)
+        self.assertEqual(results[0], "result2")
+
 
 class TestLatticePhysicsInterfaceStatic(TestCase):
     """Lattice Physics Interface tests of static methods that do not require a Reactor object."""
