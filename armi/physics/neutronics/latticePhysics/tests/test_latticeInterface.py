@@ -327,7 +327,7 @@ class TestLatticePhysicsInterfaceStatic(TestCase):
     def tearDown(self):
         self.td.__exit__(None, None, None)
 
-    @patch("armi.utils.safeCopy")
+    @patch("armi.physics.neutronics.latticePhysics.latticePhysicsInterface.safeCopy")
     def test_copyLibraryFilesForCycle(self, mockCopy):
         cycleFile = os.path.join(self.td.destination, "cycle.txt")
         baseFile = os.path.join(self.td.destination, "base.txt")
@@ -350,6 +350,7 @@ class TestLatticePhysicsInterfaceStatic(TestCase):
         open(cycleFile, "w").write("Data!")
         with mockRunLogs.BufferLog() as mockLog:
             LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
+            mockCopy.assert_called_once()
 
             stdOut = mockLog.getStdout()
             self.assertIn(f"Using {baseFile} as an active library", stdOut)
