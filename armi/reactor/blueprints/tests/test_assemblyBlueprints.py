@@ -19,7 +19,7 @@ from armi import settings
 from armi.reactor import blueprints
 
 
-class TestMaterialModifications(unittest.TestCase):
+class TestAssemblyBlueprint(unittest.TestCase):
     twoBlockInput_correct = r"""
 nuclide flags:
     U: {burn: false, xs: true}
@@ -150,7 +150,7 @@ nuclide flags:
     ZR: {burn: false, xs: true}
 blocks:
     fuel: &block_fuel
-        fuel1: &component_fuel_fuel1
+        fuel1:
             shape: Hexagon
             material: UZr
             Tinput: 600.0
@@ -158,7 +158,7 @@ blocks:
             ip: 0.0
             mult: 1
             op: 10.0
-        fuel2: &component_fuel_fuel2
+        fuel2:
             shape: Hexagon
             material: UZr
             Tinput: 600.0
@@ -175,6 +175,31 @@ assemblies:
         xs types: [A, A]
         material modifications:
             U235_wt_frac: [0.5]
+"""
+
+    twoBlockInput_nonUniformMatMods = r"""
+nuclide flags:
+    U: {burn: false, xs: true}
+    ZR: {burn: false, xs: true}
+blocks:
+    fuel: &block_fuel
+        fuel1:
+            shape: Hexagon
+            material: UZr
+            Tinput: 600.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1
+            op: 10.0
+assemblies:
+    fuel a: &assembly_a
+        specifier: IC
+        blocks: [*block_fuel, *block_fuel]
+        height: [1.0, 1.0]
+        axial mesh points: [1, 1]
+        xs types: [A, A]
+        material modifications:
+            U235_wt_frac: [0.5, 0.1]
 """
 
     def loadCustomAssembly(self, assemblyInput):
@@ -209,3 +234,11 @@ assemblies:
 
         with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMatMods)
+
+    def test_checkMatModConsistency(self):
+        yamlString = self.twoBlockInput_nonUniformMatMods
+        design = blueprints.Blueprints.load(yamlString)
+        a = design.assemDesigns["fuel a"]
+
+        with self.assertRaises(ValueError):
+            a.checkMatModConsistency()
