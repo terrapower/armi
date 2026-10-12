@@ -452,6 +452,22 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError
 
+    def retainState(self, paramsToApply=None):
+        """
+        Restores a state before and after some operation.
+
+        Parameters
+        ----------
+        paramsToApply : iterable
+            Parameters that should be applied to the state after existing the state retainer. All
+            others will be reverted to their values upon entering.
+
+        Notes
+        -----
+        This should be used in a `with` statement.
+        """
+        return StateRetainer(self, paramsToApply)
+
     def _getCached(self, name):
         """
         Obtain a value from the cache.
@@ -3112,22 +3128,6 @@ class Composite(ArmiObject):
 
         for paramDef in paramDefs:
             paramDef.resetAssignmentFlag(parameters.SINCE_LAST_DISTRIBUTE_STATE)
-
-    def retainState(self, paramsToApply=None):
-        """
-        Restores a state before and after some operation.
-
-        Parameters
-        ----------
-        paramsToApply : iterable
-            Parameters that should be applied to the state after existing the state retainer. All
-            others will be reverted to their values upon entering.
-
-        Notes
-        -----
-        This should be used in a `with` statement.
-        """
-        return StateRetainer(self, paramsToApply)
 
     def getLumpedFissionProductsIfNecessary(self, nuclides=None):
         """Return Lumped Fission Product objects that belong to this object or any of its children."""
