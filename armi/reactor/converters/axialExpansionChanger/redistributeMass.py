@@ -101,15 +101,15 @@ class RedistributeMass:
         -------
         False if incompatible; true otherwise.
         """
-        if type(self.fromComp.material) is not type(self.toComp.material):
+        if self.fromComp.material.name != self.toComp.material.name:
             msg = f"""
             Cannot redistribute mass between components that are different materials!
                 Trying to redistribute mass between the following components in {self.assemblyName}:
-                    from --> {self.fromComp.parent} : {self.fromComp} : {type(self.fromComp.material)}
-                      to --> {self.toComp.parent} : {self.toComp} : {type(self.toComp.material)}
+                    from --> {self.fromComp.parent} : {self.fromComp} : {self.fromComp.material.name}
+                      to --> {self.toComp.parent} : {self.toComp} : {self.toComp.material.name}
 
-                Instead, mass will be removed from ({self.fromComp} | {type(self.fromComp.material)}) and
-                ({self.toComp} | {type(self.toComp.material)} will be artificially expanded. The consequence is that
+                Instead, mass will be removed from ({self.fromComp} | {self.fromComp.material.name}) and
+                ({self.toComp} | {self.toComp.material.name} will be artificially expanded. The consequence is that
                 mass conservation is no longer guaranteed for the {self.toComp.getType()} component type on this
                 assembly!
             """
@@ -187,8 +187,8 @@ class RedistributeMass:
                     msg = f"""
                     Temperature search algorithm in axial expansion has failed in {self.assemblyName}
                     Trying to search for new temp between
-                        from --> {self.fromComp.parent} : {self.fromComp} : {type(self.fromComp.material)} at {self.fromComp.temperatureInC} C
-                        to --> {self.toComp.parent} : {self.toComp} : {type(self.toComp.material)} at {self.toComp.temperatureInC} C
+                        from --> {self.fromComp.parent} : {self.fromComp} : {self.fromComp.material.name} at {self.fromComp.temperatureInC} C
+                        to --> {self.toComp.parent} : {self.toComp} : {self.toComp.material.name} at {self.toComp.temperatureInC} C
 
                     f({self.fromComp.temperatureInC}) = {self.toComp.getArea(Tc=self.fromComp.temperatureInC) - targetArea}
                     f({self.toComp.temperatureInC}) = {self.toComp.getArea(Tc=self.toComp.temperatureInC) - targetArea}

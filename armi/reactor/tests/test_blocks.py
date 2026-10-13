@@ -3094,6 +3094,22 @@ class TestCartesianBlock(unittest.TestCase):
         self.cartesianBlock.parent = self.rCenter.core
         self.cartesianBlock.autoCreateSpatialGrids(self.rCenter.core.spatialGrid)
 
+    def test_fullCoreCartesianVolumesOnAxes(self):
+        """Full-core axis cells have whole volumes even when the origin is in a cell."""
+        block = blocks.CartesianBlock("volume", height=10.0)
+        block.add(components.Square("fuel", "UZr", Tinput=25.0, Thot=25.0, widthOuter=2.0, mult=1.0))
+        block.parent = self.rCenter.core
+        for domain, boundary, factors in (
+            (geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY, (1.0, 1.0, 1.0)),
+            (geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE, (4.0, 2.0, 1.0)),
+        ):
+            self.rCenter.core.symmetry = geometry.SymmetryType(domain, boundary, True)
+            for (i, j), factor in zip(((0, 0), (0, 1), (1, 1)), factors):
+                block.spatialLocator = self.rCenter.core.spatialGrid[i, j, 0]
+                block.clearCache()
+                self.assertEqual(block.getSymmetryFactor(), factor)
+                self.assertAlmostEqual(block.getVolume(), 40.0 / factor)
+
     def test_getPitchSquare(self):
         self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
 

@@ -350,30 +350,18 @@ class Component(ArmiObject, metaclass=ComponentType):
 
         Notes
         -----
-        - the density returned accounts for the expansion of the component
-          due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - After the expansion, the density of the component should reflect the 3d
-          density of the material
+        - the density returned accounts for the expansion of the component due to the difference in
+          self.inputTemperatureInC and self.temperatureInC
+        - After the expansion, the density of the component should reflect the 3D density of the material
         """
-        # note, that this is not the actual material density, but rather 2D expanded
-        # `density` is 3D density
-        # call getProperty to cache and improve speed
-        density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-        self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
-
-        # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
-        # setting number densities can sometimes change thermal expansion behavior. Call again so
-        # the material has access to its parent's comp when providing the reference initial density.
-        densityBasedOnParentComposition = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
         self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(
-            densityBasedOnParentComposition, self.material.massFrac
+            self.material.getProperty("pseudoDensity", Tc=self.temperatureInC),
+            self.material.massFrac,
         )
 
-        # material needs to be expanded from the material's cold temp to hot,
-        # not components cold temp, so we don't use mat.linearExpansionFactor or
-        # component.getThermalExpansionFactor.
-        # Materials don't typically define the temperature for which their references
-        # density is defined so linearExpansionPercent must be called
+        # Material needs to be expanded from the material's cold temp to hot, not components cold temp, so we don not
+        # use mat.linearExpansionFactor or component.getThermalExpansionFactor. Materials don't typically define the
+        # temperature for which their references density is defined so linearExpansionPercent must be called
         coldMatAxialExpansionFactor = 1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
@@ -641,8 +629,6 @@ class Component(ArmiObject, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        if self.p.nuclides is None:
-            return []
         return [nucName.decode() for nucName in self.p.nuclides]
 
     def getNumberDensity(self, nucName):
@@ -665,15 +651,23 @@ class Component(ArmiObject, metaclass=ComponentType):
         else:
             return 0.0
 
-    def getNuclideNumberDensities(self, nucNames: list[str]) -> list[float]:
-        """Return a list of number densities for the nuc names requested."""
+    def getNuclideNumberDensities(self, nucNames: Iterable[Union[str, np.bytes_]]) -> np.ndarray:
+        """
+        Return an array of number densities for the nuclide names requested.
+
+        Parameters
+        ----------
+        nucNames : Iterable[str, np.bytes_]
+            Nuclide names (as string or byte strings) for which to retrieve number densities.
+
+        Returns
+        -------
+        Numpy array of the requested nuclide number densities.
+        """
         if isinstance(nucNames, (list, tuple, np.ndarray)):
             byteNucs = np.asanyarray(nucNames, dtype="S6")
         else:
-            byteNucs = [nucName.encode() for nucName in nucNames]
-
-        if self.p.numberDensities is None:
-            return np.zeros(len(byteNucs), dtype=np.float64)
+            byteNucs = np.asanyarray([nucName.encode() for nucName in nucNames], dtype="S6")
 
         # trivial case where nucNames is the full set of nuclides in the same order
         if np.array_equal(byteNucs, self.p.nuclides):
@@ -683,7 +677,7 @@ class Component(ArmiObject, metaclass=ComponentType):
             return self._getNumberDensitiesArray(byteNucs)
 
         nDensDict = dict(zip(self.p.nuclides, self.p.numberDensities))
-        return [nDensDict.get(nuc, 0.0) for nuc in byteNucs]
+        return np.array([nDensDict.get(nuc, 0.0) for nuc in byteNucs])
 
     def _getNumberDensitiesArray(self, byteNucs):
         """
@@ -789,7 +783,7 @@ class Component(ArmiObject, metaclass=ComponentType):
         """
         # prepare to change the densities with knowledge that dims could change due to material
         # thermal expansion dependence on composition
-        if self.p.numberDensities is not None and self.p.numberDensities.size > 0:
+        if self.p.numberDensities.size > 0:
             dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             materialExpansion = True
         else:
@@ -844,8 +838,7 @@ class Component(ArmiObject, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        if self.p.numberDensities is not None:
-            self.p.numberDensities *= factor
+        self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):

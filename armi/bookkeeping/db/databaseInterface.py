@@ -295,7 +295,7 @@ class DatabaseInterface(interfaces.Interface):
         Raises
         ------
         RuntimeError
-            If fileName is specified and that  file does not have the time step.
+            If fileName is specified and that file does not have the time step.
             If fileName is not specified and neither the database in memory, nor the
             ``cs["reloadDBName"]`` have the time step specified.
         """

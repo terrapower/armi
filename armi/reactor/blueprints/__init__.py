@@ -112,6 +112,13 @@ from armi.utils.customExceptions import InputError
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
+# ruamel.yaml 0.19.1 started reading ``max_depth`` off the loader during ``get_single_node()``, but
+# yamlize 0.7.1 builds its loaders in a way that never sets it, so every yamlize load raises
+# ``AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'``. Supplying the default
+# here covers every yamlize class in ARMI, not just ``Blueprints``. Remove once yamlize catches up.
+if not hasattr(RoundTripLoader, "max_depth"):
+    RoundTripLoader.max_depth = None
+
 
 def loadFromCs(cs, roundTrip=False):
     """Function to load Blueprints based on supplied ``Settings``."""
@@ -572,12 +579,10 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     def load(cls, stream, roundTrip=False):
         """A wrapper around the `yamlize.Object.load()` method.
 
-        With the release of ruamel.yaml 0.19.1, we began getting the following error:
-        AttributeError: 'RoundTripLoader' object has no attribute 'max_depth'
-        Setting that attribute to `None` solved the issue. However, it would be prudent to rework blueprints loading to
-        side step the issue entirely. This occurs because of the way `yamlize` calls `get_single_node`.
+        This pins the loader to ``RoundTripLoader`` so that anchors, aliases and the like survive a
+        load/dump cycle. See the ``max_depth`` shim at the top of this module for why that loader
+        needs a nudge before yamlize will accept it.
         """
-        RoundTripLoader.max_depth = None
         return super().load(stream, Loader=RoundTripLoader)
 
     def addDefaultSFP(self):

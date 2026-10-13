@@ -1123,8 +1123,8 @@ class ArmiObject(metaclass=CompositeModelType):
         Retrieve the number densities in atoms/barn-cm of all nuclides (or those requested) in the object.
 
         .. impl:: Number density of composite is retrievable.
-            :id: I_ARMI_CMP_GET_NDENS
-            :implements: R_ARMI_CMP_GET_NDENS
+            :id: I_ARMI_CMP_NUC
+            :implements: R_ARMI_CMP_NUC
 
             This method provides a way for retrieving the number densities
             of all nuclides within the Composite. It does this by leveraging the
@@ -1992,8 +1992,8 @@ class Composite(ArmiObject):
         Return the number density of a nuclide in atoms/barn-cm.
 
         .. impl:: Get number density for a specific nuclide
-            :id: I_ARMI_CMP_NUC0
-            :implements: R_ARMI_CMP_NUC
+            :id: I_ARMI_CMP_GET_NDENS0
+            :implements: R_ARMI_CMP_GET_NDENS
 
             This method queries the number density
             of a specific nuclide within the Composite. It invokes the
@@ -2022,8 +2022,8 @@ class Composite(ArmiObject):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested.
 
         .. impl:: Get number densities for specific nuclides.
-            :id: I_ARMI_CMP_NUC1
-            :implements: R_ARMI_CMP_NUC
+            :id: I_ARMI_CMP_GET_NDENS1
+            :implements: R_ARMI_CMP_GET_NDENS
 
         Parameters
         ----------

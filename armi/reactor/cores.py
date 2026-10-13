@@ -1213,7 +1213,7 @@ class Core(composites.Composite):
                 compNuclides = []
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                if c.p.numberDensities is None:
+                if len(c.p.numberDensities) == 0:
                     continue
                 for nuc, dens in zip(c.p.nuclides, c.p.numberDensities):
                     if dens > 0.0:

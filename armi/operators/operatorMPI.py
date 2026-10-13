@@ -36,8 +36,6 @@ MPI. This can be optimized as needed.
 """
 
 import gc
-import os
-import re
 import time
 import traceback
 
@@ -236,21 +234,3 @@ class OperatorMPI(Operator):
         runLog.close()  # no more messages.
         # wait until all workers are closed so we can delete them.
         context.MPI_COMM.bcast("finished", root=0)
-
-    def collapseAllStderrs(self):
-        """Takes all the individual stderr files from each processor and arranges them nicely into one file."""
-        stderrFiles = []
-        for fName in os.listdir("."):
-            match = re.search(r"_(\d\d\d\d)\.stderr", fName)
-            if match:
-                stderrFiles.append((match.group(1), fName))
-        stderrFiles.sort()
-
-        stderr = open("{0}w.stderr".format(self.cs.caseTitle), "w")
-        for cpu, fName in stderrFiles:
-            f = open(fName)
-            stderr.write("Processor {0}\n".format(cpu))
-            stderr.write(f.read())
-            stderr.write("\n")
-            f.close()
-        stderr.close()
