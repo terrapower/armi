@@ -1574,8 +1574,7 @@ class ArmiObject(metaclass=CompositeModelType):
         ):
             self.expandElementalToIsotopics(elemental)
 
-    def _expandElementalToIsotopics(self, component: "armi.reactor.components.component.Component", elementalNuclide:
-                                    "armi.nucDirectory.nuclideBases.NaturalNuclideBase"):
+    def _expandElementalToIsotopics(self, component: "Component", elementalNuclide: "nuclideBases.NaturalNuclideBase"):
         """
         Expand the density of an element on a component to its natural isotopic distribution.
 
@@ -1744,6 +1743,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         self.clearCache()
         return len(syncedKeys)
+
 
 class Composite(ArmiObject):
     """
