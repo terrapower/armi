@@ -22,6 +22,7 @@ import copy
 import re
 from typing import (
     Callable,
+    Iterable,
     Iterator,
     Union,
 )
