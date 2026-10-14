@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+#: List Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -1719,6 +1719,89 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return rxnRates
 
+    def syncMpiState(self):
+        """
+        Synchronize all parameters of this object to all worker nodes over the
+        network using MPI.
+        """
+        return NotImplementedError()
+
+    def _syncMpiStateInner(self, startTime: Real, genItems: List[ArmiObject]):
+        """
+        Synchronize all parameters of a list of ArmiObjects to all worker nodes over the
+        network using MPI.
+
+        Paramters
+        ---------
+        startTime : float
+            Synchronization start time
+        genItems : list of ArmiObject
+            List of ArmiObjects to synchronize
+
+        Returns
+        -------
+        int
+            number of parameters synchronized over all components
+        """
+        allComps = [c for c in genItems if hasattr(c, "p")]
+        sendBuf = [c.p.getSyncData() for c in allComps]
+        runLog.debug(f"syncMpiState has {len(allComps)} comps")
+
+        try:
+            context.MPI_COMM.barrier()  # sync up
+            allGatherTime = -timeit.default_timer()
+            allSyncData = context.MPI_COMM.allgather(sendBuf)
+            allGatherTime += timeit.default_timer()
+        except:
+            msg = ["Failure while trying to allgather."]
+            for ci, compData in enumerate(sendBuf):
+                if compData is not None:
+                    msg += [f"sendBuf[{ci}]: {compData}"]
+            runLog.error("\n".join(msg))
+            raise
+
+        # key is (comp, paramName) value is conflicting nodes
+        errors = collections.defaultdict(list)
+        syncCount = 0
+        compsPerNode = {len(nodeSyncData) for nodeSyncData in allSyncData}
+
+        if len(compsPerNode) != 1:
+            raise ValueError(f"The workers have different reactor sizes! comp lengths: {compsPerNode}")
+
+        for ci, comp in enumerate(allComps):
+            if not hasattr(comp, "_syncParameters"):
+                # materials don't have Parameters to sync
+                continue
+            data = (nodeSyncData[ci] for nodeSyncData in allSyncData)
+            syncCount += comp._syncParameters(data, errors)
+
+        if errors:
+            errorData = sorted(
+                (str(comp), comp.__class__.__name__, str(comp.parent), paramName, nodes)
+                for (comp, paramName), nodes in errors.items()
+            )
+            message = "Synchronization failed due to overlapping data. Only the first duplicates are listed\n{}".format(
+                tabulate.tabulate(
+                    errorData,
+                    headers=[
+                        "ArmiObject",
+                        "Composite Type",
+                        "Composite Parent",
+                        "ParameterName",
+                        "NodeRanks",
+                    ],
+                )
+            )
+            raise ValueError(message)
+
+        self._markSynchronized()
+        runLog.extra(
+            f"Synchronized reactor over MPI in {timeit.default_timer() - startTime:.4f} seconds"
+            f", {allGatherTime:.4f} seconds in MPI allgather. count:{syncCount}"
+        )
+
+        return syncCount
+
     def _syncParameters(self, allSyncData, errors):
         """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
         syncedKeys = set()
@@ -1728,7 +1811,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
             for key, val in nodeSyncData.items():
                 if key in syncedKeys:
-                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
+                    # Edge Case: an ArmiObject object is flagged as out of sync, and this parameter
                     # was also globally modified and readjusted to the original value.
                     curVal = self.p[key]
                     if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
@@ -1744,6 +1827,36 @@ class ArmiObject(metaclass=CompositeModelType):
         self.clearCache()
         return len(syncedKeys)
 
+    def _markSynchronized(self):
+        """
+        Mark the ArmiObject parameters as synchronized across MPI.
+        """
+        raise NotImplementedError()
+
+    def _markSynchronizedInner(self, items: List[ArmiObject]):
+        """
+        Inner loop for _markSynchronized that does all of the heavy lifiting to
+        mark the parameters of a list of ArmiObjects as synchronized.
+
+        We clear SINCE_LAST_DISTRIBUTE_STATE so that anything after this point will set the
+        SINCE_LAST_DISTRIBUTE_STATE flag, indicating it has been modified
+        SINCE_LAST_DISTRIBUTE_STATE.
+
+        Parameters
+        ----------
+        items : list of ArmiObject
+            List of ArmiObjects whose parameters will be marked as synchronized.
+        """
+        paramDefs = set()
+        for obj in items:
+            # Materials don't have a "p" / Parameter attribute to sync
+            if hasattr(obj, "p"):
+                # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
+                obj.p.assigned &= ~parameters.SINCE_LAST_DISTRIBUTE_STATE
+                paramDefs.add(obj.p.paramDefs)
+
+        for paramDef in paramDefs:
+            paramDef.resetAssignmentFlag(parameters.SINCE_LAST_DISTRIBUTE_STATE)
 
 class Composite(ArmiObject):
     """
@@ -3040,93 +3153,23 @@ class Composite(ArmiObject):
         if context.MPI_SIZE == 1:
             return 0
 
-        startTime = timeit.default_timer()
         # sync parameters...
+        startTime = timeit.default_timer()
         genItems = itertools.chain(
             [self],
             self.iterChildrenWithMaterials(deep=True),
         )
-        allComps = [c for c in genItems if hasattr(c, "p")]
-        sendBuf = [c.p.getSyncData() for c in allComps]
-        runLog.debug(f"syncMpiState has {len(allComps)} comps")
-
-        try:
-            context.MPI_COMM.barrier()  # sync up
-            allGatherTime = -timeit.default_timer()
-            allSyncData = context.MPI_COMM.allgather(sendBuf)
-            allGatherTime += timeit.default_timer()
-        except:
-            msg = ["Failure while trying to allgather."]
-            for ci, compData in enumerate(sendBuf):
-                if compData is not None:
-                    msg += [f"sendBuf[{ci}]: {compData}"]
-            runLog.error("\n".join(msg))
-            raise
-
-        # key is (comp, paramName) value is conflicting nodes
-        errors = collections.defaultdict(list)
-        syncCount = 0
-        compsPerNode = {len(nodeSyncData) for nodeSyncData in allSyncData}
-
-        if len(compsPerNode) != 1:
-            raise ValueError(f"The workers have different reactor sizes! comp lengths: {compsPerNode}")
-
-        for ci, comp in enumerate(allComps):
-            if not hasattr(comp, "_syncParameters"):
-                # materials don't have Parameters to sync
-                continue
-            data = (nodeSyncData[ci] for nodeSyncData in allSyncData)
-            syncCount += comp._syncParameters(data, errors)
-
-        if errors:
-            errorData = sorted(
-                (str(comp), comp.__class__.__name__, str(comp.parent), paramName, nodes)
-                for (comp, paramName), nodes in errors.items()
-            )
-            message = "Synchronization failed due to overlapping data. Only the first duplicates are listed\n{}".format(
-                tabulate.tabulate(
-                    errorData,
-                    headers=[
-                        "ArmiObject",
-                        "Composite Type",
-                        "Composite Parent",
-                        "ParameterName",
-                        "NodeRanks",
-                    ],
-                )
-            )
-            raise ValueError(message)
-
-        self._markSynchronized()
-        runLog.extra(
-            f"Synchronized reactor over MPI in {timeit.default_timer() - startTime:.4f} seconds"
-            f", {allGatherTime:.4f} seconds in MPI allgather. count:{syncCount}"
-        )
-
-        return syncCount
+        return self._syncMpiStateInner(startTime, genItems)
 
     def _markSynchronized(self):
         """
         Mark the composite and child parameters as synchronized across MPI.
-
-        We clear SINCE_LAST_DISTRIBUTE_STATE so that anything after this point will set the
-        SINCE_LAST_DISTRIBUTE_STATE flag, indicating it has been modified
-        SINCE_LAST_DISTRIBUTE_STATE.
         """
-        paramDefs = set()
         items = itertools.chain(
             [self],
             self.iterChildrenWithMaterials(deep=True),
         )
-        for child in items:
-            # Materials don't have a "p" / Parameter attribute to sync
-            if hasattr(child, "p"):
-                # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
-                child.p.assigned &= ~parameters.SINCE_LAST_DISTRIBUTE_STATE
-                paramDefs.add(child.p.paramDefs)
-
-        for paramDef in paramDefs:
-            paramDef.resetAssignmentFlag(parameters.SINCE_LAST_DISTRIBUTE_STATE)
+        self._markSynchronizedInner(items=items)
 
     def getLumpedFissionProductsIfNecessary(self, nuclides=None):
         """Return Lumped Fission Product objects that belong to this object or any of its children."""
