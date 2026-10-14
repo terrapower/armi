@@ -347,12 +347,8 @@ class TestLatticePhysicsInterfaceStatic(TestCase):
 
         # Test Case 1: cycleName does not exist
         open(baseFile, "w").write("Hi, mom.")
-        with mockRunLogs.BufferLog() as mockLog:
+        with self.assertRaises(FileNotFoundError):
             LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
-
-            stdOut = mockLog.getStdout()
-            self.assertIn("Existing library", stdOut)
-            self.assertIn("does not exist", stdOut)
 
         # Test Case 2: cycleName exists, and we want to copy
         open(cycleFile, "w").write("Data!")
