@@ -1233,7 +1233,7 @@ class TestBlock(unittest.TestCase):
 
         Notes
         -----
-        - When checking component-level BOL params, puFrac is skipped due to 1) there's no Pu in the block, and 2)
+        - When checking component-level BOL params, puHMFrac is skipped due to 1) there's no Pu in the block, and 2)
           getPuMoles is functionally identical to getHMMoles (just limits nuclides from heavy metal to just Pu).
         - getSymmetryFactor is mocked to return 3. This indicates that the block is in the center-most assembly.
           Providing this mock ensures that symmetry factors are tested as well (otherwise it's just a factor of 1
