@@ -1508,34 +1508,6 @@ class Component(ArmiObject, metaclass=ComponentType):
         """
         self.material.adjustTD(self.p.theoreticalDensityFrac)
 
-    def syncMpiState(self):
-        """
-        Synchronize all parameters of this Component object to all worker nodes over the
-        network using MPI.
-
-        Returns
-        -------
-        int
-            number of parameters synchronized over all components
-        """
-        if context.MPI_SIZE == 1:
-            return 0
-
-        # sync parameters...
-        startTime = timeit.default_timer()
-        genItems = itertools.chain(
-            [self],
-        )
-        return self._syncMpiStateInner(startTime, genItems)
-
-    def _markSynchronized(self):
-        """
-        Mark the composite and child parameters as synchronized across MPI.
-        """
-        items = itertools.chain(
-            [self],
-        )
-        self._markSynchronizedInner(items=items)
 
 class ShapedComponent(Component):
     """A component with well-defined dimensions."""
