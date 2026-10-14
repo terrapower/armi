@@ -1728,7 +1728,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
             for key, val in nodeSyncData.items():
                 if key in syncedKeys:
-                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
+                    # Edge Case: an ArmiObject object is flagged as out of sync, and this parameter
                     # was also globally modified and readjusted to the original value.
                     curVal = self.p[key]
                     if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
