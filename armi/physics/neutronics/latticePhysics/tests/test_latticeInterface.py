@@ -342,7 +342,7 @@ class TestLatticePhysicsInterfaceStatic(TestCase):
         libFiles = {baseFile: cycleFile}
 
         # Test Case 0: Neither file exists
-        with self.assertRaises(ValueError):
+        with self.assertRaises(FileNotFoundError):
             LatticePhysicsInterface._copyLibraryFilesForCycle(0, libFiles)
 
         # Test Case 1: cycleName does not exist
