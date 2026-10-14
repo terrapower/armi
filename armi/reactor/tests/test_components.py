@@ -332,6 +332,20 @@ class TestComponent(TestGeneralComponents):
         self.assertTrue(hasattr(self.component.material, "density"))
         self.assertIn("Alloy200", str(self.component.getProperties()))
 
+    def test_iterChildren(self):
+        """Component.iterChildren() should yield an empty generator."""
+        iterator = self.component._iterChildren(False, 0, lambda c: len(c.name) % 3)
+        # check that iterator is empty (Components have no children)
+        self.assertEqual(list(), [i for i in iterator])
+
+    def test_iter(self):
+        """Component.iterChildren should yield an empty iterator."""
+        iterList = [i for i in self.component]
+        self.assertEqual(list(), iterList)
+
+    def test_len(self):
+        """Component.iterChildren should yield an empty iterator."""
+        self.assertEqual(0, len(self.component))
 
 class TestNullComponent(TestGeneralComponents):
     componentCls = NullComponent
