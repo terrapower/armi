@@ -404,9 +404,9 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "puFrac",
+            "puHMFrac",
             units=units.UNITLESS,
-            description="Current Pu number density relative to HM at BOL",
+            description="Current Pu number density relative to total Heavy Metal at BOL",
             location=ParamLocation.AVERAGE,
         )
 
