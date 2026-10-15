@@ -235,9 +235,11 @@ class Component(ArmiObject, metaclass=ComponentType):
         yield from ()
 
     def __iter__(self):
+        """Components have no children, but this method needs to exist, so it gets a static value."""
         return iter([])
 
     def __len__(self):
+        """Components have no children, but this method needs to exist, so it gets a static value."""
         return 0
 
     @property
