@@ -24,23 +24,20 @@ name = "armi"
 version = "0.7.0"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license-files = ["LICENSE.md", "AUTHORS"]
-requires-python = ">3.8"
+requires-python = ">3.10,<3.15"
 readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
-    "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
-    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
-    "matplotlib>=3.5.3,<3.8.0 ; python_version < '3.11.0'",
-    "matplotlib>=3.5.3 ; python_version >= '3.11.0'", # Important plotting library
+    "h5py>=3.9", # Needed because our database files are H5 format
+    "matplotlib>=3.5.3", # Important plotting library
     "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml>=0.19.1 ; python_version >= '3.11.0'", # Our foundational YAML library
-    "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml>=0.19.1 ; python_version", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
     "sympy>=1.14", # Used to represent mathematical curves for material properties
     "toml>0.9.5", # Needed to parse the pyproject.toml file
@@ -55,8 +52,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
