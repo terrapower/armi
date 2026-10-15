@@ -234,7 +234,7 @@ The user has the power to set the various places (namespaces) that materials mig
 in specific places in the Python venv, or even in specific directories in the file system. The setting that controls all
 this is ``materialNamespaceOrder``.
 
-Here is the simplest example::
+Here is the simplest example:
 
 .. code-block:: yaml
 
@@ -249,7 +249,7 @@ example above is common for unit tests.
 
 Custom YAML Materials
 """""""""""""""""""""
-Perhaps your team has a directory of YAML material files::
+Perhaps your team has a directory of YAML material files:
 
 .. code-block:: yaml
 
@@ -263,7 +263,7 @@ ARMI cannot guarantee that a file on your laptop will never move.
 
 Another way to include a directory of YAML material files is to store them right in your Python venv. This is
 a good way to enforce that if, as long as your simulation runs from a correct Python venv, you have the correct
-materials. For this we use a custom ``venv`` syntax::
+materials. For this we use a custom ``venv`` syntax:
 
 .. code-block:: yaml
 
@@ -272,7 +272,7 @@ materials. For this we use a custom ``venv`` syntax::
 
 Custom Python Materials
 """""""""""""""""""""""
-Perhaps there is just one material a user would like to amend for their simulation. For example::
+Perhaps there is just one material a user would like to amend for their simulation. For example:
 
 .. code-block:: python
 
@@ -303,7 +303,7 @@ To use this material in a simulation:
 ARMI Application Materials
 """"""""""""""""""""""""""
 If you want to ignore the ARMI materials, in favor of a set of only materials your team has created for an ARMI
-Application, you could do something like this::
+Application, you could do something like this:
 
 .. code-block:: yaml
 
@@ -314,7 +314,7 @@ The above works by importing all the subclasses of ``armi.materials.Material`` t
 ``myArmiApp/materials.py`` if the path you identify is a file, or ``myArmiApp/materials/__init__.py`` if the path you
 identify is a module. There are a few common ways people do this. You can, obviously, define all your material classes
 in the file you specify. But that is often cumbersome and ugly if you have a lot of materials. So you can also just
-import all the material classes you define into the file, that looks something like this::
+import all the material classes you define into the file, that looks something like this:
 
 .. code-block:: python
 
@@ -326,7 +326,7 @@ import all the material classes you define into the file, that looks something l
     from myArmiApp.materials.water import LiquidWater, SteamWater
 
 While the above is the gold standard and easy to accomplish, ARMI comes with a helper method to save you having to write
-all of that (and worse, having to maintain all of that)::
+all of that (and worse, having to maintain all of that):
 
 .. code-block:: python
 
@@ -341,7 +341,7 @@ above, where ``material: myArmiApp.materials:AcmeSteel`` would be required.
 Combining Multiple Custom Materials Sources
 """""""""""""""""""""""""""""""""""""""""""
 Of course, you can mix and match the above options. In the wild, we have seen people create complicated lists for their
-simulations that something like this::
+simulations that something like this:
 
 .. code-block:: yaml
 
@@ -357,7 +357,7 @@ that would be in ``myArmiApp.materials.prod``).
 
 Finally, while the setting ``materialNamespaceOrder`` is probably the best option for configuring a simulation, people
 are often running ARMI scripts or unit tests and want to do their configuration in Python code. The function you need to
-call do do that is ``armi.materials.setMaterialNamespaceOrder``::
+call do do that is ``armi.materials.setMaterialNamespaceOrder``:
 
 .. code-block:: python
 
@@ -365,7 +365,7 @@ call do do that is ``armi.materials.setMaterialNamespaceOrder``::
     import armi
     armi.materials.setMaterialNamespaceOrder(["armi.materials"])
 
-Or, duplicating the complex YAML example above::
+Or, duplicating the complex YAML example above:
 
 .. code-block:: python
 
@@ -576,7 +576,7 @@ The cascade then proceeds as normal from the destination location. For example
            - cascade: ["outer fuel", "010-046", "009-045", "Delete"]
              fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
 
-A cascade that loads an assembly from the SFP may look like::
+A cascade that loads an assembly from the SFP may look like:
 
 ..  code:: yaml
 
@@ -867,7 +867,7 @@ block may assigned a grid name, and then each component may be assigned one or m
 
 For example, the following input section specifies that fuel pins will occupy all grid positions marked with a ``1`` and
 cladding components will occupy all grid positions marked with either a ``1`` or a ``2``. This situation may be
-desirable when some burnable poison pins use the same cladding as the fuel pins. ::
+desirable when some burnable poison pins use the same cladding as the fuel pins.
 
 .. code-block:: yaml
 
@@ -939,7 +939,7 @@ assemblies use YAML anchors to refer to the blocks defined in the previous secti
    block names directly. However, the use of anchors for input to be applied to multiple assemblies (e.g. heights) is
    quite nice.
 
-A complete definition of an inner-core assembly may be seen below::
+A complete definition of an inner-core assembly may be seen below:
 
 .. code-block:: yaml
 
@@ -1035,42 +1035,42 @@ material modifications
 
   Users can specify material modications on a by-component basis. This is useful, for instance, when two pins within an
   assembly are made of the same base material but have different fuel enrichments. This is done using the ``by
-  component`` attribute to the material modifications. For example::
+  component`` attribute to the material modifications. For example:
 
-.. code-block:: yaml
+    .. code-block:: yaml
 
-    blocks:
-        fuel: &block_fuel
-            fuel1: &component_fuel_fuel1
-                shape: Hexagon
-                material: UZr
-                Tinput: 600.0
-                Thot: 600.0
-                ip: 0.0
-                mult: 1
-                op: 10.0
-            fuel2: &component_fuel_fuel2
-                shape: Hexagon
-                material: UZr
-                Tinput: 600.0
-                Thot: 600.0
-                ip: 0.0
-                mult: 1
-                op: 10.0
-    assemblies:
-        fuel a: &assembly_a
-            specifier: IC
-            blocks: [*block_fuel]
-            height: [1.0]
-            axial mesh points: [1]
-            xs types: [A]
-            material modifications:
-                by component:
-                    fuel1:
-                        U235_wt_frac: [0.20]
-                    fuel2:
-                        Zr_wt_frac: [0.02]
-                U235_wt_frac: [0.30]
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel]
+                height: [1.0]
+                axial mesh points: [1]
+                xs types: [A]
+                material modifications:
+                    by component:
+                        fuel1:
+                            U235_wt_frac: [0.20]
+                        fuel2:
+                            Zr_wt_frac: [0.02]
+                    U235_wt_frac: [0.30]
 
   Material modifications specified on the ``material modifications`` level are referred to as "block default" values
   and apply to all components on the block not associated with a by-component value. The example above would apply an
@@ -1079,42 +1079,42 @@ material modifications
 
   All by-component material modifications override any block default material modifications of the same type. In
   addition, any by-component entries omitted for a given axial block will revert to the block default (or material class
-  default, if no block default value is provided and a material class default exists) value::
+  default, if no block default value is provided and a material class default exists) value:
 
-.. code-block:: yaml
+    .. code-block:: yaml
 
-    blocks:
-        fuel: &block_fuel
-            fuel1: &component_fuel_fuel1
-                shape: Hexagon
-                material: UZr
-                Tinput: 600.0
-                Thot: 600.0
-                ip: 0.0
-                mult: 1
-                op: 10.0
-            fuel2: &component_fuel_fuel2
-                shape: Hexagon
-                material: UZr
-                Tinput: 600.0
-                Thot: 600.0
-                ip: 0.0
-                mult: 1
-                op: 10.0
-    assemblies:
-        fuel a: &assembly_a
-            specifier: IC
-            blocks: [*block_fuel, *block_fuel]
-            height: [0.5, 0.5]
-            axial mesh points: [1, 1]
-            xs types: [A, A]
-            material modifications:
-                by component:
-                    fuel1:
-                        U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block default value
-                    fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
-                        Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
-                U235_wt_frac: [0.30, 0.30]
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel, *block_fuel]
+                height: [0.5, 0.5]
+                axial mesh points: [1, 1]
+                xs types: [A, A]
+                material modifications:
+                    by component:
+                        fuel1:
+                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block default value
+                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
+                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
+                    U235_wt_frac: [0.30, 0.30]
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
 
@@ -1138,7 +1138,7 @@ Systems
 -------
 Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
-A complete reactor structure with a core and a SFP may be seen below::
+A complete reactor structure with a core and a SFP may be seen below:
 
 .. code-block:: yaml
 
