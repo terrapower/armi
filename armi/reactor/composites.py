@@ -1232,7 +1232,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Warning
         -------
-        The receiver object will return itself if it contains the flags in typeSpec and exlucdeSelf is False.
+        The receiver object will return itself if it contains the flags in typeSpec and excludeSelf is False.
 
         See Also
         --------

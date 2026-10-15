@@ -26,7 +26,7 @@ from armi.reactor import composites
 from armi.reactor.flags import Flags
 
 
-def isDepletable(obj: composites.ArmiObject):
+def isDepletable(obj: composites.ArmiObject) -> bool:
     """
     Return True if obj or any child is flagged as DEPLETABLE.
 

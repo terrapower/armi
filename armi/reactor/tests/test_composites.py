@@ -520,8 +520,7 @@ class TestCompositePattern(unittest.TestCase):
             self.assertAlmostEqual(rRatesReactor[key], val)
 
     def test_getFirstComponent(self):
-        # The dummy model's composite tree terminates
-        # with DummyLeaf objects
+        # The dummy model's composite tree terminates with DummyLeaf objects
         c = self.container.getComponents()[0]
         c0 = self.container.getFirstComponent()
         self.assertIs(c, c0)

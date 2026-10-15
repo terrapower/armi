@@ -347,6 +347,7 @@ class TestComponent(TestGeneralComponents):
         """Component.iterChildren should yield an empty iterator."""
         self.assertEqual(0, len(self.component))
 
+
 class TestNullComponent(TestGeneralComponents):
     componentCls = NullComponent
 
