@@ -1172,10 +1172,6 @@ class Component(ArmiObject, metaclass=ComponentType):
         for nucName in set(meNDens) | set(mergeNDens):
             compToMergeWith.setNumberDensity(nucName, (meNDens.get(nucName, 0.0) + mergeNDens.get(nucName, 0.0)))
 
-    def iterComponents(self, typeSpec=None, exact=False):
-        if self.hasFlags(typeSpec, exact):
-            yield self
-
     def backUp(self):
         """
         Create and store a backup of the state.

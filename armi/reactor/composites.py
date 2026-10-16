@@ -517,10 +517,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """Yield components one by one in a generator."""
-        raise NotImplementedError()
-
     def _iterChildren(
         self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
     ) -> Iterator["ArmiObject"]:
@@ -2737,7 +2733,9 @@ class Composite(ArmiObject):
         iterator of Component
             items matching typeSpec and exact criteria
         """
-        return (c for child in self for c in child.iterComponents(typeSpec, exact))
+        return (c for child in self for c in (child.iterComponents(typeSpec, exact) if isinstance(child, Composite)
+                                              else [child] if child.hasFlags(typeSpec, exact)
+                                              else []))
 
     def getComponentNames(self):
         """
