@@ -335,6 +335,12 @@ class ArmiObject(metaclass=CompositeModelType):
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
 
+    def __iter__(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        raise NotImplementedError
+
     def __lt__(self, other):
         """
         Implement the less-than operator.
@@ -446,6 +452,22 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError
 
+    def retainState(self, paramsToApply=None):
+        """
+        Restores a state before and after some operation.
+
+        Parameters
+        ----------
+        paramsToApply : iterable
+            Parameters that should be applied to the state after existing the state retainer. All
+            others will be reverted to their values upon entering.
+
+        Notes
+        -----
+        This should be used in a `with` statement.
+        """
+        return StateRetainer(self, paramsToApply)
+
     def _getCached(self, name):
         """
         Obtain a value from the cache.
@@ -494,31 +516,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         for paramName, val in new.p.items():
             self.p[paramName] = val
-
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return all armi.reactor.component.Component within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
-
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if compLabel is None.
-
-        Returns
-        -------
-        list of Component
-            items matching compLabel and exact criteria
-        """
-        raise NotImplementedError()
-
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """Yield components one by one in a generator."""
-        raise NotImplementedError()
 
     @classmethod
     def getParameterCollection(cls):
@@ -570,7 +567,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return s.lower() in name
 
     def getName(self):
-        """Get composite name."""
+        """Get ArmiObject name."""
         return self.name
 
     def setName(self, name):
@@ -712,6 +709,33 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         self.p.flags = flags or Flags.fromStringIgnoreErrors(typ)
         self.p.type = typ
+
+    def backUp(self):
+        """
+        Create and store a backup of the state.
+
+        This needed to be overridden due to linked components which actually have a parameter value
+        of another ARMI component.
+        """
+        self._backupCache = (self.cached, self._backupCache)
+        self.cached = {}  # don't .clear(), using reference above!
+        self.p.backUp()
+        if self.spatialGrid:
+            self.spatialGrid.backUp()
+
+    def restoreBackup(self, paramsToApply):
+        """
+        Restore the parameters from previously created backup.
+
+        Parameters
+        ----------
+        paramsToApply : list of ParmeterDefinitions
+            restores the state of all parameters not in `paramsToApply`
+        """
+        self.p.restoreBackup(paramsToApply)
+        self.cached, self._backupCache = self._backupCache
+        if self.spatialGrid:
+            self.spatialGrid.restoreBackup()
 
     def getVolume(self):
         raise NotImplementedError()
@@ -1167,7 +1191,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return self.parent.getAncestorAndDistance(fn, _distance + 1)
 
-    def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
+    def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False, excludeSelf=False):
         """
         Return the first ancestor that matches the passed flags.
 
@@ -1175,21 +1199,27 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         typeSpec : TypeSpec
             A collection of flags to match on candidate parents
-
         exactMatch : bool
             Whether the flags match should be exact
+        excludeSelf : bool
+            Whether to exclude the reciever object in the ancestor tree.
 
         Returns
         -------
         armi.composites.ArmiObject
             the first ancestor up the chain of parents that matches the passed flags
 
+        Warning
+        -------
+        The receiver object will return itself if it contains the flags in typeSpec and excludeSelf is False.
+
         See Also
         --------
         ArmiObject.hasFlags()
         """
-        if self.hasFlags(typeSpec, exact=exactMatch):
-            return self
+        if not (excludeSelf):
+            if self.hasFlags(typeSpec, exact=exactMatch):
+                return self
 
         if self.parent is None:
             return None
@@ -1523,6 +1553,176 @@ class ArmiObject(metaclass=CompositeModelType):
         ):
             self.expandElementalToIsotopics(elemental)
 
+    def _expandElementalToIsotopics(self, component: "Component", elementalNuclide: "nuclideBases.NaturalNuclideBase"):
+        """
+        Expand the density of an element on a component to its natural isotopic distribution.
+
+        Parameters
+        ----------
+        component : :class:`armi.reactor.components.component.Component` in which to expand the element
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclideBase` element to
+            expand into natural isotopic distribution.
+        """
+        natName = elementalNuclide.name
+        elementalDensity = component.getNumberDensity(natName)
+        if elementalDensity > 0.0:
+            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
+            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
+            newNDens = component.p.numberDensities[keepIndex]
+            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
+
+            # add in isotopics
+            for natNuc in elementalNuclide.getNaturalIsotopics():
+                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expand the density of a specific element to its natural isotopic distribution.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
+            expand into natural isotopic distribution.
+        """
+        raise NotImplementedError()
+
+    def getReactionRates(self, nucName, nDensity=None):
+        """
+        Get the reaction rates of a certain nuclide on this ArmiObject.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number Density
+
+        Returns
+        -------
+        rxnRates : dict
+            reaction rates (1/s) for nG, nF, n2n, nA and nP
+
+        """
+        raise NotImplementedError()
+
+    def _getReactionRates(self, nucName, nDensity=None):
+        """
+        Wrapper around logic to get reaction rates for a certain nuclide, to handle any errors.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number density
+
+        Returns
+        -------
+        rxnRates : dict
+            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
+
+        This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
+        hierarchy than ``Block``.
+        """
+        from armi.reactor.blocks import Block
+        from armi.reactor.reactors import Core
+
+        if nDensity is None:
+            nDensity = self.getNumberDensity(nucName)
+
+        try:
+            return self._getReactionRateDict(
+                nucName,
+                self.getAncestor(lambda c: isinstance(c, Core)).lib,
+                self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
+                self.getIntegratedMgFlux(),
+                nDensity,
+            )
+        except AttributeError:
+            runLog.warning(
+                f"Object {self} does not belong to a core and so has no reaction rates.",
+                single=True,
+            )
+            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+        except KeyError:
+            runLog.warning(
+                f"Attempting to get a reaction rate on an isotope not in the lib {nucName}.",
+                single=True,
+            )
+            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+
+    def _getReactionRateDict(self, nucName, lib, xsSuffix, mgFlux, nDens):
+        """
+        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
+            the nucDirectory module for a description of the difference.
+        lib : isotxs
+            cross section library
+        xsSuffix : str
+            cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
+            second burnup group of type A
+        mgFlux : np.ndarray
+            integrated mgFlux (n-cm/s)
+        nDens : float
+            number density (atom/bn-cm)
+
+        Returns
+        -------
+        rxnRates - dict
+            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        Assume there is no n3n cross section in ISOTXS
+        """
+        nucLabel = self.nuclideBases.byName[nucName].label
+        key = f"{nucLabel}{xsSuffix}"
+        libNuc = lib[key]
+        rxnRates = {"n3n": 0}
+        for rxName, mgXSs in [
+            ("nG", libNuc.micros.nGamma),
+            ("nF", libNuc.micros.fission),
+            ("n2n", libNuc.micros.n2n),
+            ("nA", libNuc.micros.nalph),
+            ("nP", libNuc.micros.np),
+        ]:
+            rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
+
+        return rxnRates
+
+    def _syncParameters(self, allSyncData, errors):
+        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
+        syncedKeys = set()
+        for nodeRank, nodeSyncData in enumerate(allSyncData):
+            if nodeSyncData is None:
+                continue
+
+            for key, val in nodeSyncData.items():
+                if key in syncedKeys:
+                    # Edge Case: an ArmiObject object is flagged as out of sync, and this parameter
+                    # was also globally modified and readjusted to the original value.
+                    curVal = self.p[key]
+                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
+                        if (val != curVal).any():
+                            errors[self, key].append(nodeRank)
+                    elif curVal != val:
+                        errors[self, key].append(nodeRank)
+                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
+                    continue
+                syncedKeys.add(key)
+                self.p[key] = val
+
+        self.clearCache()
+        return len(syncedKeys)
+
 
 class Composite(ArmiObject):
     """
@@ -1572,7 +1772,7 @@ class Composite(ArmiObject):
 
     """
 
-    _children: list["Composite"]
+    _children: list["ArmiObject"]
 
     def __init__(self, name):
         ArmiObject.__init__(self, name)
@@ -2215,8 +2415,8 @@ class Composite(ArmiObject):
         self,
         deep=False,
         generationNum=1,
-        predicate: Optional[Callable[["Composite"], bool]] = None,
-    ) -> Iterator["Composite"]:
+        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
+    ) -> Iterator["ArmiObject"]:
         """Iterate over children objects of this composite.
 
         Parameters
@@ -2232,7 +2432,7 @@ class Composite(ArmiObject):
 
         Returns
         -------
-        iterator of Composite
+        iterator of Composite and/or Component objects
 
         See Also
         --------
@@ -2271,13 +2471,30 @@ class Composite(ArmiObject):
         yield from self._iterChildren(deep, generationNum, checker)
 
     def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
-    ) -> Iterator["Composite"]:
+        self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
+    ) -> Iterator["ArmiObject"]:
+        """Generator function for iterating over composite tree children.
+
+        Parameters
+        ----------
+        deep : bool, optional
+            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
+        generationNum: int, optional
+            Generator depth. A depth of ``1`` includes children of ``self``, ``2``
+            excluisively is children of children, and so on.
+        checker: f(Composite) -> bool, optional
+            Function that filters what children ar added to the generator object.
+        """
+        ## Add the children at the 'base' level of the composite tree, if needed
         if deep or generationNum == 1:
             yield from filter(checker, self)
+        ## Add deeper children to the generator object recursively.
         if deep or generationNum > 1:
             for c in self:
-                yield from c._iterChildren(deep, generationNum - 1, checker)
+                if isinstance(c, Composite):
+                    yield from c._iterChildren(deep, generationNum - 1, checker)
+                else:
+                    yield from ()
 
     def iterChildrenWithMaterials(self, *args, **kwargs) -> Iterator:
         """Produce an iterator that also includes any materials found on descendants.
@@ -2304,8 +2521,8 @@ class Composite(ArmiObject):
         deep=False,
         generationNum=1,
         includeMaterials=False,
-        predicate: Optional[Callable[["Composite"], bool]] = None,
-    ) -> list["Composite"]:
+        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
+    ) -> list["ArmiObject"]:
         """
         Return the children objects of this composite.
 
@@ -2462,25 +2679,6 @@ class Composite(ArmiObject):
             for c in self:
                 c.p[paramName] = myVal
 
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return a list of Component objects within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
-            impact if typeSpec is None.
-
-        Returns
-        -------
-        list of Component
-            items matching typeSpec and exact criteria
-        """
-        return list(self.iterComponents(typeSpec, exact))
-
     def getFirstComponent(self, typeSpec: TypeSpec = None, exact=False):
         """
         Returns a single Component object within this Composite.
@@ -2521,7 +2719,17 @@ class Composite(ArmiObject):
         iterator of Component
             items matching typeSpec and exact criteria
         """
-        return (c for child in self for c in child.iterComponents(typeSpec, exact))
+        return (
+            c
+            for child in self
+            for c in (
+                child.iterComponents(typeSpec, exact)
+                if isinstance(child, Composite)
+                else [child]
+                if child.hasFlags(typeSpec, exact)
+                else []
+            )
+        )
 
     def getComponentNames(self):
         """
@@ -2654,6 +2862,25 @@ class Composite(ArmiObject):
         else:
             raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
 
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return a list of Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        list of Component
+            items matching typeSpec and exact criteria
+        """
+        return list(self.iterComponents(typeSpec, exact))
+
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
         Get the number of components that have these flags, taking into account multiplicity. Useful
@@ -2714,27 +2941,15 @@ class Composite(ArmiObject):
 
     def expandElementalToIsotopics(self, elementalNuclide):
         """
-        Expands the density of a specific elemental nuclides to its natural isotopics.
+        Expand the density of a specific element to its natural isotopic distribution.
 
         Parameters
         ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
-            replace.
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
+            expand into natural isotopic distribution.
         """
-        natName = elementalNuclide.name
         for component in self.iterComponents():
-            elementalDensity = component.getNumberDensity(natName)
-            if elementalDensity == 0.0:
-                continue
-
-            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
-            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
-            newNDens = component.p.numberDensities[keepIndex]
-            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
-
-            # add in isotopics
-            for natNuc in elementalNuclide.getNaturalIsotopics():
-                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
+            self._expandElementalToIsotopics(component, elementalNuclide)
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
         """Return the volume-averaged temperature (in degrees Celsius) of the ArmiObject over all children.
@@ -2864,7 +3079,7 @@ class Composite(ArmiObject):
                 tabulate.tabulate(
                     errorData,
                     headers=[
-                        "Composite",
+                        "ArmiObject",
                         "Composite Type",
                         "Composite Parent",
                         "ParameterName",
@@ -2881,31 +3096,6 @@ class Composite(ArmiObject):
         )
 
         return syncCount
-
-    def _syncParameters(self, allSyncData, errors):
-        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
-        syncedKeys = set()
-        for nodeRank, nodeSyncData in enumerate(allSyncData):
-            if nodeSyncData is None:
-                continue
-
-            for key, val in nodeSyncData.items():
-                if key in syncedKeys:
-                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
-                    # was also globally modified and readjusted to the original value.
-                    curVal = self.p[key]
-                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
-                        if (val != curVal).any():
-                            errors[self, key].append(nodeRank)
-                    elif curVal != val:
-                        errors[self, key].append(nodeRank)
-                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
-                    continue
-                syncedKeys.add(key)
-                self.p[key] = val
-
-        self.clearCache()
-        return len(syncedKeys)
 
     def _markSynchronized(self):
         """
@@ -2929,49 +3119,6 @@ class Composite(ArmiObject):
 
         for paramDef in paramDefs:
             paramDef.resetAssignmentFlag(parameters.SINCE_LAST_DISTRIBUTE_STATE)
-
-    def retainState(self, paramsToApply=None):
-        """
-        Restores a state before and after some operation.
-
-        Parameters
-        ----------
-        paramsToApply : iterable
-            Parameters that should be applied to the state after existing the state retainer. All
-            others will be reverted to their values upon entering.
-
-        Notes
-        -----
-        This should be used in a `with` statement.
-        """
-        return StateRetainer(self, paramsToApply)
-
-    def backUp(self):
-        """
-        Create and store a backup of the state.
-
-        This needed to be overridden due to linked components which actually have a parameter value
-        of another ARMI component.
-        """
-        self._backupCache = (self.cached, self._backupCache)
-        self.cached = {}  # don't .clear(), using reference above!
-        self.p.backUp()
-        if self.spatialGrid:
-            self.spatialGrid.backUp()
-
-    def restoreBackup(self, paramsToApply):
-        """
-        Restore the parameters from previously created backup.
-
-        Parameters
-        ----------
-        paramsToApply : list of ParmeterDefinitions
-            restores the state of all parameters not in `paramsToApply`
-        """
-        self.p.restoreBackup(paramsToApply)
-        self.cached, self._backupCache = self._backupCache
-        if self.spatialGrid:
-            self.spatialGrid.restoreBackup()
 
     def getLumpedFissionProductsIfNecessary(self, nuclides=None):
         """Return Lumped Fission Product objects that belong to this object or any of its children."""
@@ -3046,99 +3193,6 @@ class Composite(ArmiObject):
                 integratedMgFlux = integratedMgFlux + mgFlux
 
         return integratedMgFlux
-
-    def _getReactionRates(self, nucName, nDensity=None):
-        """
-        Wrapper around logic to get reaction rates for a certain nuclide, to handle any errors.
-
-        Parameters
-        ----------
-        nucName : str
-            nuclide name -- e.g. 'U235'
-        nDensity : float
-            number density
-
-        Returns
-        -------
-        rxnRates : dict
-            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-        Notes
-        -----
-        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
-
-        This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
-        hierarchy than ``Block``.
-        """
-        from armi.reactor.blocks import Block
-        from armi.reactor.reactors import Core
-
-        if nDensity is None:
-            nDensity = self.getNumberDensity(nucName)
-
-        try:
-            return self._getReactionRateDict(
-                nucName,
-                self.getAncestor(lambda c: isinstance(c, Core)).lib,
-                self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
-                self.getIntegratedMgFlux(),
-                nDensity,
-            )
-        except AttributeError:
-            runLog.warning(
-                f"Object {self} does not belong to a core and so has no reaction rates.",
-                single=True,
-            )
-            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
-        except KeyError:
-            runLog.warning(
-                f"Attempting to get a reaction rate on an isotope not in the lib {nucName}.",
-                single=True,
-            )
-            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
-
-    def _getReactionRateDict(self, nucName, lib, xsSuffix, mgFlux, nDens):
-        """
-        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
-
-        Parameters
-        ----------
-        nucName : str
-            nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
-            the nucDirectory module for a description of the difference.
-        lib : isotxs
-            cross section library
-        xsSuffix : str
-            cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
-            second burnup group of type A
-        mgFlux : np.ndarray
-            integrated mgFlux (n-cm/s)
-        nDens : float
-            number density (atom/bn-cm)
-
-        Returns
-        -------
-        rxnRates - dict
-            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-        Notes
-        -----
-        Assume there is no n3n cross section in ISOTXS
-        """
-        nucLabel = self.nuclideBases.byName[nucName].label
-        key = f"{nucLabel}{xsSuffix}"
-        libNuc = lib[key]
-        rxnRates = {"n3n": 0}
-        for rxName, mgXSs in [
-            ("nG", libNuc.micros.nGamma),
-            ("nF", libNuc.micros.fission),
-            ("n2n", libNuc.micros.n2n),
-            ("nA", libNuc.micros.nalph),
-            ("nP", libNuc.micros.np),
-        ]:
-            rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
-
-        return rxnRates
 
     def getReactionRates(self, nucName, nDensity=None):
         """
