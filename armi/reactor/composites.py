@@ -517,23 +517,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
-    ) -> Iterator["ArmiObject"]:
-        """Generator function for composite tree children.
-
-        Parameters
-        ----------
-        deep : bool, optional
-            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
-        generationNum: int, optional
-            Generator depth. A depth of ``1`` includes children of ``self``, ``2``
-            excluisively is children of children, and so on.
-        checker: f(Composite) -> bool, optional
-            Function that filters what children are added to the generator object.
-        """
-        raise NotImplementedError()
-
     @classmethod
     def getParameterCollection(cls):
         """
@@ -2508,7 +2491,10 @@ class Composite(ArmiObject):
         ## Add deeper children to the generator object recursively.
         if deep or generationNum > 1:
             for c in self:
-                yield from c._iterChildren(deep, generationNum - 1, checker)
+                if isinstance(c, Composite):
+                    yield from c._iterChildren(deep, generationNum - 1, checker)
+                else:
+                    yield from ()
 
     def iterChildrenWithMaterials(self, *args, **kwargs) -> Iterator:
         """Produce an iterator that also includes any materials found on descendants.
@@ -2733,9 +2719,17 @@ class Composite(ArmiObject):
         iterator of Component
             items matching typeSpec and exact criteria
         """
-        return (c for child in self for c in (child.iterComponents(typeSpec, exact) if isinstance(child, Composite)
-                                              else [child] if child.hasFlags(typeSpec, exact)
-                                              else []))
+        return (
+            c
+            for child in self
+            for c in (
+                child.iterComponents(typeSpec, exact)
+                if isinstance(child, Composite)
+                else [child]
+                if child.hasFlags(typeSpec, exact)
+                else []
+            )
+        )
 
     def getComponentNames(self):
         """

@@ -21,9 +21,7 @@ This module contains the abstract definition of a Component.
 import copy
 import re
 from typing import (
-    Callable,
     Iterable,
-    Iterator,
     Union,
 )
 
@@ -225,14 +223,6 @@ class Component(ArmiObject, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
-
-    def _iterChildren(
-        self, deep: bool, generationNum: int, checker: Callable[["ArmiObject"], bool]
-    ) -> Iterator["ArmiObject"]:
-        """Generator function for Component classes. This yields an empty generator object as Component objects
-        have no children.
-        """
-        yield from ()
 
     def __iter__(self):
         """Components have no children, but this method needs to exist, so it gets a static value."""
