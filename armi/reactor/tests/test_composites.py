@@ -520,26 +520,29 @@ class TestCompositePattern(unittest.TestCase):
             self.assertAlmostEqual(rRatesReactor[key], val)
 
     def test_getFirstComponent(self):
+        # The dummy model's composite tree terminates with DummyLeaf objects
         c = self.container.getComponents()[0]
         c0 = self.container.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
         c = self.cladChild.getComponents()[0]
         c0 = self.cladChild.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
         c = self.secondGen.getComponents()[0]
         c0 = self.secondGen.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
+        # When using this function in a real composite model,
+        # we should get an actual Component object
         b = buildComplexHexBlock()
         c = b.getComponents()[0]
         c0 = b.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, components.Component)
 
         # covering edge case: someone passes in a flag that doesn't exist on on the object
         with self.assertRaises(ValueError):
@@ -766,15 +769,14 @@ class TestCompositeTree(unittest.TestCase):
         child = grandchild.getAncestorWithFlags(Flags.FUEL)
         self.assertIsNone(child)
 
-        # test the usual case: get a ancestor with the fuel flag
+        # test that the passing the same flag results in the reciever object being returned
         child = self.block.getChildrenWithFlags(Flags.FUEL)[0]
-        grandchild = child.getFirstComponent()
-        child1 = grandchild.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(child1, grandchild)
+        child1 = child.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child1, child)
 
-        # default case: the only ancestor with the fuel flag is the composite itself, so return that
-        child2 = child.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(child2, child)
+        # now check that using excludeSelf changes this behavior
+        ancestor = child.getAncestorWithFlags(Flags.FUEL, excludeSelf=True)
+        self.assertIsNone(ancestor)
 
     def test_changeNDensByFactor(self):
         b = deepcopy(self.block.getChildrenWithFlags(Flags.FUEL)[0])
