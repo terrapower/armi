@@ -10,7 +10,7 @@ The Reactor Data Model
 
 The ARMI framework represents a nuclear reactor via a reactor data model, which is defined in the
 :py:mod:`~armi.reactor` package. Each physical piece of the nuclear reactor is defined by a Python
-object, called an :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>`. Each ``ArmiObject``
+object, called an :py:class:`ArmiObject <armi.reactor.armiObject.ArmiObject>`. Each ``ArmiObject``
 has associated data like: shape, material, or other physical values. The physical values can be
 nearly anything, and are attached to the data model via ARMI's
 :py:mod:`Parameter <armi.reactor.parameters>` system. Example parameters might be: ``keff``,

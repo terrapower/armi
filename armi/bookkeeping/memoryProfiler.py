@@ -43,7 +43,7 @@ from os import cpu_count
 from typing import Optional
 
 from armi import context, interfaces, mpiActions, runLog
-from armi.reactor.composites import ArmiObject
+from armi.reactor.armiObject import ArmiObject
 from armi.utils import tabulate
 from armi.utils.customExceptions import NonexistentSetting
 

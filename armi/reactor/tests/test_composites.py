@@ -28,7 +28,7 @@ from armi.nucDirectory.nuclideBases import NuclideBase, NuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies, blocks, components, composites, grids, parameters
+from armi.reactor import armiObject, assemblies, blocks, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
@@ -1139,14 +1139,14 @@ class TestFlagSerializer(unittest.TestCase):
             Flags.A | Flags.B | Flags.CONTROL,
         ]
 
-        flagsArray, attrs = composites.FlagSerializer.pack(data)
+        flagsArray, attrs = armiObject.FlagSerializer.pack(data)
 
-        data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
+        data2 = armiObject.FlagSerializer.unpack(flagsArray, armiObject.FlagSerializer.version, attrs)
         self.assertEqual(data, data2)
 
         # discrepant versions
         with self.assertRaises(ValueError):
-            data2 = composites.FlagSerializer.unpack(flagsArray, "0", attrs)
+            data2 = armiObject.FlagSerializer.unpack(flagsArray, "0", attrs)
 
         # missing flags in current version Flags
         attrs["flag_order"].append("NONEXISTANTFLAG")
@@ -1156,7 +1156,7 @@ class TestFlagSerializer(unittest.TestCase):
             runLog.LOG.startLog(testName)
             runLog.LOG.setVerbosity(logging.WARNING)
 
-            data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
+            data2 = armiObject.FlagSerializer.unpack(flagsArray, armiObject.FlagSerializer.version, attrs)
             flagLog = mock.getStdout()
 
         self.assertIn("The set of flags", flagLog)
@@ -1169,10 +1169,10 @@ class TestFlagSerializer(unittest.TestCase):
             self.TestFlagsA.A | self.TestFlagsA.C | self.TestFlagsA.D,
         ]
 
-        serialized, attrs = composites.FlagSerializer._packImpl(data, self.TestFlagsA)
+        serialized, attrs = armiObject.FlagSerializer._packImpl(data, self.TestFlagsA)
 
-        data2 = composites.FlagSerializer._unpackImpl(
-            serialized, composites.FlagSerializer.version, attrs, self.TestFlagsB
+        data2 = armiObject.FlagSerializer._unpackImpl(
+            serialized, armiObject.FlagSerializer.version, attrs, self.TestFlagsB
         )
 
         expected = [

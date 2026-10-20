@@ -84,7 +84,7 @@ to here.
 
     - Component types: Component types are registered dynamically through some metaclass magic, found in
       :py:class:`armi.reactor.components.component.ComponentType` and
-      :py:class:`armi.reactor.composites.CompositeModelType`. Simply defining a new Component subclass should register
+      :py:class:`armi.reactor.armiObject.CompositeModelType`. Simply defining a new Component subclass should register
       it with the appropriate ARMI systems. While this is convenient, it does lead to potential issues, as the behavior
       of ARMI becomes sensitive to module import order and the like; the containing module needs to be imported before
       the registration occurs, which can be surprising.

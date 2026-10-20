@@ -31,8 +31,8 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import Void, custom, material
 from armi.reactor import flags, parameters
+from armi.reactor.armiObject import ArmiObject, CompositeModelType
 from armi.reactor.components import componentParameters
-from armi.reactor.composites import ArmiObject, CompositeModelType
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
 
