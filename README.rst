@@ -147,12 +147,12 @@ information from this Reactor and write their output to it. This common interfac
 coupling between different physics sub-specialties. If you plug one new physics kernel into ARMI, it becomes coupled to
 N other kernels. The ARMI Framework, depicted in green below, is the majority of the open source package. Several
 skeletal analysis routines are included as well to perform basic data management and to help align efforts on external
-physics kernels.
+physics kernels. ARMI does not provide physics kernels, you will have to find those on your own.
 
 .. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
    :figclass: align-center
 
-   **Figure 1.** The schematic representation of the ARMI data model.
+   **Figure 1.** A high-level view of the ARMI design as a framework.
 
 
 Automation
