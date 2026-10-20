@@ -39,13 +39,11 @@ https://docs.python.org/3/library/gc.html#gc.garbage
 
 import gc
 import sys
-from os import cpu_count
 from typing import Optional
 
 from armi import context, interfaces, mpiActions, runLog
 from armi.reactor.composites import ArmiObject
 from armi.utils import tabulate
-from armi.utils.customExceptions import NonexistentSetting
 
 try:
     # psutil is an optional requirement, since it doesn't support MacOS very well
