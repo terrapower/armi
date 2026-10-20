@@ -66,25 +66,6 @@ def describeInterfaces(cs):
     return (MemoryProfiler, {})
 
 
-def getTotalJobMemory(nTasks, cpusPerTask):
-    """Function to calculate the total memory of a job. This is a constant during a simulation."""
-    cpuPerNode = cpu_count()
-    ramPerCpuGB = psutil.virtual_memory().total / (1024**3) / cpuPerNode
-    jobMem = nTasks * cpusPerTask * ramPerCpuGB
-    return jobMem
-
-
-def getCurrentMemoryUsage():
-    """Scavenges the memory profiler in ARMI to get the current memory usage."""
-    memUsageAction = PrintSystemMemoryUsageAction()
-    memUsageAction.broadcast()
-    smpu = SystemAndProcessMemoryUsage()
-    memUsages = memUsageAction.gather(smpu)
-    # Grab virtual memory instead of physical. There is a large discrepancy, we will be conservative
-    memoryUsageInMB = sum([mu.processVirtualMemoryInMB for mu in memUsages])
-    return memoryUsageInMB
-
-
 class MemoryProfiler(interfaces.Interface):
     name = "memoryProfiler"
 
@@ -94,7 +75,6 @@ class MemoryProfiler(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
-        self.printCurrentMemoryState()
         mpiAction = PrintSystemMemoryUsageAction()
         mpiAction.broadcast().invoke(self.o, self.r, self.cs)
         mpiAction.printUsage("BOL SYS_MEM")
@@ -105,8 +85,6 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEveryNode(self, cycle, node):
-        self.printCurrentMemoryState()
-
         mp = PrintSystemMemoryUsageAction()
         mp.broadcast()
         mp.invoke(self.o, self.r, self.cs)
@@ -124,26 +102,6 @@ class MemoryProfiler(interfaces.Interface):
         if self.cs["debugMem"]:
             mpiAction = ProfileMemoryUsageAction("EOL")
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
-
-    def printCurrentMemoryState(self):
-        """Print the current memory footprint and available memory."""
-        try:
-            cpusPerTask = self.cs["cpusPerTask"]
-        except NonexistentSetting:
-            runLog.extra(
-                "To view memory consumed, remaining available, and total allocated for a case, "
-                "add the setting 'cpusPerTask' to your application."
-            )
-            return
-        nTasks = self.cs["nTasks"]
-        totalMemoryInGB = getTotalJobMemory(nTasks, cpusPerTask)
-        currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
-        availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
-        runLog.info(
-            f"Currently using {currentMemoryUsageInGB} GB of memory. "
-            f"There is {availableMemoryInGB} GB of memory left. "
-            f"There is a total allocation of {totalMemoryInGB} GB."
-        )
 
     def displayMemoryUsage(self, timeDescription):
         """
