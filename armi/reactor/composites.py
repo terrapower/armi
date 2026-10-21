@@ -13,13 +13,15 @@
 # limitations under the License.
 
 """
-The basic composite pattern underlying the reactor package.
+Implementation of the `Composite` class in the composite design pattern underlying the reactor package.
 
 This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
-allow the construction of a part/whole hierarchy representing a physical nuclear reactor. The composite objects act
-somewhat like lists: they can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy
-knows its children and its parent, so full access to the hierarchy is available from everywhere. This design was chosen
-because of the close analogy of the model to the physical nature of nuclear reactors.
+allow the construction of a part/whole hierarchy representing a physical nuclear reactor in a tree strucutre. The
+`Composite` class implements the 'whole' aspect of the part/whole hierarchy (this is the `Composite` class in
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). The `Composite` objects act somewhat like lists: they
+can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy knows its children and
+its parent, so full access to the hierarchy is available from everywhere. This design was chosen because of the close
+analogy of the model to the physical nature of nuclear reactors.
 
 Warning
 -------
@@ -29,6 +31,9 @@ members; it can cause large and unexpected memory inefficiencies.
 See Also
 --------
 :doc:`/developer/index`.
+armi.reactor.armiObject.ArmiObject
+armi.reactor.components.component.Component
+
 """
 
 import collections
