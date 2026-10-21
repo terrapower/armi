@@ -142,12 +142,14 @@ effectively with all ongoing reactor software developments.
 
 Communication and coupling
 **************************
-ARMI provides a central place for all physics kernels to interact: the Reactor Model. All modules read *state*
-information from this Reactor and write their output to it. This common interface allows seamless communication and
-coupling between different physics sub-specialties. If you plug one new physics kernel into ARMI, it becomes coupled to
-N other kernels. The ARMI Framework, depicted in green below, is the majority of the open source package. Several
-skeletal analysis routines are included as well to perform basic data management and to help align efforts on external
-physics kernels. ARMI does not provide physics kernels, you will have to find those on your own.
+As you can see below, the ARMI framework comes packaged with the ARMI Reactor Data Model. This is a central place where
+all your code, and any external physics kernels, can share information about the state of the reactor. ARMI also
+provides a number of helpful tools, like: input formats for reactor blueprints, tools for organizing the flow of a
+simulation, output databases, and visualization tools. To use the Reactor Data Model, you will build one (or probably
+more) "plugins". These plugins are often used to connect an external physics kernal to the run or simulation. Please
+note that you will be responsible for acquiring (or writing) physics kernels yourself, ARMI does not provide them.
+Though ARMI does provide skeletons for the plugins you will probably want if you are modeling a nuclear reactor, and
+tutorials and guides for building your own plugins.
 
 .. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
    :figclass: align-center
