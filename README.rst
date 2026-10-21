@@ -117,7 +117,7 @@ Digital computers have assisted in nuclear technology development since the days
 understand reactor physics well enough to build detailed simulations, which can answer many of these design questions in
 a cost-effective, and flexible manner. This allows us to simulate all kinds of different reactors with different fuels,
 coolants, moderators, power levels, safety systems, and power cycles. We can run our virtual reactors through the
-decades, tose miriad off-normal conditions at them, and see how they perform in terms of capability, economics, and
+decades, toss miriad off-normal conditions at them, and see how they perform in terms of capability, economics, and
 safety.
 
 Perhaps surprisingly, some nuclear software written in the 1960s is still in use today. These codes are validated
@@ -146,14 +146,15 @@ As you can see below, the ARMI framework comes packaged with the ARMI Reactor Da
 all your code, and any external physics kernels, can share information about the state of the reactor. ARMI also
 provides a number of helpful tools, like: input formats for reactor blueprints, tools for organizing the flow of a
 simulation, output databases, and visualization tools. To use the Reactor Data Model, you will build one (or probably
-more) "plugins". These plugins are often used to connect an external physics kernal to the run or simulation. Though
-ARMI does provide skeletons for the plugins you will probably want if you are modeling a nuclear reactor, and tutorials
-and guides for building your own plugins.
+more) "plugins". These plugins are often used to connect an external physics kernal to the run or simulation.
+
+ARMI provides tutorials and guides for building your own plugins,
+and some lightweight machinery to help get you started.
 
 .. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
    :figclass: align-center
 
-   **Figure 1.** A high-level view of the ARMI design as a framework.
+   **Figure 1.** A high-level view of the ARMI architecture as a framework.
 
 Please note that you will be responsible for acquiring (or writing) physics kernels yourself, ARMI does not provide
 them. And the examples shown in Figure 1 were chosen arbitrarily, ARMI is not limited to these physics kernels, nor
