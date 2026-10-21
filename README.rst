@@ -56,7 +56,7 @@ Additional high-level overview about this system can be found in [#touranarmi]_.
 
 Quick start
 ***********
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.11 to 3.14.
+Before starting, you need to install `Python <https://www.python.org/downloads/>`.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following commands. You probably want to
 do this in a virtual environment as described in the
