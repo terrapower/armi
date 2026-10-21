@@ -117,8 +117,8 @@ Digital computers have assisted in nuclear technology development since the days
 understand reactor physics well enough to build detailed simulations, which can answer many of these design questions in
 a cost-effective, and flexible manner. This allows us to simulate all kinds of different reactors with different fuels,
 coolants, moderators, power levels, safety systems, and power cycles. We can run our virtual reactors through the
-decades, tossing various off-normal conditions at them now and then, to see how they perform in terms of capability,
-economics, and safety.
+decades, tose miriad off-normal conditions at them, and see how they perform in terms of capability, economics, and
+safety.
 
 Perhaps surprisingly, some nuclear software written in the 1960s is still in use today. These codes are validated
 against physical experiments that no longer exist. Meanwhile, new cutting-edge nuclear software is being developed for
@@ -126,10 +126,10 @@ todays powerful computers. Both old and new, these tools are often challenging t
 full reactor analysis.
 
 The ARMI approach was born out of this situation: how can we best leverage an eclectic mix of legacy and modern tools
-with a small team to do full-scope analysis? We built a framework that lets us automate the tedious, uncoupled, and
-error-prone parts of reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis
-given a major change (e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to
-multiple machines and then perform multi-objective optimization on the resulting design space.
+to do full-scope analysis? We built a framework to help us automate the tedious, uncoupled, and error-prone parts of
+reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis given a major change
+(e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to multiple machines and
+then perform multi-objective optimization on the resulting design space.
 
 The ARMI system is largely written in the Python programming language. Its high-level nature allows nuclear and
 mechanical engineers to rapidly automate their analysis tasks from their sub-specialties. This helps eliminate the
