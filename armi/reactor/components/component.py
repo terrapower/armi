@@ -43,7 +43,7 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import Void, custom, material
 from armi.reactor import flags, parameters
-from armi.reactor.armiObject import ArmiObject, CompositeModelType
+from armi.reactor.armiObject import ArmiObject, ArmiObjectModelType
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -103,7 +103,7 @@ class _DimensionLink(tuple):
         return f"{self[0].name}.{self[1]}"
 
 
-class ComponentType(CompositeModelType):
+class ComponentType(ArmiObjectModelType):
     """
     ComponetType is a metaclass for storing and initializing Component subclass types.
 
@@ -133,7 +133,7 @@ class ComponentType(CompositeModelType):
     )
 
     def __new__(cls, name, bases, attrs):
-        newType = CompositeModelType.__new__(cls, name, bases, attrs)
+        newType = ArmiObjectModelType.__new__(cls, name, bases, attrs)
         ComponentType.TYPES[name.lower()] = newType
 
         # the co_varnames attribute contains arguments and then locals so we must

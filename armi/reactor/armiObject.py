@@ -227,7 +227,7 @@ def _defineBaseParameters():
     return pDefs
 
 
-class CompositeModelType(resolveCollections.ResolveParametersMeta):
+class ArmiObjectModelType(resolveCollections.ResolveParametersMeta):
     """
     Metaclass for tracking subclasses of ArmiObject subclasses.
 
@@ -246,12 +246,12 @@ class CompositeModelType(resolveCollections.ResolveParametersMeta):
     def __new__(cls, name, bases, attrs):
         newType = resolveCollections.ResolveParametersMeta.__new__(cls, name, bases, attrs)
 
-        CompositeModelType.TYPES[name] = newType
+        ArmiObjectModelType.TYPES[name] = newType
 
         return newType
 
 
-class ArmiObject(metaclass=CompositeModelType):
+class ArmiObject(metaclass=ArmiObjectModelType):
     """
     The abstract base class for all composites and leaves.
 
