@@ -30,6 +30,7 @@ armi.reactor.components.component.Component
 """
 
 import itertools
+from abc import ABCMeta, abstractmethod
 from typing import (
     TYPE_CHECKING,
     Dict,
@@ -251,7 +252,13 @@ class ArmiObjectModelType(resolveCollections.ResolveParametersMeta):
         return newType
 
 
-class ArmiObject(metaclass=ArmiObjectModelType):
+class ArmiObjectModelTypeABC(ABCMeta, ArmiObjectModelType):
+    """Metaclass that combines ArmiObjectModelType with ABCMeta to allow ArmiObject to be an ABC."""
+
+    pass
+
+
+class ArmiObject(metaclass=ArmiObjectModelTypeABC):
     """
     The abstract base class for all composites and leaves.
 
@@ -327,11 +334,17 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
 
+    @abstractmethod
     def __iter__(self):
-        raise NotImplementedError
+        """The part/whole hierarchy makes use of an __iter__ method that is used recurseively, so it should be defined
+        in the interface.
+        """
 
+    @abstractmethod
     def __len__(self):
-        raise NotImplementedError
+        """The part/whole hierarchy makes use of an __len__ method that is used recurseively, so it should be defined
+        in the interface.
+        """
 
     def __lt__(self, other):
         """
@@ -431,18 +444,6 @@ class ArmiObject(metaclass=ArmiObjectModelType):
             return r.nuclideBases
         else:
             return nuclideBases.nuclideBases
-
-    def duplicate(self):
-        """
-        Make a clean copy of this object.
-
-        Warning
-        -------
-        Be careful with inter-object dependencies. If one object contains a reference to another
-        object which contains links to the entire hierarchical tree, memory can fill up rather
-        rapidly. Weak references are designed to help with this problem.
-        """
-        raise NotImplementedError
 
     def _getCached(self, name):
         """
@@ -713,11 +714,13 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         if self.spatialGrid:
             self.spatialGrid.restoreBackup()
 
+    @abstractmethod
     def getVolume(self):
-        raise NotImplementedError()
+        """Get the volume of the ArmiObject."""
 
+    @abstractmethod
     def getArea(self, cold=False):
-        raise NotImplementedError()
+        """Get the area of the ArmiObject."""
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
@@ -728,16 +731,7 @@ class ArmiObject(metaclass=ArmiObjectModelType):
 
         raise ValueError(f"No parent is defined for {self}. Cannot compute its volume fraction.")
 
-    def getMaxArea(self):
-        """
-        The maximum area of this object if it were totally full.
-
-        See Also
-        --------
-        armi.reactor.blocks.HexBlock.getMaxArea
-        """
-        raise NotImplementedError()
-
+    @abstractmethod
     def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
@@ -753,7 +747,6 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         mass : float
             The mass in grams.
         """
-        raise NotImplementedError()
 
     def getMassFrac(self, nucName):
         """
@@ -1034,20 +1027,7 @@ class ArmiObject(metaclass=ArmiObjectModelType):
 
         self.setMassFracs(newMassFracs)
 
-    def adjustMassEnrichment(self, massFraction):
-        """
-        Adjust the enrichment of this object.
-
-        If it's Uranium, enrichment means U-235 fraction.
-        If it's Boron, enrichment means B-10 fraction, etc.
-
-        Parameters
-        ----------
-        newEnrich : float
-            The new enrichment as a fraction.
-        """
-        raise NotImplementedError
-
+    @abstractmethod
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested.
 
@@ -1056,12 +1036,12 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         nucNames : list of str
             Nuclide names to get number densities for, e.g. ['U233', 'U235', 'Pu239']
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def _getNdensHelper(self):
         """Return a number densities dict with unexpanded lfps."""
-        raise NotImplementedError
 
+    @abstractmethod
     def getNumberDensity(self, nucName):
         """Return the number density of a nuclide in atoms/barn-cm.
 
@@ -1071,7 +1051,6 @@ class ArmiObject(metaclass=ArmiObjectModelType):
             Nuclide name to get number density for, e.g. 'U233'.
 
         """
-        raise NotImplementedError
 
     def getNumberDensities(self, expandFissionProducts=False):
         """
@@ -1214,6 +1193,7 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         nFPsPerLFP = fissionProductModel.NUM_FISSION_PRODUCTS_PER_LFP  # LFPs count as two! Big deal in non BOL cases.
         return sum(dens * (nFPsPerLFP if "LFP" in name else 1.0) for name, dens in self.getNumberDensities().items())
 
+    @abstractmethod
     def setNumberDensity(self, nucName, val):
         """
         Set the number density of this nuclide to this value.
@@ -1225,8 +1205,8 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         val : float
             Number density to set in atoms/bn-cm (heterogeneous)
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def setNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Reset any non-listed nuclides to 0.0.
@@ -1236,8 +1216,8 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         numberDensities : dict
             nucName: ndens pairs.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def updateNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
@@ -1248,11 +1228,10 @@ class ArmiObject(metaclass=ArmiObjectModelType):
             nucName: ndens pairs.
 
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        raise NotImplementedError
 
     def clearNumberDensities(self):
         """
@@ -1318,6 +1297,7 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
 
+    @abstractmethod
     def getNuclides(self):
         """
         Determine which nuclides are present in this armi object.
@@ -1327,7 +1307,6 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         nucs : list of str
             Nuclide names that exist in this ArmiObject
         """
-        raise NotImplementedError()
 
     def getFissileMass(self):
         """Returns fissile mass in grams."""
@@ -1377,9 +1356,9 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         mass = self.getMass(nucs)
         return mass
 
+    @abstractmethod
     def getFuelMass(self):
         """Returns mass of fuel in grams."""
-        raise NotImplementedError
 
     def getAtomicWeight(self):
         r"""
@@ -1418,8 +1397,26 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         vol = self.getVolume()
         return {nucName: densityTools.getMassInGrams(nucName, vol, ndens) for nucName, ndens in numDensities.items()}
 
+    @abstractmethod
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
-        raise NotImplementedError
+        """
+        Return the multigroup neutron tracklength in [n-cm/s].
+
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
+
+        Parameters
+        ----------
+        adjoint : bool, optional
+            Return adjoint flux instead of real
+        gamma : bool, optional
+            Whether to return the neutron flux or the gamma flux.
+
+        Returns
+        -------
+        integratedFlux : multigroup neutron tracklength in [n-cm/s]
+
+        """
 
     def getMgFlux(self, adjoint=False, average=False, gamma=False):
         """
@@ -1551,6 +1548,7 @@ class ArmiObject(metaclass=ArmiObjectModelType):
             for natNuc in elementalNuclide.getNaturalIsotopics():
                 component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
+    @abstractmethod
     def expandElementalToIsotopics(self, elementalNuclide):
         """
         Expand the density of a specific element to its natural isotopic distribution.
@@ -1560,8 +1558,8 @@ class ArmiObject(metaclass=ArmiObjectModelType):
         elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
             expand into natural isotopic distribution.
         """
-        raise NotImplementedError()
 
+    @abstractmethod
     def getReactionRates(self, nucName, nDensity=None):
         """
         Get the reaction rates of a certain nuclide on this ArmiObject.
@@ -1579,7 +1577,6 @@ class ArmiObject(metaclass=ArmiObjectModelType):
             reaction rates (1/s) for nG, nF, n2n, nA and nP
 
         """
-        raise NotImplementedError()
 
     def _getReactionRates(self, nucName, nDensity=None):
         """

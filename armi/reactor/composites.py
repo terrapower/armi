@@ -142,9 +142,11 @@ class Composite(ArmiObject):
         return self.getChildren() + other.getChildren()
 
     def __iter__(self):
+        """Iterate over the children contained in this Composite."""
         return iter(self._children)
 
     def __len__(self):
+        """Get the number of children contained in this Composite."""
         return len(self._children)
 
     def __contains__(self, item):

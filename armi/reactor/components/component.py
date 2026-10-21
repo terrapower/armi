@@ -43,7 +43,7 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import Void, custom, material
 from armi.reactor import flags, parameters
-from armi.reactor.armiObject import ArmiObject, ArmiObjectModelType
+from armi.reactor.armiObject import ArmiObject, ArmiObjectModelTypeABC
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -103,9 +103,9 @@ class _DimensionLink(tuple):
         return f"{self[0].name}.{self[1]}"
 
 
-class ComponentType(ArmiObjectModelType):
+class ComponentType(ArmiObjectModelTypeABC):
     """
-    ComponetType is a metaclass for storing and initializing Component subclass types.
+    ComponentType is a metaclass for storing and initializing Component subclass types.
 
     The construction of Component subclasses is being done through factories for ease of user input.
     As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
@@ -133,7 +133,7 @@ class ComponentType(ArmiObjectModelType):
     )
 
     def __new__(cls, name, bases, attrs):
-        newType = ArmiObjectModelType.__new__(cls, name, bases, attrs)
+        newType = ArmiObjectModelTypeABC.__new__(cls, name, bases, attrs)
         ComponentType.TYPES[name.lower()] = newType
 
         # the co_varnames attribute contains arguments and then locals so we must
@@ -589,12 +589,6 @@ class Component(ArmiObject, metaclass=ComponentType):
 
     def getComponentVolume(self):
         return self.p.volume
-
-    def setVolume(self, val):
-        raise NotImplementedError
-
-    def setArea(self, val):
-        raise NotImplementedError
 
     def setTemperature(self, temperatureInC):
         r"""
@@ -1228,9 +1222,6 @@ class Component(ArmiObject, metaclass=ComponentType):
         be enriched vs. the baseline nuclides of that element while holding mass constant. For
         example it might adjust boron or uranium enrichment.
 
-        Conceptually, you could hold number of atoms, volume, or mass constant during this
-        operation. Historically ARMI adjusted mass fractions which was meant to keep mass constant.
-
         If you have 20 mass % Uranium and adjust the enrichment, you will still have 20% Uranium
         mass. But, the actual mass actually might change a bit because the enriched nuclide weighs
         less.
@@ -1282,7 +1273,7 @@ class Component(ArmiObject, metaclass=ComponentType):
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
-            raise NotImplementedError("Component has no method for producing average MG flux -- tryusing blocks")
+            raise NotImplementedError("Component has no method for producing average MG flux -- try using blocks")
 
         volume = self.getVolume() / self.parent.getSymmetryFactor()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
