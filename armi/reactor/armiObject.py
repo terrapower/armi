@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """
-Definition of the `Component` interface for the composite design pattern underlying the reactor package.
+Definition of the `Component` interface for the composite design pattern underlying the reactor package, which ARMI
+calls `ArmiObject`.
 
 This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
 allow the construction of a part/whole hierarchy representing a physical nuclear reactor in a tree strucutre. The
@@ -230,7 +231,7 @@ def _defineBaseParameters():
 
 class ArmiObjectModelType(resolveCollections.ResolveParametersMeta):
     """
-    Metaclass for tracking subclasses of ArmiObject subclasses.
+    Metaclass for tracking subclasses of ArmiObject.
 
     It is often useful to have an easily-accessible collection of all classes that participate in
     the ARMI composite reactor model. This metaclass maintains a collection of all defined
@@ -279,14 +280,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
     that class's ``pDefs`` as well as the definitions for all of its parents. A new
     ``paramCollectionType`` class attribute will be added to the ArmiObject subclass to reflect
     which type of parameter collection should be used.
-
-    Warning
-    -------
-    This class has far too many public methods. We are in the midst of a composite tree cleanup that
-    will likely break these out onto a number of separate functional classes grouping things like
-    composition, location, shape/dimensions, and various physics queries. Methods are being
-    collected here from the various specialized subclasses (Block, Assembly) in preparation for this
-    next step. As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters are accessible throughout the armi tree.
         :id: I_ARMI_PARAM1
@@ -350,7 +343,7 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         """
         Implement the less-than operator.
 
-        Implementing this on the ArmiObject allows most objects, under most circumstances to be
+        Implementing this on the ArmiObject allows most objects, under most circumstances, to be
         sorted. This is useful from the context of the Database classes, so that they can produce a
         stable layout of the serialized composite structure.
 
@@ -672,17 +665,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         flags : Flags, optional
             The set of Flags to apply to the object. If these are omitted, then Flags
             will be derived from the ``typ``.
-
-        Warning
-        -------
-        We are in the process of developing more robust definitions for things like
-        "name" and "type". "type" will generally refer to the name of the blueprint that
-        created a particular object. When present, a "name" will refer to a specific
-        instance of an object of a particular "type". Think unique names for each
-        assembly in a core, even if they are all created from the same blueprint and
-        therefore have the same "type". When this work is complete, it will be strongly
-        discouraged, or even disallowed to change the type of an object after it has
-        been created, and ``setType()`` may be removed entirely.
         """
         self.p.flags = flags or Flags.fromStringIgnoreErrors(typ)
         self.p.type = typ
@@ -860,7 +842,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         ----------
         massFracs: dict
             nucName : new mass fraction pairs.
-
         """
         rho = self.density()
         if not rho:
@@ -1226,7 +1207,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         ----------
         numberDensities : dict
             nucName: ndens pairs.
-
         """
 
     @abstractmethod
@@ -1415,7 +1395,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         Returns
         -------
         integratedFlux : multigroup neutron tracklength in [n-cm/s]
-
         """
 
     def getMgFlux(self, adjoint=False, average=False, gamma=False):
@@ -1460,7 +1439,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         ----------
         nucName : str
             nuclide name e.g. 'U235'
-
         mass : float
             mass in grams of nuclide to be added to this armi Object
         """
@@ -1491,7 +1469,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
             Nuclide name to set mass of
         mass : float
             Mass in grams to set.
-
         """
         d = calculateNumberDensity(nucName, mass, self.getVolume())
         self.setNumberDensity(nucName, d)
@@ -1575,7 +1552,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         -------
         rxnRates : dict
             reaction rates (1/s) for nG, nF, n2n, nA and nP
-
         """
 
     def _getReactionRates(self, nucName, nDensity=None):
