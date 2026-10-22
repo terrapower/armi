@@ -26,7 +26,7 @@ from armi.testing import NUM_PINS_IN_COMPLEX_HEX_BLOCK, buildComplexHexBlock
 from armi.utils import iterables
 
 
-class HexBlockRotateTests(unittest.TestCase):
+class TestHexBlockRotate(unittest.TestCase):
     """Tests for various rotation aspects of a hex block."""
 
     BOUNDARY_PARAMS = [

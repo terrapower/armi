@@ -308,7 +308,7 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertIs(wrapped.__wrapped__, f)
 
 
-class CyclesSettingsTests(unittest.TestCase):
+class TestCyclesSettings(unittest.TestCase):
     """
     Check reading of the various cycle history settings for both the detailed
     and simple input options.

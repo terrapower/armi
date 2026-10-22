@@ -1,6 +1,6 @@
 blocks:
     fuel: &block_fuel
-        fuel: &component_fuel_fuel
+        fuel:
             shape: Circle
             material: UZr
             Tinput: 25.0
@@ -8,7 +8,7 @@ blocks:
             id: 0.0
             mult: 169.0
             od: 0.86
-        clad: &component_fuel_clad
+        clad:
             shape: Circle
             material: HT9
             Tinput: 25.0
@@ -16,7 +16,7 @@ blocks:
             id: 1.0
             mult: fuel.mult
             od: 1.09
-        bond: &component_fuel_bond
+        bond:
             shape: Circle
             material: Sodium
             Tinput: 450.0
@@ -24,7 +24,7 @@ blocks:
             id: fuel.od
             mult: fuel.mult
             od: clad.id
-        wire: &component_fuel_wire
+        wire:
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -34,12 +34,12 @@ blocks:
             id: 0.0
             mult: fuel.mult
             od: 0.10056
-        coolant: &component_fuel_coolant
+        coolant:
             shape: DerivedShape
             material: Sodium
             Tinput: 450.0
             Thot: 450.0
-        duct: &component_fuel_duct
+        duct:
             shape: Hexagon
             material: HT9
             Tinput: 25.0
@@ -47,7 +47,7 @@ blocks:
             ip: 16.0
             mult: 1.0
             op: 16.7
-        intercoolant: &component_fuel_intercoolant
+        intercoolant:
             shape: Hexagon
             material: Sodium
             Tinput: 450.0
@@ -60,10 +60,10 @@ assemblies:
     axial mesh points: &standard_axial_mesh_points [1]
     igniter fuel:
         specifier: IC
-        blocks: &igniter_fuel_blocks [*block_fuel]
+        blocks: [*block_fuel]
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
         material modifications:
-            U235_wt_frac: &igniter_fuel_u235_wt_frac [0.11]
-            ZR_wt_frac: &igniter_fuel_zr_wt_frac [0.06]
-        xs types: &igniter_fuel_xs_types [A]
+            U235_wt_frac: [0.11]
+            ZR_wt_frac: [0.06]
+        xs types: [A]

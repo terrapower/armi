@@ -706,36 +706,6 @@ def summarizePinDesign(core):
         runLog.warning(f"Pin summarization failed to work: {error}")
 
 
-def summarizePowerPeaking(core):
-    """Prints reactor Fz, Fxy, Fq.
-
-    Parameters
-    ----------
-    core : armi.reactor.reactors.Core
-    """
-    # Fz is the axial peaking of the highest power assembly
-    _maxPow, maxPowBlock = core.getMaxParam("power", returnObj=True, generationNum=2)
-    maxPowAssem = maxPowBlock.parent
-    avgPDens = maxPowAssem.calcAvgParam("pdens")
-    peakPDens = maxPowAssem.getMaxParam("pdens")
-    if not avgPDens:
-        # protect against divide-by-zero. Peaking doesn't make sense if there is no power
-        return
-    axPeakF = peakPDens / avgPDens
-
-    # Fxy is the radial peaking factor, looking at ALL assemblies with axially integrated powers.
-    power = 0.0
-    n = 0
-    for n, a in enumerate(core):
-        power += a.calcTotalParam("power", typeSpec=Flags.FUEL)
-    avgPow = power / (n + 1)
-    radPeakF = maxPowAssem.calcTotalParam("power", typeSpec=Flags.FUEL) / avgPow
-
-    runLog.important(
-        "Power Peaking: Fz= {0:.3f} Fxy= {1:.3f} Fq= {2:.3f}".format(axPeakF, radPeakF, axPeakF * radPeakF)
-    )
-
-
 def makeCoreDesignReport(core, cs):
     """Builds report to summarize core design inputs.
 

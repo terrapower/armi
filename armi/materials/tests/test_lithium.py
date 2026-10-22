@@ -19,7 +19,7 @@ from armi.materials import Lithium
 from armi.materials.tests.test_materials import AbstractMaterialTest
 
 
-class LithiumTests(AbstractMaterialTest, unittest.TestCase):
+class TestLithium(AbstractMaterialTest, unittest.TestCase):
     MAT_CLASS = Lithium
 
     def setUp(self):

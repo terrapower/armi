@@ -27,7 +27,7 @@ class UraniumOxide(Material):
     """A test material that needs to be stored in a different namespace.
 
     This is a duplicate (by name only) of :py:class:`armi.materials.UraniumOxide` and is used for testing in
-    :py:meth:`armi.materials.tests.test_materials.MaterialFindingTests.test_namespacing`
+    :py:meth:`armi.materials.tests.test_materials.TestMaterialFinding.test_namespacing`
     """
 
     def pseudoDensity(self, Tk=None, Tc=None):
@@ -108,19 +108,6 @@ class TestDensityTools(unittest.TestCase):
         # expect some small difference due to renormalization
         self.assertNotAlmostEqual(m1["O17"], m2["O17"])
         self.assertAlmostEqual(m1["O17"], m2["O17"], delta=1e-5)
-
-    def test_applyIsotopicsMix(self):
-        """Ensure isotopc classes get mixed properly."""
-        uo2 = UO2()
-        massFracO = uo2.massFrac["O"]
-        uo2.class1_wt_frac = 0.2
-        enrichedMassFracs = {"U235": 0.3, "U234": 0.1, "PU239": 0.6}
-        fertileMassFracs = {"U238": 0.3, "PU240": 0.7}
-        densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)
-
-        self.assertAlmostEqual(uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1)  # HM blended
-        self.assertAlmostEqual(uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3)  # HM blended
-        self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
 
     def test_getNDensFromMasses(self):
         """

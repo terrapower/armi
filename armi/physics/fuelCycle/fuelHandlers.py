@@ -249,7 +249,6 @@ class FuelHandler:
         else:
             numMoved = 0
 
-        self.o.r.core.p.numMoves = numMoved
         self.o.r.core.setBlockMassParams()
 
         runLog.important("Fuel handler performed {0} assembly shuffles.".format(numMoved))
@@ -984,7 +983,6 @@ class FuelHandler:
             return
 
         # add assemblies into the moved location
-        # keep it unique so we don't get artificially inflated numMoves
         for a in [incoming, outgoing]:
             if a not in self.moved:
                 self.moved.append(a)
@@ -1178,25 +1176,6 @@ class FuelHandler:
                     ringPosCycle = eval(ringPosCycle.split("=")[1])  # extract the assembly ring, position and cycle.
                 enrichList = [float(i) for i in m.group(5).split()]
                 moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList, assemType, ringPosCycle))
-                numMoves += 1
-            elif "moved" in line:
-                # very old shuffleLogic file.
-                runLog.warning(
-                    "Using old *.SHUFFLES.txt loading file",
-                    single=True,
-                    label="Using old shuffles file",
-                )
-                m = re.search(
-                    "([A-Za-z0-9!]+) moved to ([A-Za-z0-9!]+) with enrich list: (.+)",
-                    line,
-                )
-                if not m:
-                    raise InputError('Failed to parse line "{0}" in shuffle file'.format(line))
-                oldLoc = m.group(1)
-                newLoc = m.group(2)
-                enrichList = [float(i) for i in m.group(3).split()]
-                # old loading style, just assume that there is a booster as our surrogate
-                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList))
                 numMoves += 1
 
         f.close()

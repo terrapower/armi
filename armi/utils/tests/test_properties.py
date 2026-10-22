@@ -29,7 +29,7 @@ class ImmutableClass:
             properties.lockImmutableProperties(self)
 
 
-class ImmutablePropertyTests(unittest.TestCase):
+class TestImmutableProperty(unittest.TestCase):
     def test_retreivingUnassignedValue(self):
         """Attempting to retreive an unassigned value should raise an error."""
         ic = ImmutableClass()

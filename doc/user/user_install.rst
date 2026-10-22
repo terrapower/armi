@@ -12,7 +12,7 @@ These instructions target users with some software development knowledge. In par
 
 You must have the following installed before proceeding:
 
-* `Python <https://www.python.org/downloads/>`__ version 3.9 or newer.
+* `Python <https://www.python.org/downloads/>`__ version 3.11 - 3.14.
 
   .. admonition:: The right Python command
 
@@ -59,11 +59,7 @@ Choose one of the following two installation methods depending on your needs.
 
 Step 0: Update PIP
 ------------------
-If you are using an older version of Python, say 3.9 or older, you should ensure that you are using a version of PIP that is at least 22.1::
-
-    (armi-venv) $ pip install pip>=22.1
-
-or it will be enough to just do::
+For a number of reasons, we recommend you start by updating PIP::
 
     (armi-venv) $ pip install -U pip
 

@@ -94,7 +94,7 @@ class TestNeutronicsPlugin(TestPlugin):
         self.assertIn(CONF_NEUTRONICS_KERNEL, cs)
 
 
-class NeutronicsReactorTests(unittest.TestCase):
+class TestNeutronicsReactor(unittest.TestCase):
     @staticmethod
     def __getModifiedSettings(customSettings):
         cs = settings.Settings()

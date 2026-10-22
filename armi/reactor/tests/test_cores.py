@@ -26,7 +26,7 @@ from armi.testing import TESTING_ROOT, loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
-class HexCoreTests(unittest.TestCase):
+class TestHexCore(unittest.TestCase):
     """Tests on a hex reactor core."""
 
     @classmethod
@@ -177,3 +177,13 @@ class HexCoreTests(unittest.TestCase):
     def test_getFirstAssembly(self):
         a = self.core.getFirstAssembly()
         self.assertIsInstance(a, HexAssembly)
+
+    def test_genChildByLocationLookupTable(self):
+        self.core._genChildByLocationLookupTable()
+
+        numAssems = len(self.core.getAssemblies())
+        self.assertEqual(len(self.core.childrenByLocator), numAssems)
+
+        coreChildren = self.core.childrenByLocator.values()
+        for a in self.core.getAssemblies():
+            self.assertIn(a, coreChildren)

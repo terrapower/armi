@@ -24,7 +24,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.grids import IndexLocation, MultiIndexLocation
 
 
-class FuelCycleUtilsTests(TestCase):
+class TestFuelCycleUtils(TestCase):
     """Tests for geometry indifferent fuel cycle routines."""
 
     N_PINS = 169

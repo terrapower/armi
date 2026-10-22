@@ -35,7 +35,7 @@ nuclide flags:
   PA231: {burn: false, xs: true, expandTo: []}
   CM244: {burn: false, xs: true, expandTo: []}
   CM242: {burn: false, xs: true, expandTo: []}
-  AM242: {burn: false, xs: true, expandTo: []}
+  AM242M: {burn: false, xs: true, expandTo: []}
   CM245: {burn: false, xs: true, expandTo: []}
   CM243: {burn: false, xs: true, expandTo: []}
   CM246: {burn: false, xs: true, expandTo: []}

@@ -35,7 +35,7 @@ from armi.utils import directoryChangers, textProcessors
 NUM_BLOCKS = 3
 
 
-class MaterialInAssembly_TestCase(unittest.TestCase):
+class TestMaterialInAssembly(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.assembly = testing.buildHexAssemblySingleUZrUTh()
@@ -63,7 +63,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(uZrFuel.getMass("U235") / (uZrFuel.getMass("U238") + uZrFuel.getMass("U235")), 0.1)
 
 
-class AssemblyReadOnlyTests(unittest.TestCase):
+class TestAssemblyReadOnly(unittest.TestCase):
     """These tests of Assemblies do not modify the test assembly, which can be created in a setUpClass method."""
 
     @classmethod
@@ -263,12 +263,6 @@ class AssemblyReadOnlyTests(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-    def test_getDominantMaterial(self):
-        cur = self.assembly.getDominantMaterial(Flags.FUEL).getName()
-        ref = "UZr"
-        self.assertEqual(cur, ref)
-        self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
-
     def test_countBlocksOfType(self):
         cur = self.assembly.countBlocksWithFlags(Flags.IGNITER | Flags.FUEL)
         self.assertEqual(cur, 3)
@@ -363,7 +357,7 @@ class AssemblyReadOnlyTests(unittest.TestCase):
         self.assertEqual(elevations, [0.0, 10.0, 10.0, 20.0, 20.0, 30.0])
 
 
-class AssemblyTests(unittest.TestCase):
+class TestAssembly(unittest.TestCase):
     """These tests of Assemblies modify the test assembly, so each unit tests needs a fresh test assembly."""
 
     def setUp(self):
@@ -478,6 +472,26 @@ class AssemblyTests(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             a.add(blocks.CartesianBlock("Test Cart Block"))
+
+    def test_setBlockStack(self):
+        a = buildEmptyHexAssembly(1, 1)
+
+        # successfully add a stack of Blocks to an Assembly
+        blockStack = []
+        nBlocks = 3
+        for _n in range(nBlocks):
+            b = blocks.HexBlock("TestBlock")
+            blockStack.append(b)
+
+        a.setBlockStack(blockStack)
+        self.assertEqual(len(a), nBlocks)
+        for b in blockStack:
+            self.assertIn(b, a)
+            self.assertEqual(b.parent, a)
+
+        with self.assertRaises(TypeError):
+            blockStack.append(blocks.CartesianBlock("Test Cart Block"))
+            a.setBlockStack(blockStack)
 
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
@@ -626,7 +640,6 @@ class AssemblyTests(unittest.TestCase):
 
         params = {}
         params["maxPercentBu"] = 30.0
-        params["numMoves"] = 5.0
         params["maxPercentBu"] = 0
         params["timeToLimit"] = 2.7e5
         params["arealPd"] = 110.0
@@ -777,12 +790,31 @@ class AssemblyTests(unittest.TestCase):
         self.assertListEqual(heights, [12.5, 20.0])
 
     def test_calcAvgParam(self):
-        nums = []
-        for b in self.assembly:
-            nums.append(random.random())
-            b.p.power = nums[-1]
-        self.assertGreater(len(nums), 2)
-        self.assertAlmostEqual(self.assembly.calcAvgParam("power"), sum(nums) / len(nums))
+        powers = []
+        for block in self.assembly:
+            powers.append(random.random() + 1e-10)
+            block.p.power = powers[-1]
+        self.assertGreater(len(powers), 2)
+        refAvgPower = sum(powers) / len(powers)
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power"), refAvgPower)
+        # All the children have the same volume, so turning off volume averaging should yield the same answer
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", volumeAveraged=False), refAvgPower)
+        # All powers are positive, so turning off absolute should yield the same answer
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
+        # All children have the same height, so weighting by the height should yield the same answer
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power", weightingParam="height"), refAvgPower)
+
+        # Add a dummy child that should skew the average up, ensure that the average power is greater than before
+        testBlock = self.assembly._children[-1].createHomogenizedCopy()
+        self.assembly.add(testBlock)
+        self.assembly._children[-1].p.power = 1000
+        self.assertGreater(self.assembly.calcAvgParam("power"), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", volumeAveraged=False), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", absolute=False), refAvgPower)
+        self.assertGreater(self.assembly.calcAvgParam("power", weightingParam="height"), refAvgPower)
+
+        # Cleanup
+        self.assembly.remove(testBlock)
 
     def test_calcTotalParam(self):
         # Remake original assembly
@@ -1025,8 +1057,43 @@ class AssemblyTests(unittest.TestCase):
             bIndex = self.assembly.getBIndexFromZIndex(zIndex * 0.5)
             self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
 
+    def test_assemblyDetailedNDens(self):
+        """Ensure assembly and component number densities are consistent."""
+        # Set Up
+        numDetailedNucs = 100  # arbitrary
+        didUpdate = False
+        # Use random densities, we just need to show consistency
+        rng = np.random.default_rng()
+        for c in self.assembly.iterComponents(Flags.FUEL):
+            c.p.detailedNDens = rng.uniform(low=0, high=1e-2, size=(numDetailedNucs,))
+            didUpdate = True
+        self.assertTrue(didUpdate, msg="No components updated!")
+        self.assembly.p.detailedNDens = None
+        # Now the real test
+        self.assembly.assignConsistentDetailedNDens()
+        self.assertIsNotNone(self.assembly.p.detailedNDens)
+        # Recalculate and compare
+        expected = np.zeros(numDetailedNucs)
+        totalVol = 0
+        for c in self.assembly.iterComponents():
+            vol = c.getVolume()
+            totalVol += vol
+            if c.p.detailedNDens is not None:
+                expected += c.p.detailedNDens * vol
+        np.testing.assert_allclose(self.assembly.p.detailedNDens, expected / totalVol)
 
-class AssemblyInReactor_TestCase(unittest.TestCase):
+    def test_assemblyDetailedNDensNoOperation(self):
+        """If the assembly has no children with detailed number density, nothing happens."""
+        # Arbitrary non-None initial data
+        self.assembly.p.detailedNDens = np.random.default_rng().uniform(low=0, high=1e-2, size=(73,))
+        for c in self.assembly.iterComponents():
+            c.p.detailedNDens = None
+
+        self.assembly.assignConsistentDetailedNDens()
+        self.assertIsNone(self.assembly.p.detailedNDens)
+
+
+class TestAssemblyInReactor(unittest.TestCase):
     def setUp(self):
         root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
         self.o, self.r = loadTestReactor(root)
@@ -1244,7 +1311,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(shieldPlenumMass, shieldPlenumMassAfterShrink, 7)
 
 
-class AnnularFuelTestCase(unittest.TestCase):
+class TestAnnularFuel(unittest.TestCase):
     """Test fuel with a whole in the center."""
 
     def setUp(self):

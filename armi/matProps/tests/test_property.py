@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Program that runs all of the tests contained in PropertyTests class."""
+"""Tests for the matProps.Property class."""
 
 import os
 import unittest
@@ -22,7 +22,7 @@ from armi.matProps import loadMaterial
 from armi.matProps.prop import defProp, properties
 
 
-class PropertyTests(unittest.TestCase):
+class TestProperty(unittest.TestCase):
     """Class which contains tests for the matProps Property class."""
 
     @classmethod

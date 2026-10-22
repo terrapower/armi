@@ -33,6 +33,7 @@ jobs:
           python-version: '3.13'
       - name: Install ARMI and MPI
         run: |
+          sudo apt-get update
           sudo apt-get -y install libopenmpi-dev
           pip install -e .[memprof,mpi,test]
           pip install codecov

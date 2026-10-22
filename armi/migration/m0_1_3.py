@@ -16,30 +16,7 @@
 import io
 import re
 
-from armi import runLog
 from armi.migration.base import BlueprintsMigration
-
-
-class RemoveCentersFromBlueprints(BlueprintsMigration):
-    """Removes now-invalid `centers:` lines from auto-generated component inputs."""
-
-    @property
-    def fromVersion(self):
-        return "0.1.2"
-
-    @property
-    def toVersion(self):
-        return "0.1.3"
-
-    def _applyToStream(self):
-        runLog.info("Removing `centers:` sections.")
-        migrated = []
-        for line in self.stream.read().split("\n"):
-            if re.search(r"^\s*centers:\s*$", line):
-                continue
-            migrated.append(line)
-        result = "\n".join(migrated)
-        return io.StringIO(result)
 
 
 class UpdateElementalNuclides(BlueprintsMigration):

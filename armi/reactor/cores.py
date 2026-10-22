@@ -93,7 +93,6 @@ class Core(composites.Composite):
         self.numRings = 0
         self.spatialGrid = None
         self.xsIndex = {}
-        self.p.numMoves = 0
         self._lib = None  # placeholder for ISOTXS object
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.
@@ -290,6 +289,17 @@ class Core(composites.Composite):
         sortKey = lambda a: a.spatialLocator.getRingPos()
         self._children = sorted(self._children, key=sortKey)
 
+    def _genChildByLocationLookupTable(self):
+        """Update the childByLocation lookup table.
+
+        Notes
+        -----
+        This method assumes only one child per spatialLocator, as is typical in pin-type reactor cores.
+        """
+        self.childrenByLocator = {}
+        for child in self:
+            self.childrenByLocator[child.spatialLocator] = child
+
     def summarizeReactorStats(self):
         """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
         totalMass = 0.0
@@ -339,7 +349,7 @@ class Core(composites.Composite):
         for b in self.iterBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
-            b.p.puFrac = b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
+            b.p.puHMFrac = b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
 
     def getScalarEvolution(self, key):
         return self.scalarVals[key]
@@ -1203,7 +1213,7 @@ class Core(composites.Composite):
                 compNuclides = []
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                if c.p.numberDensities is None:
+                if len(c.p.numberDensities) == 0:
                     continue
                 for nuc, dens in zip(c.p.nuclides, c.p.numberDensities):
                     if dens > 0.0:
@@ -2073,10 +2083,10 @@ class Core(composites.Composite):
 
         return converter
 
-    def setPitchUniform(self, pitchInCm):
-        """Set the pitch in all blocks."""
-        for b in self.iterBlocks():
-            b.setPitch(pitchInCm)
+    def setPitchUniform(self, pitchInCm: float):
+        """Set the pitch in all contained assemblies."""
+        for a in self:
+            a.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
         self.spatialGrid.changePitch(pitchInCm)

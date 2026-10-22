@@ -30,7 +30,7 @@ from armi.utils.customExceptions import (
 )
 
 
-class SettingsFailureTests(unittest.TestCase):
+class TestSettingsFailure(unittest.TestCase):
     def test_settingsObjSetting(self):
         sets = settings.Settings()
         with self.assertRaises(NonexistentSetting):
@@ -50,7 +50,7 @@ class SettingsFailureTests(unittest.TestCase):
             reader.readFromStream(io.StringIO("useless:\n    should_fail"))
 
 
-class SettingsReaderTests(unittest.TestCase):
+class TestSettingsReader(unittest.TestCase):
     def setUp(self):
         self.cs = settings.caseSettings.Settings()
 
@@ -84,7 +84,7 @@ class SettingsReaderTests(unittest.TestCase):
                 settings.caseSettings.Settings(outPath)
 
 
-class SettingsRenameTests(unittest.TestCase):
+class TestSettingsRename(unittest.TestCase):
     testSettings = [
         setting.Setting(
             "testSetting1",
@@ -136,7 +136,7 @@ class SettingsRenameTests(unittest.TestCase):
             _ = settingsIO.SettingRenamer(settings)
 
 
-class SettingsWriterTests(unittest.TestCase):
+class TestSettingsWriter(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
@@ -195,7 +195,7 @@ class MockEntryPoint(entryPoint.EntryPoint):
     name = "dummy"
 
 
-class SettingArgsTests(unittest.TestCase):
+class TestSettingArgs(unittest.TestCase):
     def setUp(self):
         self.cs = None
 

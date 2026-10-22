@@ -61,7 +61,7 @@ class InterfaceC(Interface):
     name = "Third"
 
 
-class OperatorTests(unittest.TestCase):
+class TestOperator(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(
             TESTING_ROOT, inputFileName="reactors/smallestTestReactor/armiRunSmallest.yaml"
@@ -414,7 +414,7 @@ class TestTightCoupling(unittest.TestCase):
         )
 
 
-class CyclesSettingsTests(unittest.TestCase):
+class TestCyclesSettings(unittest.TestCase):
     """Check that we can correctly access the various cycle settings from the operator."""
 
     detailedCyclesSettings = """
@@ -590,8 +590,8 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
         )
 
 
-class OperatorRestartTests(unittest.TestCase):
-    """Tests on the behavior of the interactAllRestart hook."""
+class TestOperatorRestart(unittest.TestCase):
+    """Test the behavior of the interactAllRestart hook."""
 
     @classmethod
     def setUpClass(cls):

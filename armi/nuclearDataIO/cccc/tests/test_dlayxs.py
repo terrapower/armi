@@ -26,7 +26,7 @@ from armi.testing import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
-class DlayxsTests(unittest.TestCase):
+class TestDlayxs(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.dlayxs3 = dlayxs.readBinary(test_xsLibraries.DLAYXS_MCC3)

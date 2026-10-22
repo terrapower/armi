@@ -33,6 +33,7 @@ from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
@@ -50,12 +51,7 @@ from armi.testing import (
 from armi.tests import ISOAA_PATH
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.utils.units import (
-    ASCII_LETTER_A,
-    ASCII_LETTER_Z,
-    MOLES_PER_CC_TO_ATOMS_PER_BARN_CM,
-    ASCII_LETTER_a,
-)
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, MOLES_PER_CC_TO_ATOMS_PER_BARN_CM, ASCII_LETTER_a
 
 
 def getComponentData(component):
@@ -71,8 +67,6 @@ def getComponentData(component):
 
 class TestDetailedNDensUpdate(unittest.TestCase):
     def test_updateDetailedNdens(self):
-        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
-
         cs = settings.Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
@@ -978,58 +972,61 @@ class TestBlock(unittest.TestCase):
         ref = 0.0
         self.assertEqual(cur, ref)
 
+    def _densityHelper(self):
+        self.block.setType("fuel")
+        self.block.clearNumberDensities()
+        refDict = {
+            "U235": 0.00275173784234,
+            "U238": 0.0217358415457,
+            "W182": 1.09115150103e-05,
+            "W183": 5.89214392093e-06,
+            "W184": 1.26159558164e-05,
+            "W186": 1.17057432664e-05,
+            "ZR": 0.00709003962772,
+        }
+        self.block.setNumberDensities(refDict)
+        return refDict
+
     def test_getTotalNDens(self):
-        self.block.setType("fuel")
+        refComp = self._densityHelper()
 
-        self.block.clearNumberDensities()
-        refDict = {
-            "U235": 0.00275173784234,
-            "U238": 0.0217358415457,
-            "W182": 1.09115150103e-05,
-            "W183": 5.89214392093e-06,
-            "W184": 1.26159558164e-05,
-            "W186": 1.17057432664e-05,
-            "ZR": 0.00709003962772,
-        }
-        self.block.setNumberDensities(refDict)
+        refNDens = 0.0
+        for nucName in refComp.keys():
+            refNDens += self.block.getNumberDensity(nucName)
 
-        cur = self.block.getTotalNDens()
+        testNDens = self.block.getTotalNDens()
 
-        tot = 0.0
-        for nucName in refDict.keys():
-            ndens = self.block.getNumberDensity(nucName)
-            tot += ndens
-
-        ref = tot
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(testNDens, refNDens, places=places)
 
-    def test_getHMDens(self):
-        self.block.setType("fuel")
-        self.block.clearNumberDensities()
-        refDict = {
-            "U235": 0.00275173784234,
-            "U238": 0.0217358415457,
-            "W182": 1.09115150103e-05,
-            "W183": 5.89214392093e-06,
-            "W184": 1.26159558164e-05,
-            "W186": 1.17057432664e-05,
-            "ZR": 0.00709003962772,
-        }
-        self.block.setNumberDensities(refDict)
+    def test_getHMDensandHMMoles(self):
+        refComp = self._densityHelper()
 
-        cur = self.block.getHMDens()
-
-        hmDens = 0.0
-        for nuclide in refDict.keys():
+        refHMDens = 0.0
+        for nuclide in refComp.keys():
             if nucDir.isHeavyMetal(nuclide):
                 # then nuclide is a HM
-                hmDens += self.block.getNumberDensity(nuclide)
+                refHMDens += self.block.getNumberDensity(nuclide)
 
-        ref = hmDens
+        testHMDens = self.block.getHMDens()
 
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(testHMDens, refHMDens, places=places)
+
+    def test_getHMMoles(self):
+        refComp = self._densityHelper()
+
+        refHMMoles = 0.0
+        for nuclide in refComp.keys():
+            if nucDir.isHeavyMetal(nuclide):
+                # then nuclide is a HM
+                refHMMoles += self.block.getNumberDensity(nuclide)
+        refHMMoles *= self.block.getVolume() / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+
+        testHMMoles = self.block.getHMMoles()
+
+        places = 6
+        self.assertAlmostEqual(testHMMoles, refHMMoles, places=places)
 
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
@@ -1236,7 +1233,7 @@ class TestBlock(unittest.TestCase):
 
         Notes
         -----
-        - When checking component-level BOL params, puFrac is skipped due to 1) there's no Pu in the block, and 2)
+        - When checking component-level BOL params, puHMFrac is skipped due to 1) there's no Pu in the block, and 2)
           getPuMoles is functionally identical to getHMMoles (just limits nuclides from heavy metal to just Pu).
         - getSymmetryFactor is mocked to return 3. This indicates that the block is in the center-most assembly.
           Providing this mock ensures that symmetry factors are tested as well (otherwise it's just a factor of 1
@@ -1483,30 +1480,80 @@ class TestBlock(unittest.TestCase):
         """Test that we can get the number of pins from various blocks.
 
         .. test:: Retrieve the number of pins from various blocks.
-            :id: T_ARMI_BLOCK_NPINS
+            :id: T_ARMI_BLOCK_NPINS1
             :tests: R_ARMI_BLOCK_NPINS
         """
-        cur = self.block.getNumPins()
-        ref = self.block.getDim(Flags.FUEL, "mult")
-        self.assertEqual(cur, ref)
+        nPins = self.block.getNumPins()
+        pinMult = self.block.getDim(Flags.FUEL, "mult")
+        self.assertEqual(nPins, 217)
+        self.assertEqual(nPins, pinMult)
+        self.assertEqual(len(self.block.getPinLocations()), nPins)
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         holedRectangle = complexShapes.HoledRectangle("holedRectangle", "HT9", 100, 100, 0.5, 1.0, 1.0)
         holedRectangle.setType("component", flags=Flags.CONTROL)
         emptyBlock.add(holedRectangle)
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
         hexagon = basicShapes.Hexagon("hexagon", "HT9", 100, 100, 1)
         hexagon.setType("component", flags=Flags.SHIELD)
         emptyBlock.add(hexagon)
         self.assertEqual(emptyBlock.getNumPins(), 0)
+        self.assertEqual(len(emptyBlock.getPinLocations()), 0)
 
-        pins = basicShapes.Circle("circle", "HT9", 100, 100, 1, 0, 8)
-        pins.setType("component", flags=Flags.PLENUM)
-        emptyBlock.add(pins)
-        self.assertEqual(emptyBlock.getNumPins(), 8)
+    def test_getNumPinsNClads(self):
+        """Test that we still get the correct number of pins if there are two co-centeric clad components.
+
+        .. test:: Ensure the correct number of pins is returned if there are multiple clad on a fuel pin.
+            :id: T_ARMI_BLOCK_NPINS2
+            :tests: R_ARMI_BLOCK_NPINS
+        """
+        # test a single fuel hex block, with only one clad component (and it is circular)
+        b = copy.deepcopy(self.block)
+
+        cladComps = b.getComponents(Flags.CLAD)
+        self.assertEqual(len(cladComps), 1)
+        clad = cladComps[0]
+        self.assertIn("Circle", str(type(clad)))
+
+        numPins = 217
+        self.assertEqual(b.getNumPins(), numPins)
+        self.assertEqual(len(b.getPinLocations()), numPins)
+
+        # add a second clad, at the same position as the original clad, and ensure the pin count does not change
+        clad2 = basicShapes.Circle("circle", clad.material, 500, 500, 1, 0, numPins)
+        clad2.spatialLocator = copy.deepcopy(clad.spatialLocator)
+        b.add(clad2)
+
+        self.assertEqual(b.getNumPins(), numPins)
+        self.assertEqual(len(b.getPinLocations()), numPins)
+
+        # add a third clad, at the same position as the original clad, and ensure the pin count does not change
+        clad3 = basicShapes.Circle("circle", clad.material, 500, 500, 1, 0, numPins)
+        clad3.spatialLocator = copy.deepcopy(clad.spatialLocator)
+        b.add(clad3)
+
+        self.assertEqual(b.getNumPins(), numPins)
+        self.assertEqual(len(b.getPinLocations()), numPins)
+
+    def test_getNumPinsNPinTypes(self):
+        """Test that we correctly count pins when there are multiple pin types.
+
+        .. test:: Ensure the correct number of pins is returned if there are multiple pin types.
+            :id: T_ARMI_BLOCK_NPINS3
+            :tests: R_ARMI_BLOCK_NPINS
+        """
+        core = loadTestReactor(os.path.join(TESTING_ROOT, "reactors", "detailedAxialExpansion"))[1].core
+
+        a1 = core.getAssemblyWithStringLocation("002-001")
+        b = a1[2]
+
+        self.assertEqual(b.getNumPins(), 37)
+        self.assertEqual(len(b.getPinLocations()), 37)
 
     def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
@@ -2784,14 +2831,11 @@ nuclide flags:
         # Make sure we get new block-level pin locations or else this test is meaningless
         with patch.object(self.block, "assignPinIndices") as patchAssign:
             self.block.sort()
+
         newPinLocations = self.block.getPinLocations()
-        self.assertNotEqual(
-            newPinLocations,
-            self.allLocations,
-            msg="Test requires new pin locations post-sort.",
-        )
+        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
         # Make sure we called it. Other tests confirm that assignPinIndices is correct.
-        # this makes sure we've called it where we want to call it
+        # This makes sure we've called it where we want to call it
         patchAssign.assert_called_once()
 
 
@@ -3050,6 +3094,22 @@ class TestCartesianBlock(unittest.TestCase):
         self.cartesianBlock.parent = self.rCenter.core
         self.cartesianBlock.autoCreateSpatialGrids(self.rCenter.core.spatialGrid)
 
+    def test_fullCoreCartesianVolumesOnAxes(self):
+        """Full-core axis cells have whole volumes even when the origin is in a cell."""
+        block = blocks.CartesianBlock("volume", height=10.0)
+        block.add(components.Square("fuel", "UZr", Tinput=25.0, Thot=25.0, widthOuter=2.0, mult=1.0))
+        block.parent = self.rCenter.core
+        for domain, boundary, factors in (
+            (geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY, (1.0, 1.0, 1.0)),
+            (geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE, (4.0, 2.0, 1.0)),
+        ):
+            self.rCenter.core.symmetry = geometry.SymmetryType(domain, boundary, True)
+            for (i, j), factor in zip(((0, 0), (0, 1), (1, 1)), factors):
+                block.spatialLocator = self.rCenter.core.spatialGrid[i, j, 0]
+                block.clearCache()
+                self.assertEqual(block.getSymmetryFactor(), factor)
+                self.assertAlmostEqual(block.getVolume(), 40.0 / factor)
+
     def test_getPitchSquare(self):
         self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
 
@@ -3074,7 +3134,7 @@ class TestCartesianBlock(unittest.TestCase):
         # block/assembly. The inner dimensions is defined by whatever thickness is necessary to have the desired area
         # fraction. The second way is to define all physical material components as unshaped, and add an additional
         # infinitely thin Void component (no area) that defines pitch. See second part of
-        # HexBlock_TestCase.test_getPitchHomogeneousBlock for demonstration.
+        # TestHexBlock.test_getPitchHomogeneousBlock for demonstration.
         cartBlock = blocks.CartesianBlock("TestCartBlock")
 
         hexComponentArea = areaFractions[0] * rectTotalArea

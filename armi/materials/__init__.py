@@ -123,8 +123,8 @@ def setMaterialNamespaceOrder(order):
 
     .. impl:: Material collections are defined with an order of precedence in the case
         of duplicates.
-        :id: I_ARMI_MAT_ORDER
-        :implements: R_ARMI_MAT_ORDER
+        :id: I_ARMI_MAT_NAMESPACE1
+        :implements: R_ARMI_MAT_NAMESPACE
 
         An ARMI application will need materials. Materials can be imported from any code the application has access to,
         like plugin packages. This leads to the situation where one ARMI application will want to import multiple
@@ -238,7 +238,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     user plugins UO2 vs. the Kentucky Transportation Cabinet's UO2) is up to the user at runtime.
 
     .. impl:: Materials can be searched across packages in a defined namespace.
-        :id: I_ARMI_MAT_NAMESPACE
+        :id: I_ARMI_MAT_NAMESPACE0
         :implements: R_ARMI_MAT_NAMESPACE
 
         During the runtime of an ARMI application, but particularly during the construction of the reactor in memory,
@@ -248,6 +248,15 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
 
         When a material name is passed to this function, it may be either a simple name like the string ``"Water"`` or
         it may be much more specific, like ``armi.materials.water:Water``.
+
+    .. impl:: Custom materials are supported for material creation.
+        :id: I_ARMI_MAT_CUSTOM
+        :implements: R_ARMI_MAT_CUSTOM
+
+        During material creation, the code first checks for a fully resolved class path. Users are instructed to use
+        this in their blueprints if they have a custom Python material. It next loops through the material namespace
+        order and checks for directories that contain YAML files. Users are instructed to use the namespace order case
+        setting in order to use custom YAML materials.
 
     Parameters
     ----------
@@ -282,6 +291,7 @@ def createMaterialByName(name: str, namespaceOrder: List[str] = None):
     global _MATERIAL_NAMESPACE_ORDER
 
     # 1. Try to import the material from a path like `armi.materials.uZr:UZr`
+    #     This is the primary logic used to allow for custom python materials.
     if ":" in name:
         modPath, clsName = name.split(":")
         mod = importlib.import_module(modPath)

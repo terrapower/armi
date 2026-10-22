@@ -50,7 +50,7 @@ class TestPinTypeConverters(unittest.TestCase):
         self.assertAlmostEqual(curThickness, thickness)
 
 
-class MassConservationTests(unittest.TestCase):
+class TestMassConservation(unittest.TestCase):
     r"""Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):

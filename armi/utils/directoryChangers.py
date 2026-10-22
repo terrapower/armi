@@ -259,13 +259,10 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         if os.environ.get("ARMI_TEMP_ROOT_PATH"):
             root = os.environ["ARMI_TEMP_ROOT_PATH"]
 
-        # If no root dir is given, the default path comes from context.getFastPath, which
-        # *might* be relative to the cwd, making it possible to delete unintended files.
-        # So this check is here to ensure that if we grab a path from context, it is a
-        # proper temp dir.
-        # That said, since the TemporaryDirectoryChanger *always* responsible for
-        # creating its destination directory, it may always be safe to delete it
-        # regardless of location.
+        # If no root dir is given, the default path comes from context.getFastPath, which *might* be relative to the
+        # cwd, making it possible to delete unintended files. So this check is here to ensure that if we grab a path
+        # from context, it is a proper temp dir. That said, since the TemporaryDirectoryChanger *always* responsible for
+        # creating its destination directory, it may always be safe to delete it regardless of location.
         if root is None:
             root = context.getFastPath()
             # ARMIs temp dirs are in an context.APP_DATA directory: validate this is a temp dir.
@@ -304,9 +301,9 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         except PermissionError:
             if context.PLATFORM == context.Platform.WINDOWS:
                 runLog.warning(
-                    "There is an issue where Windows will not agree to delete private directories."
-                    "That is, if you create a directory with a name starting with a period, the "
-                    "TempDirChanger will not be able to clean it (for instance, a '.git' dir)."
+                    "There is an issue where Windows will not agree to delete private directories. That is, if you "
+                    "create a directory with a name starting with a period, the TempDirChanger will not be able to "
+                    "clean it (for instance, a '.git' dir)."
                 )
 
 

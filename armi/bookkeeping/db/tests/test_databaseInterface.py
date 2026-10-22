@@ -518,6 +518,7 @@ class TestDatabaseReading(unittest.TestCase):
         cls.dbName = o.cs.caseTitle + ".h5"
 
         # needed for test_readWritten
+        # o.r is left at cycle 1, burnup step 2
         cls.r = o.r
 
     @classmethod
@@ -640,15 +641,16 @@ class TestDatabaseReading(unittest.TestCase):
             assert_allclose(b.p.flux, 1e6 * bi)
 
     def test_variousTypesWork(self):
+        # Ensure we load the reactor stored in the database at the timestep that self.r is left at
         with Database(self.dbName, "r") as db:
-            r2 = db.load(1, 1)
+            r2 = db.load(1, 2)
 
         b1 = self.r.core.getFirstBlock(Flags.FUEL)
         b2 = r2.core.getFirstBlock(Flags.FUEL)
 
         self.assertIsInstance(b1.p.mgFlux, np.ndarray)
         self.assertIsInstance(b2.p.mgFlux, np.ndarray)
-        assert_allclose(b1, b2)
+        assert_allclose(b1.p.mgFlux, b2.p.mgFlux)
 
         c1 = b1.getComponent(Flags.FUEL)
         c2 = b2.getComponent(Flags.FUEL)

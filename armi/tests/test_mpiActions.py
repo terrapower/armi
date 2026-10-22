@@ -70,7 +70,7 @@ class MockMpiAction(MpiAction):
 
 
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
-class MpiIterTests(unittest.TestCase):
+class TestMpiIter(unittest.TestCase):
     def setUp(self):
         """Save MPI size on entry."""
         self._mpiSize = context.MPI_SIZE
@@ -243,7 +243,7 @@ class MpiIterTests(unittest.TestCase):
         self.assertEqual(7, MockMpiAction.invokeAsMaster(1, 2, 3))
 
 
-class QueueActionsTests(unittest.TestCase):
+class TestQueueActions(unittest.TestCase):
     def test_disableForExclusiveTasks(self):
         num = 5
         actionsThisRound = [MpiAction() for _ in range(num - 1)]

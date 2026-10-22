@@ -26,7 +26,7 @@ def randomString(length):
     return "".join(random.choice(string.ascii_lowercase) for _ in range(length))
 
 
-class TransmutationTests(unittest.TestCase):
+class TestTransmutation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nuclideBases = NuclideBases()
@@ -58,7 +58,7 @@ class TransmutationTests(unittest.TestCase):
         self.assertGreater(errorCount, 2)
 
 
-class DecayModeTests(unittest.TestCase):
+class TestDecayMode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nuclideBases = NuclideBases()

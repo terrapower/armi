@@ -19,7 +19,7 @@ from armi.testing import mockRunLogs
 from armi.utils.customExceptions import important, info, warn, warn_when_root
 
 
-class CustomExceptionTests(unittest.TestCase):
+class TestCustomException(unittest.TestCase):
     @info
     def exampleInfoMessage(self):
         return "output message"

@@ -50,7 +50,7 @@ class B4C(material.Material):
         self.clearCache()
 
     def setNewMassFracsFromMassEnrich(self, massEnrichment):
-        r"""
+        """
         Calculate the mass fractions for a given  mass enrichment and set it on any parent.
 
         Parameters
@@ -111,7 +111,7 @@ class B4C(material.Material):
         return boron10MassGrams, boron11MassGrams, carbonMassGrams
 
     def setDefaultMassFracs(self) -> None:
-        r"""B4C mass fractions. Using Natural B4C. 19.9% B-10/ 80.1% B-11
+        """B4C mass fractions. Using Natural B4C. 19.9% B-10/ 80.1% B-11
         Boron: 10.811 g/mol
         Carbon:  12.0107 g/mol.
 

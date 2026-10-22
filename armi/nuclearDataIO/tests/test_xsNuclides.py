@@ -23,7 +23,7 @@ from armi.testing import mockRunLogs
 from armi.tests import ISOAA_PATH
 
 
-class NuclideTests(unittest.TestCase):
+class TestNuclide(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.lib = isotxs.readBinary(ISOAA_PATH)
@@ -46,7 +46,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual("AA", nrAA.xsId)
         self.assertFalse(hasattr(nuc, "xsId"))
 
-    def test_odifyingNucAttrUpdatesIsotxs(self):
+    def test_modifyingNucAttrUpdatesIsotxs(self):
         """Modifying nuclide attribute updates the ISOTXS nuclide data."""
         lib = xsLibraries.IsotxsLibrary()
         nuc = copy(self.nuclideBases.byName["FE"])

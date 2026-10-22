@@ -678,6 +678,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
         newAssem.p.assemNum = sourceAssem.p.assemNum
+        newBlockStack = []
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
@@ -743,11 +744,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
-            newAssem.add(block)
+            newBlockStack.append(block)
             bottom = topMeshPoint
 
-        newAssem.reestablishBlockOrder()
-        newAssem.calculateZCoords()
+        newAssem.setBlockStack(newBlockStack)
 
         UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssem,

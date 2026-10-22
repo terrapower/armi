@@ -617,8 +617,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
             if self.state != 1:
                 # MCNP uses base state for the common metastable state AM242M, so AM242M is just 95242
                 # AM242 base state is called 95642 (+400) in mcnp.
-                # see https://mcnp.lanl.gov/pdf_files/la-ur-08-1999.pdf
-                # New ACE-Formatted Neutron and Proton Libraries Based on ENDF/B-VII.0
+                # See LA-UR-08-1999, New ACE-Formatted Neutron and Proton Libraries Based on ENDF/B-VII.0
                 a += 300 + 100 * max(self.state, 1)
         elif self.state > 0:
             # in general mcnp adds 300 + 100*m to the Z number for metastables. see above source

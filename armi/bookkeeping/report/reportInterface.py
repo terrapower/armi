@@ -62,9 +62,8 @@ class ReportInterface(interfaces.Interface):
 
     def interactEveryNode(self, cycle, node):
         self.r.core.calcBlockMaxes()
-        reportingUtils.summarizePowerPeaking(self.r.core)
 
-        runLog.important("Cycle {}, node {} Summary: ".format(cycle, node))
+        runLog.important(f"Cycle {cycle}, node {node} Summary: ")
         runLog.important(
             "  time= {0:8.2f} years, keff= {1:.12f} maxPD= {2:-8.2f} MW/m^2, maxBuI= {3:-8.4f} maxBuF= {4:8.4f}".format(
                 self.r.p.time,

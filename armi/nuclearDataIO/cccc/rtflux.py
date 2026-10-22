@@ -83,9 +83,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
     fileName: str
         path to RTFLUX file
     fileMode: str
-        string indicating if ``fileName`` is being read or written, and
-        in ascii or binary format
-
+        string indicating if ``fileName`` is being read or written, and in ascii or binary format
     """
 
     @staticmethod
@@ -109,8 +107,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
 
         Notes
         -----
-        The username, version, etc are embedded in this string but it's
-        usually blank.
+        The username, version, etc are embedded in this string but it's usually blank.
         """
         with self.createRecord() as record:
             self._metadata["label"] = record.rwString(self._metadata["label"], 28)
@@ -156,7 +153,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
                         )
 
     def getEnergyGroupIndex(self, g):
-        r"""
+        """
         Real fluxes stored in RTFLUX have "normal" (or "forward") energy groups.
         Also see the subclass method ATFLUX.getEnergyGroupIndex().
 
@@ -172,7 +169,7 @@ class AtfluxStream(RtfluxStream):
     """
 
     def getEnergyGroupIndex(self, g):
-        r"""
+        """
         Adjoint fluxes stored in ATFLUX have "reversed" (or "backward") energy groups.
 
         0 based, so if NG=33 and you want the third group (g=2), this returns 30.
