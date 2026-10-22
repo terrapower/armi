@@ -111,12 +111,6 @@ class ComponentType(ArmiObjectModelTypeABC):
     As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
     to the correct format. Additionally, the constructors arguments can be used to determine the
     Component subclasses dimensions.
-
-    Warning
-    -------
-    The import-time metaclass-based component subclass registration was a good idea, but in practice
-    has caused significant confusion and trouble. We will replace this soon with an explicit
-    plugin-based component subclass registration system.
     """
 
     TYPES = dict()  #: :meta hide-value:
