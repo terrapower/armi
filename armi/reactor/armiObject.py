@@ -27,7 +27,6 @@ See Also
 :doc:`/developer/index`.
 armi.reactor.composites.Composite
 armi.reactor.components.component.Component
-
 """
 
 import itertools
@@ -737,7 +736,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         Notes
         -----
         If you need multiple mass fractions, use ``getMassFracs``.
-
         """
         nuclideNames = self._getNuclidesFromSpecifier(nucName)
         massFracs = self.getMassFracs()
