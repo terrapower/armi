@@ -13,15 +13,18 @@
 # limitations under the License.
 
 """
-Implementation of the `Composite` class in the composite design pattern underlying the reactor package.
+Implementation of the `Composite` base class used to define top-level reactor "containers" (e.g. core, assembly, block).
 
 This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
 allow the construction of a part/whole hierarchy representing a physical nuclear reactor in a tree strucutre. The
 `Composite` class implements the 'whole' aspect of the part/whole hierarchy (this is the `Composite` class in
-`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). The `Composite` objects act somewhat like lists: they
-can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy knows its children and
-its parent, so full access to the hierarchy is available from everywhere. This design was chosen because of the close
-analogy of the model to the physical nature of nuclear reactors.
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). The `Composite` has method represents parts of the
+reactor that contain other parts within them, such as the core, a fuel assembly, or an individual slice of a fuel
+assembly called a block.
+
+A `Composite` object acts somewhat like a list: they can be indexed, iterated over, appended, extended, inserted, etc.
+Each member of the hierarchy knows its children and its parent, so full access to the hierarchy is available from
+everywhere.
 
 Warning
 -------

@@ -18,9 +18,9 @@ Abstract defintition of the `Leaf` class in the composite design pattern underly
 This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
 allow the construction of a part/whole hierarchy representing a physical nuclear reactor in a tree strucutre. The
 `Component` class implements the 'part' aspect of the part/whole hierarchy (this is the `Leaf` class in
-`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). Components represent geometric objects within an
-assembly such as fuel, bond, coolant, ducts, wires, etc. that are implemented in other submodules of the `components`
-submodule.
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). The `Component` class represents geometric objects
+within an assembly such as fuel, bond, coolant, ducts, wires, etc. that are implemented in other submodules of the
+`components` submodule.
 
 See Also
 --------
