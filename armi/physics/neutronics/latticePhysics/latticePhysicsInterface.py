@@ -390,14 +390,15 @@ class LatticePhysicsInterface(interfaces.Interface):
             else:
                 if executeXSGen:
                     runLog.info(
-                        f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required isotopic XS data for XS "
-                        f"IDs {self.r.core.lib.xsIDs}. However, the burnup of some of the representative blocks has changed beyond "
-                        f"the threshold tolerance value of {self._burnupTolerance}. Thus, new XS will be generated."
+                        f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required isotopic XS "
+                        f"data for XS IDs {self.r.core.lib.xsIDs}. However, the burnup of some of the representative "
+                        f"blocks has changed beyond the threshold tolerance value of {self._burnupTolerance}. New XS "
+                        "will be generated."
                     )
                 else:
                     runLog.info(
-                        f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required XS data for XS "
-                        f"IDs {self.r.core.lib.xsIDs}. The generation of XS will be skipped."
+                        f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required XS data for "
+                        f"XS IDs {self.r.core.lib.xsIDs}. The generation of XS will be skipped."
                     )
 
         if executeXSGen:
