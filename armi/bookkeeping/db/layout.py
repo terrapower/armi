@@ -38,8 +38,8 @@ import numpy as np
 
 from armi import runLog
 from armi.reactor import grids
+from armi.reactor.armiObject import ArmiObject
 from armi.reactor.components import Component
-from armi.reactor.composites import ArmiObject
 from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core, Reactor
 

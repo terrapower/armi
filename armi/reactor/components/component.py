@@ -13,9 +13,21 @@
 # limitations under the License.
 
 """
-Components represent geometric objects within an assembly such as fuel, bond, coolant, ducts, wires, etc.
+Abstract defintition of the `Leaf` class in the composite design pattern underlying the reactor package.
 
-This module contains the abstract definition of a Component.
+This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
+allow the construction of a part/whole hierarchy representing a physical nuclear reactor in a tree strucutre. The
+`Component` class implements the 'part' aspect of the part/whole hierarchy (this is the `Leaf` class in
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). The `Component` class represents geometric objects
+within an assembly such as fuel, bond, coolant, ducts, wires, etc. that are implemented in other submodules of the
+`components` submodule.
+
+See Also
+--------
+:doc:`/developer/index`.
+armi.reactor.armiObject.ArmiObject
+armi.reactor.composites.Composite
+
 """
 
 import copy
@@ -31,8 +43,8 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import Void, custom, material
 from armi.reactor import flags, parameters
+from armi.reactor.armiObject import ArmiObject, ArmiObjectModelTypeABC
 from armi.reactor.components import componentParameters
-from armi.reactor.composites import ArmiObject, CompositeModelType
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
 
@@ -91,20 +103,14 @@ class _DimensionLink(tuple):
         return f"{self[0].name}.{self[1]}"
 
 
-class ComponentType(CompositeModelType):
+class ComponentType(ArmiObjectModelTypeABC):
     """
-    ComponetType is a metaclass for storing and initializing Component subclass types.
+    ComponentType is a metaclass for storing and initializing Component subclass types.
 
     The construction of Component subclasses is being done through factories for ease of user input.
     As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
     to the correct format. Additionally, the constructors arguments can be used to determine the
     Component subclasses dimensions.
-
-    Warning
-    -------
-    The import-time metaclass-based component subclass registration was a good idea, but in practice
-    has caused significant confusion and trouble. We will replace this soon with an explicit
-    plugin-based component subclass registration system.
     """
 
     TYPES = dict()  #: :meta hide-value:
@@ -121,7 +127,7 @@ class ComponentType(CompositeModelType):
     )
 
     def __new__(cls, name, bases, attrs):
-        newType = CompositeModelType.__new__(cls, name, bases, attrs)
+        newType = ArmiObjectModelTypeABC.__new__(cls, name, bases, attrs)
         ComponentType.TYPES[name.lower()] = newType
 
         # the co_varnames attribute contains arguments and then locals so we must
@@ -577,12 +583,6 @@ class Component(ArmiObject, metaclass=ComponentType):
 
     def getComponentVolume(self):
         return self.p.volume
-
-    def setVolume(self, val):
-        raise NotImplementedError
-
-    def setArea(self, val):
-        raise NotImplementedError
 
     def setTemperature(self, temperatureInC):
         r"""
@@ -1216,9 +1216,6 @@ class Component(ArmiObject, metaclass=ComponentType):
         be enriched vs. the baseline nuclides of that element while holding mass constant. For
         example it might adjust boron or uranium enrichment.
 
-        Conceptually, you could hold number of atoms, volume, or mass constant during this
-        operation. Historically ARMI adjusted mass fractions which was meant to keep mass constant.
-
         If you have 20 mass % Uranium and adjust the enrichment, you will still have 20% Uranium
         mass. But, the actual mass actually might change a bit because the enriched nuclide weighs
         less.
@@ -1270,7 +1267,7 @@ class Component(ArmiObject, metaclass=ComponentType):
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
-            raise NotImplementedError("Component has no method for producing average MG flux -- tryusing blocks")
+            raise NotImplementedError("Component has no method for producing average MG flux -- try using blocks")
 
         volume = self.getVolume() / self.parent.getSymmetryFactor()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
