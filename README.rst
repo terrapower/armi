@@ -62,7 +62,7 @@ plugins can be collected into an ARMI "Application" which orchestrates simulatin
    **Figure 1.** A high-level view of the ARMI architecture as a framework.
 
 Please note that ARMI does not come with a full selection of physics kernels. You will need to be acquire or develope
-these yourself, for your specific needs. ARMI is just the framework for your modeling. Also, the examples shown in
+these yourself for your specific needs. ARMI is just the framework for your modeling. Also, the examples shown in
 Figure 1 were chosen arbitrarily; ARMI is not limited to these physics kernels, nor should it limit you in what physics
 you want to model.
 
@@ -96,7 +96,7 @@ The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0
 
 From here, we recommend going through a few of our
 `gallery examples <https://terrapower.github.io/armi/gallery/index.html>`_ and
-`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to start touring the features and capabilities and
+`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to start touring the features and capabilities, and
 then move on to the `User Manual <https://terrapower.github.io/armi/user/index.html>`_.
 
 System Requirements
