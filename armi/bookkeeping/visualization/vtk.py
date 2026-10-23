@@ -37,7 +37,7 @@ from pyevtk.vtk import VtkGroup
 from armi import runLog
 from armi.bookkeeping.db import database
 from armi.bookkeeping.visualization import dumper, utils
-from armi.reactor import assemblies, blocks, composites, parameters, reactors
+from armi.reactor import armiObject, assemblies, blocks, parameters, reactors
 
 
 class VtkDumper(dumper.VisFileDumper):
@@ -133,7 +133,7 @@ class VtkDumper(dumper.VisFileDumper):
 
 
 def _collectObjectData(
-    objs: List[composites.ArmiObject],
+    objs: List[armiObject.ArmiObject],
     includeParams: Optional[Set[str]] = None,
     excludeParams: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:

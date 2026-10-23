@@ -49,7 +49,7 @@ import numpy as np
 from armi import runLog
 from armi.bookkeeping.db import database
 from armi.bookkeeping.visualization import dumper, utils
-from armi.reactor import assemblies, blocks, composites, reactors
+from armi.reactor import armiObject, assemblies, blocks, reactors
 
 _VTK_TO_XDMF_CELLS = {16: 16}
 
@@ -290,7 +290,7 @@ class XdmfDumper(dumper.VisFileDumper):
         self._assemGrids.append(assemGrid)
         self._times.append(r.p.time)
 
-    def _collectObjectData(self, objs: List[composites.ArmiObject], timeGroupName, node: ET.Element):
+    def _collectObjectData(self, objs: List[armiObject.ArmiObject], timeGroupName, node: ET.Element):
         """
         Scan for things that look plottable in the input database.
 
