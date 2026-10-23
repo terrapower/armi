@@ -30,7 +30,7 @@ from scipy import interpolate
 
 from armi import runLog
 from armi.materials.material import Fluid
-from armi.reactor import assemblyParameters, blocks, composites, grids
+from armi.reactor import armiObject, assemblyParameters, blocks, composites, grids
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -100,10 +100,10 @@ class Assembly(composites.Composite):
 
         See Also
         --------
-        armi.reactor.composites.ArmiObject.__lt__
+        armi.reactor.armiObject.ArmiObject.__lt__
         """
         try:
-            return composites.ArmiObject.__lt__(self, other)
+            return armiObject.ArmiObject.__lt__(self, other)
         except ValueError:
             return False
 

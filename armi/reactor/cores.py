@@ -349,7 +349,7 @@ class Core(composites.Composite):
         for b in self.iterBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
-            b.p.puFrac = b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
+            b.p.puHMFrac = b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
 
     def getScalarEvolution(self, key):
         return self.scalarVals[key]

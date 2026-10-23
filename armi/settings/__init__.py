@@ -95,22 +95,21 @@ def recursivelyLoadSettingsFiles(
     runLog.info("Checking for valid settings files.")
     for possibleSettingsFile in possibleSettings:
         if os.path.getsize(possibleSettingsFile) > 1e6:
-            runLog.extra(f"skipping {possibleSettingsFile} -- looks too big")
+            runLog.debug(f"skipping {possibleSettingsFile} -- looks too big")
             continue
         try:
             cs = Settings()
             cs.loadFromInputFile(possibleSettingsFile, handleInvalids=handleInvalids)
             csFiles.append(cs)
             runLog.extra(f"loaded {possibleSettingsFile}")
-        except InvalidSettingsFileError as ee:
-            runLog.extra(f"skipping {possibleSettingsFile}\n    {ee}")
-        except yaml.composer.ComposerError as ee:
-            runLog.extra(f"skipping {possibleSettingsFile}; it appears to be an incomplete YAML snippet\n    {ee}")
+        except InvalidSettingsFileError:
+            runLog.debug(f"tried {possibleSettingsFile} but it is not a valid settings file")
+        except yaml.composer.ComposerError:
+            runLog.debug(f"tried {possibleSettingsFile} but it appears to be an incomplete YAML snippet")
         except Exception as ee:
             runLog.error(
-                "Failed to parse {}.\nIt looked like a settings file but gave this exception:\n{}: {}".format(
-                    possibleSettingsFile, type(ee).__name__, ee
-                )
+                f"Failed to parse {possibleSettingsFile}.\nIt looked like a settings file but gave this exception:\n"
+                f"{type(ee).__name__}: {ee}"
             )
             raise
 

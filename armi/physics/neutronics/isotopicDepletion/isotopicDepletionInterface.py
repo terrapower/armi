@@ -22,11 +22,11 @@ from armi.nuclearDataIO import xsLibraries
 from armi.physics.neutronics.isotopicDepletion.crossSectionTable import (
     CrossSectionTable,
 )
-from armi.reactor import composites
+from armi.reactor import armiObject, composites
 from armi.reactor.flags import Flags
 
 
-def isDepletable(obj: composites.ArmiObject):
+def isDepletable(obj: armiObject.ArmiObject) -> bool:
     """
     Return True if obj or any child is flagged as DEPLETABLE.
 
@@ -55,7 +55,10 @@ def isDepletable(obj: composites.ArmiObject):
     --------
     armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys
     """
-    return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(Flags.DEPLETABLE)
+    depletable = obj.hasFlags(Flags.DEPLETABLE)
+    if isinstance(obj, composites.Composite):
+        depletable = depletable or obj.containsAtLeastOneChildWithFlags(Flags.DEPLETABLE)
+    return depletable
 
 
 class AbstractIsotopicDepleter:

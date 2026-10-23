@@ -73,7 +73,7 @@ Software Attributes
 -------------------
 
 ARMI is a Python-based framework, designed to help tie together various nuclear models, written in a
-variety of languages. ARMI officially supports Python versions 3.9 and up.
+variety of languages.
 
 ARMI is heavily tested and used in both Windows and Linux. More specifically, ARMI is always
 designed to work in the most modern Windows operating system (Windows 10 and Windows 11 currently).

@@ -58,7 +58,7 @@ from armi.bookkeeping.db import database
 from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.factory import databaseFactory
 from armi.bookkeeping.db.permissions import Permissions
-from armi.reactor.composites import ArmiObject
+from armi.reactor.armiObject import ArmiObject
 from armi.utils.tabulate import tabulate
 
 

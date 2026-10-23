@@ -92,7 +92,6 @@ class CompareCases(EntryPoint):
             type=str,
             help="The database to be used as the comparison, evaluated case.",
         )
-        parser.add_argument("--output", "-o", type=str, default="", help="Output file name.")
 
     def parse(self, args):
         EntryPoint.parse(self, args)

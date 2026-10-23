@@ -115,9 +115,9 @@ As much as possible, the ARMI team will try to centralize our installation and b
 the top-level ``pyproject.toml`` file. The only exception will be our documentation, which has much
 customization done through the Sphinx ``doc/conf.py`` file.
 
-The packages listed in the ``install_requires`` argument to ``setup()`` are meant to express, as
+The packages listed in the ``dependencies`` argument to ``[project]`` are meant to express, as
 abstractly as possible, the packages that need to be installed **somehow** for the package to work.
-In addition, ``extras_require`` are used to specify other packages that are not strictly required,
+In addition, ``[project.optional-dependencies]`` are used to specify other packages that are not strictly required,
 but if installed enable extra functionality, like unit testing or building documentation.
 
 Third-Party Licensing
@@ -130,6 +130,14 @@ any GPL tools.
 
 For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-
 party Python libraries that have MIT or BSD licenses.
+
+Versions of Python Supported
+----------------------------
+ARMI will try to support the same versions of Python that the Python org itself supports. For a current listing, see
+their `versions page <https://devguide.python.org/versions/>`_. We feel that in the nuclear space, security updates are
+important. However, the exact versions of Python ARMI supports at any one moment will depend on where we are in a
+release cycle. And we reserve the right to drop support for any version of Python if we have a special dependency-
+specific security concern.
 
 Releasing a New Version of ARMI
 ===============================

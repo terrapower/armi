@@ -19,7 +19,7 @@ from armi.reactor.grids.locations import IJType, LocationBase
 from armi.reactor.grids.structuredGrid import StructuredGrid
 
 if TYPE_CHECKING:
-    from armi.reactor.composites import ArmiObject
+    from armi.reactor.armiObject import ArmiObject
 
 
 class AxialGrid(StructuredGrid):

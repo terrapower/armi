@@ -28,7 +28,7 @@ from armi.nucDirectory.nuclideBases import NuclideBase, NuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies, blocks, components, composites, grids, parameters
+from armi.reactor import armiObject, assemblies, blocks, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
@@ -520,26 +520,29 @@ class TestCompositePattern(unittest.TestCase):
             self.assertAlmostEqual(rRatesReactor[key], val)
 
     def test_getFirstComponent(self):
+        # The dummy model's composite tree terminates with DummyLeaf objects
         c = self.container.getComponents()[0]
         c0 = self.container.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
         c = self.cladChild.getComponents()[0]
         c0 = self.cladChild.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
         c = self.secondGen.getComponents()[0]
         c0 = self.secondGen.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, DummyLeaf)
 
+        # When using this function in a real composite model,
+        # we should get an actual Component object
         b = buildComplexHexBlock()
         c = b.getComponents()[0]
         c0 = b.getFirstComponent()
         self.assertIs(c, c0)
-        self.assertIsInstance(c0, composites.Composite)
+        self.assertIsInstance(c0, components.Component)
 
         # covering edge case: someone passes in a flag that doesn't exist on on the object
         with self.assertRaises(ValueError):
@@ -766,15 +769,14 @@ class TestCompositeTree(unittest.TestCase):
         child = grandchild.getAncestorWithFlags(Flags.FUEL)
         self.assertIsNone(child)
 
-        # test the usual case: get a ancestor with the fuel flag
+        # test that the passing the same flag results in the reciever object being returned
         child = self.block.getChildrenWithFlags(Flags.FUEL)[0]
-        grandchild = child.getFirstComponent()
-        child1 = grandchild.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(child1, grandchild)
+        child1 = child.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child1, child)
 
-        # default case: the only ancestor with the fuel flag is the composite itself, so return that
-        child2 = child.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(child2, child)
+        # now check that using excludeSelf changes this behavior
+        ancestor = child.getAncestorWithFlags(Flags.FUEL, excludeSelf=True)
+        self.assertIsNone(ancestor)
 
     def test_changeNDensByFactor(self):
         b = deepcopy(self.block.getChildrenWithFlags(Flags.FUEL)[0])
@@ -1137,14 +1139,14 @@ class TestFlagSerializer(unittest.TestCase):
             Flags.A | Flags.B | Flags.CONTROL,
         ]
 
-        flagsArray, attrs = composites.FlagSerializer.pack(data)
+        flagsArray, attrs = armiObject.FlagSerializer.pack(data)
 
-        data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
+        data2 = armiObject.FlagSerializer.unpack(flagsArray, armiObject.FlagSerializer.version, attrs)
         self.assertEqual(data, data2)
 
         # discrepant versions
         with self.assertRaises(ValueError):
-            data2 = composites.FlagSerializer.unpack(flagsArray, "0", attrs)
+            data2 = armiObject.FlagSerializer.unpack(flagsArray, "0", attrs)
 
         # missing flags in current version Flags
         attrs["flag_order"].append("NONEXISTANTFLAG")
@@ -1154,7 +1156,7 @@ class TestFlagSerializer(unittest.TestCase):
             runLog.LOG.startLog(testName)
             runLog.LOG.setVerbosity(logging.WARNING)
 
-            data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
+            data2 = armiObject.FlagSerializer.unpack(flagsArray, armiObject.FlagSerializer.version, attrs)
             flagLog = mock.getStdout()
 
         self.assertIn("The set of flags", flagLog)
@@ -1167,10 +1169,10 @@ class TestFlagSerializer(unittest.TestCase):
             self.TestFlagsA.A | self.TestFlagsA.C | self.TestFlagsA.D,
         ]
 
-        serialized, attrs = composites.FlagSerializer._packImpl(data, self.TestFlagsA)
+        serialized, attrs = armiObject.FlagSerializer._packImpl(data, self.TestFlagsA)
 
-        data2 = composites.FlagSerializer._unpackImpl(
-            serialized, composites.FlagSerializer.version, attrs, self.TestFlagsB
+        data2 = armiObject.FlagSerializer._unpackImpl(
+            serialized, armiObject.FlagSerializer.version, attrs, self.TestFlagsB
         )
 
         expected = [

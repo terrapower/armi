@@ -38,7 +38,7 @@ maximum utility.
 Within the code, Flags are usually combined into a "type specification (``TypeSpec``)",
 which is either a single combination of Flags, or a list of Flag combinations. More
 information about how ``TypeSpec`` is interpreted can be found in
-:py:meth:`armi.reactor.composites.ArmiObject.hasFlags`.
+:py:meth:`armi.reactor.armiObject.ArmiObject.hasFlags`.
 
 Flags are intended to describe `what something is`, rather than `what something should
 do`. Historically, Flags have been used to do both, which has led to confusion. The

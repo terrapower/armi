@@ -13,21 +13,37 @@
 # limitations under the License.
 
 """
-Components represent geometric objects within an assembly such as fuel, bond, coolant, ducts, wires, etc.
+Abstract defintition of the `Leaf` class in the composite design pattern underlying the reactor package.
 
-This module contains the abstract definition of a Component.
+This follows the principles of the `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
+allow the construction of a part/whole hierarchy representing a physical nuclear reactor in a tree strucutre. The
+`Component` class implements the 'part' aspect of the part/whole hierarchy (this is the `Leaf` class in
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_). The `Component` class represents geometric objects
+within an assembly such as fuel, bond, coolant, ducts, wires, etc. that are implemented in other submodules of the
+`components` submodule.
+
+See Also
+--------
+:doc:`/developer/index`.
+armi.reactor.armiObject.ArmiObject
+armi.reactor.composites.Composite
+
 """
 
 import copy
 import re
-from typing import Iterable, Union
+from typing import (
+    Iterable,
+    Union,
+)
 
 import numpy as np
 
 from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import Void, custom, material
-from armi.reactor import composites, flags, parameters
+from armi.reactor import flags, parameters
+from armi.reactor.armiObject import ArmiObject, ArmiObjectModelTypeABC
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -87,20 +103,14 @@ class _DimensionLink(tuple):
         return f"{self[0].name}.{self[1]}"
 
 
-class ComponentType(composites.CompositeModelType):
+class ComponentType(ArmiObjectModelTypeABC):
     """
-    ComponetType is a metaclass for storing and initializing Component subclass types.
+    ComponentType is a metaclass for storing and initializing Component subclass types.
 
     The construction of Component subclasses is being done through factories for ease of user input.
     As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
     to the correct format. Additionally, the constructors arguments can be used to determine the
     Component subclasses dimensions.
-
-    Warning
-    -------
-    The import-time metaclass-based component subclass registration was a good idea, but in practice
-    has caused significant confusion and trouble. We will replace this soon with an explicit
-    plugin-based component subclass registration system.
     """
 
     TYPES = dict()  #: :meta hide-value:
@@ -117,7 +127,7 @@ class ComponentType(composites.CompositeModelType):
     )
 
     def __new__(cls, name, bases, attrs):
-        newType = composites.CompositeModelType.__new__(cls, name, bases, attrs)
+        newType = ArmiObjectModelTypeABC.__new__(cls, name, bases, attrs)
         ComponentType.TYPES[name.lower()] = newType
 
         # the co_varnames attribute contains arguments and then locals so we must
@@ -130,7 +140,7 @@ class ComponentType(composites.CompositeModelType):
         return newType
 
 
-class Component(composites.Composite, metaclass=ComponentType):
+class Component(ArmiObject, metaclass=ComponentType):
     """
     A primitive object in a reactor that has definite area/volume, material and composition.
 
@@ -209,7 +219,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if components and name in components:
             raise ValueError(f"Non-unique component name {name} repeated in same block.")
 
-        composites.Composite.__init__(self, str(name))
+        ArmiObject.__init__(self, str(name))
         self.p.area = area
         self.inputTemperatureInC = Tinput
         self.temperatureInC = Thot
@@ -219,6 +229,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+
+    def __iter__(self):
+        """Components have no children, but this method needs to exist, so it gets a static value."""
+        return iter([])
+
+    def __len__(self):
+        """Components have no children, but this method needs to exist, so it gets a static value."""
+        return 0
 
     @property
     def temperatureInC(self):
@@ -264,7 +282,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 )
 
     def __setstate__(self, state):
-        composites.Composite.__setstate__(self, state)
+        ArmiObject.__setstate__(self, state)
         self.material.parent = self
 
     def _linkAndStoreDimensions(self, components, **dims):
@@ -566,12 +584,6 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getComponentVolume(self):
         return self.p.volume
 
-    def setVolume(self, val):
-        raise NotImplementedError
-
-    def setArea(self, val):
-        raise NotImplementedError
-
     def setTemperature(self, temperatureInC):
         r"""
         Adjust temperature of this component.
@@ -689,7 +701,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setName(self, name):
         """Components use name for type and name."""
-        composites.Composite.setName(self, name)
+        ArmiObject.setName(self, name)
         self.setType(name)
 
     def setNumberDensity(self, nucName, val):
@@ -1150,10 +1162,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         for nucName in set(meNDens) | set(mergeNDens):
             compToMergeWith.setNumberDensity(nucName, (meNDens.get(nucName, 0.0) + mergeNDens.get(nucName, 0.0)))
 
-    def iterComponents(self, typeSpec=None, exact=False):
-        if self.hasFlags(typeSpec, exact):
-            yield self
-
     def backUp(self):
         """
         Create and store a backup of the state.
@@ -1162,7 +1170,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
-        composites.Composite.backUp(self)
+        ArmiObject.backUp(self)
         self._restoreLinkedDims(linkedDims)
 
     def restoreBackup(self, paramsToApply):
@@ -1173,7 +1181,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
-        composites.Composite.restoreBackup(self, paramsToApply)
+        ArmiObject.restoreBackup(self, paramsToApply)
         self._restoreLinkedDims(linkedDims)
 
     def _getLinkedDimsAndValues(self):
@@ -1207,9 +1215,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         The nuclides to adjust are defined by the material. This changes whichever nuclides are to
         be enriched vs. the baseline nuclides of that element while holding mass constant. For
         example it might adjust boron or uranium enrichment.
-
-        Conceptually, you could hold number of atoms, volume, or mass constant during this
-        operation. Historically ARMI adjusted mass fractions which was meant to keep mass constant.
 
         If you have 20 mass % Uranium and adjust the enrichment, you will still have 20% Uranium
         mass. But, the actual mass actually might change a bit because the enriched nuclide weighs
@@ -1262,7 +1267,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
-            raise NotImplementedError("Component has no method for producing average MG flux -- tryusing blocks")
+            raise NotImplementedError("Component has no method for producing average MG flux -- try using blocks")
 
         volume = self.getVolume() / self.parent.getSymmetryFactor()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
@@ -1388,7 +1393,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
-        density = composites.Composite.density(self)
+        density = ArmiObject.density(self)
 
         if not density:
             # It is possible that there are no nuclides in this component yet. In that case, we defer to the Material.
@@ -1412,7 +1417,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.parent:
             return self.parent.getLumpedFissionProductCollection()
         else:
-            return composites.ArmiObject.getLumpedFissionProductCollection(self)
+            return ArmiObject.getLumpedFissionProductCollection(self)
 
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
@@ -1434,6 +1439,45 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getFuelMass(self) -> float:
         """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
+
+    def getReactionRates(self, nucName, nDensity=None):
+        """
+        Get the reaction rates of a certain nuclide on this ArmiObject.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number Density
+
+        Returns
+        -------
+        rxnRates : dict
+            reaction rates (1/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        This is volume integrated NOT (1/cm3-s).
+
+        If you set nDensity to 1 this makes 1-group cross section generation easier.
+        """
+        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+        for rxName, val in self._getReactionRates(nucName, nDensity).items():
+            rxnRates[rxName] += val
+
+        return rxnRates
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expand the density of a specific element to its natural isotopic distribution.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` element to
+            expand into natural isotopic distribution.
+        """
+        self._expandElementalToIsotopics(self, elementalNuclide)
 
     def finalizeLoadingFromDB(self):
         """Apply any final actions after creating the component from database.

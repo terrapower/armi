@@ -15,7 +15,7 @@
 
 import unittest
 
-from armi.reactor.composites import FlagSerializer
+from armi.reactor.armiObject import FlagSerializer
 from armi.utils.flags import Flag, auto
 
 

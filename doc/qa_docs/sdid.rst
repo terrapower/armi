@@ -158,7 +158,7 @@ Hardware/OS Compatibility
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ARMI is a Python-based framework, designed to help tie together various nuclear models, all written
-in a variety of languages. ARMI officially supports Python versions 3.9 and higher. ARMI is also
+in a variety of languages. ARMI officially supports Python versions 3.11 to 3.14. ARMI is also
 designed to work on modern versions of both Windows and Linux.
 
 The memory, CPU, and hardware needs of an ARMI simulation depend on the Reactor. Simulations run

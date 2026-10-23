@@ -20,7 +20,7 @@ from armi.reactor import geometry
 from armi.reactor.grids.locations import IJKType, IJType, IndexLocation, LocationBase
 
 if TYPE_CHECKING:
-    from armi.reactor.composites import ArmiObject
+    from armi.reactor.armiObject import ArmiObject
 
 
 class Grid(ABC):
@@ -57,7 +57,7 @@ class Grid(ABC):
         Underlying geometric representation
     symmetry : str or armi.reactor.geometry.SymmetryType
         Symmetry conditions
-    armiObject : optional, armi.reactor.composites.ArmiObject
+    armiObject : optional, armi.reactor.armiObject.ArmiObject
         If given, what is this grid attached to or what does it describe?
         Something like a :class:`armi.reactor.Core`
     """

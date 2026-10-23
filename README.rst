@@ -56,7 +56,7 @@ Additional high-level overview about this system can be found in [#touranarmi]_.
 
 Quick start
 ***********
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+.
+Before starting, you need to install `Python <https://www.python.org/downloads/>`.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following commands. You probably want to
 do this in a virtual environment as described in the
@@ -117,8 +117,8 @@ Digital computers have assisted in nuclear technology development since the days
 understand reactor physics well enough to build detailed simulations, which can answer many of these design questions in
 a cost-effective, and flexible manner. This allows us to simulate all kinds of different reactors with different fuels,
 coolants, moderators, power levels, safety systems, and power cycles. We can run our virtual reactors through the
-decades, tossing various off-normal conditions at them now and then, to see how they perform in terms of capability,
-economics, and safety.
+decades, toss miriad off-normal conditions at them, and see how they perform in terms of capability, economics, and
+safety.
 
 Perhaps surprisingly, some nuclear software written in the 1960s is still in use today. These codes are validated
 against physical experiments that no longer exist. Meanwhile, new cutting-edge nuclear software is being developed for
@@ -126,10 +126,10 @@ todays powerful computers. Both old and new, these tools are often challenging t
 full reactor analysis.
 
 The ARMI approach was born out of this situation: how can we best leverage an eclectic mix of legacy and modern tools
-with a small team to do full-scope analysis? We built a framework that lets us automate the tedious, uncoupled, and
-error-prone parts of reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis
-given a major change (e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to
-multiple machines and then perform multi-objective optimization on the resulting design space.
+to do full-scope analysis? We built a framework to help us automate the tedious, uncoupled, and error-prone parts of
+reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis given a major change
+(e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to multiple machines and
+then perform multi-objective optimization on the resulting design space.
 
 The ARMI system is largely written in the Python programming language. Its high-level nature allows nuclear and
 mechanical engineers to rapidly automate their analysis tasks from their sub-specialties. This helps eliminate the
@@ -142,18 +142,23 @@ effectively with all ongoing reactor software developments.
 
 Communication and coupling
 **************************
-ARMI provides a central place for all physics kernels to interact: the Reactor Model. All modules read *state*
-information from this Reactor and write their output to it. This common interface allows seamless communication and
-coupling between different physics sub-specialties. If you plug one new physics kernel into ARMI, it becomes coupled to
-N other kernels. The ARMI Framework, depicted in green below, is the majority of the open source package. Several
-skeletal analysis routines are included as well to perform basic data management and to help align efforts on external
-physics kernels.
+As you can see below, the ARMI framework comes packaged with the ARMI Reactor Data Model. This is a central place where
+all your code, and any external physics kernels, can share information about the state of the reactor. ARMI also
+provides a number of helpful tools, like: input formats for reactor blueprints, tools for organizing the flow of a
+simulation, output databases, and visualization tools. To use the Reactor Data Model, you will build one (or probably
+more) "plugins". These plugins are often used to connect an external physics kernal to the run or simulation.
+
+ARMI provides tutorials and guides for building your own plugins,
+and some lightweight machinery to help get you started.
 
 .. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
    :figclass: align-center
 
-   **Figure 1.** The schematic representation of the ARMI data model.
+   **Figure 1.** A high-level view of the ARMI architecture as a framework.
 
+Please note that you will be responsible for acquiring (or writing) physics kernels yourself, ARMI does not provide
+them. And the examples shown in Figure 1 were chosen arbitrarily, ARMI is not limited to these physics kernels, nor
+should it limit you in what physics you want to model.
 
 Automation
 **********

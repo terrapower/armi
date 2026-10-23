@@ -58,7 +58,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameterRenames():
-        return {"buGroup": "envGroup", "buGroupNum": "envGroupNum"}
+        return {"buGroup": "envGroup", "buGroupNum": "envGroupNum", "puFrac": "puHMFrac"}
 
     @staticmethod
     @plugins.HOOKIMPL

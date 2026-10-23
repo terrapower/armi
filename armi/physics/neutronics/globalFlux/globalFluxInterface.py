@@ -922,7 +922,7 @@ def calcReactionRates(obj, keff, lib):
         :implements: R_ARMI_FLUX_RX_RATES
 
         This method computes 1-group reaction rates for the inputted
-        :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>` These
+        :py:class:`ArmiObject <armi.reactor.armiObject.ArmiObject>` These
         reaction rates include:
 
         * fission

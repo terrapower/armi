@@ -31,6 +31,7 @@ from armi import runLog
 from armi.bookkeeping import report
 from armi.nuclearDataIO import xsCollections
 from armi.reactor import (
+    armiObject,
     blockParameters,
     components,
     composites,
@@ -335,7 +336,7 @@ class Block(composites.Composite):
         -------
         flux : multigroup neutron flux in [n/cm^2/s]
         """
-        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, gamma=gamma)
+        flux = armiObject.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, gamma=gamma)
         if average and np.any(self.p.lastMgFlux):
             volume = self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
@@ -723,7 +724,7 @@ class Block(composites.Composite):
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
         self.p.molesHmBOL = self.getHMMoles()
-        self.p.puFrac = self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
+        self.p.puHMFrac = self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
 
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
@@ -737,7 +738,7 @@ class Block(composites.Composite):
             hmMass = child.getHMMass()
             massHmBOL += hmMass
             # Components have the following parameters but not every composite will massHmBOL,
-            # molesHmBOL, puFrac, enrichmentBOL
+            # molesHmBOL, puHMFrac, enrichmentBOL
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
@@ -1451,7 +1452,7 @@ class Block(composites.Composite):
         --------
         armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct : LFP object
         """
-        return composites.ArmiObject.getLumpedFissionProductCollection(self)
+        return armiObject.ArmiObject.getLumpedFissionProductCollection(self)
 
     def rotate(self, rad):
         """Function for rotating a block's spatially varying variables by a specified angle (radians).
