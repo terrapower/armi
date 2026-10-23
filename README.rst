@@ -66,24 +66,6 @@ these yourself, for your specific needs. ARMI is just the framework for your mod
 Figure 1 were chosen arbitrarily; ARMI is not limited to these physics kernels, nor should it limit you in what physics
 you want to model.
 
-Automation
-==========
-
-TODO: I feel very "meh" about this section. What could replace it?
-
-ARMI can quickly and easily produce complex input files with high levels of detail in various approximations. This
-enables users to perform rapid high-fidelity analyses to make sure all important physics are captured. It also enables
-sensitivity studies of different modeling approximations (e.g. symmetries, transport vs. diffusion vs. Monte Carlo,
-subchannel vs. CFD, etc.).
-
-
-.. figure:: https://terrapower.github.io/armi/_static/armiGeometries.png
-   :figclass: align-center
-
-   **Figure 2.** A variety of approximations in hexagonal geometry (1/3-core, full core, pin detailed, etc.) are shown,
-   all derived from one consistent input file. ARMI supports Cartesian, Hex, RZ, and RZTheta geometric grids and
-   includes many geometric components. Additionally, users can provide custom geometric elements.
-
 
 Getting Started
 ***************
