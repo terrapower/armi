@@ -51,7 +51,7 @@ High-Level Architecture
 =======================
 Figure 1 below is meant to represent the high-level goal of ARMI. At the center of the diagram is the ARMI Reactor Data
 Model, this is a central place in memory where the physical state of the reactor can be viewed and changed. The outer
-ring of figure shows "external physics kernels", which have been written for different nuclear engineering disciplines
+ring of the figure shows "external physics kernels", which have been written for different nuclear engineering disciplines
 around the world for decades now. The glue that connects these external software packages to ARMI are "ARMI Plugins"
 which you write, based on ARMI examples, to read and write data from the ARMI reactor data model. A collection of these
 plugins can be collected into an ARMI "Application" which orchestrates simulating or analyzing your reactor.
