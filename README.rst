@@ -51,7 +51,7 @@ High-Level Architecture
 =======================
 Figure 1 below is meant to represent the high-level goal of ARMI. At the center of the diagram is the ARMI Reactor Data
 Model, this is a central place in memory where the physical state of the reactor can be viewed and changed. The outer
-ring of figure shows "external physics kernels", which have been written for different nuclear engineering disciplines
+ring of the figure shows "external physics kernels", which have been written for different nuclear engineering disciplines
 around the world for decades now. The glue that connects these external software packages to ARMI are "ARMI Plugins"
 which you write, based on ARMI examples, to read and write data from the ARMI reactor data model. A collection of these
 plugins can be collected into an ARMI "Application" which orchestrates simulating or analyzing your reactor.
@@ -62,7 +62,7 @@ plugins can be collected into an ARMI "Application" which orchestrates simulatin
    **Figure 1.** A high-level view of the ARMI architecture as a framework.
 
 Please note that ARMI does not come with a full selection of physics kernels. You will need to be acquire or develope
-these yourself, for your specific needs. ARMI is just the framework for your modeling. Also, the examples shown in
+these yourself for your specific needs. ARMI is just the framework for your modeling. Also, the examples shown in
 Figure 1 were chosen arbitrarily; ARMI is not limited to these physics kernels, nor should it limit you in what physics
 you want to model.
 
@@ -96,7 +96,7 @@ The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0
 
 From here, we recommend going through a few of our
 `gallery examples <https://terrapower.github.io/armi/gallery/index.html>`_ and
-`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to start touring the features and capabilities and
+`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to start touring the features and capabilities, and
 then move on to the `User Manual <https://terrapower.github.io/armi/user/index.html>`_.
 
 System Requirements
