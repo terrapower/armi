@@ -165,7 +165,8 @@ def _buildHeader(scrType: str):
     str
         RST-formatted header title.
     """
-    return f"\nList of SCRs of type: {PR_TYPES[scrType]}\n\n"
+    header = f"List of SCRs of type: {PR_TYPES[scrType]}"
+    return f"\n{header}\n{'^' * len(header)}\n\n"
 
 
 def isMainPR(prNum: int):
