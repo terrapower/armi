@@ -20,3 +20,4 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
    physics_coupling
    radial_and_axial_expansion
    symmetry_handling
+   history
