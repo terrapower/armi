@@ -374,25 +374,32 @@ class LatticePhysicsInterface(interfaces.Interface):
             # should have responsibility of loading XS's have already generated for this cycle (maybe during fuel
             # management). Should we update due to changes that occurred during fuel management?
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)
-            if missing and not executeXSGen:
-                runLog.info(
-                    f"Although a XS library {self.r.core.lib} exists on {self.r.core}, there are missing XS IDs "
-                    f"{missing} required. The XS generation on cycle {cycle} is not enabled, but will be run to "
-                    "generate these missing cross sections."
-                )
-                executeXSGen = True
-            elif missing:
-                runLog.info(
-                    f"Although a XS library {self.r.core.lib} exists on {self.r.core}, there are missing XS IDs "
-                    f"{missing} required. These will be generated on cycle {cycle}."
-                )
+            if missing:
+                if not executeXSGen:
+                    runLog.info(
+                        f"Although a XS library {self.r.core.lib} exists on {self.r.core}, there are missing XS IDs "
+                        f"{missing} required. The XS generation on cycle {cycle} is not enabled, but will be run to "
+                        "generate these missing cross sections."
+                    )
+                else:
+                    runLog.info(
+                        f"Although a XS library {self.r.core.lib} exists on {self.r.core}, there are missing XS IDs "
+                        f"{missing} required. These will be generated on cycle {cycle}."
+                    )
                 executeXSGen = True
             else:
-                runLog.info(
-                    f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required XS data for XS "
-                    f"IDs {self.r.core.lib.xsIDs}. The generation of XS will be skipped."
-                )
-                executeXSGen = False
+                if executeXSGen:
+                    runLog.info(
+                        f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required isotopic XS "
+                        f"data for XS IDs {self.r.core.lib.xsIDs}. However, the burnup of some of the representative "
+                        f"blocks has changed beyond the threshold tolerance value of {self._burnupTolerance}. New XS "
+                        "will be generated."
+                    )
+                else:
+                    runLog.info(
+                        f"A XS library {self.r.core.lib} exists on {self.r.core} and contains the required XS data for "
+                        f"XS IDs {self.r.core.lib.xsIDs}. The generation of XS will be skipped."
+                    )
 
         if executeXSGen:
             runLog.info(f"Cross sections will be generated on cycle {cycle} for the following XS IDs: {xsIDs}")
