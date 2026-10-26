@@ -650,6 +650,38 @@ zone names and the assemblies that make up that zone. The following would create
 
 These zones will be populated according to the :meth:`~armi.reactor.cores.Core.buildManualZones` core method.
 
+Settings Validation
+-------------------
+When case settings are added to an ARMI plugin, they may also receive some logic to ensure the user is using them
+properly. See :py:mod:`from armi.settings.settingsValidation` for more detailed information.
+
+Perhaps a user defines the following case setting with a typo:
+
+.. code-block:: yaml
+
+    # The actual file is /path/to/shuffle.py, but there is a typo.
+    shuffleLogic: /path/to/shffle.py
+
+When the case is submitted, the settings validator for this case setting will be unable to find the file, so it will
+trigger the settings validator behavior:
+
+.. code-block::
+
+    [prmt] INSPECTOR: The specified shuffle logic module or file '/path/to/shffle.py' cannot be found. Shuffling will not occur.
+
+Some settings validators do not have an action attached and are meant as a warning or notification, and some might ask
+for a user response to either change the setting, or choose to continue or not. The above example would then print out
+the following, to which this example user replies "no":
+
+.. code-block::
+
+    [prmt] Clear specified file value? (YES, NO, Y, N):
+    n
+    You have cancelled the submission.
+
+When a developer adds a new setting, they have the option to add a settings validator with it and can deploy it in any
+custom manner that can give the user information about how to use the setting properly.
+
 .. _bp-input-file:
 
 The Blueprints Input File
