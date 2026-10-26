@@ -11,6 +11,7 @@ ARMI input files, running various kinds of ARMI runs, analyzing ARMI output file
    :maxdepth: 5
    :numbered:
 
+   guide
    inputs
    outputs
    manual_data_access

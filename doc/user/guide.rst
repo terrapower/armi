@@ -82,7 +82,25 @@ Most data is stored in ARMI as :py:mod:`~armi.reactor.parameters`. Most paramete
 become persistent, meaning they will be saved to the database during database
 interactions, and therefore it will also be loaded when a database is loaded.
 
-Details of the use and design can be found at :py:mod:`~armi.reactor.parameters`.
+These parameters can be accessed as an instance attribute or like a dictionary via ``<object>.p.<parameter>`` or
+``<object>.p["parameter"]``, respectively. For reactor ``r``, core ``core``, assembly ``a``, block ``b``, and component
+``c``:
+
+.. code-block:: python
+
+    # Reactor Parameter
+    r.p.cycleLength
+    # Core Parameter
+    r.core.p.powerDensity
+    # Assembly Parameter
+    a.p.maxPercentBu
+    # Block Parameter
+    b.p.molesHmBOL
+    # Component Parameter
+    c.p.pinPercentBu
+
+All parameters implemented by ARMI are in :ref:`params-report`. More details of the use and design can be found at
+:py:mod:`~armi.reactor.parameters`.
 
 Converters
 ----------
