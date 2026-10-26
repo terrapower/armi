@@ -31,7 +31,7 @@ from typing import (
 from armi import context, interfaces, runLog
 from armi.bookkeeping.db.database import Database, getH5GroupName
 from armi.bookkeeping.db.typedefs import Histories, History
-from armi.reactor.composites import ArmiObject
+from armi.reactor.armiObject import ArmiObject
 from armi.reactor.parameters import parameterDefinitions
 from armi.settings.fwSettings.databaseSettings import (
     CONF_FORCE_DB_PARAMS,

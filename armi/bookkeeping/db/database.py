@@ -68,10 +68,10 @@ from armi.bookkeeping.db.layout import (
 from armi.bookkeeping.db.typedefs import Histories, History
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids, parameters
+from armi.reactor.armiObject import ArmiObject
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
-from armi.reactor.composites import ArmiObject
 from armi.reactor.parameters import parameterCollections
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
