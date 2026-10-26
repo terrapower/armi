@@ -31,7 +31,7 @@ In practice, the top of the data model is the
 ``ExcoreStructure`` might be a :py:class:`SpentFuelPool <armi.reactor.spentFuelPool.SpentFuelPool>`.
 
 The ``Core`` object in contains :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects, which are in turn
-made up as a collection of :py:class:`Block <armi.reactor.blocks.Block>` objects. ``Block`` objects contain 
+made up as a collection of :py:class:`Block <armi.reactor.blocks.Block>` objects. ``Block`` objects contain
 :py:class:`Component <armi.reactor.components.component.Component>` to represent fuel, cladding, coolant, etc.
 
 .. figure:: /.static/armi_reactor_objects.png
@@ -90,10 +90,11 @@ become persistent, meaning they will be saved to the database during database
 interactions, and therefore it will also be loaded when a database is loaded.
 
 These parameters can be accessed as an instance attribute or like a dictionary via ``<object>.p.<parameter>`` or
-``<object>.p["parameter"]``, respectively. This is supported for the reactor data model by level. For reactor ``r``,
-core ``core``, assembly ``a``, block ``b``, and component ``c``:
+``<object>.p["parameter"]``, respectively. This is supported for the reactor data model by level.
 
 .. code-block:: python
+
+    # User has loaded a reactor using ARMI naming conventions (e.g., b for a block)
 
     # Reactor Parameter
     r.p.cycleLength
