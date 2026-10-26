@@ -679,6 +679,9 @@ the following, to which this example user replies "no":
     n
     You have cancelled the submission.
 
+When a developer adds a new setting, they have the option to add a settings validator with it and can deploy it in any
+custom manner that can give the user information about how to use the setting properly.
+
 .. _bp-input-file:
 
 The Blueprints Input File
