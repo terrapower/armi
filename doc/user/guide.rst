@@ -83,8 +83,8 @@ become persistent, meaning they will be saved to the database during database
 interactions, and therefore it will also be loaded when a database is loaded.
 
 These parameters can be accessed as an instance attribute or like a dictionary via ``<object>.p.<parameter>`` or
-``<object>.p["parameter"]``, respectively. For reactor ``r``, core ``core``, assembly ``a``, block ``b``, and component
-``c``:
+``<object>.p["parameter"]``, respectively. This is supported for the reactor data model by level. For reactor ``r``,
+core ``core``, assembly ``a``, block ``b``, and component ``c``:
 
 .. code-block:: python
 
@@ -99,8 +99,8 @@ These parameters can be accessed as an instance attribute or like a dictionary v
     # Component Parameter
     c.p.pinPercentBu
 
-All parameters implemented by ARMI are in :ref:`params-report`. More details of the use and design can be found at
-:py:mod:`~armi.reactor.parameters`.
+All parameters implemented by ARMI are listed in :ref:`params-report`. More details of the use and design can be found
+at :py:mod:`~armi.reactor.parameters`.
 
 Converters
 ----------
@@ -122,6 +122,8 @@ Blueprints
 As seen in the User Guide, :py:mod:`~armi.reactor.blueprints` are how reactor models are
 defined. During a run, they can be used to create new instances of reactor model pieces,
 such as when a new assembly is fabricated during a fuel management operation in a later cycle.
+
+For more detail, refer to :ref:`bp-input-file`.
 
 Operators
 =========

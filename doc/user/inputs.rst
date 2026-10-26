@@ -2110,3 +2110,239 @@ a branch search during a regular run by selecting the **Branch Search** option o
 The **best** result from the branch search is determined by comparing the *keff* values with the ``targetK`` setting,
 which is available for setting in the GUI. The branch with *keff* closest to the setting, while still being above 1.0 is
 chosen.
+
+Programmatic Inputs Generation
+==============================
+
+Users can write their settings and blueprints manually, or they can build them programmatically. To demonstrate the
+concept with a simple reactor, the example shown will recreate the one block test reactor ARMI uses for some unit tests
+at ``armi/testing/reactors/smallestTestReactor``. This can occur by building the case settings and the blueprints, then
+making a case with those. The inputs are then written to disk in this example.
+
+Here is the highest level view of the script:
+
+.. code-block:: python
+
+    import armi
+
+    # Too many things in ARMI are global, so you need to configure the App before resuming imports
+    armi.configure()
+
+    from armi import cases
+
+    cs = createSettings()
+    bp = createBlueprints()
+
+    case = cases.Case(cs=cs, bp=bp)
+    case.writeInputs()
+
+Then the script would define ``createSettings`` like so:
+
+.. code-block:: python
+
+    import os
+    from armi.settings.caseSettings import Settings
+
+    def createSettings():
+        cs = Settings()
+        # Set these so the writer knows where to put the files
+        cs.caseTitle = "one-block-rxtr"
+        cs.path = os.path.join(os.getcwd(), f"{cs.caseTitle}.yaml")
+        settings = {
+            # global
+            "availabilityFactor": 1,
+            "beta": 0.003454,
+            "buGroups": [100],
+            "burnSteps": 2,
+            "cycleLength": 2000.0,
+            "detailAssemLocationsBOL": ["002-001"],
+            "freshFeedType": "igniter fuel",
+            "nCycles": 2,
+            "power": 1000000.0,
+            "startCycle": 1,
+            "startNode": 2,
+            "targetK": 1.002,
+            # cross section
+            "crossSectionControl": {
+                "DA": {
+                    "geometry": "0D",
+                    "blockRepresentation": "Median",
+                    "criticalBuckling": True,
+                    "externalDriver": True,
+                    "useHomogenizedBlockComposition": False,
+                    "numInternalRings": 1,
+                    "numExternalRings": 1,
+                },
+                "XA": {"xsFileLocation": ["ISOXA"]},
+                "YA": {
+                    "geometry": "0D",
+                    "fluxFileLocation": "rzmflxYA",
+                },
+                "ZA": {
+                    "geometry": "1D cylinder",
+                    "blockRepresentation": "ComponentAverage1DCylinder",
+                    "validBlockTypes": ["fuel"],
+                    "externalDriver": False,
+                    "mergeIntoClad": ["gap"],
+                    "numInternalRings": 1,
+                    "numExternalRings": 1,
+                },
+            },
+            # fuel cycle
+            "fuelHandlerName": "EquilibriumShuffler",
+            "jumpRingNum": 9,
+            # neutronics
+            "epsFSAvg": 1e-06,
+            "epsFSPoint": 1e-06,
+            "loadPadElevation": 200.0,
+        }
+        for setting, val in settings.items():
+            cs[setting] = val
+        return cs
+
+And an example implementation of ``createBlueprints`` might look like this:
+
+.. code-block:: python
+
+    from armi.reactor import blueprints
+    from armi.reactor.blueprints import (
+        assemblyBlueprint,
+        blockBlueprint,
+        componentBlueprint,
+        gridBlueprint,
+        reactorBlueprint,
+    )
+
+    def createBlueprints():
+        bp = blueprints.Blueprints()
+        bp.blockDesigns, blockList = buildBlocks()
+        bp.assemDesigns = buildAssems(blockList)
+        bp.systemDesigns = buildSystems()
+        bp.gridDesigns = buildGrids()
+        return bp
+
+Where each of the functions in ``createBlueprints`` is defined as follows:
+
+.. code-block:: python
+
+    def buildGrids():
+        """Make a Core and an SFP grid blueprint, and return both via Grids"""
+        core = gridBlueprint.GridBlueprint(name="core", geom="hex_corners_up", latticeMap="IC\n", symmetry="full")
+        sfp = gridBlueprint.GridBlueprint(name="sfp", geom="cartesian", symmetry="full")
+        sfp.latticeDimensions = gridBlueprint.Pitch(x=32.0, y=32.0)
+        return gridBlueprint.Grids([(core.name, core), (sfp.name, sfp)])
+
+    def buildSystems():
+        """Make a Core and an SFP system blueprint, and return both via Systems"""
+        coreOrigin = gridBlueprint.Triplet(x=0.0, y=0.0, z=0.0)
+        core = reactorBlueprint.SystemBlueprint(name="core", gridName="core", origin=coreOrigin)
+        sfpOrigin = gridBlueprint.Triplet(x=5000.0, y=5000.0, z=6000.0)
+        sfp = reactorBlueprint.SystemBlueprint(name="Spent Fuel Pool", gridName="sfp", origin=sfpOrigin)
+        return reactorBlueprint.Systems([(core.name, core), (sfp.name, sfp)])
+
+    def buildAssems(blocks):
+        """Make a single assembly and return it via AssemblyKeyedList"""
+        heights = [25.0]
+        axMesh = [1]
+        matMods = assemblyBlueprint.MaterialModifications({"U235_wt_frac": [0.11], "ZR_wt_frac": [0.06]})
+
+        assem = assemblyBlueprint.AssemblyBlueprint()
+        assem.name = "igniter fuel"
+        assem.specifier = "IC"
+        assem.blocks = blocks
+        assem.height = heights
+        assem.axialMeshPoints = axMesh
+        assem.materialModifications = matMods
+        assem.xsTypes = ["A"]
+
+        assemList = assemblyBlueprint.AssemblyKeyedList([(assem.name, assem)])
+        assemList.heights = heights
+        assemList.axialMeshPoints = axMesh
+        return assemList
+
+    def buildBlocks():
+        """Make a single block and return it via BlockKeyedList as well as BlockList"""
+        block = blockBlueprint.BlockBlueprint()
+        block.name = "fuel"
+        components = buildComponents()
+        for c in components:
+            block[c.name] = c
+        blockKeyList = blockBlueprint.BlockKeyedList([(block.name, block)])
+        blockList = blockBlueprint.BlockList([block])
+        return blockKeyList, blockList
+
+    def buildComponents():
+        """Make a list of components to add to a block"""
+        fuel = componentBlueprint.ComponentBlueprint()
+        fuel.name = "fuel"
+        fuel.shape = "Circle"
+        fuel.material = "UZr"
+        fuel.Tinput = 25.0
+        fuel.Thot = 600.0
+        fuel.id = 0.0
+        fuel.mult = 169.0
+        fuel.od = 0.86
+
+        clad = componentBlueprint.ComponentBlueprint()
+        clad.name = "clad"
+        clad.shape = "Circle"
+        clad.material = "HT9"
+        clad.Tinput = 25.0
+        clad.Thot = 470.0
+        clad.id = 1.0
+        clad.mult = fuel.mult
+        clad.od = 1.09
+
+        bond = componentBlueprint.ComponentBlueprint()
+        bond.name = "bond"
+        bond.shape = "Circle"
+        bond.material = "Sodium"
+        bond.Tinput = 450.0
+        bond.Thot = 450.0
+        bond.id = fuel.od
+        bond.mult = fuel.mult
+        bond.od = clad.id
+
+        wire = componentBlueprint.ComponentBlueprint()
+        wire.name = "wire"
+        wire.shape = "Helix"
+        wire.material = "HT9"
+        wire.Tinput = 25.0
+        wire.Thot = 450.0
+        wire.axialPitch = 30
+        wire.helixDiameter = 1.20
+        wire.id = 0.0
+        wire.mult = fuel.mult
+        wire.od = 0.10056
+
+        coolant = componentBlueprint.ComponentBlueprint()
+        coolant.name = "coolant"
+        coolant.shape = "DerivedShape"
+        coolant.material = "Sodium"
+        coolant.Tinput = 450.0
+        coolant.Thot = 450.0
+
+        duct = componentBlueprint.ComponentBlueprint()
+        duct.name = "duct"
+        duct.shape = "Hexagon"
+        duct.material = "HT9"
+        duct.Tinput = 25.0
+        duct.Thot = 450.0
+        duct.ip = 16.0
+        duct.mult = 1.0
+        duct.op = 16.7
+
+        intercoolant = componentBlueprint.ComponentBlueprint()
+        intercoolant.name = "intercoolant"
+        intercoolant.shape = "Hexagon"
+        intercoolant.material = "Sodium"
+        intercoolant.Tinput = 450.0
+        intercoolant.Thot = 450.0
+        intercoolant.ip = duct.op
+        intercoolant.mult = 1.0
+        intercoolant.op = 16.8
+        return [fuel, clad, bond, wire, coolant, duct, intercoolant]
+
+Combining all of this into a script or a module would then result in the inputs being written to disk wherever the
+script is called from. These inputs can be run in the user's compute environment in the same way manually generated
+inputs are run.
