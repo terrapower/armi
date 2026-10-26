@@ -1268,6 +1268,7 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
         mockBlockParams.assert_called_once()
 
+        # check that setBlockMassParams is not called on dbLoad
         with patch.object(Core, "setBlockMassParams") as mockBlockParams2:
             r.p.timeNode = 0
             r.p.cycle = 0
