@@ -652,8 +652,7 @@ These zones will be populated according to the :meth:`~armi.reactor.cores.Core.b
 
 Settings Validation
 -------------------
-
-When case settings are added to an ARMI plugin, they may also recieve some logic to ensure the user is using them
+When case settings are added to an ARMI plugin, they may also receive some logic to ensure the user is using them
 properly. See :py:mod:`from armi.settings.settingsValidation` for more detailed information.
 
 Perhaps a user defines the following case setting with a typo:
