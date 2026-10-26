@@ -80,7 +80,9 @@ time nodes that it contains. This can be useful for performing restart runs, or 
 post-processing analysis. To load a reactor state, you will need to open the database file into a
 ``Database`` object. From there, you can call the :py:meth:`armi.bookkeeping.db.Database.load()`
 method to get a recovered ``Reactor`` object. For instance, given a database file called
-``myDatabase.h5``, we could load the reactor state at cycle 5, time node 2 with the following::
+``myDatabase.h5``, we could load the reactor state at cycle 5, time node 2 with the following:
+
+.. code-block:: python
 
    from armi.bookkeeping.db import databaseFactory
 
@@ -92,7 +94,34 @@ method to get a recovered ``Reactor`` object. For instance, given a database fil
    with db:
        r = db.load(5, 2)
 
-.. note:: The cycles are 0-indexed, but the time nodes, in practice, are not. Therefore, cycle 5 above is actually the 6th cycle in the simulation. For cycle 5 with two time nodes, there will be three time steps saved to the database: c5n0 (BOC), c5n1 (time node 1), and c5n2 (time node 2).
+.. note::
+
+    The cycles are 0-indexed, but the time nodes, in practice, are not. Therefore, cycle 5 above is actually the 6th
+    cycle in the simulation. For cycle 5 with two time nodes, there will be three time steps saved to the database:
+    c5n0 (BOC), c5n1 (time node 1), and c5n2 (time node 2).
+
+Alternatively, a user may need an operator for their task. They could instead load the operator, and get the reactor
+from the operator:
+
+.. code-block:: python
+
+  from armi.bookkeeping.db import loadOperator
+
+   o = loadOperator("myDatabase.h5", 5, 2, allowMissing=True, handleInvalids=False)
+   # reactor and case settings can then be retrieved from the operator
+   r = o.r
+   cs = o.cs
+
+Writing Reactor State
+---------------------
+
+If calculations are performed after loading a reactor from a database, a user may want to write this state to the
+database.
+
+.. code-block:: python
+
+    with databaseFactory(dbPath, "w") as db:
+        db.writeToDB(r)
 
 Extracting Reactor History
 --------------------------
