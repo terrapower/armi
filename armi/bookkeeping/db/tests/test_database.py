@@ -31,7 +31,6 @@ from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.flags import Flags
-from armi.reactor.cores import Core
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -1276,6 +1275,5 @@ class TestDbRoundTripMatMods(unittest.TestCase):
             dbi.initDB(fName=f"{self._testMethodName}.h5")
             self.db = dbi.database
             self.db.writeToDB(r)
-            r2 = self.db.load(0, 0)
+            self.db.load(0, 0)
         mockBlockParams2.assert_not_called()
-
