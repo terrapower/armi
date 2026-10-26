@@ -122,14 +122,9 @@ but if installed enable extra functionality, like unit testing or building docum
 
 Third-Party Licensing
 ---------------------
-Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not to include
-anything with a license that supersedes our Apache license. For instance, any third-party Python
-library included in ARMI with a GPL license will make the whole project fall under the GPL license.
-But a lot of potential users of ARMI will want to keep some of their work private, so we can't allow
-any GPL tools.
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file), do not include anything with a license that supersedes our Apache license. For instance, any third-party Python library included in ARMI with a GPL license will make the whole project fall under the GPL license. But a lot of potential users of ARMI will want to keep their work private, so we can not allow any GPL dependencies.
 
-For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-
-party Python libraries that have MIT or BSD licenses.
+For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-party Python libraries that have MIT or BSD licenses.
 
 Versions of Python Supported
 ----------------------------
@@ -139,10 +134,11 @@ important. However, the exact versions of Python ARMI supports at any one moment
 release cycle. And we reserve the right to drop support for any version of Python if we have a special dependency-
 specific security concern.
 
+
 Releasing a New Version of ARMI
 ===============================
-We use the common ``major.minor.bump`` version scheme where a version string might look like
-``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specific meaning:
+We use the common ``major.minor.bump`` version scheme where a version string might look like ``0.1.7``, ``1.0.0``, or
+``12.3.123``. Each number has a specific meaning:
 
 * ``major`` - Revved for major milestones of the ARMI project.
 * ``minor`` - Revved for the usual release, real feature work completed.
@@ -152,9 +148,9 @@ We use the common ``major.minor.bump`` version scheme where a version string mig
 
 **Any change to a major or minor version is considered a release.**
 
-Only a core member of the ARMI team may release a new version, or add a tag of any kind to the
-repository. The rule is *the only tags in the ARMI repo are for official versions*. If you want to
-release a version of ARMI, you will need admin privileges to multiple TerraPower repos on GitHub.
+Only a core member of the ARMI team may release a new version, or add a tag of any kind to the repository. The rule is
+*the only tags in the ARMI repo are for official versions*. If you want to release a version of ARMI, you will need
+admin privileges to multiple TerraPower repos on GitHub.
 
 Every release should follow this process:
 

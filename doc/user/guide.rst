@@ -8,24 +8,31 @@ the API docs will be provided for additional details.
 The Reactor Data Model
 ======================
 
-The ARMI framework represents a nuclear reactor via a reactor data model, which is defined in the
-:py:mod:`~armi.reactor` package. Each physical piece of the nuclear reactor is defined by a Python
-object, called an :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>`. Each ``ArmiObject``
-has associated data like: shape, material, or other physical values. The physical values can be
-nearly anything, and are attached to the data model via ARMI's
-:py:mod:`Parameter <armi.reactor.parameters>` system. Example parameters might be: ``keff``,
-``flow rates``, ``power``, ``flux``, etc.
+The ARMI framework represents a nuclear reactor via a reactor data model defined in the :py:mod:`~armi.reactor` package.
+The reactor data model is based on the `Composite Design Pattern <http://en.wikipedia.org/wiki/Composite_pattern>`_ from
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_ to create a part/whole hierarchy representing a physical
+nuclear reactor in a tree structure. There are three primary classes to consider in this design pattern:
 
-The reactor data model is a hierarchical model, following the `Composite Design Pattern
-<http://en.wikipedia.org/wiki/Composite_pattern>`_. The top of the data model is the
+1. The :py:class:`ArmiObject <armi.reactor.armiObject.ArmiObject>` class defines a shared abstract interface to all
+   objects in the composite tree. This is the `Component` class in Gang of Four. Each ``ArmiObject`` has associated data
+   like: shape, material, or other physical values. The physical values can be nearly anything, and are attached to the
+   data model via ARMI's :py:mod:`Parameter <armi.reactor.parameters>` system. Example parameters might be: ``keff``,
+   ``flow rates``, ``power``, ``flux``, etc.
+2. The :py:class:`Composite <armi.reactor.composites.Composite>` class represents high-level "containers" for smaller
+   reactor bits, such as whole reactors, reactor cores, fuel assemblies, or vertical slices of assemblies called
+   'blocks'. This is the `Composite` class in Gang of Four.
+3. The  :py:class:`Component <armi.reactor.components.component.Component>` class represents geometric objects within an
+   assembly or block, such as fuel, bond, coolant, ducts, wires, etc. This is the `Leaf` class in Gang of Four.
+
+In practice, the top of the data model is the
 :py:class:`Reactor <armi.reactor.reactors.Reactor>`, which contains one
 :py:class:`Core <armi.reactor.cores.Core>` object and a collection of zero or more
 :py:class:`ExcoreStructures <armi.reactor.excoreStructure.ExcoreStructure>`. An example
 ``ExcoreStructure`` might be a :py:class:`SpentFuelPool <armi.reactor.spentFuelPool.SpentFuelPool>`.
 
-For now, the ``Core`` object in ARMI assumes it contains **Assembly** objects, which are in turn
-made up as a collection of **Block** objects. The leaves of the the Composite Model in the ARMI
-framework are called :py:class:`Component <armi.reactor.components.component.Component>`.
+The ``Core`` object in contains :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects, which are in turn
+made up as a collection of :py:class:`Block <armi.reactor.blocks.Block>` objects. ``Block`` objects contain 
+:py:class:`Component <armi.reactor.components.component.Component>` to represent fuel, cladding, coolant, etc.
 
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
