@@ -31,6 +31,7 @@ from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.flags import Flags
+from armi.reactor.cores import Core
 from armi.reactor.grids import CoordinateLocation, MultiIndexLocation
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -1260,3 +1261,20 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         """Test that the code fails if non-uniform material modifications are provided; missing number."""
         newText = "            U235_wt_frac: ['', '', '', 0.11, 0.11, '', '', '', '', '']\n"
         self.__tryNonUniformMatMadLargeR(newText)
+
+    def test_paramUpdates(self):
+        """Test by-block mat mods again, but with a more complex input reactor."""
+        with patch.object(Core, "setBlockMassParams") as mockBlockParams:
+            o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml")
+        mockBlockParams.assert_called_once()
+
+        with patch.object(Core, "setBlockMassParams") as mockBlockParams2:
+            r.p.timeNode = 0
+            r.p.cycle = 0
+            dbi = DatabaseInterface(r, o.cs)
+            dbi.initDB(fName=f"{self._testMethodName}.h5")
+            self.db = dbi.database
+            self.db.writeToDB(r)
+            r2 = self.db.load(0, 0)
+        mockBlockParams2.assert_not_called()
+
