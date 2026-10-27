@@ -106,6 +106,9 @@ class NullComponent(Component):
     def getDimension(self, key, Tc=None, cold=False):
         return 0.0
 
+    def getComponentArea(self, cold=False, Tc=None):
+        return 0.0
+
 
 class UnshapedComponent(Component):
     """

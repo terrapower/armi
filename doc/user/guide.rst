@@ -8,24 +8,31 @@ the API docs will be provided for additional details.
 The Reactor Data Model
 ======================
 
-The ARMI framework represents a nuclear reactor via a reactor data model, which is defined in the
-:py:mod:`~armi.reactor` package. Each physical piece of the nuclear reactor is defined by a Python
-object, called an :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>`. Each ``ArmiObject``
-has associated data like: shape, material, or other physical values. The physical values can be
-nearly anything, and are attached to the data model via ARMI's
-:py:mod:`Parameter <armi.reactor.parameters>` system. Example parameters might be: ``keff``,
-``flow rates``, ``power``, ``flux``, etc.
+The ARMI framework represents a nuclear reactor via a reactor data model defined in the :py:mod:`~armi.reactor` package.
+The reactor data model is based on the `Composite Design Pattern <http://en.wikipedia.org/wiki/Composite_pattern>`_ from
+`Gang of Four <https://en.wikipedia.org/wiki/Design_Patterns>`_ to create a part/whole hierarchy representing a physical
+nuclear reactor in a tree structure. There are three primary classes to consider in this design pattern:
 
-The reactor data model is a hierarchical model, following the `Composite Design Pattern
-<http://en.wikipedia.org/wiki/Composite_pattern>`_. The top of the data model is the
+1. The :py:class:`ArmiObject <armi.reactor.armiObject.ArmiObject>` class defines a shared abstract interface to all
+   objects in the composite tree. This is the `Component` class in Gang of Four. Each ``ArmiObject`` has associated data
+   like: shape, material, or other physical values. The physical values can be nearly anything, and are attached to the
+   data model via ARMI's :py:mod:`Parameter <armi.reactor.parameters>` system. Example parameters might be: ``keff``,
+   ``flow rates``, ``power``, ``flux``, etc.
+2. The :py:class:`Composite <armi.reactor.composites.Composite>` class represents high-level "containers" for smaller
+   reactor bits, such as whole reactors, reactor cores, fuel assemblies, or vertical slices of assemblies called
+   'blocks'. This is the `Composite` class in Gang of Four.
+3. The  :py:class:`Component <armi.reactor.components.component.Component>` class represents geometric objects within an
+   assembly or block, such as fuel, bond, coolant, ducts, wires, etc. This is the `Leaf` class in Gang of Four.
+
+In practice, the top of the data model is the
 :py:class:`Reactor <armi.reactor.reactors.Reactor>`, which contains one
 :py:class:`Core <armi.reactor.cores.Core>` object and a collection of zero or more
 :py:class:`ExcoreStructures <armi.reactor.excoreStructure.ExcoreStructure>`. An example
 ``ExcoreStructure`` might be a :py:class:`SpentFuelPool <armi.reactor.spentFuelPool.SpentFuelPool>`.
 
-For now, the ``Core`` object in ARMI assumes it contains **Assembly** objects, which are in turn
-made up as a collection of **Block** objects. The leaves of the the Composite Model in the ARMI
-framework are called :py:class:`Component <armi.reactor.components.component.Component>`.
+The ``Core`` object in contains :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects, which are in turn
+made up as a collection of :py:class:`Block <armi.reactor.blocks.Block>` objects. ``Block`` objects contain
+:py:class:`Component <armi.reactor.components.component.Component>` to represent fuel, cladding, coolant, etc.
 
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
@@ -56,7 +63,7 @@ enforces a couple of constraints that can be very useful:
 In many scenarios, one wants to access specific assemblies or blocks from a core. There
 are a few ways to get the objects that you're interested in:
 
-* The `r.core.childrenByLocator` dictionary maps
+* The ``r.core.childrenByLocator`` dictionary maps
   :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
   that location. For example ::
 
@@ -67,7 +74,7 @@ are a few ways to get the objects that you're interested in:
 
       >>> b = a[k]
 
-* `r.core.getAssemblies()` loops through all assemblies in the core for when you
+* ``r.core.getAssemblies()`` loops through all assemblies in the core for when you
   need to do something to all assemblies.
 
 
@@ -82,7 +89,26 @@ Most data is stored in ARMI as :py:mod:`~armi.reactor.parameters`. Most paramete
 become persistent, meaning they will be saved to the database during database
 interactions, and therefore it will also be loaded when a database is loaded.
 
-Details of the use and design can be found at :py:mod:`~armi.reactor.parameters`.
+These parameters can be accessed as an instance attribute or like a dictionary via ``<object>.p.<parameter>`` or
+``<object>.p["parameter"]``, respectively. This is supported for the reactor data model by level.
+
+.. code-block:: python
+
+    # User has loaded a reactor using ARMI naming conventions (e.g., b for a block)
+
+    # Reactor Parameter
+    r.p.cycleLength
+    # Core Parameter
+    r.core.p.powerDensity
+    # Assembly Parameter
+    a.p.maxPercentBu
+    # Block Parameter
+    b.p.molesHmBOL
+    # Component Parameter
+    c.p.pinPercentBu
+
+All parameters implemented by ARMI are listed in :ref:`params-report`. More details of the use and design can be found
+at :py:mod:`~armi.reactor.parameters`.
 
 Converters
 ----------
@@ -104,6 +130,8 @@ Blueprints
 As seen in the User Guide, :py:mod:`~armi.reactor.blueprints` are how reactor models are
 defined. During a run, they can be used to create new instances of reactor model pieces,
 such as when a new assembly is fabricated during a fuel management operation in a later cycle.
+
+For more detail, refer to :ref:`bp-input-file`.
 
 Operators
 =========

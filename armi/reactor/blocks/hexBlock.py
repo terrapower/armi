@@ -354,7 +354,7 @@ class HexBlock(Block):
                     single=True,
                 )
 
-        # check clad duct overlap
+        # check pin duct overlap
         pinToDuctGap = self.getPinToDuctGap(cold=True)
         # Allow for some tolerance; user input precision may lead to slight negative gaps
         if pinToDuctGap is not None and pinToDuctGap < -0.005:
