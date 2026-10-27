@@ -131,6 +131,9 @@ class LatticePhysicsInterface(interfaces.Interface):
                 self.clearXS()
             self.computeCrossSections(blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle))
             self._renameExistingLibrariesForStatepoint(cycle, node)
+        elif not self.r.core.hasLib():
+            # if core.lib does not already exist, try to read it from existing library
+            self.readExistingXSLibraries(cycle, node)
 
         self._checkInputs()
 
