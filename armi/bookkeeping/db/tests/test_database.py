@@ -1264,7 +1264,9 @@ class TestDbRoundTripMatMods(unittest.TestCase):
     def test_paramUpdates(self):
         """Test by-block mat mods again, but with a more complex input reactor."""
         with patch.object(Core, "setBlockMassParams") as mockBlockParams:
-            o, r = loadTestReactor(TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml", useCache=False)
+            o, r = loadTestReactor(
+                TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml", useCache=False
+            )
         mockBlockParams.assert_called_once()
 
         # check that setBlockMassParams is not called on dbLoad
