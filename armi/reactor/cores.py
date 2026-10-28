@@ -2203,8 +2203,6 @@ class Core(composites.Composite):
                 applySubMesh=True,
             )
 
-        self.getNuclideCategories()
-
         # Generate list of flags that are to be stationary during assembly shuffling
         stationaryBlockFlags = []
 
@@ -2212,8 +2210,9 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
-        self.setBlockMassParams()
-        self.p.maxAssemNum = self.getMaxParam("assemNum")
+        if not dbLoad:
+            self.setBlockMassParams()
+            self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs, dbLoad=dbLoad)
 

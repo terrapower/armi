@@ -39,7 +39,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_SORT_REACTOR,
 )
 from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor, mockRunLogs
-from armi.utils import getPreviousTimeNode, safeCopy
+from armi.utils import getPreviousTimeNode, safeCopy, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and git is installed
@@ -1150,6 +1150,15 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         # test the reactor after loading from the DB
         r2 = self.db.load(0, 0)
 
+        self.assertAlmostEqual(r.core.p.maxAssemNum, r2.core.p.maxAssemNum)
+
+        # pulling a fuel block from both reactors
+        b = r.core.getFirstBlock(Flags.FUEL)
+        b2 = r2.core.getFirstBlock(Flags.FUEL)
+        self.assertAlmostEqual(b.p.kgHM, b.getHMMass() / units.G_PER_KG)
+        self.assertAlmostEqual(b2.p.kgHM, b2.getHMMass() / units.G_PER_KG)
+        self.assertAlmostEqual(b.p.kgHM, b2.p.kgHM)
+
         # pulling a fuel component from both reactors
         c = r.core.getFirstComponent(Flags.FUEL)
         c2 = r2.core.getFirstComponent(Flags.FUEL)
@@ -1251,3 +1260,22 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         """Test that the code fails if non-uniform material modifications are provided; missing number."""
         newText = "            U235_wt_frac: ['', '', '', 0.11, 0.11, '', '', '', '', '']\n"
         self.__tryNonUniformMatMadLargeR(newText)
+
+    def test_paramUpdates(self):
+        """Test by-block mat mods again, but with a more complex input reactor."""
+        with patch.object(Core, "setBlockMassParams") as mockBlockParams:
+            o, r = loadTestReactor(
+                TESTING_ROOT, inputFileName="reactors/detailedAxialExpansion/armiRun.yaml", useCache=False
+            )
+        mockBlockParams.assert_called_once()
+
+        # check that setBlockMassParams is not called on dbLoad
+        with patch.object(Core, "setBlockMassParams") as mockBlockParams2:
+            r.p.timeNode = 0
+            r.p.cycle = 0
+            dbi = DatabaseInterface(r, o.cs)
+            dbi.initDB(fName=f"{self._testMethodName}.h5")
+            self.db = dbi.database
+            self.db.writeToDB(r)
+            self.db.load(0, 0)
+        mockBlockParams2.assert_not_called()
