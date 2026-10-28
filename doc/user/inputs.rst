@@ -1008,19 +1008,17 @@ specifier
 
 xs types
   The **cross-section type** is usually a single capital letter that identifies which cross section (XS) set will be
-  applied to the block. Each cross section set must be defined for at least one block with fissile fuel. When the
-  lattice physics code executes in ARMI, it determines the representative blocks from each cross section type and burnup
-  group and runs it to create the cross section set for all blocks of the same type and in the same burnup group.
-  Generally, it is best to set blocks that have much different compositions to have separate cross section types. The
-  tradeoff is that the more XS types you define, the more CPU time the case will take to run.
+  applied to the block. Each block must be assigned a cross section type for the Lattice Physics Interface (LPI) to run.
+  The LPI determines the representative blocks from each cross section type and burnup group and runs it to create the
+  cross section set for all blocks of the same type and in the same burnup group. Generally, it is best to set blocks
+  that have much different compositions to have separate cross section types. The tradeoff is that the more XS types
+  you define, the more CPU time the case will take to run.
 
-  Representing xsType by a single capital letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI will allow
-  2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined).
-  This is useful for high-fidelity XS modeling.
+  Representing xsType by a single capital letter (A-Z), or 2-letter xsType designations if and only if the ``buGroups``
+  setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
-  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this should only be done
-  when working on a case-sensitive file system. On a case-insensitive file system (Windows, and some MacOS systems) this
-  could cause unpredictable errors.
+  ARMI is able to use lower-case letters (a-z), but this should only be done when working on a case-sensitive file
+  system. On a case-insensitive file system (Windows, and some MacOS systems) this could cause unpredictable errors.
 
 axial mesh points
   Blocks will be broken up into this many uniform mesh points in the deterministic neutronics solvers (e.g. DIF3D). This
