@@ -264,7 +264,8 @@ class TestInjectInputs(unittest.TestCase):
             runLog.LOG.startLog("test_injectInputsInvokeIgnore")
             runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
-            ii.invoke()
+            with self.assertRaises(RuntimeError):
+                ii.invoke()
             self.assertIn("No settings", mock.getStdout())
 
     def test_injectInputsInvokeNoData(self):
@@ -351,7 +352,7 @@ class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
         self.assertEqual(com.name, "diff-isotxs")
         self.assertIsNone(com.settingsArgument)
 
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(RuntimeError):
             # The provided files don't exist, so this should fail.
             com.invoke()
 
