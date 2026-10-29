@@ -273,8 +273,10 @@ class TestRunLog(unittest.TestCase):
             runLog.LOG.setVerbosity(logging.ERROR)
             runLog.warning("Still Invisible")
             self.assertEqual("", mock.getStdout())
-            runLog.error("Visible!")
-            self.assertIn("Visible!", mock.getStdout())
+
+            # errors are always errors
+            with self.assertRaises(RuntimeError):
+                runLog.error("Hard failure!")
 
             # we shouldn't be able to setVerbosity() to a non-canonical value (logging module defense)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)
