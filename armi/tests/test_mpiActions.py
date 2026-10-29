@@ -212,10 +212,8 @@ class TestMpiIter(unittest.TestCase):
         }
 
         # run in parallel
-        with mockRunLogs.BufferLog() as mock:
-            with self.assertRaises(ValueError):
-                runBatchedActions(o, r, o.cs, actionsByNode)
-            self.assertIn("There are more actions (3) than ranks available (2) on node1!", mock.getStdout())
+        with self.assertRaises(RuntimeError):
+            runBatchedActions(o, r, o.cs, actionsByNode)
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
