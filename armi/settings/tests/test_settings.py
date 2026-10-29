@@ -169,13 +169,13 @@ class TestAddingOptions(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             self.assertIs(mock.getStdout(), "")
-            with self.assertRaises(AttributeError):
+            with self.assertRaises(RuntimeError):
                 s.addOptions([1, 2])
             self.assertIn("has no default options", mock.getStdout())
 
         with mockRunLogs.BufferLog() as mock:
             self.assertIs(mock.getStdout(), "")
-            with self.assertRaises(AttributeError):
+            with self.assertRaises(RuntimeError):
                 s.addOption(3)
             self.assertIn("has no default options", mock.getStdout())
 
@@ -287,7 +287,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(cs["extendableOption"], "DEFAULT")
         self.assertEqual(cs["avocado"], 0)
         # We shouldn't have any settings from the other plugin, so this should be an error.
-        with self.assertRaises(vol.error.MultipleInvalid):
+        with self.assertRaises(RuntimeError):
             newSettings = {"extendableOption": "PLUGIN"}
             cs = cs.modified(newSettings=newSettings)
 
