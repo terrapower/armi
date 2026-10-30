@@ -182,7 +182,7 @@ assemblies:
 
     def test_materialModificationLength(self):
         """If the wrong number of material modifications are defined, there is an error."""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             _a = self.loadUZrAssembly(
                 """
         material modifications:

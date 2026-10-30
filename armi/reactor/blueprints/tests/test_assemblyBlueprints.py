@@ -223,16 +223,16 @@ assemblies:
         self.assertAlmostEqual(blockAxialMesh, [1.0, 2.0])
         self.assertEqual(blockXSTypes, ["A", "A"])
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMeshPoints)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongHeights)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongXSTypes)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMatMods)
 
     def test_checkMatModConsistency(self):
@@ -240,5 +240,5 @@ assemblies:
         design = blueprints.Blueprints.load(yamlString)
         a = design.assemDesigns["fuel a"]
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             a.checkMatModConsistency()

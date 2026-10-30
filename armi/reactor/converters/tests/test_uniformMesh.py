@@ -293,7 +293,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         self.assertListEqual(combinedMesh, [1.0, 4.0, 9.0, 12.0, 16.0, 20.0])
 
         anchorPoints = [3.0, 4.0]
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             self.generator._filterMesh(
                 meshList,
                 self.generator.minimumMeshSize,
