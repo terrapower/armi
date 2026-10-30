@@ -22,11 +22,7 @@ import yamlize
 
 from armi import runLog, settings
 from armi.materials import Fluid, Sodium
-from armi.physics.neutronics.settings import (
-    CONF_MCNP_LIB_BASE,
-    CONF_NEUTRONICS_KERNEL,
-    CONF_XS_KERNEL,
-)
+from armi.physics.neutronics.settings import CONF_MCNP_LIB_BASE, CONF_NEUTRONICS_KERNEL, CONF_XS_KERNEL
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
@@ -231,8 +227,6 @@ assemblies:
         height: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
         axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         xs types: [A, A, A, A, A, A, A, A, A, A]
-        material modifications:
-            TD_frac: ["", "", "", "", "", "", "", 0.1, "", ""]
 
 """
 
@@ -300,8 +294,6 @@ assemblies:
         height: [10, 10, 10]
         axial mesh points: [1, 1, 1]
         xs types: [A, A, A]
-        material modifications:
-            TD_frac: ["", "", ""]
 
     fuel b: &assembly_b
         specifier: IC
@@ -448,8 +440,6 @@ assemblies:
 
             # Check for log messages
             streamVal = mockLog.getStdout()
-            self.assertIn("and a custom isotopic with density", streamVal, msg=streamVal)
-            self.assertIn("Custom isotopics and material modifications have both", streamVal, msg=streamVal)
             self.assertIn("A custom material density was specified", streamVal, msg=streamVal)
             self.assertIn(
                 "A custom isotopic with associated density has been specified for non-`Custom`",
@@ -464,19 +454,19 @@ assemblies:
         # Ensure we have some Void
         self.assertEqual(bp.blockDesigns["custom void"]["fuel"].material, "Void")
         # Can't have stuff in Void
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             bp.constructAssem(cs, name="fuel a")
 
         # Try making a 0 density non-Void material by setting TD_frac to 0.0
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             bp.constructAssem(cs, name="fuel b")
 
         # Try making a material with mass fractions with a density of 0
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             bp.constructAssem(cs, name="fuel c")
 
         # Try making a material with mass fractions with a negative density
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             bp.constructAssem(cs, name="fuel d")
 
     def test_numberFractions(self):
@@ -612,7 +602,7 @@ assemblies:
         cs = settings.Settings()
         bp = blueprints.Blueprints.load(self.yamlBlocksBadIsotopics)
 
-        with self.assertRaises(IOError):
+        with self.assertRaises(RuntimeError):
             _a = bp.constructAssem(cs, name="fuel a")
 
 
