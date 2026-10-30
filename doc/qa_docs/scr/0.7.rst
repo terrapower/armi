@@ -5,6 +5,7 @@ Here you will find the release notes for previous ARMI releases.
 
 ARMI v0.7.0
 -----------
+Release Date: 2026-10-30
 
 This was the biggest ARMI release in years. The materials in ARMI were completely over-hauled; from the underlying code
 to cleaning up and validating all the material data. The team also resolved over 20 bugs, and ARMI was releasing with no
