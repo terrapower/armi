@@ -426,14 +426,14 @@ def _diffSimpleData(ref: h5py.Dataset, src: h5py.Dataset, diffResults: DiffResul
         if src.dtype.kind == ref.dtype.kind and src.dtype.kind in {"U", "S"}:
             return
         else:
-            runLog.error("Failed to compare {} in {}".format(paramName, compName))
-            runLog.error("source: {}".format(src))
-            runLog.error("reference: {}".format(ref))
+            runLog.warning(f"Failed to compare {paramName} in {compName}")
+            runLog.warning(f"source: {src}")
+            runLog.warning(f"reference: {ref}")
             diff = np.array([np.inf])
     except ValueError:
-        runLog.error("Failed to compare {} in {}".format(paramName, compName))
-        runLog.error("source: {}".format(src))
-        runLog.error("reference: {}".format(ref))
+        runLog.warning(f"Failed to compare {paramName} in {compName}")
+        runLog.warning(f"source: {src}")
+        runLog.warning(f"reference: {ref}")
         diff = np.array([np.inf])
 
     if 0 in diff.shape:
@@ -457,7 +457,7 @@ def _compareComponentData(
 ):
     exclusions = exclusions or []
     compName = refGroup.name
-    paramNames, nDiff = _compareH5Groups(out, refGroup, srcGroup, "{} parameters".format(compName))
+    paramNames, nDiff = _compareH5Groups(out, refGroup, srcGroup, f"{compName} parameters")
     diffResults.addStructureDiffs(nDiff)
 
     for paramName in paramNames:
