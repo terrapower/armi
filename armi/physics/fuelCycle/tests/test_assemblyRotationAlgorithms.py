@@ -182,7 +182,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
 
     def test_noBlocksWithBurnup(self):
         """Require at least one block to have burnup."""
-        with self.assertRaisesRegex(ValueError, "Error finding max burnup"):
+        with self.assertRaisesRegex(RuntimeError, "Error finding max burnup"):
             getOptimalAssemblyOrientation(self.assembly, self.assembly)
 
     def test_mismatchPinPowersAndLocations(self):
@@ -191,7 +191,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
         burnups = np.arange(self.N_PINS)
         self.setAssemblyPinBurnups(self.assembly, burnups)
         self.setAssemblyPinPowers(self.assembly, powers)
-        with self.assertRaisesRegex(ValueError, "Inconsistent pin powers and number of pins"):
+        with self.assertRaisesRegex(RuntimeError, "Inconsistent pin powers and number of pins"):
             getOptimalAssemblyOrientation(self.assembly, self.assembly)
 
 
