@@ -1221,7 +1221,7 @@ class TestCartesianReactor(TestReactor):
         a.add(blocks.CartesianBlock("test cart block"))
         self.assertEqual(len(a), numA + 1)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(RuntimeError):
             a.add(blocks.HexBlock("test hex block"))
 
     def test_getAssemblyPitch(self):
