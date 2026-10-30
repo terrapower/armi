@@ -962,7 +962,7 @@ grids:
             del circleGroup["massHmBOL"]
             circleGroup.create_dataset("massHmBOL", data=badData)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
 
@@ -983,7 +983,7 @@ class TestSimplestDatabaseItems(unittest.TestCase):
 
         self.assertFalse(db.isOpen())
         db._permission = "mock"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             db.open()
 
     def test_genTimeSteps(self):
@@ -1248,7 +1248,7 @@ class TestDbRoundTripMatMods(unittest.TestCase):
         self.db.writeToDB(r)
 
         # test the reactor after loading from the DB
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             self.db.load(0, 0)
 
     def test_nonUniformMatMods1(self):
