@@ -422,7 +422,7 @@ class TestAssembly(unittest.TestCase):
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             # try to assign a non-string
             self.assembly.p.notes = 1
 
@@ -431,7 +431,6 @@ class TestAssembly(unittest.TestCase):
         self.assertEqual(self.assembly.p.notes, note)
 
         tooLongNote = "a" * 1001
-
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
 
