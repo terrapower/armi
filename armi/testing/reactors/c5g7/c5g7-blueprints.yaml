@@ -133,16 +133,14 @@ blocks:
             isotopics: Al clad
             Tinput: 20.0
             Thot: 20.0
-            id: .6800
+            id: .8600
             od: 1.0800
             latticeIDs: [GT]
         fission chamber guide tube: &fission_chamber_guide_tube
             <<: *guide_tube
-            # Avoid giving this the same flag as "guide tube" by implementing
-            # a custom flag. This is done to distinguish the "fission chamber guide tube"
-            # from the regular "guide tube". This demonstrates the use of setting
-            # flags directly rather than relying on them to be implied based on the
-            # name.
+            # Avoid giving this the same flag as "guide tube" by implementing a custom flag. This is done to distinguish
+            # the "fission chamber guide tube" from the regular "guide tube". This demonstrates the use of setting flags
+            # directly rather than relying on them to be implied based on the name.
             flags: fission chamber structure
             latticeIDs: [FC]
         fission chamber: &fission_chamber
@@ -154,8 +152,8 @@ blocks:
             od: .8190 # No documentation fission chamber dims of composition
             latticeIDs: [FC]
         inner moderator FC: &fission_chamber_mod
-            # No documentation of this either, but assuming fission chamber
-            # has same od as fuel, so there needs to be something in the gap.
+            # No documentation of this either, but assuming fission chamber has same od as fuel, so there needs to be
+            # something in the gap.
             shape: Circle
             material: Void
             Tinput: 20.0

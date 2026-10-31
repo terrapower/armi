@@ -153,11 +153,11 @@ class TestFuelCycleUtils(TestCase):
 
     def test_maxBurnupBlockNoBlocks(self):
         """Ensure a more helpful error is provided for empty sequence."""
-        with self.assertRaisesRegex(ValueError, "Error finding max burnup"):
+        with self.assertRaisesRegex(RuntimeError, "Error finding max burnup"):
             utils.maxBurnupBlock([])
 
     def test_maxBurnupBlockNoBurnup(self):
         """Ensure that we will not return a block with zero burnup."""
         self.block.p.percentBuPeak = 0.0
-        with self.assertRaisesRegex(ValueError, "Error finding max burnup"):
+        with self.assertRaisesRegex(RuntimeError, "Error finding max burnup"):
             utils.maxBurnupBlock([self.block])

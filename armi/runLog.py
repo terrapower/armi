@@ -425,6 +425,7 @@ def warning(msg, single=False, label=None):
 
 def error(msg, single=False, label=None):
     LOG.log("error", msg, single=single, label=label)
+    raise RuntimeError(msg)
 
 
 def header(msg, single=False, label=None):

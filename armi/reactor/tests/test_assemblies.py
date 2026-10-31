@@ -46,11 +46,14 @@ class TestMaterialInAssembly(unittest.TestCase):
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
         self.assembly2.spatialLocator = None
-        self.assertFalse(self.assembly < self.assembly2)
-        self.assertFalse(self.assembly2 < self.assembly)
+        with self.assertRaises(RuntimeError):
+            self.assertFalse(self.assembly < self.assembly2)
+        with self.assertRaises(RuntimeError):
+            self.assertFalse(self.assembly2 < self.assembly)
         grid = grids.HexGrid()
         self.assembly.spatialLocator = grid[0, 0, 0]
         self.assembly2.spatialLocator = grid[0, 1, 0]
+
         self.assertTrue(self.assembly < self.assembly2)
         self.assertFalse(self.assembly2 < self.assembly)
 
@@ -422,7 +425,7 @@ class TestAssembly(unittest.TestCase):
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             # try to assign a non-string
             self.assembly.p.notes = 1
 
@@ -431,7 +434,6 @@ class TestAssembly(unittest.TestCase):
         self.assertEqual(self.assembly.p.notes, note)
 
         tooLongNote = "a" * 1001
-
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
 
@@ -470,7 +472,7 @@ class TestAssembly(unittest.TestCase):
             self.assertEqual(b.parent, a)
             self.assertEqual(len(a), n + 1)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(RuntimeError):
             a.add(blocks.CartesianBlock("Test Cart Block"))
 
     def test_setBlockStack(self):
@@ -489,7 +491,7 @@ class TestAssembly(unittest.TestCase):
             self.assertIn(b, a)
             self.assertEqual(b.parent, a)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(RuntimeError):
             blockStack.append(blocks.CartesianBlock("Test Cart Block"))
             a.setBlockStack(blockStack)
 
@@ -1023,7 +1025,7 @@ class TestAssembly(unittest.TestCase):
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
 
-        with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
+        with self.assertRaisesRegex(RuntimeError, expected_regex="60 degree"):
             a.rotate(math.radians(40))
 
     def test_assemBlockTypes(self):

@@ -2026,7 +2026,7 @@ class TestPinQuantities(unittest.TestCase):
         # Check assertion for not-found parameter
         fuelBlock.p.pinMgFluxes = None
         with self.assertRaisesRegex(
-            ValueError,
+            RuntimeError,
             f"Failure getting pinMgFluxes from {fuelComponent} via parent {fuelBlock}",
         ):
             fuelComponent.getPinMgFluxes()

@@ -793,7 +793,7 @@ class TestBlockCollFluxWeightAvg(unittest.TestCase):
 
     def test_invalidWeights(self):
         self.bc[0].p.flux = 0.0
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             self.bc.createRepresentativeBlock()
 
 

@@ -2126,7 +2126,7 @@ class TestNegativeVolume(unittest.TestCase):
         block.add(coolant)
         block.add(interSodium)
         block.setHeight(16.0)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             block.getVolumeFractions()
 
 
