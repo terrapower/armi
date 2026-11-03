@@ -2,7 +2,7 @@
 Release Notes
 #############
 
-You can find a Software Change Request (SCR) for each releases below.
+This section houses the Release Notes for all past releases.
 
 You can also find the changes happening in the current release push in the :doc:`/qa_docs/scr/index` section.
 
