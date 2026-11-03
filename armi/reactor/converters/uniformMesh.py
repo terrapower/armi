@@ -292,14 +292,11 @@ class UniformMeshGenerator:
                 difference = abs(meshList[i + 1] - meshList[i])
                 if difference < minimumMeshSize:
                     if meshList[i] in anchorPoints and meshList[i + 1] in anchorPoints:
-                        errorMsg = (
-                            "Attempting to remove two anchor points!\n"
-                            "The uniform mesh minimum size for decusping is smaller than the "
-                            "gap between anchor points, which cannot be removed:\n"
+                        runLog.error(
+                            "Attempting to remove two anchor points!\nThe uniform mesh minimum size for decusping is "
+                            "smaller than the gap between anchor points, which cannot be removed:\n"
                             f"{meshList[i]}, {meshList[i + 1]}, gap = {abs(meshList[i] - meshList[i + 1])}"
                         )
-                        runLog.error(errorMsg)
-                        raise ValueError(errorMsg)
                     if meshList[i + 1] in anchorPoints:
                         removeIndex = i
                     else:
@@ -314,6 +311,7 @@ class UniformMeshGenerator:
                     break
             else:
                 return sorted(meshList)
+
             meshList.pop(removeIndex)
 
     def _getFilteredMeshTopAndBottom(self, flags, bottoms=None, tops=None):

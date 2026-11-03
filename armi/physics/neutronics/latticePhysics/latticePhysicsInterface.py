@@ -163,9 +163,7 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _copyLibraryFilesForCycle(cycle, libFiles):
         for baseName, cycleName in libFiles.items():
             if not os.path.exists(cycleName):
-                msg = f"Existing library {cycleName} for cycle {cycle} does not exist."
-                runLog.error(msg)
-                raise FileNotFoundError(msg)
+                runLog.error(f"Existing library {cycleName} for cycle {cycle} does not exist.")
             else:
                 runLog.info(f"Using {baseName} as an active library")
                 if cycleName != baseName:

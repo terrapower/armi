@@ -240,7 +240,6 @@ class Layout:
                     type(comp), list(comp)
                 )
             )
-            raise
 
         # depth-first search recursion of all components
         for c in comps:
@@ -305,9 +304,8 @@ class Layout:
                     )
                 )
 
-        except KeyError as e:
-            runLog.error("Failed to get layout information from group: {}".format(h5group.name))
-            raise e
+        except KeyError:
+            runLog.error(f"Failed to get layout information from group: {h5group.name}")
 
     def _initComps(self, caseTitle, bp):
         comps = []
@@ -458,8 +456,7 @@ class Layout:
                 thisGroup.create_dataset("geomType", data=gridParams.geomType, track_order=True)
                 thisGroup.create_dataset("symmetry", data=gridParams.symmetry, track_order=True)
         except RuntimeError:
-            runLog.error("Failed to create datasets in: {}".format(h5group))
-            raise
+            runLog.error(f"Failed to create datasets in: {h5group}")
 
     @staticmethod
     def computeAncestors(serialNum, numChildren, depth=1) -> List[Optional[int]]:
@@ -781,14 +778,7 @@ def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray
             data[nones] = defaultValue
 
     except Exception as ee:
-        runLog.error(
-            "Error while attempting to determine default for {}.\nvalue: {}\nError: {}".format(paramName, val, ee)
-        )
-        raise TypeError(
-            "Could not determine None replacement for {} with type {}, val {}, default {}".format(
-                paramName, realType, val, defaultValue
-            )
-        )
+        runLog.error(f"Error while attempting to determine default for {paramName}.\nvalue: {val}\nError: {ee}")
 
     try:
         data = data.astype(realType)
@@ -805,8 +795,7 @@ def replaceNonsenseWithNones(data: np.ndarray, paramName: str) -> np.ndarray:
     """
     Replace special nonsense values with ``None``.
 
-    This essentially reverses the operations performed by
-    :py:func:`replaceNonesWithNonsense`.
+    This essentially reverses the operations performed by :py:func:`replaceNonesWithNonsense`.
 
     Parameters
     ----------

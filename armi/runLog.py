@@ -34,8 +34,7 @@ In either case, you can then log things the same way:
 .. code-block::
 
     runLog.info('information here')
-    runLog.error('extra error info here')
-    raise SomeException  # runLog.error() implies that the code will crash!
+    runLog.error('extra error info here')  # raises a RuntimeError
 
 Or change the log level the same way:
 
@@ -466,8 +465,8 @@ class DeduplicationFilter(logging.Filter):
         label = getattr(record, "label", msg)
         label = msg if label is None else label
 
-        # Track all warnings, for warning report
-        if record.levelno in (logging.WARNING, logging.CRITICAL):
+        # Track all warnings, and everything logged higher than warning
+        if record.levelno >= logging.WARNING:
             if label not in self.warningCounts:
                 self.warningCounts[label] = 1
             else:

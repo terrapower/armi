@@ -188,7 +188,6 @@ class Setting:
             val = self.schema(val)
         except vol.error.Invalid:
             runLog.error(f"Error in setting {self.name}, val: {val}.")
-            raise
 
         self._value = self._load(val)
 
@@ -198,12 +197,10 @@ class Setting:
             self.options.extend([o.option for o in options])
         except AttributeError:
             if self.options is None:
-                msg = (
+                runLog.error(
                     f"The Setting {self.name} has no default options, it looks like you want to add that to the "
                     + "definition."
                 )
-                runLog.error(msg)
-                raise AttributeError(msg)
             else:
                 raise
 

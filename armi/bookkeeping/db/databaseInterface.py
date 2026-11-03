@@ -33,10 +33,7 @@ from armi.bookkeeping.db.database import Database, getH5GroupName
 from armi.bookkeeping.db.typedefs import Histories, History
 from armi.reactor.armiObject import ArmiObject
 from armi.reactor.parameters import parameterDefinitions
-from armi.settings.fwSettings.databaseSettings import (
-    CONF_FORCE_DB_PARAMS,
-    CONF_SYNC_AFTER_WRITE,
-)
+from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS, CONF_SYNC_AFTER_WRITE
 from armi.utils import getPreviousTimeNode, getStepLengths
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
@@ -258,7 +255,6 @@ class DatabaseInterface(interfaces.Interface):
                     currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
         except IndexError:
             runLog.error(f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}")
-            raise
 
         if dbStepHistory != currentCaseStepHistory:
             raise ValueError("The cycle history up to the restart cycle/node must be equivalent.")

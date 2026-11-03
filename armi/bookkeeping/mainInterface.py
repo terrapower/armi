@@ -32,7 +32,6 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ZONES_FILE,
 )
 from armi.utils import pathTools
-from armi.utils.customExceptions import InputError
 
 ORDER = interfaces.STACK_ORDER.PREPROCESSING
 
@@ -106,7 +105,6 @@ class MainInterface(interfaces.Interface):
                 f"    {CONF_COPY_FILES_TO}   : {copyFilesTo}\n"
                 f"    {CONF_COPY_FILES_FROM} : {copyFilesFrom}"
             )
-            raise InputError(f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}")
 
     def interactBOC(self, cycle=None):
         """Typically the first interface to interact beginning of cycle."""

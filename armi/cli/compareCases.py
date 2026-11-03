@@ -171,11 +171,11 @@ class CompareSuites(CompareCases):
         from armi import cases
 
         if not os.path.exists(self.args.reference):
-            runLog.error("Could not find reference directory {}".format(self.args.reference))
+            runLog.warning(f"Could not find reference directory {self.args.reference}")
             sys.exit(1)
 
         if not os.path.exists(self.args.comparison):
-            runLog.error("Could not find comparison directory {}".format(self.args.comparison))
+            runLog.warning(f"Could not find comparison directory {self.args.comparison}")
             sys.exit(1)
 
         refSuite = cases.CaseSuite(self.cs)

@@ -146,11 +146,9 @@ def loadFromCs(cs, roundTrip=False):
                 except yamlize.yamlizing_error.YamlizingError as err:
                     if "cross sections" in err.args[0]:
                         runLog.error(
-                            "The loading file {} contains invalid `cross sections` input. "
-                            "Please run the `modify` entry point on this case to automatically convert."
-                            "".format(cs[CONF_LOADING_FILE])
+                            f"The loading file {cs[CONF_LOADING_FILE]} contains invalid `cross sections` input. Please "
+                            "run the `modify` entry point on this case to automatically convert."
                         )
-                    raise
     return bp
 
 
@@ -168,9 +166,8 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
         pm = getPluginManager()
         if pm is None:
             runLog.warning(
-                "Blueprints were instantiated before the framework was "
-                "configured with plugins. Blueprints cannot be imported before "
-                "ARMI has been configured."
+                "Blueprints were instantiated before the framework was configured with plugins. Blueprints cannot be "
+                "imported before ARMI has been configured."
             )
         else:
             pluginSections = pm.hook.defineBlueprintsSections()
@@ -179,7 +176,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
-                            "There is already a section called '{}' in the reactor blueprints".format(attrName)
+                            f"There is already a section called '{attrName}' in the reactor blueprints"
                         )
                     attrs[attrName] = section
                     attrs["_resolveFunctions"].append(resolver)
@@ -474,9 +471,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 # R-Z assemblies by definition have different areas, so skip the check
                 continue
             if abs(references[1] - assemblyArea) > 1e-9:
-                runLog.error("REFERENCE COMPARISON ASSEMBLY:")
+                runLog.warning("REFERENCE COMPARISON ASSEMBLY:")
                 references[0][0].printContents()
-                runLog.error("CURRENT COMPARISON ASSEMBLY:")
+                runLog.warning("CURRENT COMPARISON ASSEMBLY:")
                 a[0].printContents()
                 raise InputError(
                     "Assembly {} has a different area {} than assembly {} {}.  Check inputs for accuracy".format(
@@ -487,20 +484,17 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             blockArea = a[0].getArea()
             for b in a[1:]:
                 if abs(b.getArea() - blockArea) / blockArea > cs[CONF_ACCEPTABLE_BLOCK_AREA_ERROR]:
-                    runLog.error("REFERENCE COMPARISON BLOCK:")
+                    runLog.warning("REFERENCE COMPARISON BLOCK:")
                     a[0].printContents(includeNuclides=False)
-                    runLog.error("CURRENT COMPARISON BLOCK:")
+                    runLog.warning("CURRENT COMPARISON BLOCK:")
                     b.printContents(includeNuclides=False)
 
                     for c in b:
-                        runLog.error(
-                            "{0} area {1} effective area {2}".format(c, c.getArea(), c.getVolume() / b.getHeight())
-                        )
+                        runLog.warning(f"{c} area {c.getArea()} effective area {c.getVolume() / b.getHeight()}")
 
                     raise InputError(
-                        "Block {} has a different area {} than block {} {}. Check inputs for accuracy".format(
-                            b, b.getArea(), a[0], blockArea
-                        )
+                        f"Block {b} has a different area {b.getArea()} than block {a[0]} {blockArea}. Check inputs for"
+                        " accuracy."
                     )
 
     @classmethod

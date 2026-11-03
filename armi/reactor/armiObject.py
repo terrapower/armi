@@ -350,7 +350,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         """
         if self.spatialLocator is None or other.spatialLocator is None:
             runLog.error(f"Could not compare {self} and {other}: One or more of the objects have no spatialLocator.")
-            raise ValueError("")
 
         if self.spatialLocator.grid is not other.spatialLocator.grid:
             runLog.error(
@@ -364,7 +363,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
             return t1 < t2
         except ValueError:
             runLog.error(f"failed to compare {self.spatialLocator} and {other.spatialLocator}")
-            raise
 
     def __getstate__(self):
         """
@@ -984,7 +982,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         # error checking.
         if abs(newA - val) > 1e-10:
             runLog.error(f"Adjust Mass fraction did not adjust {adjustNuclides} from {A} to {val}. It got to {newA}")
-            raise RuntimeError("Failed to adjust mass fraction.")
 
         # determine the mass fraction of the nuclides that will be adjusted to
         # accommodate the requested change

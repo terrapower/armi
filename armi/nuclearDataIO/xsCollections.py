@@ -845,9 +845,7 @@ def computeMacroscopicGroupConstants(
         macroGroupConstants += np.asarray(numberDensity) * microGroupConstants * multiplierVal
 
     if skippedNuclides:
-        msg = "The following nuclides are not in microscopic library {}: {}".format(lib, skippedNuclides)
-        runLog.error(msg, single=True)
-        raise ValueError(msg)
+        runLog.error(f"The following nuclides are not in microscopic library {lib}: {skippedNuclides}", single=True)
 
     if skippedMultNuclides:
         runLog.debug(

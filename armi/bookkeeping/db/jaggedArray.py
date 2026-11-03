@@ -85,7 +85,7 @@ class JaggedArray:
         self.offsets = np.array(offsets)
         try:
             self.shapes = np.array(shapes)
-        except ValueError as ee:
+        except ValueError:
             runLog.error(
                 "Error! It seems like ARMI may have tried to flatten a jagged array "
                 "where the elements have different numbers of dimensions. `shapes` "
@@ -93,7 +93,6 @@ class JaggedArray:
                 "array; it might be jagged.".format(paramName)
             )
             runLog.error(shapes)
-            raise ValueError(ee)
         self.nones = np.array(nones)
         self.dtype = self.flattenedArray.dtype
         self.paramName = paramName

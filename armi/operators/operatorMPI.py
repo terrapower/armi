@@ -72,8 +72,7 @@ class OperatorMPI(Operator):
                 Operator.operate(self)
                 runLog.important(time.ctime())
             except Exception as ee:
-                runLog.error("Error in Primary Node. Check STDERR for a traceback.\n{}".format(ee))
-                raise
+                runLog.error(f"Error in Primary Node. Check STDERR for a traceback.\n{ee}")
             finally:
                 # If there are other processes, tell them to stop
                 if context.MPI_SIZE > 1:
@@ -159,7 +158,7 @@ class OperatorMPI(Operator):
                         break
                 if not handled:
                     if context.MPI_RANK == 0:
-                        print("Interfaces" + str(self.interfaces))
+                        runLog.info("Interfaces" + str(self.interfaces))
                     runLog.error(
                         "No interface understood worker command {0}\n check stdout for err\n"
                         "available interfaces:\n  {1}".format(
@@ -167,7 +166,6 @@ class OperatorMPI(Operator):
                             "\n  ".join(f"name:{i.name} typeName:{i.purpose} {i}" for i in self.interfaces),
                         )
                     )
-                    raise RuntimeError(f"Failed to delegate worker command {cmd} to an interface.")
 
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)

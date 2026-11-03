@@ -47,8 +47,7 @@ sends it to the workers, and then both the primary and the workers
      - **primary**: :code:`distributeState.invoke(self.o, self.r, self.cs)`
 
        **worker**: :code:`action.invoke(self.o, self.r, self.cs)`
-     - Both invoke the action, and are in sync. Any broadcast or receive within the action should
-       also be synced up.
+     - Both invoke the action, and are in sync. Any broadcast or receive within the action should also be synced up.
 
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
@@ -134,9 +133,7 @@ class MpiAction:
         try:
             return mpiFunction(obj, root=0)
         except pickle.PicklingError as error:
-            runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
-            runLog.error(error)
-            raise
+            runLog.error(f"Failed to {mpiFunction.__name__} {obj}.\n{error}")
         finally:
             if obj is self:
                 self.o, self.r, self.cs = o, r, cs
@@ -357,12 +354,10 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     # check that we do not request more tasks than processors on a node
     for nodeName in nodes:
         if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
-            msg = (
+            runLog.error(
                 f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available "
                 f"({numAssigned[nodeName]}) on {nodeName}!"
             )
-            runLog.error(msg)
-            raise ValueError(msg)
 
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
     runLog.extra(f"Running {totalActions} MPI actions in parallel over {len(actionsByNode)} nodes.")
@@ -572,8 +567,8 @@ class DistributeStateAction(MpiAction):
             self.r._markSynchronized()
 
         except (pickle.PicklingError, TypeError) as error:
-            runLog.error("Failed to transmit on distribute state root MPI bcast")
-            runLog.error(error)
+            runLog.warning("Failed to transmit on distribute state root MPI bcast")
+            runLog.warning(error)
             # workers are still waiting for a reactor object
             if context.MPI_RANK == 0:
                 context.MPI_COMM.bcast("quit")  # try to get the workers to quit

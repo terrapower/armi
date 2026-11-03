@@ -234,7 +234,6 @@ class AssemblyAxialLinkage:
                         {otherComp}
                 """
                 runLog.error(msg=dedent(errMsg))
-                raise RuntimeError(dedent(errMsg))
         return candidate
 
     def _getLinkedComponents(self, b: Block, c: Component):

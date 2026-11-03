@@ -350,7 +350,6 @@ def _diffSpecialData(
         runLog.error(
             f"Unable to unpack special data for paramName {paramName}. {traceback.format_exc()}",
         )
-        return
 
     diff = []
     for dSrc, dRef in zip(src.tolist(), ref.tolist()):

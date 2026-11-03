@@ -1075,7 +1075,6 @@ class Component(ArmiObject, metaclass=ComponentType):
                 f" {self._TOLERANCE}",
                 single=True,
             )
-            raise RuntimeError(f"Linear expansion factor may not be implemented in the {self.material} material class.")
 
         return 1.0 + dLL
 
@@ -1354,10 +1353,8 @@ class Component(ArmiObject, metaclass=ComponentType):
         try:
             return self.parent.p[param][indexMap]
         except Exception as ee:
-            msg = f"Failure getting {param} from {self} via parent {self.parent}"
-            runLog.error(msg)
-            runLog.error(ee)
-            raise ValueError(msg) from ee
+            runLog.warning(ee)
+            runLog.error(f"Failure getting {param} from {self} via parent {self.parent}")
 
     def getPinIndices(self) -> np.ndarray[tuple[int], np.uint16]:
         """Find the indices for the locations where this component can be found in the block.
@@ -1365,16 +1362,14 @@ class Component(ArmiObject, metaclass=ComponentType):
         Returns
         -------
         np.array[int]
-            The indices in various Block-level pin methods,
-            e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`, that correspond to
-            this component.
+            The indices in various Block-level pin methods, e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`,
+            that correspond to this component.
 
         Raises
         ------
         ValueError
-            If this does not have pin indices. This can be the case for components that live
-            on blocks without spatial grids, or if they do not share lattice sites, via
-            ``spatialLocator`` with other pins.
+            If this does not have pin indices. This can be the case for components that live on blocks without spatial
+            grids, or if they do not share lattice sites, via ``spatialLocator`` with other pins.
 
         See Also
         --------

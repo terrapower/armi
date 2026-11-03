@@ -43,9 +43,8 @@ def assemblyHasFuelPinPowers(a: typing.Iterable["Block"]) -> bool:
     bool
         If at least one fuel block in the assembly has pin powers.
     """
-    # Avoid using Assembly.getChildrenWithFlags(Flags.FUEL)
-    # because that creates an entire list where we may just need the first
-    # fuel block
+    # Avoid using Assembly.getChildrenWithFlags(Flags.FUEL) because that creates an entire list where we may just need
+    # the first fuel block
     fuelBlocks = filter(lambda b: b.hasFlags(Flags.FUEL), a)
     return any(b.hasFlags(Flags.FUEL) and np.any(b.p.linPowByPin) for b in fuelBlocks)
 
@@ -53,8 +52,7 @@ def assemblyHasFuelPinPowers(a: typing.Iterable["Block"]) -> bool:
 def assemblyHasFuelPinBurnup(a: typing.Iterable["Block"]) -> bool:
     """Determine if an assembly has pin burnups.
 
-    These are necessary for determining rotation and may or may not
-    be present on all assemblies.
+    These are necessary for determining rotation and may or may not be present on all assemblies.
 
     Parameters
     ----------
@@ -136,7 +134,5 @@ def maxBurnupBlock(a: typing.Iterable["Block"]) -> "Block":
     blocksWithBurnup = filter(buGetter, a)
     try:
         return max(blocksWithBurnup, key=buGetter)
-    except Exception as ee:
-        msg = f"Error finding max burnup block from {a}"
-        runLog.error(msg)
-        raise ValueError(msg) from ee
+    except Exception:
+        runLog.error(f"Error finding max burnup block from {a}")

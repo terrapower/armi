@@ -194,7 +194,6 @@ class Database:
 
         else:
             runLog.error(f"Unrecognized file permissions `{self._permission}`")
-            raise ValueError(f"Cannot open database with permission `{self._permission}`")
 
         # open the database, and write a bunch of metadata to it
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
@@ -1020,7 +1019,6 @@ class Database:
                     Database._writeAttrs(dataset, h5group, attrs)
             except Exception:
                 runLog.error(f"Failed to write {paramDef.name} to database. Data: {data}")
-                raise
 
         if isinstance(c, Block):
             self._addHomogenizedNumberDensityParams(comps, g)
@@ -1097,15 +1095,11 @@ class Database:
             unpackedData = data.tolist()
             if len(comps) != len(unpackedData):
                 msg = (
-                    "While unpacking special data for {}, encountered composites and parameter "
-                    "data with unmatched sizes.\nLength of composites list = {}\nLength of data "
-                    "list = {}\nThis could indicate an error in data unpacking, which could "
-                    "result in faulty data on the resulting reactor model.".format(
-                        paramName, len(comps), len(unpackedData)
-                    )
+                    f"While unpacking special data for {paramName}, encountered composites and parameter data with "
+                    f"unmatched sizes.\nLength of composites list = {len(comps)}\nLength of data list = "
+                    f"{len(unpackedData)}\nThis could indicate an error in data unpacking."
                 )
                 runLog.error(msg)
-                raise ValueError(msg)
 
             if paramName == "numberDensities" and attrs.get("dict", False):
                 Database._applyComponentNumberDensitiesMigration(comps, unpackedData)
@@ -1226,9 +1220,8 @@ class Database:
 
             try:
                 h5GroupForType = h5TimeNodeGroup[objClassName]
-            except KeyError as ee:
+            except KeyError:
                 runLog.error(f"{objClassName} not found in {h5TimeNodeGroup} of {self}")
-                raise ee
 
             for paramName in params or h5GroupForType.keys():
                 if paramName == "location":
@@ -1238,9 +1231,8 @@ class Database:
                     dataSet = h5GroupForType[paramName]
                     try:
                         data = dataSet[objectIndicesInData]
-                    except:
+                    except Exception:
                         runLog.error(f"Failed to load index {objectIndicesInData} from {dataSet}@{(cycle, timeNode)}")
-                        raise
 
                     if data.dtype.type is np.bytes_:
                         data = np.char.decode(data)
@@ -1345,9 +1337,9 @@ class Database:
                 compTypeName = compType.__name__
                 try:
                     h5GroupForType = h5TimeNodeGroup[compTypeName]
-                except KeyError as ee:
-                    runLog.error("{} not found in {} of {}".format(compTypeName, h5TimeNodeGroup, self))
-                    raise ee
+                except KeyError:
+                    runLog.error(f"{compTypeName} not found in {h5TimeNodeGroup} of {self}")
+
                 layoutIndicesForType = np.where(layout.type == compTypeName)[0]
                 serialNumsForType = layout.serialNum[layoutIndicesForType].tolist()
                 layoutIndexInData = layout.indexInData[layoutIndicesForType].tolist()
@@ -1378,11 +1370,8 @@ class Database:
                         dataSet = h5GroupForType[paramName]
                         try:
                             data = dataSet[indexInData]
-                        except:
-                            runLog.error(
-                                "Failed to load index {} from {}@{}".format(indexInData, dataSet, (cycle, timeNode))
-                            )
-                            raise
+                        except Exception:
+                            runLog.error(f"Failed to load index {indexInData} from {dataSet}@{(cycle, timeNode)}")
 
                         if data.dtype.type is np.bytes_:
                             data = np.char.decode(data)
@@ -1489,7 +1478,6 @@ class Database:
                     resolved[key] = val
             except ValueError:
                 runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
-                raise
 
         return resolved
 
@@ -1659,8 +1647,7 @@ def packSpecialData(
     if len(nones) == 0:
         raise TypeError(f"Cannot write {paramName} to the database, it did not resolve to a numpy/HDF5 type.")
 
-    runLog.error(f"Data unable to find special none value: {data}")
-    raise TypeError(f"Failed to process special data for {paramName}")
+    runLog.error(f"Data unable to find special none value {data} for {paramName}")
 
 
 def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:

@@ -135,7 +135,6 @@ def getAssemblyParameterDefinitions():
             """Enforces that notes can only be of type str with max length of 1000."""
             if type(value) is not str:
                 runLog.error("Values stored in the `notes` parameter must be strings of less than 1000 characters!")
-                raise ValueError
             elif len(value) > 1000:
                 runLog.warning(
                     "Strings stored in the `notes` parameter must be less than 1000 characters. "
