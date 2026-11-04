@@ -81,7 +81,7 @@ def describeInterfaces(cs):
     return None
 
 
-_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase + string.ascii_lowercase + string.digits)
+_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase + string.ascii_lowercase)
 
 
 def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
@@ -92,7 +92,7 @@ def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
 
     2-digit labels are supported when there is only one burnup group.
     """
-    return int("".join([f"{ord(si):02d}" for si in xsTypeLabel]))
+    return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
 
 
 def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
@@ -103,6 +103,8 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
 
     2-digit labels are supported when there is only one burnup group.
     """
+    allowableXsTypes = _ALLOWABLE_XS_TYPE_LIST + list(string.digits)
+
     try:
         xsTypeStr = str(xsTypeNumber)
 
@@ -118,18 +120,18 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
         else:
             # two characters, but more complicated to figure out
             firstTwo = chr(int(xsTypeStr[:2]))
-            if firstTwo in _ALLOWABLE_XS_TYPE_LIST:
+            if firstTwo in allowableXsTypes:
                 label = firstTwo + chr(int(str(xsTypeNumber)[2:]))
             else:
                 firstThree = chr(int(xsTypeStr[:3]))
-                if firstThree in _ALLOWABLE_XS_TYPE_LIST:
+                if firstThree in allowableXsTypes:
                     label = firstThree + chr(int(str(xsTypeNumber)[3:]))
                 else:
                     raise ValueError()
 
         # do some error handling
         for char in label:
-            if char not in _ALLOWABLE_XS_TYPE_LIST:
+            if char not in allowableXsTypes:
                 raise ValueError()
 
         return label
@@ -140,10 +142,11 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
 
 def _checkConsistentNuclides(thisComp, repComp):
     """
-    Check that thisComp has the same set of nuclides as the analogous component in the representative block.
+    Check that thisComp has the same set of nuclides as the analogous component in the
+    representative block.
 
-    This check is somewhat permissive in that it allows for the two components to differ in nuclides where one of them
-    is at a zero number density.
+    This check is somewhat permissive in that it allows for the two components to differ
+    in nuclides where one of them is at a zero number density.
 
     Warning
     -------
@@ -192,7 +195,7 @@ class BlockCollection(list):
                 self._validRepresentativeBlockTypes.append(Flags.fromString(t))
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} with {len(self)} blocks>"
+        return "<{} with {} blocks>".format(self.__class__.__name__, len(self))
 
     def _getNewBlock(self):
         """
@@ -230,10 +233,11 @@ class BlockCollection(list):
             # we have at least one non-zero entry and at least one zero. This is bad.
             # find the non-zero ones for debugging
             zeros = [block for block in self if not block.p[self.weightingParam]]
-            runLog.error(f"Blocks with zero `{self.weightingParam}` include: {zeros}")
+            runLog.error("Blocks with zero `{0}` include: {1}".format(self.weightingParam, zeros))
             raise ValueError(
-                f"{self} has a mixture of zero and non-zero weighting factors (`{self.weightingParam}`)\nSee stdout for"
-                " details."
+                "{0} has a mixture of zero and non-zero weighting factors (`{1}`)\nSee stdout for details".format(
+                    self, self.weightingParam
+                )
             )
 
     def calcAvgNuclideTemperatures(self):
@@ -321,7 +325,7 @@ class MedianBlockCollection(BlockCollection):
             lfpCollection.setGasRemovedFrac(newBlock.p.gasReleaseFraction)
             newBlock.setLumpedFissionProducts(lfpCollection)
         else:
-            runLog.warning(f"Representative block {medianBlock} has no LFPs")
+            runLog.warning("Representative block {0} has no LFPs".format(medianBlock))
         self.calcAvgNuclideTemperatures()
         return newBlock
 
@@ -813,18 +817,20 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
         for c, repC in zip(comps, repBlock):
             if not isinstance(c, basicShapes.Rectangle):
-                raise TypeError(f"The shape of component {c} in block {b} is invalid and must be a rectangle.")
-            compString = f"Component {repC} in block {repBlock} and component {c} in block {b}"
+                raise TypeError(
+                    "The shape of component {} in block {} is invalid and must be a rectangle.".format(c, b)
+                )
+            compString = "Component {} in block {} and component {} in block {}".format(repC, repBlock, c, b)
             if c.getArea() != repC.getArea():
                 raise ValueError(
-                    f"{compString} are in the same location, but have differing thicknesses. Check that the "
+                    "{} are in the same location, but have differing thicknesses. Check that the "
                     "thicknesses are defined correctly. Note: This could also be due to "
-                    "thermal expansion"
+                    "thermal expansion".format(compString)
                 )
 
             _checkConsistentNuclides(c, repC)
             if c.p.mult != repC.p.mult:
-                raise ValueError(f"{compString} must have the same multiplicity to homogenize")
+                raise ValueError("{} must have the same multiplicity to homogenize".format(compString))
 
     @staticmethod
     def _reverseComponentOrder(block):
@@ -833,8 +839,8 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         components = [c for c in reversed(block) if not c.isLatticeComponent()]
         if len(latticeComponents) > 1:
             raise ValueError(
-                f"Block {block} contains multiple `lattice` components: {latticeComponents}. Remove the additional "
-                "lattice components in the reactor blueprints."
+                "Block {} contains multiple `lattice` components: {}. Remove the additional "
+                "lattice components in the reactor blueprints.".format(block, latticeComponents)
             )
         components.append(latticeComponents[0])
         return components
@@ -879,15 +885,15 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         for b in self.getCandidateBlocks():
             if len(b) != len(repBlock):
                 raise ValueError(
-                    f"Blocks {b} and {repBlock} have differing number of components and cannot be homogenized"
+                    "Blocks {} and {} have differing number of components and cannot be homogenized".format(b, repBlock)
                 )
             try:
                 self._checkComponentConsistency(b, repBlock)
                 componentsToAdd = [c for c in b]
             except ValueError:
                 runLog.extra(
-                    f"Checking if components in block {b} are in the reverse order of the components in the "
-                    f"representative block {repBlock}"
+                    "Checking if components in block {} are in the reverse order of the components in the "
+                    "representative block {}".format(b, repBlock)
                 )
                 reversedComponentOrder = self._reverseComponentOrder(b)
                 self._checkComponentConsistency(b, repBlock, components=reversedComponentOrder)
@@ -1074,7 +1080,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         # validate structure
         for upperBu in buGroupBounds:
             if upperBu <= 0 or upperBu > 100:
-                raise ValueError(f"Burnup group upper bound {upperBu} is invalid")
+                raise ValueError("Burnup group upper bound {0} is invalid".format(upperBu))
             if upperBu < lastBu:
                 raise ValueError("Burnup groups must be ascending")
             lastBu = upperBu
@@ -1105,14 +1111,14 @@ class CrossSectionGroupManager(interfaces.Interface):
         armi.reactor.blocks.Block.getMicroSuffix
         """
         if not self._envGroupUpdatesEnabled:
-            runLog.debug(f"Skipping burnup group update of {len(blockList)} blocks because it is disabled")
+            runLog.debug("Skipping burnup group update of {0} blocks because it is disabled".format(len(blockList)))
             return
 
         numBuGroups = len(self._buGroupBounds)
         if numBuGroups == 1 and len(self._tempGroupBounds) == 1:
             # dont set block.p.envGroupNum since all 1 group and we want to support 2 char xsGroup
             return
-        runLog.debug(f"Updating env groups of {len(blockList)} blocks")
+        runLog.debug("Updating env groups of {0} blocks".format(len(blockList)))
         for block in blockList:
             bu = block.p.percentBu
             for buIndex, upperBu in enumerate(self._buGroupBounds):
@@ -1156,7 +1162,7 @@ class CrossSectionGroupManager(interfaces.Interface):
     def _initializeXsID(self, xsID):
         """Initialize a new xs id."""
         if xsID not in self.cs[CONF_CROSS_SECTION]:
-            runLog.debug(f"Initializing XS ID {xsID}", single=True)
+            runLog.debug("Initializing XS ID {}".format(xsID), single=True)
         return self.cs[CONF_CROSS_SECTION][xsID]
 
     def xsTypeIsPregenerated(self, xsID):
@@ -1175,7 +1181,9 @@ class CrossSectionGroupManager(interfaces.Interface):
         for xsFileLocation, xsFileName in self._getPregeneratedXsFileLocationData(xsID):
             dest = os.path.join(os.getcwd(), xsFileName)
             runLog.extra(
-                f"Copying pre-generated XS file {xsFileName} from {os.path.dirname(xsFileLocation)} for XS ID {xsID}"
+                "Copying pre-generated XS file {} from {} for XS ID {}".format(
+                    xsFileName, os.path.dirname(xsFileLocation), xsID
+                )
             )
             # Prevent copy error if the path and destination are the same.
             if xsFileLocation != dest:
@@ -1189,8 +1197,9 @@ class CrossSectionGroupManager(interfaces.Interface):
         fluxFileLocation, fluxFileName = self._getPregeneratedFluxFileLocationData(xsID)
         dest = os.path.join(os.getcwd(), fluxFileName)
         runLog.extra(
-            f"Copying pre-generated flux solution file {fluxFileName} from {os.path.dirname(fluxFileLocation)} for XS "
-            "ID {xsID}"
+            "Copying pre-generated flux solution file {} from {} for XS ID {}".format(
+                fluxFileName, os.path.dirname(fluxFileLocation), xsID
+            )
         )
         # Prevent copy error if the path and destination are the same.
         if fluxFileLocation != dest:
@@ -1211,7 +1220,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             filePath = os.path.abspath(filePath)
             if not os.path.exists(filePath) or os.path.isdir(filePath):
                 raise ValueError(
-                    f"External cross section path for XS ID {xsID} is not a valid file location {filePath}"
+                    "External cross section path for XS ID {} is not a valid file location {}".format(xsID, filePath)
                 )
             fileName = os.path.basename(filePath)
             fileData.append((filePath, fileName))
@@ -1222,7 +1231,9 @@ class CrossSectionGroupManager(interfaces.Interface):
         filePath = self.cs[CONF_CROSS_SECTION][xsID].fluxFileLocation
         filePath = os.path.abspath(filePath)
         if not os.path.exists(filePath) or os.path.isdir(filePath):
-            raise ValueError(f"External cross section path for XS ID {xsID} is not a valid file location {filePath}")
+            raise ValueError(
+                "External cross section path for XS ID {} is not a valid file location {}".format(xsID, filePath)
+            )
         fileName = os.path.basename(filePath)
         return (filePath, fileName)
 
@@ -1248,7 +1259,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 self._copyPregeneratedXSFile(xsID)
                 continue
             if numCandidateBlocks > 0:
-                runLog.debug(f"Creating representative block for {xsID}")
+                runLog.debug("Creating representative block for {}".format(xsID))
                 if self.fluxSolutionIsPregenerated(xsID):
                     self._copyPregeneratedFluxSolutionFile(xsID)
                 reprBlock = collection.createRepresentativeBlock()
@@ -1352,9 +1363,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             if origXSID not in originalRepresentativeBlocks:
                 if self.xsTypeIsPregenerated(origXSID):
                     runLog.warning(
-                        f"A modified representative block for XS ID `{origXSID}` cannot be created because it is "
+                        "A modified representative block for XS ID `{}` cannot be created because it is "
                         "mapped to a pre-generated cross section set. Please ensure that this "
-                        "approximation is valid for the analysis.",
+                        "approximation is valid for the analysis.".format(origXSID),
                         single=True,
                     )
             else:
@@ -1368,12 +1379,14 @@ class CrossSectionGroupManager(interfaces.Interface):
         # Create new representative blocks based on the original XS IDs
         for newXSID, origXSID in origXSIDsFromNew.items():
             runLog.extra(
-                f"Creating representative block `{newXSID}` with composition from representative block `{origXSID}`"
+                "Creating representative block `{}` with composition from representative block `{}`".format(
+                    newXSID, origXSID
+                )
             )
             newXSType = newXSID[0]
             newReprBlock = copy.deepcopy(originalRepresentativeBlocks[origXSID])
             newReprBlock.p.xsType = newXSType
-            newReprBlock.name = f"AVG_{newXSID}"
+            newReprBlock.name = "AVG_{}".format(newXSID)
             modifiedReprBlocks[newXSID] = newReprBlock
             # Update the XS types of the blocks that will be modified
             for b in blockList:
@@ -1407,8 +1420,8 @@ class CrossSectionGroupManager(interfaces.Interface):
                 continue
             else:
                 runLog.debug(
-                    f"No candidate blocks in group for {xsID} (with a valid representative block flag). "
-                    "Will apply different environment group"
+                    "No candidate blocks in group for {} (with a valid representative block flag). "
+                    "Will apply different environment group".format(xsID)
                 )
                 self._unrepresentedXSIDs.append(xsID)
 
@@ -1436,8 +1449,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         availableXsTypes = sorted(list(set(_ALLOWABLE_XS_TYPE_LIST).difference(allocatedXSTypes)))
         if len(availableXsTypes) < howMany:
             raise ValueError(
-                f"There are not enough available xs types. {len(allocatedXSTypes)} have been allocated, "
-                f"{len(availableXsTypes)} are available, and {howMany} have been requested."
+                "There are not enough available xs types. {} have been allocated, {} are available, and "
+                "{} have been requested.".format(len(allocatedXSTypes), len(availableXsTypes), howMany)
             )
 
         # check for lower-case on case-insensitive file system
@@ -1454,7 +1467,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):
         """
-        Gets all blocks with suffixes not yet represented (blocks in assemblies in the blueprints but not in the core).
+        Gets all blocks with suffixes not yet represented.
+        (for blocks in assemblies in the blueprints but not in the core).
 
         Notes
         -----
@@ -1509,16 +1523,18 @@ class CrossSectionGroupManager(interfaces.Interface):
                     # there were no blocks flagged to xs gen even though there were some not suitable for
                     # generation in the group so can't make XS and use different.
                     runLog.warning(
-                        f"Changing XSID of {len(nonRepBlocks)} blocks from {xsID} to {missingXsType[0] + newEnvGroup}"
+                        "Changing XSID of {0} blocks from {1} to {2}".format(
+                            len(nonRepBlocks), xsID, missingXsType[0] + newEnvGroup
+                        )
                     )
                     for b in nonRepBlocks:
                         b.p.envGroup = newEnvGroup
                 else:
                     runLog.warning(
-                        f"No representative blocks with XS type {xsID} exist in the core. "
+                        "No representative blocks with XS type {0} exist in the core. "
                         "There were also no similar blocks to use. "
                         "These XS cannot be generated and must exist in the working "
-                        "directory or the run will fail."
+                        "directory or the run will fail.".format(xsID)
                     )
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
@@ -1526,7 +1542,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
 
         runLog.extra("Cross section group manager summary")
-        runLog.extra(f"Averaging performed by `{self.cs[CONF_XS_BLOCK_REPRESENTATION]}`")
+        runLog.extra("Averaging performed by `{0}`".format(self.cs[CONF_XS_BLOCK_REPRESENTATION]))
         for xsID, blocks in blockCollectionsByXsGroup.items():
             if blocks:
                 xsIDGroup = self._getXsIDGroup(xsID)
@@ -1536,17 +1552,27 @@ class CrossSectionGroupManager(interfaces.Interface):
                     temp = self.avgNucTemperatures[xsID].get(xsSettings.xsTempIsotope, "N/A")
                     runLog.extra(
                         (
-                            f"XS ID {xsID} contains {len(blocks):4d} blocks, with avg burnup {reprBlock.p.percentBu} "
-                            f"and avg fuel temp {temp}, represented by: {reprBlock:65s}"
+                            "XS ID {} contains {:4d} blocks, with avg burnup {} "
+                            "and avg fuel temp {}, represented by: {:65s}"
+                        ).format(
+                            xsID,
+                            len(blocks),
+                            reprBlock.p.percentBu,
+                            temp,
+                            reprBlock,
                         )
                     )
                 elif xsIDGroup == self._NON_REPR_GROUP:
-                    runLog.extra(f"XS ID {xsID} contains {len(blocks):4d} blocks, but no representative block.")
+                    runLog.extra(
+                        "XS ID {} contains {:4d} blocks, but no representative block.".format(xsID, len(blocks))
+                    )
                 elif xsIDGroup == self._PREGEN_GROUP:
                     xsFileNames = [y for _x, y in self._getPregeneratedXsFileLocationData(xsID)]
-                    runLog.extra(f"XS ID {xsID} contains {len(blocks):4d} blocks, represented by: {xsFileNames}")
+                    runLog.extra(
+                        "XS ID {} contains {:4d} blocks, represented by: {}".format(xsID, len(blocks), xsFileNames)
+                    )
                 else:
-                    raise ValueError(f"No valid group for XS ID {xsID}")
+                    raise ValueError("No valid group for XS ID {}".format(xsID))
 
     def _getXsIDGroup(self, xsID):
         if self.xsTypeIsPregenerated(xsID):
@@ -1615,13 +1641,14 @@ class CrossSectionGroupManager(interfaces.Interface):
         self.avgNucTemperatures = {}
         blockCollectionsByXsGroup = blockCollectionByXsGroup or self.makeCrossSectionGroups()
         runLog.info(
-            "Updating representative block average nuclide temperatures for the following XS IDs: "
-            f"{blockCollectionsByXsGroup.keys()}"
+            "Updating representative block average nuclide temperatures for the following XS IDs: {}".format(
+                blockCollectionsByXsGroup.keys()
+            )
         )
         for xsID, collection in blockCollectionsByXsGroup.items():
             collection.calcAvgNuclideTemperatures()
             self.avgNucTemperatures[xsID] = collection.avgNucTemperatures
-            runLog.extra(f"XS ID: {xsID}, Collection: {collection}")
+            runLog.extra("XS ID: {}, Collection: {}".format(xsID, collection))
 
 
 # String constants
