@@ -104,22 +104,28 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
     2-digit labels are supported when there is only one burnup group.
     """
     try:
-        if xsTypeNumber <= ord("z"):
+        xsTypeStr = str(xsTypeNumber)
+
+        if len(xsTypeStr) < 4:
             # single character
             label = chr(xsTypeNumber)
+        elif len(xsTypeStr) == 4:
+            # two character, and easy to understand
+            label = chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+        elif len(xsTypeStr) > 6:
+            # This is invalid: three numbers, special characters, or just nonsense.
+            raise ValueError()
         else:
-            # two characters
-            xsStr = str(xsTypeNumber)
-            if len(xsStr) == 4:
-                # no lowercase letters
-                label = chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
-            elif len(xsStr) in (5, 6):
-                # one or two lowercase letters (a little complicated)
-                # TODO
-                label = chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+            # two characters, but more complicated to figure out
+            firstTwo = chr(int(xsTypeStr[:2]))
+            if firstTwo in _ALLOWABLE_XS_TYPE_LIST:
+                label = firstTwo + chr(int(str(xsTypeNumber)[2:]))
             else:
-                # This is invalid. Maybe it's three numbers, or special characters, or something.
-                raise ValueError()
+                firstThree = chr(int(xsTypeStr[:3]))
+                if firstThree in _ALLOWABLE_XS_TYPE_LIST:
+                    label = firstThree + chr(int(str(xsTypeNumber)[3:]))
+                else:
+                    raise ValueError()
 
         # do some error handling
         for char in label:
