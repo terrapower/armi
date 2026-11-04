@@ -750,16 +750,16 @@ Flags and naming
 
 All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect
 the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
-``FUEL``, or ``CLAD``, and are used to declare `what something is` in the reactor model. Various physics or other
+``FUEL``, or ``CLAD``, and are used to declare "what something is" in the reactor model. Various physics or other
 framework operations can then be parameterized to target specific types of things. For instance, the fuel handling code
 can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and not move them with the rest of
 the block stack in an assembly.
 
-Historically, flags have also been used to describe directly `what should be done` with an object in the reactor model.
+Historically, flags have also been used to describe directly "what should be done" with an object in the reactor model.
 For instance, an object with the ``DEPLETABLE`` flag set will participate in isotopic depletion analysis, whereas
 objects without the ``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of various flags
-is buried deep within the code, and can conflict from place to place. We are trying to align around a `what something
-is` interpretation, and bind those to specific behaviors with settings. For more details, see
+is buried deep within the code, and can conflict from place to place. We are trying to align around a "what something
+is" interpretation, and bind those to specific behaviors with settings. For more details, see
 :py:mod:`armi.reactor.flags`.
 
 The set of specific flags that should be set on an object can be specified in one of two ways for each object defined in
@@ -781,7 +781,7 @@ Blocks and Components
 ---------------------
 Blocks and components are defined together in the **blueprints** input.
 
-We will start with a component, and then define the whole ``blocks:`` input.
+We will start with a Component, and then define the whole ``blocks:`` input.
 
 Defining a Component
 ^^^^^^^^^^^^^^^^^^^^
@@ -921,9 +921,9 @@ of geometric components. The generic structure in the input file is::
             component name 2:
                 ...
 
-.. note:: You can also define components at the top level of the blueprints file under the ``components:`` top level
-    section, but bringing anything defined there into the reactor model must currently be done programmatically. We are
-    currently developing additional input capabilities to use these more flexibly.
+.. note:: You can also define components at the top level of the blueprints file under the ``components:``, but bringing
+    anything defined there into the reactor model must currently be done programmatically. We are currently developing
+    additional input capabilities to use these more flexibly.
 
     Associated with this is a ``component groups:`` section which can collect different free components with different
     volume fractions. This also is not fully implemented yet.
