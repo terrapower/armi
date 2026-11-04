@@ -748,7 +748,8 @@ The core map input files can be graphically manipulated with the
 Flags and naming
 ----------------
 
-All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
+All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect
+the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
 ``FUEL``, or ``CLAD``, and are used to declare `what something is` in the reactor model. Various physics or other
 framework operations can then be parameterized to target specific types of things. For instance, the fuel handling code
 can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and not move them with the rest of
