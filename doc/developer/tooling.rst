@@ -158,8 +158,8 @@ Every release should follow this process:
 2. Create a release PR:
 
     - Bump the ``version`` string in ``pyproject.toml``.
-    - Now that the release is done, hard-copy the SCR information into the last releases RST file, so we don't keep regenerating it: ``doc/qa_docs/scr/x.y.rst``.
-    - Update the commit in ``doc/qa_docs/scr/latest_scr.rst`` to the release commit.
+    - Now that the release is done, hard-copy the SCR information into the last release's RST file, so we don't keep regenerating it: ``doc/release/x.y.rst``.
+    - Update the commit in ``doc/qa_docs/scr.rst`` to the release commit.
 
 3. Tag the commit after it goes into the repo:
 
