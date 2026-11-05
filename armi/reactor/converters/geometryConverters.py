@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Change a pin-like or assembly-based reactor from one geometry to another.
+Change a pin-type or assembly-based reactor from one geometry to another.
 
 Examples may include going from Hex to R-Z or from Third-core to full core. This module contains
 **converters** (which create new reactor objects with different geometry), and **changers** (which
