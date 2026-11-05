@@ -1,8 +1,8 @@
 .. _settings-report:
 
-===============
+***************
 Settings Report
-===============
+***************
 
 .. exec::
     from armi import settings
