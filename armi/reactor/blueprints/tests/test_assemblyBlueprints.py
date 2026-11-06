@@ -223,16 +223,16 @@ assemblies:
         self.assertAlmostEqual(blockAxialMesh, [1.0, 2.0])
         self.assertEqual(blockXSTypes, ["A", "A"])
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMeshPoints)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongHeights)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongXSTypes)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMatMods)
 
     def test_checkMatModConsistency(self):

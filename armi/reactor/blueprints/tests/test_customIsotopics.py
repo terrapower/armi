@@ -454,19 +454,19 @@ assemblies:
         # Ensure we have some Void
         self.assertEqual(bp.blockDesigns["custom void"]["fuel"].material, "Void")
         # Can't have stuff in Void
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             bp.constructAssem(cs, name="fuel a")
 
         # Try making a 0 density non-Void material by setting TD_frac to 0.0
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             bp.constructAssem(cs, name="fuel b")
 
         # Try making a material with mass fractions with a density of 0
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             bp.constructAssem(cs, name="fuel c")
 
         # Try making a material with mass fractions with a negative density
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             bp.constructAssem(cs, name="fuel d")
 
     def test_numberFractions(self):
@@ -602,7 +602,7 @@ assemblies:
         cs = settings.Settings()
         bp = blueprints.Blueprints.load(self.yamlBlocksBadIsotopics)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(OSError):
             _a = bp.constructAssem(cs, name="fuel a")
 
 

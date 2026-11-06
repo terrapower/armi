@@ -741,11 +741,11 @@ class TestCompositeTree(unittest.TestCase):
 
         # test some edge cases
         otherBlock.spatialLocator._grid = None
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             otherBlock < self.block
 
         otherBlock.spatialLocator = None
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             otherBlock < self.block
 
     def test_clearCache(self):
