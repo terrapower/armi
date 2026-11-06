@@ -181,5 +181,5 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         b = self.w._getDriverBlock()
         self.assertIsNone(b)
         self.w.driverXsID = "AA"
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             b = self.w._getDriverBlock()
