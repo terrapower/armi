@@ -156,9 +156,8 @@ class DirectoryChanger:
             try:
                 os.makedirs(self.outputPath)
             except OSError as ee:
-                # even though we checked exists, this still fails
-                # sometimes when multiple MPI nodes try
-                # to make the dirs due to I/O delays
+                # Even though we checked exists, this still fails sometimes when multiple MPI nodes try to make the dirs
+                # due to I/O delays.
                 runLog.error(f"Failed to make output folder: {self.outputPath}. Exception: {ee}")
         else:
             runLog.extra(f"Output folder already exists: {self.outputPath}")
@@ -335,9 +334,8 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
             try:
                 os.makedirs(self.destination)
             except OSError as ee:
-                # even though we checked exists, this still fails
-                # sometimes when multiple MPI nodes try
-                # to make the dirs due to I/O delays
+                # Even though we checked exists, this still fails sometimes when multiple MPI nodes try to make the dirs
+                # due to I/O delays.
                 runLog.error(f"Failed to make destination folder: {self.destination}. Exception: {ee}")
         else:
             runLog.extra(f"Destination folder already exists: {self.destination}")

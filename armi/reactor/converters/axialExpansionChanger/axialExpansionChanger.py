@@ -337,9 +337,7 @@ class AxialExpansionChanger:
                 "preserve assembly height"
             )
             if self._detailedAxialExpansion:
-                msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
-                runLog.error(msg)
-                raise RuntimeError(msg)
+                runLog.error("Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!")
 
     def axiallyExpandAssembly(self, recalculateBurnup: bool = True):
         """Utilizes assembly linkage to do axial expansion.

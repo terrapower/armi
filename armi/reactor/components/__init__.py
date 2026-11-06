@@ -67,10 +67,11 @@ def factory(shape, bcomps, kwargs):
     try:
         return class_(components=bcomps, **kwargs)
     except TypeError:
-        # TypeError raised when kwarg is missing. We add extra information
-        # to the error to indicate which component needs updating.
-        runLog.error(f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}. Check input.")
-        raise
+        # TypeError raised when kwarg is missing. We add extra information to the error to indicate which component
+        # needs updating.
+        runLog.error(
+            f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}. Check input.", errType=TypeError
+        )
 
 
 def _removeDimensionNameSpaces(attrs):
@@ -79,9 +80,6 @@ def _removeDimensionNameSpaces(attrs):
         if " " in key:
             clean = key.replace(" ", "_")
             attrs[clean] = attrs.pop(key)
-
-
-# Below are a few component base classes
 
 
 class NullComponent(Component):
@@ -416,15 +414,12 @@ class DerivedShape(UnshapedComponent):
 
         # Check for negative
         if remainingVolume < 0:
-            msg = (
-                f"The component areas in {self.parent} exceed the maximum "
-                "allowable volume based on the geometry. Check that the "
-                "geometry is defined correctly.\n"
-                f"Maximum allowable volume: {self.getMaxVolume()} "
-                f"cm^3\nVolume of all non-derived shape components: {siblingVolume} cm^3\n"
+            runLog.error(
+                f"The component areas in {self.parent} exceed the maximum allowable volume based on the geometry. Check"
+                " that the geometry is defined correctly.\nMaximum allowable volume: {self.getMaxVolume()} cm^3\n"
+                f"Volume of all non-derived shape components: {siblingVolume} cm^3\n",
+                errType=ValueError,
             )
-            runLog.error(msg)
-            raise ValueError(f"Negative area/volume errors occurred for {self.parent}. Check log for errors.")
 
         height = self.parent.getHeight()
         if not height:
@@ -441,12 +436,11 @@ class DerivedShape(UnshapedComponent):
         """
         Get volume of derived shape.
 
-        The DerivedShape must pay attention to all of the companion objects, because if
-        they change, this changes.  However it's inefficient to always recompute the
-        derived volume, so we have to rely on the parent to know if anything has changed.
+        The DerivedShape must pay attention to all of the companion objects, because if they change, this changes.
+        However it's inefficient to always recompute the derived volume, so we have to rely on the parent to know if
+        anything has changed.
 
-        Since each parent is only allowed one DerivedShape, we can reset the update flag
-        here.
+        Since each parent is only allowed one DerivedShape, we can reset the update flag here.
 
         Returns
         -------

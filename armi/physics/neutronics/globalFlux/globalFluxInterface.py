@@ -905,9 +905,7 @@ def computeDpaRate(mgFlux, dpaXs, block=None):
         runLog.warning(f"Negative DPA rate calculated to be {dpaPerSecond}{forBlock}, setting to zero.")
         # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
-            msg = f"Calculated DPA rate is substantially negative at {dpaPerSecond}{forBlock}."
-            runLog.error(msg)
-            raise RuntimeError(msg)
+            runLog.error(f"Calculated DPA rate is substantially negative at {dpaPerSecond}{forBlock}.")
         dpaPerSecond = 0.0
 
     return dpaPerSecond
