@@ -16,6 +16,8 @@
 
 import unittest
 
+import voluptuous as vol
+
 from armi.settings import caseSettings
 
 
@@ -28,81 +30,81 @@ class TestSchema(unittest.TestCase):
             "nTasks": {
                 "valid": 1,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "axialMeshRefinementFactor": {
                 "valid": 1,
                 "invalid": 0,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "minMeshSizeRatio": {
                 "valid": 1,
                 "invalid": 0,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "cycleLength": {
                 "valid": 1,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "availabilityFactor": {
                 "valid": 0,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "burnSteps": {
                 "valid": 0,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "beta": {
                 "valid": [0.5, 0.5],
                 "invalid": [0.5, 2],
-                "error": RuntimeError,
+                "error": vol.error.AnyInvalid,
             },
             "decayConstants": {
                 "valid": [1, 1],
                 "invalid": [-1, 1],
-                "error": RuntimeError,
+                "error": vol.error.AnyInvalid,
             },
             "buGroups": {
                 "valid": [1, 5],
                 "invalid": [-1, 200],
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "burnupPeakingFactor": {
                 "valid": 0,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "startCycle": {
                 "valid": 1,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
             "startNode": {
                 "valid": 0,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
-            "nCycles": {"valid": 1, "invalid": -1, "error": RuntimeError},
-            "power": {"valid": 0, "invalid": -1, "error": RuntimeError},
+            "nCycles": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
+            "power": {"valid": 0, "invalid": -1, "error": vol.error.MultipleInvalid},
             "skipCycles": {
                 "valid": 0,
                 "invalid": -1,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
-            "targetK": {"valid": 1, "invalid": -1, "error": RuntimeError},
+            "targetK": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
             "acceptableBlockAreaError": {
                 "valid": 1,
                 "invalid": 0,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
-            "Tin": {"valid": -272, "invalid": -274, "error": RuntimeError},
+            "Tin": {"valid": -272, "invalid": -274, "error": vol.error.MultipleInvalid},
             "Tout": {
                 "valid": -272,
                 "invalid": -274,
-                "error": RuntimeError,
+                "error": vol.error.MultipleInvalid,
             },
         }
 
