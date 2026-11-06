@@ -28,14 +28,12 @@ class JaggedArray:
     """
     Take a list of numpy arrays or lists and flatten them into a single 1D array.
 
-    This implementation can preserve the structure of a multi-dimensional numpy array
-    by storing the dimensions in self.shapes and then re-populating a numpy array of
-    that shape from the flattened 1D array. However, it can only preserve one layer of
-    jaggedness in a list of lists (or other iterables). For example, a list of tuples
-    with varying lengths can be flattened and reconstituted exactly. But, if a list of
-    lists of tuples is passed in, the tuples in that final layer of nesting will all be
-    flattened to a single 1D numpy array after a round trip. No structure is retained
-    from nested lists of jagged lists or tuples.
+    This implementation can preserve the structure of a multi-dimensional numpy array by storing the dimensions in
+    self.shapes and then re-populating a numpy array of that shape from the flattened 1D array. However, it can only
+    preserve one layer of jaggedness in a list of lists (or other iterables). For example, a list of tuples with varying
+    lengths can be flattened and reconstituted exactly. But, if a list of lists of tuples is passed in, the tuples in
+    that final layer of nesting will all be flattened to a single 1D numpy array after a round trip. No structure is
+    retained from nested lists of jagged lists or tuples.
     """
 
     def __init__(self, jaggedData, paramName):
@@ -87,12 +85,11 @@ class JaggedArray:
             self.shapes = np.array(shapes)
         except ValueError:
             runLog.error(
-                "Error! It seems like ARMI may have tried to flatten a jagged array "
-                "where the elements have different numbers of dimensions. `shapes` "
-                "attribute of the JaggedArray for {} cannot be made into a numpy "
-                "array; it might be jagged.".format(paramName)
+                "It seems like ARMI may have tried to flatten a jagged array where the elements have different numbers "
+                f"of dimensions. `shapes` attribute of the JaggedArray for {paramName} cannot be made into a numpy "
+                f"array; it might be jagged.\n{shapes}"
             )
-            runLog.error(shapes)
+
         self.nones = np.array(nones)
         self.dtype = self.flattenedArray.dtype
         self.paramName = paramName
@@ -110,8 +107,7 @@ class JaggedArray:
         Recursively flatten an iterable (list, tuple, or numpy.ndarray).
 
         x : list, tuple, np.ndarray
-            An iterable. Can be a nested iterable in which the elements
-            themselves are also iterable.
+            An iterable. Can be a nested iterable in which the elements themselves are also iterable.
         """
         if isinstance(x, (list, tuple, np.ndarray)):
             if len(x) == 0:
@@ -126,9 +122,8 @@ class JaggedArray:
         """
         Create a JaggedArray instance from an HDF5 dataset.
 
-        The JaggedArray is stored in HDF5 as a flat 1D array with accompanying
-        attributes of "offsets" and "shapes" to define how to reconstitute the
-        original data.
+        The JaggedArray is stored in HDF5 as a flat 1D array with accompanying attributes of "offsets" and "shapes" to
+        define how to reconstitute the original data.
 
         Parameters
         ----------
