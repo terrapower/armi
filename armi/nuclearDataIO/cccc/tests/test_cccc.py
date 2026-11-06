@@ -79,7 +79,7 @@ class TestCcccBinaryRecord(unittest.TestCase):
             writer.rwInt(value)
 
         self.assertEqual(8, writer.numBytes)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(BufferError):
             with self.readerClass(self.streamCls(stream.getvalue())) as reader:
                 self.assertEqual(value, reader.rwInt(None))
 
@@ -91,7 +91,7 @@ class TestCcccBinaryRecord(unittest.TestCase):
             writer.rwInt(value)
 
         self.assertEqual(4, writer.numBytes)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(BufferError):
             with self.readerClass(self.streamCls(stream.getvalue())) as reader:
                 self.assertEqual(value, reader.rwInt(None))
                 self.assertEqual(4, reader.rwInt(None))
