@@ -15,13 +15,11 @@
 """
 Groundwork for ARMI Database, version 3.4.
 
-When interacting with the database file, the :py:class:`Layout` class is used to help
-map the hierarchical Composite Reactor Model to the flat representation in
-:py:class:`Database <armi.bookkeeping.db.database.Database>`.
+When interacting with the database file, the :py:class:`Layout` class is used to help map the hierarchical Composite
+Reactor Model to the flat representation in :py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
-This module also stores packing/packing tools to support
-:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as database
-versioning information.
+This module also stores packing/packing tools to support :py:class:`Database <armi.bookkeeping.db.database.Database>`,
+as well as database versioning information.
 """
 
 import collections
@@ -305,7 +303,7 @@ class Layout:
                 )
 
         except KeyError:
-            runLog.error(f"Failed to get layout information from group: {h5group.name}")
+            runLog.error(f"Failed to get layout information from group: {h5group.name}", errType=KeyError)
 
     def _initComps(self, caseTitle, bp):
         comps = []
@@ -778,7 +776,10 @@ def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray
             data[nones] = defaultValue
 
     except Exception as ee:
-        runLog.error(f"Error while attempting to determine default for {paramName}.\nvalue: {val}\nError: {ee}")
+        runLog.error(
+            f"Error while attempting to determine default for {paramName}.\nvalue: {val}\nError: {ee}",
+            errType=TypeError,
+        )
 
     try:
         data = data.astype(realType)

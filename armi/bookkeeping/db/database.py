@@ -1099,7 +1099,7 @@ class Database:
                     f"unmatched sizes.\nLength of composites list = {len(comps)}\nLength of data list = "
                     f"{len(unpackedData)}\nThis could indicate an error in data unpacking."
                 )
-                runLog.error(msg)
+                runLog.error(msg, errType=ValueError)
 
             if paramName == "numberDensities" and attrs.get("dict", False):
                 Database._applyComponentNumberDensitiesMigration(comps, unpackedData)
@@ -1221,7 +1221,7 @@ class Database:
             try:
                 h5GroupForType = h5TimeNodeGroup[objClassName]
             except KeyError:
-                runLog.error(f"{objClassName} not found in {h5TimeNodeGroup} of {self}")
+                runLog.error(f"{objClassName} not found in {h5TimeNodeGroup} of {self}", errType=KeyError)
 
             for paramName in params or h5GroupForType.keys():
                 if paramName == "location":
@@ -1338,7 +1338,7 @@ class Database:
                 try:
                     h5GroupForType = h5TimeNodeGroup[compTypeName]
                 except KeyError:
-                    runLog.error(f"{compTypeName} not found in {h5TimeNodeGroup} of {self}")
+                    runLog.error(f"{compTypeName} not found in {h5TimeNodeGroup} of {self}", errType=KeyError)
 
                 layoutIndicesForType = np.where(layout.type == compTypeName)[0]
                 serialNumsForType = layout.serialNum[layoutIndicesForType].tolist()
@@ -1477,7 +1477,7 @@ class Database:
                 else:
                     resolved[key] = val
             except ValueError:
-                runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
+                runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}", errType=ValueError)
 
         return resolved
 
@@ -1647,7 +1647,7 @@ def packSpecialData(
     if len(nones) == 0:
         raise TypeError(f"Cannot write {paramName} to the database, it did not resolve to a numpy/HDF5 type.")
 
-    runLog.error(f"Data unable to find special none value {data} for {paramName}")
+    runLog.error(f"Data unable to find special none value {data} for {paramName}", errType=TypeError)
 
 
 def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:

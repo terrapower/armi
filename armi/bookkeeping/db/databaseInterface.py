@@ -254,7 +254,7 @@ class DatabaseInterface(interfaces.Interface):
                     dbStepHistory.append(dbStepLengths[cycleIdx])
                     currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
         except IndexError:
-            runLog.error(f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}")
+            runLog.error(f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}", errType=IndexError)
 
         if dbStepHistory != currentCaseStepHistory:
             raise ValueError("The cycle history up to the restart cycle/node must be equivalent.")

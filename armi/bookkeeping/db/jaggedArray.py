@@ -87,7 +87,8 @@ class JaggedArray:
             runLog.error(
                 "It seems like ARMI may have tried to flatten a jagged array where the elements have different numbers "
                 f"of dimensions. `shapes` attribute of the JaggedArray for {paramName} cannot be made into a numpy "
-                f"array; it might be jagged.\n{shapes}"
+                f"array; it might be jagged.\n{shapes}",
+                errType=ValueError,
             )
 
         self.nones = np.array(nones)

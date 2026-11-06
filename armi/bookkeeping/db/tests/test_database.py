@@ -962,7 +962,7 @@ grids:
             del circleGroup["massHmBOL"]
             circleGroup.create_dataset("massHmBOL", data=badData)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
 
