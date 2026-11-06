@@ -295,7 +295,8 @@ class UniformMeshGenerator:
                         runLog.error(
                             "Attempting to remove two anchor points!\nThe uniform mesh minimum size for decusping is "
                             "smaller than the gap between anchor points, which cannot be removed:\n"
-                            f"{meshList[i]}, {meshList[i + 1]}, gap = {abs(meshList[i] - meshList[i + 1])}"
+                            f"{meshList[i]}, {meshList[i + 1]}, gap = {abs(meshList[i] - meshList[i + 1])}",
+                            errType=ValueError,
                         )
                     if meshList[i + 1] in anchorPoints:
                         removeIndex = i

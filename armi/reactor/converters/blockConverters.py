@@ -120,7 +120,8 @@ class BlockConverter:
                     matchedDimension = True
                 if not matchedDimension:
                     runLog.error(
-                        f"Cannot merge negative-area component {solute} into {solvent} without the two being linked."
+                        f"Cannot merge negative-area component {solute} into {solvent} without the two being linked.",
+                        errType=ValueError,
                     )
 
             if soluteLinks:
