@@ -1324,9 +1324,8 @@ class Component(ArmiObject, metaclass=ComponentType):
         Returns
         -------
         np.ndarray
-            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the
-            multiplicity of the component (``self.p.mult``) and ``nGroup`` is the number of energy
-            groups of the flux.
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the multiplicity of the
+            component (``self.p.mult``) and ``nGroup`` is the number of energy groups of the flux.
 
         Raises
         ------
@@ -1353,8 +1352,7 @@ class Component(ArmiObject, metaclass=ComponentType):
         try:
             return self.parent.p[param][indexMap]
         except Exception as ee:
-            runLog.warning(ee)
-            runLog.error(f"Failure getting {param} from {self} via parent {self.parent}")
+            runLog.error(f"Failure getting {param} from {self} via parent {self.parent}:\n{ee}")
 
     def getPinIndices(self) -> np.ndarray[tuple[int], np.uint16]:
         """Find the indices for the locations where this component can be found in the block.

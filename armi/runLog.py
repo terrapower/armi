@@ -21,8 +21,8 @@ The default way of calling and the global armi logger is to just import it:
 
     from armi import runLog
 
-You may want a logger specific to a single module, say to provide debug logging for only one module.
-That functionality is provided by a global override of logging imports:
+You may want a logger specific to a single module, say to provide debug logging for only one module. That functionality
+is provided by a global override of logging imports:
 
 .. code-block::
 
@@ -422,9 +422,9 @@ def warning(msg, single=False, label=None):
     LOG.log("warning", msg, single=single, label=label)
 
 
-def error(msg, single=False, label=None):
+def error(msg, single=False, label=None, errType: type[Exception] = RuntimeError):
     LOG.log("error", msg, single=single, label=label)
-    raise RuntimeError(msg)
+    raise errType(msg)
 
 
 def header(msg, single=False, label=None):
