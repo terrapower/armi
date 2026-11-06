@@ -91,7 +91,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     """
     maxBuBlock = maxBurnupBlock(a)
     if maxBuBlock.spatialGrid is None:
-        runLog.error(f"Block {maxBuBlock} in {a} does not have a spatial grid. Cannot rotate.")
+        runLog.error(f"Block {maxBuBlock} in {a} does not have a spatial grid. Cannot rotate.", errType=ValueError)
     maxBuPinLocation = maxBurnupLocator(maxBuBlock)
     # No need to rotate if max burnup pin is the center
     if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
@@ -106,8 +106,9 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     previousPowers = blockAtPreviousLocation.p.linPowByPin
     if len(previousLocations) != len(previousPowers):
         runLog.error(
-            f"Inconsistent pin powers and number of pins in {blockAtPreviousLocation}. "
-            f"Found {len(previousLocations)} locations but {len(previousPowers)} powers."
+            f"Inconsistent pin powers and number of pins in {blockAtPreviousLocation}. Found {len(previousLocations)} "
+            f"locations but {len(previousPowers)} powers.",
+            errType=ValueError,
         )
 
     ringPowers = {(loc.i, loc.j): p for loc, p in zip(previousLocations, previousPowers)}

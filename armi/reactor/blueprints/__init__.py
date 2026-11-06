@@ -147,7 +147,8 @@ def loadFromCs(cs, roundTrip=False):
                     if "cross sections" in err.args[0]:
                         runLog.error(
                             f"The loading file {cs[CONF_LOADING_FILE]} contains invalid `cross sections` input. Please "
-                            "run the `modify` entry point on this case to automatically convert."
+                            "run the `modify` entry point on this case to automatically convert.",
+                            errType=yamlize.yamlizing_error.YamlizingError,
                         )
     return bp
 

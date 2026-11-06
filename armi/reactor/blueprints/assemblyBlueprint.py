@@ -287,8 +287,9 @@ class AssemblyBlueprint(yamlize.Object):
         for paramName, blockVals in paramsToCheck.items():
             if len(self.blocks) != len(blockVals):
                 runLog.error(
-                    f"Assembly {self.name} had {len(self.blocks)} block(s), but {len(blockVals)} "
-                    f"'{paramName}'. These numbers should be equal. Check input for errors."
+                    f"Assembly {self.name} had {len(self.blocks)} block(s), but {len(blockVals)} '{paramName}'. These "
+                    "numbers should be equal. Check input for errors.",
+                    errType=ValueError,
                 )
 
     def checkMatModConsistency(self):

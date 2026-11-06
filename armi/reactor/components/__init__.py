@@ -69,7 +69,9 @@ def factory(shape, bcomps, kwargs):
     except TypeError:
         # TypeError raised when kwarg is missing. We add extra information to the error to indicate which component
         # needs updating.
-        runLog.error(f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}. Check input.")
+        runLog.error(
+            f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}. Check input.", errType=TypeError
+        )
 
 
 def _removeDimensionNameSpaces(attrs):
@@ -415,7 +417,8 @@ class DerivedShape(UnshapedComponent):
             runLog.error(
                 f"The component areas in {self.parent} exceed the maximum allowable volume based on the geometry. Check"
                 " that the geometry is defined correctly.\nMaximum allowable volume: {self.getMaxVolume()} cm^3\n"
-                f"Volume of all non-derived shape components: {siblingVolume} cm^3\n"
+                f"Volume of all non-derived shape components: {siblingVolume} cm^3\n",
+                errType=ValueError,
             )
 
         height = self.parent.getHeight()

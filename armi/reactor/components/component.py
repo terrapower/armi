@@ -27,15 +27,11 @@ See Also
 :doc:`/developer/index`.
 armi.reactor.armiObject.ArmiObject
 armi.reactor.composites.Composite
-
 """
 
 import copy
 import re
-from typing import (
-    Iterable,
-    Union,
-)
+from typing import Iterable, Union
 
 import numpy as np
 
@@ -1352,7 +1348,7 @@ class Component(ArmiObject, metaclass=ComponentType):
         try:
             return self.parent.p[param][indexMap]
         except Exception as ee:
-            runLog.error(f"Failure getting {param} from {self} via parent {self.parent}:\n{ee}")
+            runLog.error(f"Failure getting {param} from {self} via parent {self.parent}:\n{ee}", errType=ValueError)
 
     def getPinIndices(self) -> np.ndarray[tuple[int], np.uint16]:
         """Find the indices for the locations where this component can be found in the block.

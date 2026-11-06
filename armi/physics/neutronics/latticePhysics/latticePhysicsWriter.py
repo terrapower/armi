@@ -429,7 +429,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         xsgm = self.getInterface("xsGroups")
         driverBlock = xsgm.representativeBlocks.get(self.driverXsID, None)
         if self.driverXsID != "" and driverBlock is None:
-            runLog.error(f"No representativeBlock found for driver XS ID {self.driverXsID} to use in {self}!")
+            runLog.error(
+                f"No representativeBlock found for driver XS ID {self.driverXsID} to use in {self}!", errType=ValueError
+            )
         return driverBlock
 
 

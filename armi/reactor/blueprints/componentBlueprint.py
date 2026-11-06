@@ -227,7 +227,7 @@ class ComponentBlueprint(yamlize.Object):
 
         if hasattr(constructedObject, "material") and "Custom" in str(constructedObject.material):
             if len(constructedObject.material.massFrac) == 0:
-                runLog.error(f"Custom material does not have isotopics: {self}", single=True)
+                runLog.error(f"Custom material does not have isotopics: {self}", single=True, errType=IOError)
 
         return constructedObject
 
@@ -246,7 +246,8 @@ class ComponentBlueprint(yamlize.Object):
             runLog.error(
                 "A zero or negative density was specified in a custom isotopics input. This is not permitted, if a 0 "
                 f"density material is needed, use 'Void'. The component is {comp} and the isotopics entry is "
-                f"{self.isotopics}."
+                f"{self.isotopics}.",
+                errType=ValueError,
             )
         elif len(matMods):
             runLog.warning(
@@ -271,7 +272,8 @@ class ComponentBlueprint(yamlize.Object):
                 runLog.error(
                     f"A custom density has been assigned to material '{self.material}', which has no baseline density. "
                     "Only materials with a starting density may be assigned a density. This comes up e.g. if isotopics "
-                    "are assigned to 'Void'."
+                    "are assigned to 'Void'.",
+                    errType=ValueError,
                 )
 
             # Apply a density scaling to account for the temperature change between Tinput and Thot

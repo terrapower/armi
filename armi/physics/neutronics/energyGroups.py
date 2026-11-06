@@ -105,7 +105,8 @@ def getGroupStructure(name):
         runLog.error(
             'Could not find groupStructure with the name "{}".\nChoose one of: {}'.format(
                 name, ", ".join(GROUP_STRUCTURE.keys())
-            )
+            ),
+            errType=KeyError,
         )
 
 

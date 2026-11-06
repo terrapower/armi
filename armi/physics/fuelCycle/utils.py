@@ -30,8 +30,7 @@ if typing.TYPE_CHECKING:
 def assemblyHasFuelPinPowers(a: typing.Iterable["Block"]) -> bool:
     """Determine if an assembly has pin powers.
 
-    These are necessary for determining rotation and may or may
-    not be present on all assemblies.
+    These are necessary for determining rotation and may or may not be present on all assemblies.
 
     Parameters
     ----------
@@ -135,4 +134,4 @@ def maxBurnupBlock(a: typing.Iterable["Block"]) -> "Block":
     try:
         return max(blocksWithBurnup, key=buGetter)
     except Exception:
-        runLog.error(f"Error finding max burnup block from {a}")
+        runLog.error(f"Error finding max burnup block from {a}", errType=ValueError)
