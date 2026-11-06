@@ -2,14 +2,9 @@
 Accessing Data in ARMI
 **********************
 
-A user only needs to know the CLI or GUI to perform basic analysis and design in ARMI.
-More in-depth analysis and design requires programmatically building and
-manipulating inputs and gathering detailed information from ARMI results.
-Let's now go into a bit more detail on what data can be accessed in ARMI.
-
-Settings and State Variables
-============================
-
+A user only needs to know the CLI or GUI to perform basic analysis and design in ARMI. More in-depth analysis and design
+requires programmatically building and manipulating inputs and gathering detailed information from ARMI results. Let's
+now go into a bit more detail on what data can be accessed in ARMI.
 
 
 Accessing Some Interesting Info
@@ -38,25 +33,3 @@ on the :py:mod:`components <armi.reactor.components>`, and may be accessed as fo
 
 The dimensions available depend on the shape of the component. Hexagons have `op` and `ip` for outer
 and inner pitch. Other options are seen at the source at :py:mod:`armi.reactor.components`.
-
-Settings and Parameters Reports
-===============================
-
-A full list of global settings and state parameters in use across ARMI are available here for lookup.
-
-.. toctree::
-   :maxdepth: 2
-   :numbered:
-
-   settings_report
-   params_report
-
-.. The following links contain large tables describing the various global settings and state parameters
-.. in use across ARMI.
-
-.. * :ref:`settings-report`
-.. * :ref:`reactor-parameters-report`
-.. * :ref:`core-parameters-report`
-.. * :ref:`component-parameters-report`
-.. * :ref:`assembly-parameters-report`
-.. * :ref:`block-parameters-report`

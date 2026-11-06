@@ -743,6 +743,37 @@ The ARMI data model is represented schematically below, and the blueprints are d
 The core map input files can be graphically manipulated with the
 :py:mod:`Grid editor <armi.utils.gridEditor>`.
 
+.. _naming-flags:
+
+Flags and naming
+----------------
+
+All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect
+the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
+``FUEL``, or ``CLAD``, and are used to declare "what something is" in the reactor model. Various physics or other
+framework operations can then be parameterized to target specific types of things. For instance, the fuel handling code
+can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and not move them with the rest of
+the block stack in an assembly.
+
+Historically, flags have also been used to describe directly "what should be done" with an object in the reactor model.
+For instance, an object with the ``DEPLETABLE`` flag set will participate in isotopic depletion analysis, whereas
+objects without the ``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of various flags
+is buried deep within the code, and can conflict from place to place. We are trying to align around a "what something
+is" interpretation, and bind those to specific behaviors with settings. For more details, see
+:py:mod:`armi.reactor.flags`.
+
+The set of specific flags that should be set on an object can be specified in one of two ways for each object defined in
+the blueprints. The most precise way is to use include a ``flags:`` entry for the object blueprint in question. In the
+example above, the ``fuel`` component sets the ``FUEL`` and ``TEST`` flags. When specifying flags in this way, the value
+specified must be completely and unambiguously convertible into valid Flags. If it cannot, it will lead to an error when
+constructing the object.
+
+If ``flags:`` is empty, or not specified, then the name of the object blueprint will be used to infer as many flags as
+possible. In the above example, the ``clad`` component will get the ``CLAD`` flag from its name.
+
+.. note::
+    Additional flags may be specified from plugins, but this should be done with care; see the
+    :py:mod:`armi.reactor.flags` module and :py:meth:`armi.plugins.ArmiPlugin.defineFlags` plugin hook for more details.
 
 .. _blocks-and-components:
 
@@ -750,34 +781,15 @@ Blocks and Components
 ---------------------
 Blocks and components are defined together in the **blueprints** input.
 
-We will start with a component, and then define the whole ``blocks:`` input. The structure will be something like::
-
-    blocks:
-        block name 1:
-            component name 1:
-                ...
-            component name 2:
-        block name 2:
-            component name 1:
-                ...
-            component name 2:
-                ...
-
-.. note:: You can also define components at the top level of the blueprints file under the ``components:`` top level
-    section, but bringing anything defined there into the reactor model must currently be done programmatically. We are
-    currently developing additional input capabilities to use these more flexibly.
-
-    Associated with this is a ``component groups:`` section which can collect different free components with different
-    volume fractions. This also is not fully implemented yet.
+We will start with a Component, and then define the whole ``blocks:`` input.
 
 Defining a Component
 ^^^^^^^^^^^^^^^^^^^^
-The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane dimensions (axial
-dimensions are defined in the :ref:`assemblies` input) and the material makeups of each
-:py:mod:`Component <armi.reactor.components>`. :py:mod:`Blocks <armi.reactor.blocks>` are defined here as collections
-of geometric components that have specific temperatures, dimensions, material properties, and isotopic compositions.
+A component is a geometriic element that has specific temperatures, dimensions, material properties, and isotopic compositions.
 
-An component may be defined as::
+The **Components** section defines the geometric element itself (e.g. a pin if modeling a pin-type reactor), radial dimensions (axial
+dimensions are defined in the :ref:`assemblies` input), and the material makeups of each
+:py:mod:`Component <armi.reactor.components>` object. For example, a component consisting of circular UZr fuel could be defined as::
 
     fuel:
         shape: Circle
@@ -892,10 +904,35 @@ example when the above defined fuel is expanded from cold temperature of 25 to t
 the above case, if the fuel expansion removes more cross sectional area than the clad expansion creates, the amount of
 thermal bond will be reduced. This is physical since, in reality, the fluid would be displaced as dimensions change.
 
+Defining Blocks
+^^^^^^^^^^^^^^^
+
+:py:mod:`Blocks <armi.reactor.blocks>` are collections
+of geometric components. The generic structure in the input file is::
+
+    blocks:
+        block name 1:
+            component name 1:
+                ...
+            component name 2:
+        block name 2:
+            component name 1:
+                ...
+            component name 2:
+                ...
+
+.. note:: You can also define components at the top level of the blueprints file under the ``components:``, but bringing
+    anything defined there into the reactor model must currently be done programmatically. We are currently developing
+    additional input capabilities to use these more flexibly.
+
+    Associated with this is a ``component groups:`` section which can collect different free components with different
+    volume fractions. This also is not fully implemented yet.
+
+
 Pin lattices
 ^^^^^^^^^^^^
-Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input section. A
-block may assigned a grid name, and then each component may be assigned one or more grid specifiers.
+Pin lattices may be explicitly defined in the block/component input in conjunction with a ``grids`` input section. A
+block may be assigned a grid name, and then each component may be assigned one or more grid specifiers.
 
 For example, the following input section specifies that fuel pins will occupy all grid positions marked with a ``1`` and
 cladding components will occupy all grid positions marked with either a ``1`` or a ``2``. This situation may be
@@ -926,39 +963,7 @@ desirable when some burnable poison pins use the same cladding as the fuel pins.
                 od: 1.09
                 latticeIDs: [1,2]
 
-.. note:: A ``grid`` with the name ``fuelgrid`` must be defined as well in the grid input section.
-
-
-.. _naming-flags:
-
-Flags and naming
-----------------
-
-All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
-``FUEL``, or ``CLAD``, and are used to declare `what something is` in the reactor model. Various physics or other
-framework operations can then be parameterized to target specific types of things. For instance, the fuel handling code
-can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and not move them with the rest of
-the block stack in an assembly.
-
-Historically, flags have also been used to describe directly `what should be done` with an object in the reactor model.
-For instance, an object with the ``DEPLETABLE`` flag set will participate in isotopic depletion analysis, whereas
-objects without the ``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of various flags
-is buried deep within the code, and can conflict from place to place. We are trying to align around a `what something
-is` interpretation, and bind those to specific behaviors with settings. For more details, see
-:py:mod:`armi.reactor.flags`.
-
-The set of specific flags that should be set on an object can be specified in one of two ways for each object defined in
-the blueprints. The most precise way is to use include a ``flags:`` entry for the object blueprint in question. In the
-example above, the ``fuel`` component sets the ``FUEL`` and ``TEST`` flags. When specifying flags in this way, the value
-specified must be completely and unambiguously convertible into valid Flags. If it cannot, it will lead to an error when
-constructing the object.
-
-If ``flags:`` is empty, or not specified, then the name of the object blueprint will be used to infer as many flags as
-possible. In the above example, the ``clad`` component will get the ``CLAD`` flag from its name.
-
-.. note::
-    Additional flags may be specified from plugins, but this should be done with care; see the
-    :py:mod:`armi.reactor.flags` module and :py:meth:`armi.plugins.ArmiPlugin.defineFlags` plugin hook for more details.
+In this example, a ``grid`` with the name ``fuelgrid`` would be defined in the :ref:`grids <grids>` section of the input file.
 
 .. _assemblies:
 
@@ -1020,6 +1025,12 @@ xs types
   ARMI is able to use lower-case letters (a-z), but this should only be done when working on a case-sensitive file
   system. On a case-insensitive file system (Windows, and some MacOS systems) this could cause unpredictable errors.
 
+blocks
+   List of blocks in the assembly. The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
+
+height
+  Block extrusion heights are specified here in cm, and match the order that the blocks themselves are defined in.
+
 axial mesh points
   Blocks will be broken up into this many uniform mesh points in the deterministic neutronics solvers (e.g. DIF3D). This
   allows you to define large blocks that have multiple flux points within them. You have to keep the neutronic mesh
@@ -1039,7 +1050,7 @@ nozzleType
 
 material modifications
   There are a variety of material modifications available for each material. The most common material modifications are
-  usually to do with enrichment of a particular nuclide, modifying the theoretical density of a material, or changing
+  enrichment of a particular nuclide, modifying the theoretical density of a material, or changing
   some list of custom isotopics. You can set values to these material modifications in your blueprints. And if you want
   to add new modifications to your own custom material, you would typically implement that change in your material's
   ``applyInputParams()`` method. Here are some example material modifications from ARMI's history:
@@ -1145,8 +1156,6 @@ material modifications
                         fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
                             Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
                     U235_wt_frac: [0.30, 0.30]
-
-The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.
 
 Please note that the ``standard`` run types allow for material modifications to be heterogeneous. E.g., the following is a valid modification:
 

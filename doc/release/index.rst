@@ -2,4 +2,15 @@
 Release Notes
 #############
 
-You can find a simplified version of the ARMI `Release Notes here <https://github.com/terrapower/armi/releases>`_. However, to meet our rigorous quality processes, you can look in the :doc:`/qa_docs/scr/index` section for the fully detailed software change log.
+This section houses the Release Notes for all past releases.
+
+You can also find the changes happening in the current release push in the :doc:`/qa_docs/scr/index` section.
+
+----------
+
+.. toctree::
+   :maxdepth: 5
+   :glob:
+   :reversed:
+
+   *
