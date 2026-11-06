@@ -103,19 +103,40 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
 
     2-digit labels are supported when there is only one burnup group.
     """
+    allowableXsTypes = _ALLOWABLE_XS_TYPE_LIST + list(string.digits)
+
     try:
-        if xsTypeNumber > ord("Z"):
-            # two digit. Parse
-            return chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
-        elif xsTypeNumber < ord("A"):
-            raise ValueError(
-                f"Cannot convert invalid xsTypeNumber `{xsTypeNumber}` to char. "
-                "The number must be >= 65 (corresponding to 'A')."
-            )
+        xsTypeStr = str(xsTypeNumber)
+
+        if len(xsTypeStr) < 4:
+            # single character
+            label = chr(xsTypeNumber)
+        elif len(xsTypeStr) == 4:
+            # two character, and easy to understand
+            label = chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+        elif len(xsTypeStr) > 6:
+            # This is invalid: three numbers, special characters, or just nonsense.
+            raise ValueError()
         else:
-            return chr(xsTypeNumber)
+            # two characters, but more complicated to figure out
+            firstTwo = chr(int(xsTypeStr[:2]))
+            if firstTwo in allowableXsTypes:
+                label = firstTwo + chr(int(str(xsTypeNumber)[2:]))
+            else:
+                firstThree = chr(int(xsTypeStr[:3]))
+                if firstThree in allowableXsTypes:
+                    label = firstThree + chr(int(str(xsTypeNumber)[3:]))
+                else:
+                    raise ValueError()
+
+        # do some error handling
+        for char in label:
+            if char not in allowableXsTypes:
+                raise ValueError()
+
+        return label
     except ValueError:
-        runLog.error("Error converting {} to label.".format(xsTypeNumber))
+        runLog.error(f"Error converting {xsTypeNumber} to label.")
         raise
 
 

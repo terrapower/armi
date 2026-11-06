@@ -1238,17 +1238,75 @@ class TestXSGMWithTempGrouping(unittest.TestCase):
 
 
 class TestXSNumberConverters(unittest.TestCase):
-    def test_conversion(self):
+    def test_nullCase(self):
+        with self.assertRaises(ValueError):
+            crossSectionGroupManager.getXSTypeLabelFromNumber(7)
+
+        with self.assertRaises(ValueError):
+            crossSectionGroupManager.getXSTypeLabelFromNumber(244)
+
+        with self.assertRaises(ValueError):
+            crossSectionGroupManager.getXSTypeLabelFromNumber(134134)
+
+    def test_oneCapital(self):
         label = crossSectionGroupManager.getXSTypeLabelFromNumber(65)
         self.assertEqual(label, "A")
         num = crossSectionGroupManager.getXSTypeNumberFromLabel("A")
         self.assertEqual(num, 65)
 
-    def test_conversion_2digit(self):
+    def test_twoCapitals(self):
         label = crossSectionGroupManager.getXSTypeLabelFromNumber(6570)
         self.assertEqual(label, "AF")
         num = crossSectionGroupManager.getXSTypeNumberFromLabel("ZZ")
         self.assertEqual(num, 9090)
+
+    def test_oneDigit(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(55)
+        self.assertEqual(label, "7")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("7")
+        self.assertEqual(num, 55)
+
+    def test_twoDigits(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(5056)
+        self.assertEqual(label, "28")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("28")
+        self.assertEqual(num, 5056)
+
+    def test_oneLowercase(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(113)
+        self.assertEqual(label, "q")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("q")
+        self.assertEqual(num, 113)
+
+    def test_twoLowercases(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(104105)
+        self.assertEqual(label, "hi")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("hi")
+        self.assertEqual(num, 104105)
+
+    def test_lowerUpper(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(12088)
+        self.assertEqual(label, "xX")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("xX")
+        self.assertEqual(num, 12088)
+
+    def test_upperLower(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(78111)
+        self.assertEqual(label, "No")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("No")
+        self.assertEqual(num, 78111)
+
+    def test_upperDigit(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(8252)
+        self.assertEqual(label, "R4")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("R4")
+        self.assertEqual(num, 8252)
+
+    def test_digitLower(self):
+        label = crossSectionGroupManager.getXSTypeLabelFromNumber(55122)
+        self.assertEqual(label, "7z")
+        num = crossSectionGroupManager.getXSTypeNumberFromLabel("7z")
+        self.assertEqual(num, 55122)
 
 
 def makeBlocks(howMany=20):
