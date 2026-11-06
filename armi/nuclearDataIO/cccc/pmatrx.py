@@ -204,7 +204,7 @@ class PmatrxIO(cccc.Stream):
             self._rwDoseConversionFactor()
             self._rwIsotopes(numNucs)
         except Exception:
-            runLog.error(f"Failed to read/write {self}\nTraceback:\n{traceback.format_exc()}")
+            runLog.error(f"Failed to read/write {self}\nTraceback:\n{traceback.format_exc()}", errType=OSError)
         finally:
             properties.lockImmutableProperties(self._lib)
 

@@ -618,7 +618,7 @@ class Material(MatPropsMaterial):
         if not minT <= val <= maxT:
             msg = f"Temperature {val} out of range ({minT} to {maxT}) for {self.name} {label}"
             if FAIL_ON_RANGE or np.isnan(val):
-                runLog.error(msg)
+                runLog.error(msg, errType=ValueError)
             else:
                 runLog.warning(msg, single=True, label=f"T out of bounds for {self.name} {label}")
 

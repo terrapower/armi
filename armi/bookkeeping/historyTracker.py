@@ -160,7 +160,8 @@ class HistoryTrackerInterface(interfaces.Interface):
                 except KeyError:
                     runLog.error(
                         f"Detail assembly in location {locLabel} (requested via `detailAssemLocationsBOL`) is not in "
-                        "the core. Update settings."
+                        "the core. Update settings.",
+                        errType=KeyError,
                     )
                 self.addDetailAssembly(a)
 
@@ -371,7 +372,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 data = dbi.database.getHistory(block, [paramName], [ts])
                 val = data[paramName][ts]
             except KeyError:
-                runLog.error(f"No value in DB. param name: {paramName} requested index: {ts}")
+                runLog.error(f"No value in DB. param name: {paramName} requested index: {ts}", errType=KeyError)
 
         return val
 

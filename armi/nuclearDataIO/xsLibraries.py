@@ -458,8 +458,8 @@ class IsotxsLibrary(_XSLibrary):
 
         try:
             return self[libLabel]
-        except KeyError:
-            runLog.error(f"Error in {self}.\nSee stderr.")
+        except KeyError as ee:
+            runLog.error(f"Error in {self}.\n{ee}", errType=KeyError)
 
     def __delitem__(self, key):
         _XSLibrary.__delitem__(self, key)

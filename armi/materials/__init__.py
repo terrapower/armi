@@ -85,7 +85,7 @@ def importYamlMaterialDir(dirPath, overwriteExisting=True, clearFirst=True):
     global _loadedYamlMats
 
     if not os.path.exists(dirPath) or not os.path.isdir(dirPath):
-        runLog.error(f"No material directory provided, or directory not found: {dirPath}")
+        runLog.error(f"No material directory provided, or directory not found: {dirPath}", errType=FileNotFoundError)
 
     if clearFirst:
         # clear the loaded materials before loading this new directory
