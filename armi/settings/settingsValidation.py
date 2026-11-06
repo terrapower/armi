@@ -83,7 +83,7 @@ class Query:
         try:
             return bool(self.condition())
         except TypeError:
-            runLog.error(f"Invalid setting validation query. Update validator for: {self})")
+            runLog.error(f"Invalid setting validation query. Update validator for: {self})", errType=TypeError)
 
     def isCorrective(self):
         return self.correction is not Inspector.NO_ACTION

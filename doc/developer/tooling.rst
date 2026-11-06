@@ -184,6 +184,7 @@ very easy to use:
     runLog.debug("This will only be seen if you run in debug mode.")
     runLog.info("Default log level.")
     runLog.error("The run will die, or the results are invalid.")
+    runLog.error("The run will die, by raising FileNotFoundError.", errType=FileNotFoundError)
 
 .. note::
     Calling ``runLog.error(msg)`` will log the ``msg`` in question and then raise Python's ``RuntimeError``; which will

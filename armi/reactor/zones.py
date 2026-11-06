@@ -344,7 +344,7 @@ class Zones:
             try:
                 thisZoneLocs = set(self[zn])
             except KeyError:
-                runLog.error(f"The zone {zn} does not exist. Please define it.")
+                runLog.error(f"The zone {zn} does not exist. Please define it.", errType=KeyError)
             zoneLocs.update(thisZoneLocs)
 
         return zoneLocs

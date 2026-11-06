@@ -60,10 +60,9 @@ class FlagSerializer(parameters.Serializer):
     """
     Serializer implementation for Flags.
 
-    This operates by converting each set of Flags (too large to fit in a uint64) into a
-    sequence of enough uint8 elements to represent all flags. These constitute a
-    dimension of a 2-D numpy array containing all Flags for all objects provided to the
-    ``pack()`` function.
+    This operates by converting each set of Flags (too large to fit in a uint64) into a sequence of enough uint8
+    elements to represent all flags. These constitute a dimension of a 2-D numpy array containing all Flags for all
+    objects provided to the ``pack()`` function.
     """
 
     version = "1"
@@ -349,20 +348,23 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         order. It also makes sure that the objects being sorted live in the same grid.
         """
         if self.spatialLocator is None or other.spatialLocator is None:
-            runLog.error(f"Could not compare {self} and {other}: One or more of the objects have no spatialLocator.")
+            runLog.error(
+                f"Could not compare {self} and {other}: One or more of the objects have no spatialLocator.",
+                errType=ValueError,
+            )
 
         if self.spatialLocator.grid is not other.spatialLocator.grid:
             runLog.error(
                 f"Could not compare {self} and {other}: Composite grids must be the same to compare:\n"
-                f"This grid: {self.spatialGrid}\n"
-                f"Other grid: {other.spatialGrid}"
+                f"This grid: {self.spatialGrid}\nOther grid: {other.spatialGrid}",
+                errType=ValueError,
             )
         try:
             t1 = tuple(reversed(self.spatialLocator.getCompleteIndices()))
             t2 = tuple(reversed(other.spatialLocator.getCompleteIndices()))
             return t1 < t2
         except ValueError:
-            runLog.error(f"failed to compare {self.spatialLocator} and {other.spatialLocator}")
+            runLog.error(f"failed to compare {self.spatialLocator} and {other.spatialLocator}", errType=ValueError)
 
     def __getstate__(self):
         """

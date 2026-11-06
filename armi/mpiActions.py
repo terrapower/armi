@@ -133,7 +133,7 @@ class MpiAction:
         try:
             return mpiFunction(obj, root=0)
         except pickle.PicklingError as error:
-            runLog.error(f"Failed to {mpiFunction.__name__} {obj}.\n{error}")
+            runLog.error(f"Failed to {mpiFunction.__name__} {obj}.\n{error}", errType=pickle.PicklingError)
         finally:
             if obj is self:
                 self.o, self.r, self.cs = o, r, cs
@@ -356,7 +356,8 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
         if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
             runLog.error(
                 f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available "
-                f"({numAssigned[nodeName]}) on {nodeName}!"
+                f"({numAssigned[nodeName]}) on {nodeName}!",
+                errType=ValueError,
             )
 
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
