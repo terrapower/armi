@@ -212,7 +212,7 @@ class TestMpiIter(unittest.TestCase):
         }
 
         # run in parallel
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             runBatchedActions(o, r, o.cs, actionsByNode)
 
     @patch("armi.context.MPI_COMM", MockMpiComm())

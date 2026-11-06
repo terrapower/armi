@@ -46,10 +46,8 @@ class TestMaterialInAssembly(unittest.TestCase):
     def test_sortNoLocator(self):
         self.assembly.spatialLocator = None
         self.assembly2.spatialLocator = None
-        with self.assertRaises(RuntimeError):
-            self.assertFalse(self.assembly < self.assembly2)
-        with self.assertRaises(RuntimeError):
-            self.assertFalse(self.assembly2 < self.assembly)
+        self.assertFalse(self.assembly < self.assembly2)
+        self.assertFalse(self.assembly2 < self.assembly)
         grid = grids.HexGrid()
         self.assembly.spatialLocator = grid[0, 0, 0]
         self.assembly2.spatialLocator = grid[0, 1, 0]
@@ -472,7 +470,7 @@ class TestAssembly(unittest.TestCase):
             self.assertEqual(b.parent, a)
             self.assertEqual(len(a), n + 1)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TypeError):
             a.add(blocks.CartesianBlock("Test Cart Block"))
 
     def test_setBlockStack(self):
