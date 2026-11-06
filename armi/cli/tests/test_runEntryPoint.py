@@ -352,7 +352,7 @@ class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
         self.assertEqual(com.name, "diff-isotxs")
         self.assertIsNone(com.settingsArgument)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(OSError):
             # The provided files don't exist, so this should fail.
             com.invoke()
 

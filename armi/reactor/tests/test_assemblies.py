@@ -423,7 +423,7 @@ class TestAssembly(unittest.TestCase):
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             # try to assign a non-string
             self.assembly.p.notes = 1
 
@@ -489,7 +489,7 @@ class TestAssembly(unittest.TestCase):
             self.assertIn(b, a)
             self.assertEqual(b.parent, a)
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TypeError):
             blockStack.append(blocks.CartesianBlock("Test Cart Block"))
             a.setBlockStack(blockStack)
 
@@ -1023,7 +1023,7 @@ class TestAssembly(unittest.TestCase):
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
 
-        with self.assertRaisesRegex(RuntimeError, expected_regex="60 degree"):
+        with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
             a.rotate(math.radians(40))
 
     def test_assemBlockTypes(self):
