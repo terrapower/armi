@@ -611,7 +611,7 @@ def plotMatrix(
     if cmap is None:
         cmap = plt.cm.jet
 
-    cmap.set_bad("w")
+    cmap = cmap.with_extremes(bad="w")
     try:
         matrix = matrix.todense()
     except Exception:
