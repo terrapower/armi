@@ -45,10 +45,10 @@ dependencies = [
     "voluptuous>=0.12.1", # Used to validate YAML data files
     "yamlize==0.7.1", # Custom YAML-to-object library
 ]
+license = "Apache-2.0"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
