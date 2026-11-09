@@ -245,7 +245,8 @@ class TestCompareDB3(unittest.TestCase):
 
             # there should a log message
             with mockRunLogs.BufferLog() as mock:
-                _diffSpecialData(refData4, srcData5, out, dr)
+                with self.assertRaises(RuntimeError):
+                    _diffSpecialData(refData4, srcData5, out, dr)
                 self.assertIn("Unable to unpack special data for", mock.getStdout())
 
             # make an H5 datasets that will add a np.inf diff because keys don't match

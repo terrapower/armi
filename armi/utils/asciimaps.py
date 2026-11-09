@@ -108,8 +108,8 @@ class AsciiMap:
             raise ValueError("Cannot write ASCII map before ASCII lines are processed.")
 
         if len(self.asciiOffsets) != len(self.asciiLines):
-            runLog.error(f"AsciiLines: {self.asciiLines}")
-            runLog.error(f"Offsets: {self.asciiOffsets}")
+            runLog.warning(f"AsciiLines: {self.asciiLines}")
+            runLog.warning(f"Offsets: {self.asciiOffsets}")
             raise ValueError(f"Inconsistent lines ({len(self.asciiLines)}) and offsets ({len(self.asciiOffsets)})")
 
         # Finally, build the string representation.

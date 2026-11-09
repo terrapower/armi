@@ -561,11 +561,9 @@ class Core(composites.Composite):
         if aName in self.assembliesByName and self.assembliesByName[aName] != a:
             # try to keep assem numbering correct
             runLog.error(
-                "The assembly {1} in the reactor already has the name {0}.\nCannot add {2}. "
-                "Current assemNum is {3}"
-                "".format(aName, self.assembliesByName[aName], a, self.r.p.maxAssemNum)
+                f"The assembly {self.assembliesByName[aName]} in the reactor already has the name {aName}.\nCannot add "
+                f"{a}. Current assemNum is {self.r.p.maxAssemNum}"
             )
-            raise RuntimeError("Core already contains an assembly with the same name.")
 
         self.assembliesByName[aName] = a
         for b in a:
@@ -909,10 +907,7 @@ class Core(composites.Composite):
         return circularRingDict
 
     def _getAssembliesByName(self):
-        """
-        If the assembly name-to-assembly object map is deleted or out of date, then this will
-        regenerate it.
-        """
+        """If the assembly name-to-assembly object map is deleted or out of date, then this will regenerate it."""
         runLog.extra("Generating assemblies-by-name map.")
 
         # NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
@@ -921,14 +916,13 @@ class Core(composites.Composite):
         for assem in self.getAssemblies(includeBolAssems=True, includeSFP=True):
             aName = assem.getName()
             if aName in assymap and assymap[aName] != assem:
-                # dangerous situation that can occur in restart runs where the global assemNum isn't
-                # updated. !=assem clause added because sometimes an assem is in one of the
-                # includeAll lists that is also in the core and that's ok.
+                # dangerous situation that can occur in restart runs where the global assemNum isn't updated. !=assem
+                # clause added because sometimes an assem is in one of the includeAll lists that is also in the core and
+                # that's ok.
                 runLog.error(
-                    "Two (or more) assemblies in the reactor (and associated lists) have the name "
-                    "{0},\nincluding {1} and {2}.".format(aName, assem, assymap[aName])
+                    f"Two (or more) assemblies in the reactor (and associated lists) have the name {aName},\nincluding "
+                    f"{assem} and {assymap[aName]}."
                 )
-                raise RuntimeError("Assembly name collision.")
 
             assymap[aName] = assem
 

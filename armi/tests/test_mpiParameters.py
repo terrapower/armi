@@ -88,7 +88,7 @@ class TestSynchronization(unittest.TestCase):
             :tests: R_ARMI_CMP_MPI
         """
         self.r.core.p.param1 = (context.MPI_RANK + 1) * 99.0
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             self.r.syncMpiState()
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
@@ -110,5 +110,5 @@ class TestSynchronization(unittest.TestCase):
             for _, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * context.MPI_RANK
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             self.r.syncMpiState()

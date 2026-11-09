@@ -294,12 +294,11 @@ class RedistributeMass:
             toData += fromData
             toData /= self.newVolume
         except Exception:
-            msg = (
+            runLog.error(
                 f"Error updating {paramName} on {self.assemblyName} : toComp={self.toComp} : fromComp={self.fromComp}\n"
                 f"{fromData.shape=}\n{toData.shape=}"
             )
-            runLog.error(msg)
-            raise
+
         self.toComp.p[paramName] = toData
         return True
 

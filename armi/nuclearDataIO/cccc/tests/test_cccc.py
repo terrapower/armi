@@ -71,7 +71,7 @@ class TestCcccBinaryRecord(unittest.TestCase):
 
     def test_readPartialRecord(self):
         """Not reading an entire record raises an exception."""
-        # I'm going to create a record with two pieces of data, and only read one...
+        # Create a record with two pieces of data, and only read one
         stream = self.streamCls()
         value = 99
         with self.writerClass(stream) as writer:
@@ -84,7 +84,7 @@ class TestCcccBinaryRecord(unittest.TestCase):
                 self.assertEqual(value, reader.rwInt(None))
 
     def test_readingBeyondRecordRaisesException(self):
-        # I'm going to create a record with two pieces of data, and only read one...
+        # Create a record with two pieces of data, and only read one
         stream = self.streamCls()
         value = 77
         with self.writerClass(stream) as writer:

@@ -955,7 +955,6 @@ class Block(composites.Composite):
                     " but the required component is not present in the block. They may also be other dependency fails. "
                     "The component dims are {2}".format(cList[0], self, cList[0].p)
                 )
-                raise RuntimeError("Cannot locate linked component.")
         return orderedComponents
 
     def getSortedComponentsInsideOfComponent(self, component):

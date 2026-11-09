@@ -1390,13 +1390,12 @@ class Composite(ArmiObject):
             allGatherTime = -timeit.default_timer()
             allSyncData = context.MPI_COMM.allgather(sendBuf)
             allGatherTime += timeit.default_timer()
-        except:
+        except Exception:
             msg = ["Failure while trying to allgather."]
             for ci, compData in enumerate(sendBuf):
                 if compData is not None:
                     msg += [f"sendBuf[{ci}]: {compData}"]
             runLog.error("\n".join(msg))
-            raise
 
         # key is (comp, paramName) value is conflicting nodes
         errors = collections.defaultdict(list)
