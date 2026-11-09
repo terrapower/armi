@@ -183,12 +183,13 @@ very easy to use:
 
     runLog.debug("This will only be seen if you run in debug mode.")
     runLog.info("Default log level.")
-    runLog.error("The run will die, or the results are invalid.")
+    runLog.error("The run will die or the results are invalid. Raises RuntimeError by default.")
     runLog.error("The run will die, by raising FileNotFoundError.", errType=FileNotFoundError)
 
 .. note::
-    Calling ``runLog.error(msg)`` will log the ``msg`` in question and then raise Python's ``RuntimeError``; which will
-    kill the run unless the ``Error`` is caught and handled.
+    Calling ``runLog.error(msg)`` will log the ``msg`` in question and then raise Python's ``RuntimeError`` by default;
+    which will kill the run unless the ``Error`` is caught and handled. You can also pass in an optional ``errType``
+    parameter and pass in the ``Exception`` subclass to be raised.
 
 When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
 at or above that log level will be seen during the simulation and in the final log files. To control
