@@ -1239,13 +1239,13 @@ class TestXSGMWithTempGrouping(unittest.TestCase):
 
 class TestXSNumberConverters(unittest.TestCase):
     def test_nullCase(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             crossSectionGroupManager.getXSTypeLabelFromNumber(7)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             crossSectionGroupManager.getXSTypeLabelFromNumber(244)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             crossSectionGroupManager.getXSTypeLabelFromNumber(134134)
 
     def test_oneCapital(self):
