@@ -191,7 +191,7 @@ class FuelHandler:
                 rotationMethod(self)
             else:
                 raise RuntimeError(
-                    "FuelHandler {rotAlgos} does not have a rotation algorithm called "
+                    f"FuelHandler {rotAlgos} does not have a rotation algorithm called "
                     f"{self.cs[CONF_ASSEMBLY_ROTATION_ALG]}.\nChange your {CONF_ASSEMBLY_ROTATION_ALG} setting"
                 )
 
