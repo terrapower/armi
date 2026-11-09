@@ -440,9 +440,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             self._backup = pickle.dumps(self.__getstate__())
             # this reads as assigned & everything_but(SINCE_BACKUP)
             self.assigned &= ~SINCE_BACKUP
-        except:
-            runLog.error("Attempted to pickle {}.".format(self))
-            raise
+        except Exception:
+            runLog.error(f"Attempted to pickle {self}.")
 
     def restoreBackup(self, paramsToApply):
         """Restore the backed up the state in a from a pickle.

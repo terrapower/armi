@@ -1570,7 +1570,6 @@ class FuelHandler:
                 if not loadAssembly:
                     msg = f"The required assembly located at ring {ring} pos {pos} at cycle {cycle} is not found"
                     runLog.error(msg)
-                    raise RuntimeError(msg)
             else:
                 # create a new assembly from the BOL assem templates and adjust the enrichment
                 loadAssembly = self.r.core.createAssemblyOfType(enrichList=enrichList, assemType=assemblyType)

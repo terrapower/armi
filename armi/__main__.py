@@ -36,13 +36,13 @@ def main():
         sys.exit(code)
     except Exception:
         # Make sure not to catch all BaseExceptions, lest we catch the expected SystemExit exception
-        runLog.error(
+        runLog.warning(
             f"Unhandled exception in __main__, rank {context.MPI_RANK} on {context.MPI_NODENAME}.",
             file=sys.__stderr__,
         )
-        runLog.error(traceback.format_exc(), file=sys.__stderr__)
+        runLog.warning(traceback.format_exc(), file=sys.__stderr__)
         if context.MPI_SIZE > 1:
-            runLog.error(
+            runLog.warning(
                 f"Killing all MPI tasks from __main__, rank {context.MPI_RANK}.",
                 file=sys.__stderr__,
             )

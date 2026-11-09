@@ -85,7 +85,7 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         if self.args.max_node is not None:
             nodes = re.findall(cycleNodePattern, self.args.max_node)
             if len(nodes) != 1:
-                runLog.error("Bad --max-node: `{}`. Should look like (c,n).".format(self.args.max_node))
+                runLog.warning("Bad --max-node: `{}`. Should look like (c,n).".format(self.args.max_node))
                 sys.exit(1)
             cycle, node = nodes[0]
             self.args.max_node = (int(cycle), int(node))
@@ -93,13 +93,13 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         if self.args.min_node is not None:
             nodes = re.findall(cycleNodePattern, self.args.min_node)
             if len(nodes) != 1:
-                runLog.error("Bad --min-node: `{}`. Should look like (c,n).".format(self.args.min_node))
+                runLog.warning("Bad --min-node: `{}`. Should look like (c,n).".format(self.args.min_node))
                 sys.exit(1)
             cycle, node = nodes[0]
             self.args.min_node = (int(cycle), int(node))
 
         if self.args.format not in self._SUPPORTED_FORMATS:
-            runLog.error(
+            runLog.warning(
                 "Requested format `{}` not among the supported options: {}".format(
                     self.args.format, self._SUPPORTED_FORMATS
                 )

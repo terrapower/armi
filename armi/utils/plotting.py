@@ -1007,7 +1007,6 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         def checkSize(self):
             if len(self.E) != len(self.avgFlux):
                 runLog.error(self.avgFlux)
-                raise
 
         def getTable(self):
             return enumerate(zip(self.E, self.avgFlux, self.peakFlux))

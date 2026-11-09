@@ -174,8 +174,8 @@ Every release should follow this process:
 
 Logging with runLog
 ===================
-ARMI provides a logging tool, ``runLog``, to be used in place of ``print`` for all logging during a
-simulation. It is very easy to use:
+ARMI provides a logging tool, ``runLog``, to be used in place of ``print`` for all logging during a simulation. It is
+very easy to use:
 
 .. code-block:: python
 
@@ -183,11 +183,13 @@ simulation. It is very easy to use:
 
     runLog.debug("This will only be seen if you run in debug mode.")
     runLog.info("Default log level.")
-    runLog.error("The run will die, or the results are invalid.")
+    runLog.error("The run will die or the results are invalid. Raises RuntimeError by default.")
+    runLog.error("The run will die, by raising FileNotFoundError.", errType=FileNotFoundError)
 
 .. note::
-    Calling ``runLog.error()`` is not the same as calling Python's ``raise error``; a log statement
-    does not kill a run, or raise an error, it just puts some text in the log.
+    Calling ``runLog.error(msg)`` will log the ``msg`` in question and then raise Python's ``RuntimeError`` by default;
+    which will kill the run unless the ``Error`` is caught and handled. You can also pass in an optional ``errType``
+    parameter and pass in the ``Exception`` subclass to be raised.
 
 When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
 at or above that log level will be seen during the simulation and in the final log files. To control

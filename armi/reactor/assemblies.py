@@ -169,9 +169,7 @@ class Assembly(composites.Composite):
             return
 
         # if we got here, this Block is not the right type for this Assembly
-        msg = f"Cannot {action} {obj} to this Assembly, it is not a {self._BLOCK_TYPE}."
-        runLog.error(msg)
-        raise TypeError(msg)
+        runLog.error(f"Cannot {action} {obj} to this Assembly, it is not a {self._BLOCK_TYPE}.", errType=TypeError)
 
     def add(self, obj: blocks.Block):
         """
@@ -184,14 +182,11 @@ class Assembly(composites.Composite):
             :id: I_ARMI_ASSEM_BLOCKS
             :implements: R_ARMI_ASSEM_BLOCKS
 
-            Adds a unique Block to the top of the Assembly. If the Block already
-            exists in the Assembly, an error is raised in
-            :py:meth:`armi.reactor.composites.Composite.add`.
-            The spatialLocator of the Assembly is updated to account for
-            the new Block. In ``reestablishBlockOrder``, the Assembly spatialGrid
-            is reinitialized and Block-wise spatialLocator and name objects
-            are updated. The axial mesh and other Block geometry parameters are
-            updated in ``calculateZCoords``.
+            Adds a unique Block to the top of the Assembly. If the Block already exists in the Assembly, an error is
+            raised in :py:meth:`armi.reactor.composites.Composite.add`. The spatialLocator of the Assembly is updated to
+            account for the new Block. In ``reestablishBlockOrder``, the Assembly spatialGrid is reinitialized and
+            Block-wise spatialLocator and name objects are updated. The axial mesh and other Block geometry parameters
+            are updated in ``calculateZCoords``.
         """
         self._checkPotentialChild(obj, "add")
         composites.Composite.add(self, obj)
@@ -635,9 +630,9 @@ class Assembly(composites.Composite):
                     "Height {0} in this assembly ({1} in {4}) is not in the reactor mesh "
                     "list from  {2}\nThis has: {3}\nIf you want to run "
                     "a case with non-uniform axial mesh, activate the `detailedAxialExpansion` "
-                    "setting".format(top, self, refMesh, selfMesh, self.parent)
+                    "setting".format(top, self, refMesh, selfMesh, self.parent),
+                    errType=IndexError,
                 )
-                raise
             z = top
 
     def _shouldMassBeConserved(self, belowFuelColumn, b):
@@ -647,9 +642,7 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         belowFuelColumn : boolean
-            Determines whether a block is below the fuel column or not in fuel
-            assemblies
-
+            Determines whether a block is below the fuel column or not in fuel assemblies
         b : armi block
             The block that is being examined for modification
 
@@ -667,7 +660,6 @@ class Assembly(composites.Composite):
         See Also
         --------
         armi.assemblies.Assembly.setBlockMesh
-
         """
         if b.hasFlags(Flags.FUEL):
             # fuel block
@@ -1322,9 +1314,10 @@ class HexAssembly(Assembly):
         if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
             return super().rotate(rad)
 
-        msg = f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees ({rad} radians)."
-        runLog.error(msg)
-        raise ValueError(msg)
+        runLog.error(
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees ({rad} radians).",
+            errType=ValueError,
+        )
 
 
 class CartesianAssembly(Assembly):
