@@ -147,14 +147,7 @@ class IORecord:
         try:
             self.close()
         except Exception as ee:
-            runLog.error("Failed to close CCCC record.")
-            runLog.error(ee)
-            raise BufferError(
-                "Failed to close record, {}.\n{}\n"
-                "It is possible too much data was read from the "
-                "record, and the end of the stream was reached.\n"
-                "".format(self, ee)
-            )
+            runLog.error(f"Failed to close CCCC record.\n{ee}", errType=BufferError)
 
     def open(self):
         """Abstract method for opening the stream."""
@@ -607,8 +600,7 @@ class Stream:
         try:
             self._stream = open(self._fileName, self._fileMode)
         except IOError:
-            runLog.error("Cannot find {} in {}".format(self._fileName, os.getcwd()))
-            raise
+            runLog.error(f"Cannot find {self._fileName} in {os.getcwd()}", errType=IOError)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):

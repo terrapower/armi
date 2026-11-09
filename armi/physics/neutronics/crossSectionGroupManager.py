@@ -137,7 +137,6 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
         return label
     except ValueError:
         runLog.error(f"Error converting {xsTypeNumber} to label.")
-        raise
 
 
 def _checkConsistentNuclides(thisComp, repComp):
@@ -233,12 +232,7 @@ class BlockCollection(list):
             # we have at least one non-zero entry and at least one zero. This is bad.
             # find the non-zero ones for debugging
             zeros = [block for block in self if not block.p[self.weightingParam]]
-            runLog.error("Blocks with zero `{0}` include: {1}".format(self.weightingParam, zeros))
-            raise ValueError(
-                "{0} has a mixture of zero and non-zero weighting factors (`{1}`)\nSee stdout for details".format(
-                    self, self.weightingParam
-                )
-            )
+            runLog.error(f"Blocks with zero `{self.weightingParam}` include: {zeros}", errType=ValueError)
 
     def calcAvgNuclideTemperatures(self):
         r"""

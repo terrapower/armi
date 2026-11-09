@@ -51,6 +51,7 @@ class TestMaterialInAssembly(unittest.TestCase):
         grid = grids.HexGrid()
         self.assembly.spatialLocator = grid[0, 0, 0]
         self.assembly2.spatialLocator = grid[0, 1, 0]
+
         self.assertTrue(self.assembly < self.assembly2)
         self.assertFalse(self.assembly2 < self.assembly)
 
@@ -431,7 +432,6 @@ class TestAssembly(unittest.TestCase):
         self.assertEqual(self.assembly.p.notes, note)
 
         tooLongNote = "a" * 1001
-
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
 

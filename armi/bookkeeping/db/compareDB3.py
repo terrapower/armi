@@ -13,34 +13,25 @@
 # limitations under the License.
 
 """
-Use the generic database class to compare two ARMI databases.
+Compare two ARMI Databases.
 
-This assumes some intimate knowledge about how the database is structured internally.
-For instance, it knows that the database is composed of HDF5 data (the attrs of a
-dataset are used, and h5py Groups are indexed), and it knows how special data is
-structured within the HDF5 dataset and what the corresponding attributes are used for.
-Some of this could be easily pulled up to the public interfaces of the Database class,
-which may allow for cross-version database checking, but there is probably little value
-in doing so if one is able to convert between versions.
+This assumes some intimate knowledge about how the database is structured internally. For instance, it knows that the
+Database is composed of HDF5 data (the attrs of a dataset are used, and h5py Groups are indexed), and it knows how
+special data is structured within the HDF5 dataset and what the corresponding attributes are used for. Some of this
+could be easily pulled up to the public interfaces of the Database class, which may allow for cross-version database
+checking, but there is probably little value in doing so if one is able to convert between versions.
 
-Speaking of conversions, there are some common issues that may arise from comparing
-against databases that were converted from an old version. The process of reading in the
-old database values can sometimes lead to more parameters being written out to the new
-database than were in the original database (set to the parameter's default value). That
-means that one generally should not be worried about a converted database having more
-parameters in it that the one produced directly may not, assuming that the extra
-converted parameters are the default. Also, especially at the Component level, some of
-the parameters are expected to be different. Specifically the following:
+Speaking of conversions, there are some common issues that may arise from comparing against databases that were
+converted from an old version. The process of reading in the old database values can sometimes lead to more parameters
+being written out to the new Database than were in the original database (set to the parameter's default value). That
+means that one generally should not be worried about a converted database having more parameters in it that the one
+produced directly may not, assuming that the extra converted parameters are the default. Also, especially at the
+Component level, some of the parameters are expected to be different. Specifically the following:
 
-* temperatures: The old database format simply did not store these on the component
-  level, so when converting a database, the components in a block will uniformly get
-  whatever the Block temperature was.
-* serial numbers: At all levels, we cannot really expect the serial numbers to line
-  up from object to object. These are not really supposed to be the same.
-* volume: Component volumes also are not stored on the database, and come from
-  temperatures
-* memory usage: Relatively self-evident. Resource usage will vary from run to run,
-  even if the code hasn't changed.
+* serial numbers: At all levels, we cannot really expect the serial numbers to line up from object to object. These are
+  not really supposed to be the same.
+* volume: Component volumes also are not stored on the Database, and come from temperatures
+* memory usage: Relatively self-evident. Resource usage will vary from run to run, even if the code hasn't changed.
 
 """
 
@@ -350,7 +341,6 @@ def _diffSpecialData(
         runLog.error(
             f"Unable to unpack special data for paramName {paramName}. {traceback.format_exc()}",
         )
-        return
 
     diff = []
     for dSrc, dRef in zip(src.tolist(), ref.tolist()):
@@ -426,14 +416,14 @@ def _diffSimpleData(ref: h5py.Dataset, src: h5py.Dataset, diffResults: DiffResul
         if src.dtype.kind == ref.dtype.kind and src.dtype.kind in {"U", "S"}:
             return
         else:
-            runLog.error("Failed to compare {} in {}".format(paramName, compName))
-            runLog.error("source: {}".format(src))
-            runLog.error("reference: {}".format(ref))
+            runLog.warning(f"Failed to compare {paramName} in {compName}")
+            runLog.warning(f"source: {src}")
+            runLog.warning(f"reference: {ref}")
             diff = np.array([np.inf])
     except ValueError:
-        runLog.error("Failed to compare {} in {}".format(paramName, compName))
-        runLog.error("source: {}".format(src))
-        runLog.error("reference: {}".format(ref))
+        runLog.warning(f"Failed to compare {paramName} in {compName}")
+        runLog.warning(f"source: {src}")
+        runLog.warning(f"reference: {ref}")
         diff = np.array([np.inf])
 
     if 0 in diff.shape:
@@ -457,7 +447,7 @@ def _compareComponentData(
 ):
     exclusions = exclusions or []
     compName = refGroup.name
-    paramNames, nDiff = _compareH5Groups(out, refGroup, srcGroup, "{} parameters".format(compName))
+    paramNames, nDiff = _compareH5Groups(out, refGroup, srcGroup, f"{compName} parameters")
     diffResults.addStructureDiffs(nDiff)
 
     for paramName in paramNames:

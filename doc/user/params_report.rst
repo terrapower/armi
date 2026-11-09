@@ -1,8 +1,8 @@
 .. _params-report:
 
-=================
+*****************
 Parameters Report
-=================
+*****************
 
 .. exec::
    from armi.reactor import assemblies
@@ -48,9 +48,9 @@ new Parameters for your use-cases. These are simply the default Parameters that 
 
 .. _reactor-parameters-report:
 
-******************
+==================
 Reactor Parameters
-******************
+==================
 
 This is a list of all of the Reactor Parameters that are provided by the ARMI Framework.
 
@@ -64,9 +64,9 @@ This is a list of all of the Reactor Parameters that are provided by the ARMI Fr
 .. _core-parameters-report:
 
 
-***************
+===============
 Core Parameters
-***************
+===============
 
 This is a list of all of the Core Parameters that are provided by the ARMI Framework.
 
@@ -80,9 +80,9 @@ This is a list of all of the Core Parameters that are provided by the ARMI Frame
 
 .. _assembly-parameters-report:
 
-*******************
+===================
 Assembly Parameters
-*******************
+===================
 
 This is a list of all of the Assembly Parameters that are provided by the ARMI Framework.
 
@@ -96,9 +96,9 @@ This is a list of all of the Assembly Parameters that are provided by the ARMI F
 
 .. _block-parameters-report:
 
-****************
+================
 Block Parameters
-****************
+================
 
 This is a list of all of the Block Parameters that are provided by the ARMI Framework.
 
@@ -112,9 +112,9 @@ This is a list of all of the Block Parameters that are provided by the ARMI Fram
 
 .. _component-parameters-report:
 
-********************
+====================
 Component Parameters
-********************
+====================
 
 This is a list of all of the Component Parameters that are provided by the ARMI Framework.
 

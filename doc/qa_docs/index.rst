@@ -15,4 +15,4 @@ Software Design and Implementation Document (SDID), and the Software Test Report
    srsd
    sdid
    str
-   scr/index
+   scr

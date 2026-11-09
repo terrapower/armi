@@ -337,8 +337,8 @@ class Operator:
 
     def __exit__(self, exception_type, exception_value, stacktrace):
         if any([exception_type, exception_value, stacktrace]):
-            runLog.error(r"{}\n{}\{}".format(exception_type, exception_value, stacktrace))
             self.interactAllError()
+            runLog.error(r"{}\n{}\{}".format(exception_type, exception_value, stacktrace))
 
     def operate(self):
         """

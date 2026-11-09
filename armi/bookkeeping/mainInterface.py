@@ -94,8 +94,7 @@ class MainInterface(interfaces.Interface):
         copyFilesTo = self.cs[CONF_COPY_FILES_TO]
 
         if len(copyFilesTo) in (len(copyFilesFrom), 0, 1):
-            # if any files to copy, then use the first as the default, i.e. len() == 1,
-            # otherwise assume '.'
+            # If any files to copy, then use the first as the default, i.e. len() == 1, otherwise assume '.'
             default = copyFilesTo[0] if any(copyFilesTo) else "."
             for filename, dest in itertools.zip_longest(copyFilesFrom, copyFilesTo, fillvalue=default):
                 pathTools.copyOrWarn(CONF_COPY_FILES_FROM, filename, dest)
@@ -104,9 +103,9 @@ class MainInterface(interfaces.Interface):
                 f"cs['{CONF_COPY_FILES_TO}'] must either be length 0, 1, or have the same number "
                 f"of entries as cs['{CONF_COPY_FILES_FROM}']. Actual values:\n"
                 f"    {CONF_COPY_FILES_TO}   : {copyFilesTo}\n"
-                f"    {CONF_COPY_FILES_FROM} : {copyFilesFrom}"
+                f"    {CONF_COPY_FILES_FROM} : {copyFilesFrom}",
+                errType=InputError,
             )
-            raise InputError(f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}")
 
     def interactBOC(self, cycle=None):
         """Typically the first interface to interact beginning of cycle."""
