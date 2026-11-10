@@ -1240,12 +1240,15 @@ class TestXSGMWithTempGrouping(unittest.TestCase):
 class TestXSNumberConverters(unittest.TestCase):
     def test_nullCase(self):
         with self.assertRaises(RuntimeError):
+            # chr(7) is not a letter or a number, but a special character
             crossSectionGroupManager.getXSTypeLabelFromNumber(7)
 
         with self.assertRaises(RuntimeError):
+            # chr(244) is not a letter or a number, but a special character
             crossSectionGroupManager.getXSTypeLabelFromNumber(244)
 
         with self.assertRaises(RuntimeError):
+            # chr(134) is not a letter or a number, but a special character
             crossSectionGroupManager.getXSTypeLabelFromNumber(134134)
 
     def test_oneCapital(self):
