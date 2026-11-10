@@ -14,12 +14,10 @@
 """
 Handles fuel management operations such as shuffling, rotation, and fuel processing (in fluid systems).
 
-The :py:class:`FuelHandlerInterface` instantiates a ``FuelHandler``, which is typically a user-defined
-subclass the :py:class:`FuelHandler` object in custom shuffle-logic input files.
-Users point to the code modules with their custom fuel handlers using the
-``shuffleLogic`` and ``fuelHandlerName`` settings, as described in :ref:`fuel-management-input`.
-These subclasses override ``chooseSwaps`` that determine
-the particular shuffling of a case.
+The :py:class:`FuelHandlerInterface` instantiates a ``FuelHandler``, which is typically a user-defined subclass the
+:py:class:`FuelHandler` object in custom shuffle-logic input files. Users point to the code modules with their custom
+fuel handlers using the ``shuffleLogic`` and ``fuelHandlerName`` settings, as described in :ref:`fuel-management-input`.
+These subclasses override ``chooseSwaps`` that determine the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
@@ -41,10 +39,7 @@ from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
-from armi.physics.fuelCycle.settings import (
-    CONF_ASSEMBLY_ROTATION_ALG,
-    CONF_SHUFFLE_SEQUENCE_FILE,
-)
+from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG, CONF_SHUFFLE_SEQUENCE_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
@@ -83,8 +78,8 @@ class AssemblyMove:
     def __post_init__(self):
         """Perform some data checks."""
         errorMsg = (
-            "invalid (ring, position, cycle) specified for assembly retrieval from SFP\n"
-            f"expected: list of ints, len=3\nreceived: {self.ringPosCycle}"
+            "invalid (ring, position, cycle) specified for assembly retrieval from SFP\nexpected: list of ints, "
+            f"len=3\nreceived: {self.ringPosCycle}"
         )
         if self.ringPosCycle is not None:
             if not isinstance(self.ringPosCycle, list):
@@ -114,13 +109,12 @@ class FuelHandler:
     """
     A fuel handling machine can move fuel around the core and reactor.
 
-    It makes decisions on how to shuffle fuel based on user specifications.
-    It provides some supervisory data tracking, such as having the ability
-    to print out information about all moves that happened in a cycle (without
-    the user needing to explicitly track this information).
+    It makes decisions on how to shuffle fuel based on user specifications. It provides some supervisory data tracking,
+    such as having the ability to print out information about all moves that happened in a cycle (without the user
+    needing to explicitly track this information).
 
-    To use this, simply create an input Python file and point to it by path
-    with the ``fuelHandler`` setting. In that file, subclass this object.
+    To use this, simply create an input Python file and point to it by path with the ``fuelHandler`` setting. In that
+    file, subclass this object.
     """
 
     DISCHARGE_LOCS = frozenset({"SFP", "Delete"})
@@ -166,11 +160,10 @@ class FuelHandler:
         if self.cs[CONF_SHUFFLE_SEQUENCE_FILE]:
             if not os.path.exists(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]):
                 raise FileNotFoundError(
-                    "Requested shuffle sequence file {0} does not exist. Cannot perform shuffling. ".format(
-                        self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
-                    )
+                    f"Requested shuffle sequence file {self.cs[CONF_SHUFFLE_SEQUENCE_FILE]} does not exist. Cannot "
+                    "perform shuffling."
                 )
-            runLog.important("Applying shuffle sequence from {}".format(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]))
+            runLog.important(f"Applying shuffle sequence from {self.cs[CONF_SHUFFLE_SEQUENCE_FILE]}")
             # location hist params updated within performShuffle
             self.performShuffle(self.cs[CONF_SHUFFLE_SEQUENCE_FILE], yaml=True)
         elif self.cs["explicitRepeatShuffles"]:
@@ -198,11 +191,8 @@ class FuelHandler:
                 rotationMethod(self)
             else:
                 raise RuntimeError(
-                    "FuelHandler {0} does not have a rotation algorithm called {1}.\nChange your {2} setting".format(
-                        rotAlgos,
-                        self.cs[CONF_ASSEMBLY_ROTATION_ALG],
-                        CONF_ASSEMBLY_ROTATION_ALG,
-                    )
+                    f"FuelHandler {rotAlgos} does not have a rotation algorithm called "
+                    f"{self.cs[CONF_ASSEMBLY_ROTATION_ALG]}.\nChange your {CONF_ASSEMBLY_ROTATION_ALG} setting"
                 )
 
         for loc, deg in self.pendingRotations:
@@ -243,15 +233,15 @@ class FuelHandler:
                     )
                 except:
                     runLog.important("A fuel management error has occurred. ")
-                    runLog.important("Trying operation on assembly {}".format(a))
-                    runLog.important("The moved list is {}".format(self.moved))
+                    runLog.important(f"Trying operation on assembly {a}")
+                    runLog.important(f"The moved list is {self.moved}")
                     raise
         else:
             numMoved = 0
 
         self.o.r.core.setBlockMassParams()
 
-        runLog.important("Fuel handler performed {0} assembly shuffles.".format(numMoved))
+        runLog.important(f"Fuel handler performed {numMoved} assembly shuffles.")
 
         # now wipe out the self.moved version so it doesn't transmit the assemblies during distributeState
         moved = self.moved[:]
@@ -260,12 +250,10 @@ class FuelHandler:
 
     def _preconditionLocationHistParam(self, a, cycle):
         """
-        Trim assembly location history param to be consistent with the specified
-        cycle or the reactor cycle parameter in preparation for the current ring and
-        position to be added.
-        list index corresponds to the cycle number n, which will be appended after the
-        parameter is preconditioned to length n (max index is n-1)
-        e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
+        Trim assembly location history param to be consistent with the specified cycle or the reactor cycle parameter in
+        preparation for the current ring and position to be added. List index corresponds to the cycle number n, which
+        will be appended after the parameter is preconditioned to length n (max index is n-1). e.g. i=0 is the initial
+        position, i=1 is the position at BOC1, etc.
 
         Parameters
         ----------
@@ -273,8 +261,8 @@ class FuelHandler:
         cycle : int
             cycle number at BOC to update assembly location history
         """
-        # Param length is shorter than expected (data from previous cycles is missing or shuffling was not performed
-        # on a previous cycle)
+        # Param length is shorter than expected (data from previous cycles is missing or shuffling was not performed on
+        # a previous cycle).
         if len(a.p.ringPosHist) < cycle:
             a.p.ringPosHist += [(a.NOT_CREATED_YET, a.NOT_CREATED_YET)] * (cycle - len(a.p.ringPosHist))
         # Param length is longer than expected. perhaps a restart analysis of some sort. trim trailing data
@@ -284,8 +272,8 @@ class FuelHandler:
 
     def _updateAssemLocationHistParam(self, a, cycle):
         """
-        Update assembly location history parameter with current assembly location for
-        specified cycle number.
+        Update assembly location history parameter with current assembly location for specified cycle number.
+
         Index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
         """
@@ -299,8 +287,8 @@ class FuelHandler:
 
     def updateAllLocationHistParams(self, cycle):
         """
-        Update location history param for all assemblies with current assembly locations
-        for specified cycle number
+        Update location history param for all assemblies with current assembly locations for specified cycle number.
+
         Index of a.p.ringPosHist corresponds to the cycle number BOC assembly location
         e.g. i=0 is the initial position, i=1 is the position at BOC1, etc.
         """
@@ -318,18 +306,15 @@ class FuelHandler:
         """
         Return factors between 0 and 1 that control fuel management.
 
-        This is the default shuffle control function. Usually you would override this
-        with your own in a custom shuffleLogic.py file. For more details about how this
-        works, refer to :ref:`fuel-management-input`.
+        This is the default shuffle control function. Usually you would override this with your own in a custom
+        shuffleLogic.py file. For more details about how this works, refer to :ref:`fuel-management-input`.
 
-        This will get bound to the default FuelHandler as a static method below. This is
-        done to allow a user to mix and match FuelHandler class implementations and
-        getFactorList implementations at run time.
+        This will get bound to the default FuelHandler as a static method below. This is done to allow a user to mix and
+        match FuelHandler class implementations and getFactorList implementations at run time.
 
         Notes
         -----
-        Ultimately, this approach will likely get replaced using the plugin framework, but
-        we aren't there yet.
+        Ultimately, this approach will likely get replaced using the plugin framework, but we aren't there yet.
         """
         # prefer to keep these 0 through 1 since this is what the branch search can do.
         defaultFactorList = {"eqShuffles": 1}
@@ -344,11 +329,10 @@ class FuelHandler:
     def _compareAssem(candidate, current):
         """Check whether the candidate assembly should replace the current ideal assembly.
 
-        Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide whether the
-        candidate is better than the current ideal. This first compares the diff1 and diff2 values.
-        If diff1 is sufficiently less than diff2, a1 wins, returning True. Otherwise, False. If
-        diff1 and diff2 are sufficiently close, the assembly with the lesser assemNum wins. This
-        should result in a more stable comparison than on floating-point comparisons alone.
+        Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide whether the candidate is better than
+        the current ideal. This first compares the diff1 and diff2 values. If diff1 is sufficiently less than diff2, a1
+        wins, returning True. Otherwise, False. If diff1 and diff2 are sufficiently close, the assembly with the lesser
+        assemNum wins. This should result in a more stable comparison than on floating-point comparisons alone.
         """
         if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
             return candidate[1].p.assemNum < current[1].p.assemNum
@@ -857,7 +841,7 @@ class FuelHandler:
             runLog.warning("Cannot swap None assemblies. Check your findAssembly results. Skipping swap")
             return
 
-        runLog.extra("Swapping {} with {}.".format(a1, a2))
+        runLog.extra(f"Swapping {a1} with {a2}.")
         # add assemblies into the moved location
         for a in [a1, a2]:
             if a not in self.moved:
@@ -888,24 +872,16 @@ class FuelHandler:
         # check for any inconsistencies in stationary blocks and ensure alignment
         if [block[1] for block in a1StationaryBlocks] != [block[1] for block in a2StationaryBlocks]:
             raise ValueError(
-                """Different number and/or locations of stationary blocks 
-                 between {} (Stationary Blocks: {}) and {} (Stationary Blocks: {}).""".format(
-                    assembly1, a1StationaryBlocks, assembly2, a2StationaryBlocks
-                )
+                f"Different number and/or locations of stationary blocks between {assembly1} (Stationary Blocks: "
+                f"{a1StationaryBlocks}) and {assembly2} (Stationary Blocks: {a2StationaryBlocks})."
             )
         if a1StationaryBlocks and a2StationaryBlocks:
             if a1StationaryBlocks[-1][0].p.ztop != a2StationaryBlocks[-1][0].p.ztop:
                 runLog.warning(
-                    """Difference in top elevation of stationary blocks 
-                     between {} (Stationary Blocks: {}, Elevation at top of stationary blocks {}) 
-                     and {} (Stationary Blocks: {}, Elevation at top of stationary blocks {}))""".format(
-                        assembly1,
-                        a1StationaryBlocks,
-                        a1StationaryBlocks[-1][0].p.ztop,
-                        assembly2,
-                        a2StationaryBlocks,
-                        a2StationaryBlocks[-1][0].p.ztop,
-                    )
+                    f"Difference in top elevation of stationary blocks between {assembly1} (Stationary Blocks: "
+                    f"{a1StationaryBlocks}, Elevation at top of stationary blocks {a1StationaryBlocks[-1][0].p.ztop}) "
+                    f"and {assembly2} (Stationary Blocks: {a2StationaryBlocks}, Elevation at top of stationary blocks "
+                    f"{a2StationaryBlocks[-1][0].p.ztop}))"
                 )
 
         # swap stationary blocks
@@ -977,7 +953,7 @@ class FuelHandler:
         --------
         swapAssemblies : swaps assemblies that are already in the core
         """
-        runLog.debug("Discharge swapping {} for {}.".format(incoming, outgoing))
+        runLog.debug(f"Discharge swapping {incoming} for {outgoing}.")
         if incoming is None or outgoing is None:
             runLog.warning("Cannot discharge swap None assemblies. Check your findAssembly calls. Skipping")
             return
@@ -1006,7 +982,7 @@ class FuelHandler:
         if self.r.excore.get("sfp") is not None:
             if incoming in self.r.excore["sfp"].getChildren():
                 # pull it out of the sfp if it's in there.
-                runLog.extra("removing {0} from the sfp".format(incoming))
+                runLog.extra(f"removing {incoming} from the sfp")
                 self.r.excore["sfp"].remove(incoming)
 
         incoming.p.multiplicity = 1
@@ -1094,14 +1070,7 @@ class FuelHandler:
         moveData = self.processMoveList(moveList)
 
         # Now have the move locations
-        moved = self.doRepeatShuffle(
-            moveData.loadChains,
-            moveData.loopChains,
-            moveData.enriches,
-            moveData.loadChargeTypes,
-            moveData.ringPosCycles,
-            moveData.dischargeDests,
-        )
+        moved = self.doRepeatShuffle(moveData)
 
         # Apply any swaps after performing cascades
         for loc1, loc2 in swapList:
@@ -1144,9 +1113,7 @@ class FuelHandler:
         try:
             f = open(fname)
         except OSError:
-            raise RuntimeError(
-                "Could not find/open repeat shuffle file {} in working directory {}".format(fname, os.getcwd())
-            )
+            raise RuntimeError(f"Could not find/open repeat shuffle file {fname} in working directory {os.getcwd()}")
 
         moves = {}
         numMoves = 0
@@ -1167,7 +1134,7 @@ class FuelHandler:
                 )
                 m = re.search(pat, line)
                 if not m:
-                    raise InputError('Failed to parse line "{0}" in shuffle file'.format(line))
+                    raise InputError(f'Failed to parse line "{line}" in shuffle file')
                 oldLoc = m.group(1)
                 newLoc = m.group(2)
                 assemType = m.group(3).strip()  # take off any possible trailing whitespace
@@ -1180,7 +1147,7 @@ class FuelHandler:
 
         f.close()
 
-        runLog.info("Read {0} moves over {1} cycles".format(numMoves, len(moves.keys())))
+        runLog.info(f"Read {numMoves} moves over {len(moves.keys())} cycles")
         return moves
 
     @staticmethod
@@ -1429,7 +1396,7 @@ class FuelHandler:
                     safeCount += 1
 
                 if not safeCount < 100:
-                    raise RuntimeError("Chain tracking got too long. Check moves.\n{0}".format(chain))
+                    raise RuntimeError(f"Chain tracking got too long. Check moves.\n{chain}")
 
                 # delete the last item, it's loadqueue location or the startingFrom
                 # location.
@@ -1439,7 +1406,7 @@ class FuelHandler:
                 return chain, enrich, assemType, ringPosCycle, destination
 
         # if we get here, the startingAt location was not found.
-        runLog.warning("No chain found starting at {0}".format(startingAt))
+        runLog.warning(f"No chain found starting at {startingAt}")
         return [], enrich, assemType, loadName, destination
 
     def processMoveList(self, moveList) -> ProcessMoveListResult:
@@ -1449,8 +1416,7 @@ class FuelHandler:
         Parameters
         ----------
         moveList : list
-            A list of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects describing each
-            move.
+            A list of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects describing each move.
 
         Returns
         -------
@@ -1477,8 +1443,7 @@ class FuelHandler:
 
         Notes
         -----
-        Used in some Monte Carlo interfaces to convert ARMI moves to their format moves. Also used in
-        repeat shuffling.
+        Used in some Monte Carlo interfaces to convert ARMI moves to their format moves. Also used in repeat shuffling.
 
         See Also
         --------
@@ -1510,7 +1475,7 @@ class FuelHandler:
             elif toLoc in self.DISCHARGE_LOCS:
                 # discharge. Track chain.
                 chain, enrichList, assemType, ringPosCycle, dest = FuelHandler.trackChain(moveList, startingAt=fromLoc)
-                runLog.extra("Load Chain with load assem {0}: {1}".format(assemType, chain))
+                runLog.extra(f"Load Chain with load assem {assemType}: {chain}")
                 loadChains.append(chain)
                 enriches.append(enrichList)
                 loadChargeTypes.append(assemType)
@@ -1542,7 +1507,7 @@ class FuelHandler:
                 loopChains.append(chain)
                 alreadyDone.extend(chain)
 
-                runLog.extra("Loop Chain: {0}".format(chain))
+                runLog.extra(f"Loop Chain: {chain}")
 
         return ProcessMoveListResult(
             loadChains=loadChains,
@@ -1555,25 +1520,14 @@ class FuelHandler:
             alreadyDone=alreadyDone,
         )
 
-    def doRepeatShuffle(self, loadChains, loopChains, enriches, loadChargeTypes, ringPosCycles, dischargeDests):
-        r"""
-        Actually does the fuel movements required to repeat a shuffle order.
+    def doRepeatShuffle(self, moveData: ProcessMoveListResult) -> list:
+        """
+        Shuffle all of the load chain assemblies (including discharges to SFP and loads from Loadqueue).
 
         Parameters
         ----------
-        loadChains : list
-            list of lists of location labels for each load chain (with charge/discharge)
-        loopChains : list
-            list of lists of location labels for each loop chain (no charge/discharge)
-        enriches : list
-            The block enrichment distribution of each load assembly
-        loadChargeTypes :list
-            The types of assemblies that get charged.
-        ringPosCycles : list
-            The ring, pos, and cycle of assemblies that get brought into the core (useful for pulling out
-            of SFP for round 2, etc.)
-        dischargeDests : list
-            Final destination for each load chain (e.g., ``SFP`` or ``Delete``)
+        moveData : ProcessMoveListResult
+            The processMoveList returns a data object with all the inputs we need.
 
         See Also
         --------
@@ -1582,19 +1536,20 @@ class FuelHandler:
 
         Notes
         -----
-        This is a helper function for performShuffle
+        This is a helper function for performShuffle.
         """
         moved = []
-
-        # shuffle all of the load chain assemblies (These include discharges to SFP
-        # and loads from Loadqueue)
 
         # build a lookup table of locations throughout the current core and cache it.
         locContents = self.r.core.makeLocationLookup(assemblyLevel=True)
 
         # perform load swaps (with charge/discharge)
         for assemblyChain, enrichList, assemblyType, ringPosCycle, dest in zip(
-            loadChains, enriches, loadChargeTypes, ringPosCycles, dischargeDests
+            moveData.loadChains,
+            moveData.enriches,
+            moveData.loadChargeTypes,
+            moveData.ringPosCycles,
+            moveData.dischargeDests,
         ):
             # convert the labels into actual assemblies to be swapped
             assemblyList = self.r.core.getLocationContents(assemblyChain, assemblyLevel=True, locContents=locContents)
@@ -1606,11 +1561,9 @@ class FuelHandler:
             for i in range(0, -(len(assemblyList) - 1), -1):
                 self.swapAssemblies(assemblyList[i], assemblyList[i - 1])
 
-            # Now, everything has been set except the first assembly in the list, which must now be
-            # replaced with a fresh assembly... but which one? The assemblyType string
-            # tells us.
-            # Sometimes enrichment is set on-the-fly by branch searches, so we must
-            # not only use the proper assembly type but also adjust the enrichment.
+            # Now, everything has been set except the first assembly in the list, which must now be replaced with a
+            # fresh assembly, but which one? The assemblyType string tells us. Sometimes enrichment is set on-the-fly by
+            # branch searches, so we must not only use the proper assembly type but also adjust the enrichment.
             if ringPosCycle:
                 ring, pos, cycle = ringPosCycle
                 loadAssembly = self.r.core.getAssemblyWithRingPosHist(ring, pos, cycle)
@@ -1622,21 +1575,20 @@ class FuelHandler:
                 loadAssembly = self.r.core.createAssemblyOfType(enrichList=enrichList, assemType=assemblyType)
 
             # replace the goingOut guy (for continual feed cases)
-            runLog.debug("Calling discharge swap with {} and {}".format(loadAssembly, assemblyList[0]))
+            runLog.debug(f"Calling discharge swap with {loadAssembly} and {assemblyList[0]}")
             self.dischargeSwap(loadAssembly, assemblyList[0], toSfp=(dest == "SFP"))
             moved.append(loadAssembly)
 
         # shuffle all of the loop chain assemblies (no charge/discharge)
-        for assemblyChain in loopChains:
+        for assemblyChain in moveData.loopChains:
             # convert the labels into actual assemblies to be swapped
             assemblyList = self.r.core.getLocationContents(assemblyChain, assemblyLevel=True, locContents=locContents)
 
             for a in assemblyList:
                 moved.append(a)
 
-            # go through and swap the assemblies knowing that there is a discharge (first one)
-            # and a new assembly brought it (last one)
-            # for i in range(0,-(len(assemblyList)-1),-1):
+            # Go through and swap the assemblies knowing that there is a discharge (first one) and a new assembly
+            # brought it (last one).
             for i in range(0, -(len(assemblyList) - 1), -1):
                 self.swapAssemblies(assemblyList[i], assemblyList[i + 1])
 
