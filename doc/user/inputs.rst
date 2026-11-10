@@ -1022,8 +1022,8 @@ xs types
   Representing xsType by a single capital letter (A-Z), or 2-letter xsType designations if and only if the ``buGroups``
   setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
-  ARMI is able to use lower-case letters (a-z), but this should only be done when working on a case-sensitive file
-  system. On a case-insensitive file system (Windows, and some MacOS systems) this could cause unpredictable errors.
+  ARMI support XS type labels including upper-case (A-Z), lower-case (a-z), and numbers (0-9). But be careful using
+  lower-case letters on case-insensitive file system (Windows, and some MacOS systems) this could cause unpredictable errors.
 
 blocks
    List of blocks in the assembly. The first block listed is defined at the bottom of the core. This is typically a grid plate or some other structure.

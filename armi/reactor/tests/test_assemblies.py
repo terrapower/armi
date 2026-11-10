@@ -870,7 +870,8 @@ class TestAssembly(unittest.TestCase):
             self.blockParamsTemp = {}
             for key, val in self.blockParams.items():
                 # Iterate with i in self.assemNum, so higher assemNums get the high values.
-                b.p[key] = self.blockParamsTemp[key] = val * (i + 1)
+                v = val if key == "xsTypeNum" else val * (i + 1)
+                b.p[key] = self.blockParamsTemp[key] = v
 
             b.setHeight(self.height)
             b.setType("fuel")
