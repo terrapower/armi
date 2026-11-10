@@ -300,37 +300,6 @@ class Core(composites.Composite):
         for child in self:
             self.childrenByLocator[child.spatialLocator] = child
 
-    def summarizeReactorStats(self):
-        """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
-        totalMass = 0.0
-        fissileMass = 0.0
-        heavyMetalMass = 0.0
-        totalVolume = 0.0
-        numBlocks = 0
-        for block in self.iterBlocks():
-            totalMass += block.getMass()
-            fissileMass += block.getFissileMass()
-            heavyMetalMass += block.getHMMass()
-            totalVolume += block.getVolume()
-            numBlocks += 1
-        totalMass = totalMass * self.powerMultiplier / 1000.0
-        fissileMass = fissileMass * self.powerMultiplier / 1000.0
-        heavyMetalMass = heavyMetalMass * self.powerMultiplier / 1000.0
-        totalVolume = totalVolume * self.powerMultiplier
-        runLog.extra(
-            "Summary of {}\n".format(self)
-            + tabulate.tabulate(
-                [
-                    ("Number of Blocks", numBlocks),
-                    ("Total Volume (cc)", totalVolume),
-                    ("Total Mass (kg)", totalMass),
-                    ("Fissile Mass (kg)", fissileMass),
-                    ("Heavy Metal Mass (kg)", heavyMetalMass),
-                ],
-                tableFmt="armi",
-            )
-        )
-
     def setPowerFromDensity(self):
         """Set the power from the powerDensity."""
         self.p.power = self.p.powerDensity * self.getHMMass()
