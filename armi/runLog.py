@@ -637,14 +637,15 @@ class RunLogger(logging.Logger):
 
     def warningReport(self):
         """Summarize all warnings for the run."""
-        self.info("----- Final Warning Count --------")
+        bar = "-----------------------------------------"
+        self.info("---------- Final Warning Count ----------")
         self.info("  {0:^10s}   {1:^25s}".format("COUNT", "LABEL"))
 
         # grab the no-duplicates filter, and exit early if it doesn't exist
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter is None:
             self.info("  {0:^10s}   {1:^25s}".format(str(0), str("None Found")))
-            self.info("------------------------------------")
+            self.info(bar)
             return
 
         # sort by labcollections.defaultdict(lambda: 1)
@@ -652,11 +653,11 @@ class RunLogger(logging.Logger):
         for label, count in sorted(dupsFilter.warningCounts.items(), key=operator.itemgetter(1), reverse=True):
             self.info(f"  {str(count):^10s}   {str(label):^25s}")
             total += count
-        self.info("------------------------------------")
 
         # add a totals line
+        self.info(bar)
         self.info(f"  {str(total):^10s}   Total Number of Warnings")
-        self.info("------------------------------------")
+        self.info(bar)
 
     def setVerbosity(self, intLevel):
         """A helper method to try to partially support the local, historical method of the same name."""
