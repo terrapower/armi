@@ -328,7 +328,7 @@ class AxialExpansionChanger:
         -----
         - If true, then axial expansion will be physical for all blocks.
         - If false, the top most block in the assembly is artificially chopped to preserve the assembly height. A
-        runLog.Warning also issued.
+        runLog.warning is also issued.
         """
         self.topMostBlock = self.linked.a[-1]
         if not self.topMostBlock.hasFlags(Flags.DUMMY):

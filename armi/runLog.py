@@ -59,6 +59,7 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
     if self.isEnabledFor({1}):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
+LOG_LEVEL_HEADER = 100
 OS_SECONDS_TIMEOUT = 2 * 60
 SEP = "|"
 STDERR_LOGGER_NAME = "ARMI_ERROR"
@@ -124,7 +125,7 @@ class _RunLog:
                 ("prompt", (27, f"[prmt{rank}] ")),
                 ("warning", (logging.WARNING, f"[warn{rank}] ")),
                 ("error", (logging.ERROR, f"[err {rank}] ")),
-                ("header", (100, f"{rank}")),
+                ("header", (LOG_LEVEL_HEADER, f"{rank}")),
             ]
         )
 
@@ -465,8 +466,8 @@ class DeduplicationFilter(logging.Filter):
         label = getattr(record, "label", msg)
         label = msg if label is None else label
 
-        # Track all warnings, and everything logged higher than warning
-        if record.levelno >= logging.WARNING:
+        # Track all warnings (and everything logged higher than warning) but not headers.
+        if logging.WARNING <= record.levelno < LOG_LEVEL_HEADER:
             if label not in self.warningCounts:
                 self.warningCounts[label] = 1
             else:
@@ -506,7 +507,7 @@ class RunLogger(logging.Logger):
 
         .. code-block:: python
 
-            runLog.error("This sort of error might usually terminate the run.")
+            runLog.error("Something is invalidating or killing a run, log and raise an Exception.")
             runLog.warning("Users probably want to know.")
             runLog.info("This is the usual verbosity.")
             runLog.debug("This is only logged during a debug run.")

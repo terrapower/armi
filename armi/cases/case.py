@@ -176,7 +176,7 @@ class Case:
         with the other, implicitly discovered, dependencies.
         """
         if case in self._dependencies:
-            runLog.warning("The case {} is already explicitly specified as a dependency of {}".format(case, self))
+            runLog.extra(f"The case {case} is already explicitly specified as a dependency of {self}")
         self._dependencies.add(case)
 
     def getPotentialParentFromSettingValue(self, settingValue, filePattern):
@@ -586,8 +586,6 @@ class Case:
                 fromPath(fileName),
                 os.path.join(clone.cs.inputDirectory, fileName),
             )
-        else:
-            runLog.warning(f"skipping {CONF_LOADING_FILE}, there is no file specified")
 
         with open(self.cs[CONF_LOADING_FILE], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the settings file
