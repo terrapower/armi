@@ -748,19 +748,13 @@ The core map input files can be graphically manipulated with the
 Flags and naming
 ----------------
 
-All objects in the ARMI Reactor Model possess a set of :py:class:`armi.reactor.flags.Flags`, which can be used to affect
-the way that the various physics kernels treat each object. Most flags are named after common reactor components, like
+Each `ArmiObject` is assigned set of :py:class:`armi.reactor.flags.Flags` based on keywords found in the `name` of
+that object. The flags can be used to affect
+the way that the various physics kernels treat each object.  ost flags are named after common reactor components, like
 ``FUEL``, or ``CLAD``, and are used to declare "what something is" in the reactor model. Various physics or other
 framework operations can then be parameterized to target specific types of things. For instance, the fuel handling code
 can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and not move them with the rest of
 the block stack in an assembly.
-
-Historically, flags have also been used to describe directly "what should be done" with an object in the reactor model.
-For instance, an object with the ``DEPLETABLE`` flag set will participate in isotopic depletion analysis, whereas
-objects without the ``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of various flags
-is buried deep within the code, and can conflict from place to place. We are trying to align around a "what something
-is" interpretation, and bind those to specific behaviors with settings. For more details, see
-:py:mod:`armi.reactor.flags`.
 
 The set of specific flags that should be set on an object can be specified in one of two ways for each object defined in
 the blueprints. The most precise way is to use include a ``flags:`` entry for the object blueprint in question. In the
@@ -769,11 +763,29 @@ specified must be completely and unambiguously convertible into valid Flags. If 
 constructing the object.
 
 If ``flags:`` is empty, or not specified, then the name of the object blueprint will be used to infer as many flags as
-possible. In the above example, the ``clad`` component will get the ``CLAD`` flag from its name.
+possible. In the above example, the ``clad`` component will get the ``CLAD`` flag from its name. A table of basic
+supported flags in ARMI is listed below.
 
 .. note::
     Additional flags may be specified from plugins, but this should be done with care; see the
     :py:mod:`armi.reactor.flags` module and :py:meth:`armi.plugins.ArmiPlugin.defineFlags` plugin hook for more details.
+
+
+.. exec::
+    from armi.reactor.flags import Flags, Flag
+    from dochelpers import createListTable
+    import inspect
+
+    rows = [['Flag Type',]]
+    for f in inspect.getmembers(Flags, predicate=lambda x: isinstance(x, Flag)):
+        rows.append([f[0],])
+
+    return createListTable(rows, widths=[30,], klass="longtable")
+
+
+.. warning::
+   `ArmiObject` names that are converted into flags should only have a space in between them. Special characters like
+   `-` or `_` are not supported except for special multi-word flags.
 
 .. _blocks-and-components:
 
