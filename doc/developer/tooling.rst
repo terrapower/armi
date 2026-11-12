@@ -224,7 +224,7 @@ For reference, here are the log levels that ARMI supports:
       - RESERVED for the ARMI CLI.
     * - warning
       - 30
-      - Use ONLY for issues that may or may not invalidate the simulation results.
+      - Use ONLY for issues that may invalidate the simulation results.
     * - error
       - 40
       - Use ONLY for problems that halt the program or invalidate the simulation results.

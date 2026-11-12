@@ -644,11 +644,11 @@ class RunLogger(logging.Logger):
         # grab the no-duplicates filter, and exit early if it doesn't exist
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter is None:
-            self.info("  {0:^10s}   {1:^25s}".format(str(0), str("None Found")))
+            self.info("  {0:^10s}   {1:^25s}".format("0", "None Found"))
             self.info(bar)
             return
 
-        # sort by labcollections.defaultdict(lambda: 1)
+        # sort warnings by number of occurrences
         total = 0
         for label, count in sorted(dupsFilter.warningCounts.items(), key=operator.itemgetter(1), reverse=True):
             self.info(f"  {str(count):^10s}   {str(label):^25s}")
