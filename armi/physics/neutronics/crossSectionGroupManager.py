@@ -1516,7 +1516,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 if newEnvGroup:
                     # there were no blocks flagged to xs gen even though there were some not suitable for
                     # generation in the group so can't make XS and use different.
-                    runLog.warning(
+                    runLog.info(
                         "Changing XSID of {0} blocks from {1} to {2}".format(
                             len(nonRepBlocks), xsID, missingXsType[0] + newEnvGroup
                         )

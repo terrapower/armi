@@ -778,7 +778,7 @@ class Block(composites.Composite):
                 single=True,
             )
         if self.isFuel():
-            runLog.warning(
+            runLog.info(
                 f"{self.name} has both fuel and initial b10. b10 volume may not be conserved with axial expansion.",
                 single=True,
             )
@@ -1139,11 +1139,7 @@ class Block(composites.Composite):
         if tFrac:
             return tFrac
         else:
-            runLog.info(
-                f"No component {typeSpec} exists on {self}, so area fraction is zero.",
-                single=True,
-                label=f"{typeSpec} areaFrac is zero",
-            )
+            # You are probably looking for the area of Fuel components in a non-Fuel Block, or similar.
             return 0.0
 
     def verifyBlockDims(self):

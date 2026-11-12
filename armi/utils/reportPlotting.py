@@ -79,14 +79,11 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
             )
         )
     except Exception as ee:
-        runLog.warning(
-            "Cannot plot rxPerformance without the data model present in the database.\nError: {}".format(ee)
-        )
+        runLog.warning(f"Cannot plot performance without the data model present in the database.\nError: {ee}")
         return
 
     # data is a dict of OrderedDict: { <paramName> : { (<cycle>, <node>) : value } }
     scalars = {key: list(timeStepDict.values()) for key, timeStepDict in data.items()}
-    runLog.info(f"scalars for plotting {scalars}")
 
     keffVsTime(
         reactor.name,
@@ -198,7 +195,6 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
 
     Useful for comparing reactors to one another.
     """
-    runLog.info("Plotting reactor comparison.")
     fig = plt.figure(figsize=(17, 9))
     fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
     colors = itertools.cycle(["b", "r", "g"])

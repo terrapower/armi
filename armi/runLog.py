@@ -59,6 +59,7 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
     if self.isEnabledFor({1}):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
+LOG_LEVEL_HEADER = 100
 OS_SECONDS_TIMEOUT = 2 * 60
 SEP = "|"
 STDERR_LOGGER_NAME = "ARMI_ERROR"
@@ -124,7 +125,7 @@ class _RunLog:
                 ("prompt", (27, f"[prmt{rank}] ")),
                 ("warning", (logging.WARNING, f"[warn{rank}] ")),
                 ("error", (logging.ERROR, f"[err {rank}] ")),
-                ("header", (100, f"{rank}")),
+                ("header", (LOG_LEVEL_HEADER, f"{rank}")),
             ]
         )
 
@@ -465,8 +466,8 @@ class DeduplicationFilter(logging.Filter):
         label = getattr(record, "label", msg)
         label = msg if label is None else label
 
-        # Track all warnings, and everything logged higher than warning
-        if record.levelno >= logging.WARNING:
+        # Track all warnings (and everything logged higher than warning) but not headers.
+        if logging.WARNING <= record.levelno < LOG_LEVEL_HEADER:
             if label not in self.warningCounts:
                 self.warningCounts[label] = 1
             else:
@@ -506,7 +507,7 @@ class RunLogger(logging.Logger):
 
         .. code-block:: python
 
-            runLog.error("This sort of error might usually terminate the run.")
+            runLog.error("Something is invalidating or killing a run, log and raise an Exception.")
             runLog.warning("Users probably want to know.")
             runLog.info("This is the usual verbosity.")
             runLog.debug("This is only logged during a debug run.")
@@ -636,26 +637,27 @@ class RunLogger(logging.Logger):
 
     def warningReport(self):
         """Summarize all warnings for the run."""
-        self.info("----- Final Warning Count --------")
+        bar = "-----------------------------------------"
+        self.info("---------- Final Warning Count ----------")
         self.info("  {0:^10s}   {1:^25s}".format("COUNT", "LABEL"))
 
         # grab the no-duplicates filter, and exit early if it doesn't exist
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter is None:
-            self.info("  {0:^10s}   {1:^25s}".format(str(0), str("None Found")))
-            self.info("------------------------------------")
+            self.info("  {0:^10s}   {1:^25s}".format("0", "None Found"))
+            self.info(bar)
             return
 
-        # sort by labcollections.defaultdict(lambda: 1)
+        # sort warnings by number of occurrences
         total = 0
         for label, count in sorted(dupsFilter.warningCounts.items(), key=operator.itemgetter(1), reverse=True):
             self.info(f"  {str(count):^10s}   {str(label):^25s}")
             total += count
-        self.info("------------------------------------")
 
         # add a totals line
+        self.info(bar)
         self.info(f"  {str(total):^10s}   Total Number of Warnings")
-        self.info("------------------------------------")
+        self.info(bar)
 
     def setVerbosity(self, intLevel):
         """A helper method to try to partially support the local, historical method of the same name."""

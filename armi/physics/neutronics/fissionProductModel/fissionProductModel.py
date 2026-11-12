@@ -14,7 +14,6 @@
 """
 The implementation of the ``FissionProductModel`` interface.
 
-
 This ``FissionProductModel`` class implements the management of fission products within
 the reactor core and can be extended to support more general applications. Currently, the
 fission product model supports explicit modeling of fission products in each of the

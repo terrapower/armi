@@ -224,7 +224,6 @@ class UniformMeshGenerator:
             self.minimumMeshSize,
             filteredBottomFuel + filteredTopFuel,
             preference="bottom",
-            warn=True,
         )
 
         runLog.extra(
