@@ -382,7 +382,7 @@ def buildComplexHexBlock(cold=True, depletable=False) -> blocks.HexBlock:
 def applyDummyData(block):
     """Add some dummy data to a block for physics-like tests."""
     from armi.nuclearDataIO.cccc import isotxs
-    from armi.tests import ISOAA_PATH
+    from armi.testing import ISOAA_PATH
 
     # typical SFR-ish flux in 1/cm^2/s
     flux = [
