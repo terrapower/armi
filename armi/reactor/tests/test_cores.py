@@ -22,8 +22,7 @@ from armi.nuclearDataIO.xsLibraries import IsotxsLibrary
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import Block
 from armi.reactor.flags import Flags
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH, TESTING_ROOT, loadTestReactor
 
 
 class TestHexCore(unittest.TestCase):

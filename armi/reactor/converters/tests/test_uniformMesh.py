@@ -28,6 +28,7 @@ from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.testing import (
+    ISOAA_PATH,
     TESTING_ROOT,
     applyDummyData,
     buildComplexHexBlock,
@@ -36,7 +37,6 @@ from armi.testing import (
     loadTestReactor,
     reduceTestReactorRings,
 )
-from armi.tests import ISOAA_PATH
 
 _ISOTXS_CACHE = None
 

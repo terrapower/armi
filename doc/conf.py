@@ -52,7 +52,7 @@ sys.path.insert(0, ".static")
 
 from armi import apps, context, disableFutureConfigures, meta
 from armi import configure as armi_configure
-from armi.bookkeeping import tests as bookkeepingTests
+from armi.testing import TUTORIAL_FILES
 from armi.utils import safeCopy
 
 context.Mode.setMode(context.Mode.BATCH)
@@ -64,7 +64,7 @@ disableFutureConfigures()
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 STATIC_DIR = ".static"
-_TUTORIAL_FILES = [fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
+_TUTORIAL_FILES = [fName for fName in TUTORIAL_FILES if "ipynb" not in fName]
 
 
 class PatchedPythonDomain(PythonDomain):

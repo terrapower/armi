@@ -19,17 +19,4 @@ also re-exported by `__init__.py`, so that other things (like the documentation 
 can use it without having to import the rest of ARMI.
 """
 
-import os
-
-from armi.testing import TESTING_ROOT
-from armi.tests import TEST_ROOT
-
-# These files are needed to run the data_model ipython notebook, which is done in
-# test_historyTracker, and when building the docs.
-TUTORIAL_FILES = [
-    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177-blueprints.yaml"),
-    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177-coreMap.yaml"),
-    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177-fuelManagement.py"),
-    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177.yaml"),
-    os.path.join(TEST_ROOT, "tutorials", "data_model.ipynb"),
-]
+# TODO: DELETE THIS FILE: from armi.testing import TUTORIAL_FILES  # noqa: F401
