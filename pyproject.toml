@@ -114,8 +114,14 @@ docs = [
 [project.scripts]
 armi = "armi.__main__:main"
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+include = ["armi*"]
+exclude = [
+    "armi.tests",
+    "armi.tests.*",
+    "armi.*.tests",
+    "armi.*.tests.*",
+]
 
 
 #######################################################################

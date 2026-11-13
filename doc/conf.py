@@ -40,8 +40,6 @@ from sphinx.domains.python import PythonDomain
 from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
 from sphinx_needs.api import add_dynamic_function
 
-from doc.getTestResults import getTestResult
-
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
@@ -49,11 +47,16 @@ sys.path.insert(0, PYTHONPATH)
 os.environ["PYTHONPATH"] = PYTHONPATH
 # Add dochelpers.py and automateScr.py from doc/.static/ directory
 sys.path.insert(0, ".static")
+# Add doc/ dir for a couple of imports
+DOC_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, DOC_DIR)
+sys.path.insert(0, os.path.dirname(DOC_DIR))
 
 from armi import apps, context, disableFutureConfigures, meta
 from armi import configure as armi_configure
-from armi.bookkeeping import tests as bookkeepingTests
+from armi.testing import TUTORIAL_FILES
 from armi.utils import safeCopy
+from doc.getTestResults import getTestResult
 
 context.Mode.setMode(context.Mode.BATCH)
 
@@ -64,7 +67,7 @@ disableFutureConfigures()
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 STATIC_DIR = ".static"
-_TUTORIAL_FILES = [fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
+_TUTORIAL_FILES = [fName for fName in TUTORIAL_FILES if "ipynb" not in fName]
 
 
 class PatchedPythonDomain(PythonDomain):

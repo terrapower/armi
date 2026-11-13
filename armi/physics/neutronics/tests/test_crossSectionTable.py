@@ -24,8 +24,7 @@ from armi.physics.neutronics.isotopicDepletion import (
 )
 from armi.physics.neutronics.latticePhysics import ORDER
 from armi.settings import Settings
-from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH, TESTING_ROOT, buildComplexHexBlock, loadTestReactor
 
 
 class TestCrossSectionTable(unittest.TestCase):
