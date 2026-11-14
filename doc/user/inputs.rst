@@ -782,11 +782,6 @@ supported flags in ARMI is listed below.
 
     return createListTable(rows, widths=[30,], klass="longtable")
 
-
-.. warning::
-   `ArmiObject` names that are converted into flags should only have a space in between them. Special characters like
-   `-` or `_` are not supported except for special multi-word flags.
-
 .. _blocks-and-components:
 
 Blocks and Components
