@@ -17,8 +17,7 @@
 import unittest
 
 from armi.bookkeeping import BookkeepingPlugin, summarizeMaterialData
-from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
-from armi.tests.test_plugins import TestPlugin
+from armi.testing import TESTING_ROOT, TestPlugin, loadTestReactor, mockRunLogs
 
 
 class TestBookkeepingPlugin(TestPlugin):
