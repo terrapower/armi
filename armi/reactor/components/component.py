@@ -646,7 +646,7 @@ class Component(ArmiObject, metaclass=ComponentType):
 
         Parameters
         ----------
-        nucNames : Iterable[str, np.bytes_]
+        nucNames : Iterable[str, ``np.bytes_``]
             Nuclide names (as string or byte strings) for which to retrieve number densities.
 
         Returns
