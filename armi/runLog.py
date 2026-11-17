@@ -21,8 +21,8 @@ The default way of calling and the global armi logger is to just import it:
 
     from armi import runLog
 
-You may want a logger specific to a single module, say to provide debug logging for only one module. That functionality
-is provided by a global override of logging imports:
+You may want a logger specific to a single module, say to provide debug logging for only one module.
+That functionality is provided by a global override of logging imports:
 
 .. code-block::
 
@@ -34,7 +34,8 @@ In either case, you can then log things the same way:
 .. code-block::
 
     runLog.info('information here')
-    runLog.error('extra error info here')  # raises a RuntimeError
+    runLog.error('extra error info here')
+    raise SomeException  # runLog.error() implies that the code will crash!
 
 Or change the log level the same way:
 
@@ -296,21 +297,26 @@ def getLogDir():
         return os.path.join(os.getcwd(), "logs")
 
 
-def close(mpiRank=None):
-    """End use of the log. Concatenate if needed and restore defaults."""
-    mpiRank = context.MPI_RANK if mpiRank is None else mpiRank
+def close():
+    """
+    Close local log handlers and restore standard streams.
 
-    if mpiRank == 0:
-        try:
-            concatenateLogs()
-        except IOError as ee:
-            warning("Failed to concatenate logs due to IOError.")
-            error(ee)
-    else:
-        if LOG.stderrLogger:
-            _ = [h.close() for h in LOG.stderrLogger.handlers]
-        if LOG.logger:
-            _ = [h.close() for h in LOG.logger.handlers]
+    MPI synchronization of log concatenation is handled by OperatorMPI.
+    """
+    closedHandlers = set()
+    for logger in (LOG.stderrLogger, LOG.logger):
+        if logger is None:
+            continue
+        for handler in list(logger.handlers):
+            logger.removeHandler(handler)
+            handlerId = id(handler)
+            if handlerId in closedHandlers:
+                continue
+            try:
+                handler.flush()
+            finally:
+                handler.close()
+            closedHandlers.add(handlerId)
 
     LOG.setNullLoggers()
     LOG.restoreStandardStreams()
@@ -319,8 +325,6 @@ def close(mpiRank=None):
 def concatenateLogs(logDir=None):
     """
     Concatenate the armi run logs and delete them.
-
-    Should only ever be called by parent.
 
     .. impl:: Log files from different processes are combined.
         :id: I_ARMI_LOG_MPI
@@ -395,7 +399,8 @@ def concatenateLogs(logDir=None):
                     warning(f"Could not delete {stderrName}")
 
 
-# Here are all the module-level functions that should be used as the API. They use the Log object behind the scenes.
+# Here are all the module-level functions that should be used for most outputs. They use the Log
+# object behind the scenes.
 def raw(msg):
     """Print raw text without any special functionality."""
     LOG.log("header", msg, single=False)
@@ -421,10 +426,8 @@ def warning(msg, single=False, label=None):
     LOG.log("warning", msg, single=single, label=label)
 
 
-def error(msg, single=False, label=None, errType: type[Exception] = RuntimeError):
-    """Unlike the other log methods here, runLog.error actually raises an Exception."""
+def error(msg, single=False, label=None):
     LOG.log("error", msg, single=single, label=label)
-    raise errType(msg)
 
 
 def header(msg, single=False, label=None):
@@ -465,8 +468,8 @@ class DeduplicationFilter(logging.Filter):
         label = getattr(record, "label", msg)
         label = msg if label is None else label
 
-        # Track all warnings, and everything logged higher than warning
-        if record.levelno >= logging.WARNING:
+        # Track all warnings, for warning report
+        if record.levelno in (logging.WARNING, logging.CRITICAL):
             if label not in self.warningCounts:
                 self.warningCounts[label] = 1
             else:
