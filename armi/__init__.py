@@ -146,12 +146,7 @@ def init(fName=None, cs=None, skipInspection=False, choice=None):
     if not skipInspection:
         armiCase.checkInputs()
 
-    try:
-        return armiCase.initializeOperator()
-    except:  # Catch any and all errors. Naked exception on purpose.
-        # Concatenate errors to the primary log file.
-        runLog.close()
-        raise
+    return armiCase.initializeOperator()
 
 
 def getDefaultPlugins() -> List[Type[plugins.ArmiPlugin]]:
