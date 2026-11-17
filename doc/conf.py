@@ -329,6 +329,7 @@ exclude_patterns = [
     "gallery/**/*.zip",
     "gallery/analysis/index.html",
     "gallery/framework/index.html",
+    "gallery-src/README.rst", # no repetition of README is needed
     "gallery-src/**/README.rst", # no repetition of README is needed
     "logs",
     "Thumbs.db",
