@@ -304,21 +304,6 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     _app.registerPluginFlags()
 
 
-def applyAsyncioWindowsWorkaround() -> None:
-    """
-    Apply Asyncio workaround for Windows and Python 3.8.
-
-    This prevents a NotImplementedError on Windows with Python 3.8 his error showed up during jupyter notebook built-
-    tests and documentation. See https://bugs.python.org/issue37373
-    """
-    import asyncio
-
-    if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and PLATFORM == Platform.WINDOWS:
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-
-applyAsyncioWindowsWorkaround()
-
 # The ``atexit`` handler is like putting it in a finally after everything.
 atexit.register(context.cleanFastPathAfterSimulation)
 
