@@ -25,6 +25,9 @@ will be assigned to the object. However, specific Flags may be specified within
 blueprints, in which case the name is ignored and only the explicitly-requested Flags
 are applied (see :ref:`bp-input-file` for more details).
 
+Note that only whitespace may be used to seprate words in a name string. The name string will
+not be split correctly if special characters such as '-' or '_' are used to separate keywords.
+
 Individual Flags tend to be various nouns and adjectives that describe common objects
 that go into a reactor (e.g. "fuel", "shield", "control", "duct", "plenum", etc.). In
 addition, there are some generic Flags (e.g., "A", "B", "C", etc.) that aid in
