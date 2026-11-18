@@ -398,7 +398,7 @@ def concatenateLogs(logDir=None):
                     warning(f"Could not delete {stderrName}")
 
 
-# Here are all the module-level functions that should be used for most outputs. They use the Log object behind the scenes.
+# Here are all the module-level functions that should be used as the API. They use the Log object behind the scenes.
 def raw(msg):
     """Print raw text without any special functionality."""
     LOG.log("header", msg, single=False)

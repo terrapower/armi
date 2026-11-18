@@ -34,7 +34,7 @@ from unittest.mock import patch
 from armi import context, mpiActions, runLog, settings
 from armi.interfaces import Interface
 from armi.mpiActions import DistributeStateAction
-from armi.operators import operatorMPI, OperatorMPI
+from armi.operators import OperatorMPI, operatorMPI
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
@@ -219,8 +219,8 @@ class TestMpiLogConcat(unittest.TestCase):
                         with open(os.path.join(logDir, f"{caseTitle}-mpi.log")) as l:
                             log = l.read()
                         # Rank 1 log should be in the concatenated file, and rank 0 should not be
-                        self.assertIn(f"Hi hello from rank 1", log)
-                        self.assertNotIn(f"Hi hello from rank 0", log)
+                        self.assertIn("Hi hello from rank 1", log)
+                        self.assertNotIn("Hi hello from rank 0", log)
                     except Exception as error:
                         testErr = f"{type(error).__name__}: {error}"
                 # Ensure every test process reports rank 0's error.

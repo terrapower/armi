@@ -14,9 +14,9 @@
 
 """MPI-mocked tests for operator MPI. For actual MPI unit tests, refer to armi/tests/test_mpiFeatures.py."""
 
+import unittest
 from contextlib import contextmanager
 from unittest import mock
-import unittest
 
 from armi.operators import operatorMPI
 
@@ -26,7 +26,7 @@ class TestOperatorMpiLogConcat(unittest.TestCase):
 
     @contextmanager
     def patchedMpiContextandClose(self, rank, size, comm, events):
-        """Patch MPI context and runLog.close()"""
+        """Patches MPI context and runLog.close()."""
         with (
             mock.patch.object(operatorMPI.context, "MPI_RANK", rank),
             mock.patch.object(operatorMPI.context, "MPI_SIZE", size),

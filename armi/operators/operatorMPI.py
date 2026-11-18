@@ -106,7 +106,7 @@ class OperatorMPI(Operator):
                     Operator.operate(self)
                     runLog.important(time.ctime())
                 except Exception as ee:
-                    runLog.error("Error in Primary Node. Check STDERR for a traceback.\n{ee}")
+                    runLog.error(f"Error in Primary Node. Check STDERR for a traceback.\n{ee}")
                 finally:
                     # If there are other processes, tell them to stop
                     if context.MPI_SIZE > 1:
