@@ -296,21 +296,26 @@ def getLogDir():
         return os.path.join(os.getcwd(), "logs")
 
 
-def close(mpiRank=None):
-    """End use of the log. Concatenate if needed and restore defaults."""
-    mpiRank = context.MPI_RANK if mpiRank is None else mpiRank
+def close():
+    """
+    Close local log handlers and restore standard streams.
 
-    if mpiRank == 0:
-        try:
-            concatenateLogs()
-        except IOError as ee:
-            warning("Failed to concatenate logs due to IOError.")
-            error(ee)
-    else:
-        if LOG.stderrLogger:
-            _ = [h.close() for h in LOG.stderrLogger.handlers]
-        if LOG.logger:
-            _ = [h.close() for h in LOG.logger.handlers]
+    MPI synchronization of log concatenation is handled by OperatorMPI.
+    """
+    closedHandlers = set()
+    for logger in (LOG.stderrLogger, LOG.logger):
+        if logger is None:
+            continue
+        for handler in list(logger.handlers):
+            logger.removeHandler(handler)
+            handlerId = id(handler)
+            if handlerId in closedHandlers:
+                continue
+            try:
+                handler.flush()
+            finally:
+                handler.close()
+            closedHandlers.add(handlerId)
 
     LOG.setNullLoggers()
     LOG.restoreStandardStreams()
@@ -319,8 +324,6 @@ def close(mpiRank=None):
 def concatenateLogs(logDir=None):
     """
     Concatenate the armi run logs and delete them.
-
-    Should only ever be called by parent.
 
     .. impl:: Log files from different processes are combined.
         :id: I_ARMI_LOG_MPI

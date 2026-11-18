@@ -92,7 +92,7 @@ class TestRunLog(unittest.TestCase):
 
         log.logger.flush()
         log.logger.close()
-        runLog.close(99)
+        runLog.close()
 
         # test what was logged
         streamVal = stream.getvalue()
@@ -141,8 +141,7 @@ class TestRunLog(unittest.TestCase):
 
         # run the warning report
         log.warningReport()
-        runLog.close(1)
-        runLog.close(0)
+        runLog.close()
 
         # test what was logged
         streamVal = stream.getvalue()
@@ -192,8 +191,7 @@ class TestRunLog(unittest.TestCase):
 
         # run the warning report
         log.warningReport()
-        runLog.close(1)
-        runLog.close(0)
+        runLog.close()
 
         # test what was logged
         streamVal = stream.getvalue()
@@ -204,30 +202,28 @@ class TestRunLog(unittest.TestCase):
 
     def test_closeLogging(self):
         """A basic test of the close() functionality."""
-
-        def validate_loggers(log):
-            """Little test helper, to make sure our loggers still look right."""
-            handlers = [str(h) for h in log.logger.handlers]
-            self.assertEqual(len(handlers), 1, msg=",".join(handlers))
-
-            stderrHandlers = [str(h) for h in log.stderrLogger.handlers]
-            self.assertEqual(len(stderrHandlers), 1, msg=",".join(stderrHandlers))
-
         # init logger
         log = runLog.LOG = runLog._RunLog(777)
-        validate_loggers(log)
-
-        # start the logging for real
         log.startLog("test_closeLogging")
         runLog.createLogDir()
-        validate_loggers(log)
 
-        # close() and test that we have correctly nullified our loggers
-        runLog.close(1)
-        validate_loggers(log)
+        logHandlers = list(log.logger.handlers)
+        errHandlers = list(log.stderrLogger.handlers)
+        self.assertEqual(len(logHandlers), 1)
+        self.assertEqual(len(errHandlers), 1)
 
-        # in a real run, the parent process would close() after all the children
-        runLog.close(0)
+        runLog.close()
+        # setNullLoggers() should install one null handler on each logger.
+        self.assertEqual(len(log.logger.handlers), 1)
+        self.assertEqual(len(log.stderrLogger.handlers), 1)
+        # The active handlers should no longer be the original handlers.
+        self.assertIsNot(log.logger.handlers[0], logHandlers[0])
+        self.assertIsNot(log.stderrLogger.handlers[0], errHandlers[0])
+
+        # Verify that close() is safe to call more than once.
+        runLog.close()
+        self.assertEqual(len(log.logger.handlers), 1)
+        self.assertEqual(len(log.stderrLogger.handlers), 1)
 
     def test_setVerbosity(self):
         """Let's test the setVerbosity() method carefully.

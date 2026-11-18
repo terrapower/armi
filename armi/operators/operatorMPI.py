@@ -36,12 +36,45 @@ MPI. This can be optimized as needed.
 """
 
 import gc
+import sys
 import time
 import traceback
 
 from armi import context, getPluginManager, mpiActions, runLog
 from armi.operators.operator import Operator
 from armi.reactor import reactors
+
+
+def _concatMpiLogs():
+    """Close logs and concatenate them on the primary rank."""
+    # Check if there is any already propagating exception.
+    prevException = sys.exc_info()[1]
+
+    # Every rank must close its own handlers before rank 0 reads and concatenates the per-rank log files.
+    runLog.close()
+    # First barrier to wait for all logs to be written and closed.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
+
+    # Attempt to concat logs now that all logs are closed.
+    concatErr = None
+    if context.MPI_RANK == 0:
+        try:
+            runLog.concatenateLogs()
+        except OSError as ee:
+            # Save the error for printing. Do not do any error handling until the worker ranks are collected.
+            concatErr = ee
+
+    # Add another synchronization point so the worker ranks/logs wait on the primary rank to finish concatenation.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
+
+    # If needed: handle either the concatenation error or the already propagating exception
+    if concatErr:
+        if prevException:
+            prevException.add_note(f"Additionally, failed to concatenate MPI logs: {concatErr}")
+        else:
+            raise RuntimeError("Failed to concatenate MPI logs.") from concatErr
 
 
 class OperatorMPI(Operator):
@@ -65,39 +98,39 @@ class OperatorMPI(Operator):
         handles errors.
         """
         runLog.debug("OperatorMPI.operate")
-        if context.MPI_RANK == 0:
-            # this is the primary
-            try:
-                # run the regular old operate method
-                Operator.operate(self)
-                runLog.important(time.ctime())
-            except Exception as ee:
-                runLog.error(f"Error in Primary Node. Check STDERR for a traceback.\n{ee}")
-            finally:
-                # If there are other processes, tell them to stop
-                if context.MPI_SIZE > 1:
-                    runLog.important("Stopping all MPI worker nodes and cleaning temps.")
-                    # send the quit command to the workers.
-                    context.MPI_COMM.bcast("quit", root=0)
-                    runLog.debug("Waiting for all nodes to close down")
-                    # wait until they're done cleaning up.
-                    context.MPI_COMM.bcast("finished", root=0)
-                    runLog.important("All worker nodes stopped.")
-                # even though we waited, still need more time to close stdout.
-                time.sleep(1)
-                runLog.debug("Main operate finished")
-                runLog.close()  # concatenate all logs.
-        else:
-            try:
-                self.workerOperate()
-            except:
-                # grab the final command
-                runLog.warning("An error has occurred in one of the worker nodes. See STDERR for traceback.")
-                # bcasting quit won't work if the main is sitting around waiting for a different bcast or gather.
-                traceback.print_exc()
-                runLog.debug("Worker failed")
-                runLog.close()
-                raise
+        try:
+            if context.MPI_RANK == 0:
+                # This is the primary MPI process.
+                try:
+                    # run the regular old operate method
+                    Operator.operate(self)
+                    runLog.important(time.ctime())
+                except Exception as ee:
+                    runLog.error(f"Error in Primary Node. Check STDERR for a traceback.\n{ee}")
+                finally:
+                    # If there are other processes, tell them to stop
+                    if context.MPI_SIZE > 1:
+                        runLog.important("Stopping all MPI worker nodes and cleaning temps.")
+                        # send the quit command to the workers.
+                        context.MPI_COMM.bcast("quit", root=0)
+                        runLog.debug("Waiting for all nodes to close down")
+                        # wait until they're done cleaning up.
+                        context.MPI_COMM.bcast("finished", root=0)
+                        runLog.important("All worker nodes stopped.")
+                    runLog.debug("Main operate finished")
+            else:
+                # This is a worker MPI process.
+                try:
+                    self.workerOperate()
+                except Exception:
+                    # grab the final command
+                    runLog.warning("An error has occurred in one of the worker nodes. See STDERR for traceback.")
+                    # bcasting quit won't work if the main is sitting around waiting for a different bcast or gather.
+                    traceback.print_exc()
+                    runLog.debug("Worker failed")
+                    raise
+        finally:
+            _concatMpiLogs()
 
     def workerOperate(self):
         """
