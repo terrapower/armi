@@ -67,8 +67,7 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
         majorversion = version.split(".")[0] if version else "2"
         if majorversion == "2":
             raise ValueError(
-                'Database version 2 ("XTView database") is no longer '
-                "supported. To migrate to a newer version, use version 0.1.5."
+                "Database version 2 is no longer supported. To migrate to a newer version, use version 0.1.5."
             )
 
         if majorversion == "3":
@@ -79,8 +78,7 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
         majorversion = version.split(".")[0] if version else "3"
         if majorversion == "2":
             raise ValueError(
-                'Database version 2 ("XTView database") is no longer '
-                "supported. To migrate to a newer version, use version 0.1.5 to migrate."
+                "Database version 2 is no longer supported. To migrate to a newer version, use version 0.1.5."
             )
         if majorversion == "3":
             return Database(dbPath, permission)
