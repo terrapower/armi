@@ -88,8 +88,6 @@ def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
     """
     Convert a XSID label (e.g. 'AA') to an integer.
 
-    Useful for visualizing XS type in XTVIEW.
-
     2-digit labels are supported when there is only one burnup group.
     """
     return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
@@ -98,8 +96,6 @@ def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
 def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
     """
     Convert a XSID label (e.g. 65) to an XS label (e.g. 'A').
-
-    Useful for visualizing XS type in XTVIEW.
 
     2-digit labels are supported when there is only one burnup group.
     """
