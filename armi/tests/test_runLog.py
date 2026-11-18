@@ -202,15 +202,6 @@ class TestRunLog(unittest.TestCase):
 
     def test_closeLogging(self):
         """A basic test of the close() functionality."""
-
-        def validateLoggers(log):
-            """Little test helper, to make sure our loggers still look right."""
-            handlers = [str(h) for h in log.logger.handlers]
-            self.assertEqual(len(handlers), 1, msg=",".join(handlers))
-
-            stderrHandlers = [str(h) for h in log.stderrLogger.handlers]
-            self.assertEqual(len(stderrHandlers), 1, msg=",".join(stderrHandlers))
-
         # init logger
         log = runLog.LOG = runLog._RunLog(777)
         log.startLog("test_closeLogging")
@@ -278,8 +269,10 @@ class TestRunLog(unittest.TestCase):
             runLog.LOG.setVerbosity(logging.ERROR)
             runLog.warning("Still Invisible")
             self.assertEqual("", mock.getStdout())
-            runLog.error("Visible!")
-            self.assertIn("Visible!", mock.getStdout())
+
+            # errors are always errors
+            with self.assertRaises(RuntimeError):
+                runLog.error("Hard failure!")
 
             # we shouldn't be able to setVerbosity() to a non-canonical value (logging module defense)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)
