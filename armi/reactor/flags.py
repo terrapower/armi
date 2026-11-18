@@ -273,7 +273,6 @@ class Flags(Flag):
     # more parts
     CORE_BARREL = auto()
     DUMMY = auto()
-    BATCHMASSADDITION = auto()
 
     POISON = auto()
 
