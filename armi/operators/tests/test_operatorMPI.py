@@ -22,7 +22,7 @@ from armi.operators import operatorMPI
 
 
 class TestOperatorMpiLogConcat(unittest.TestCase):
-    """Class that tests the `_concatMpiLogs()` functionality in OperatorMPI.operate()."""
+    """Test the _concatMpiLogs() functionality in OperatorMPI.operate()."""
 
     @contextmanager
     def patchedMpiContextandClose(self, rank, size, comm, events):

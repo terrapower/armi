@@ -100,7 +100,7 @@ class OperatorMPI(Operator):
         runLog.debug("OperatorMPI.operate")
         try:
             if context.MPI_RANK == 0:
-                # this is the primary
+                # This is the primary MPI process.
                 try:
                     # run the regular old operate method
                     Operator.operate(self)
@@ -119,6 +119,7 @@ class OperatorMPI(Operator):
                         runLog.important("All worker nodes stopped.")
                     runLog.debug("Main operate finished")
             else:
+                # This is a worker MPI process.
                 try:
                     self.workerOperate()
                 except Exception:
