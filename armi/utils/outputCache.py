@@ -22,7 +22,7 @@ result. This system allows the results to be cached and returned instantly inste
 
 API usage
 ---------
-Getting a cached file::
+Getting a cached file:
 
 .. code-block:: python
 
@@ -32,7 +32,7 @@ Getting a cached file::
     if not outputFound:
         mc2.run(exe, inp, output)
 
-Storing a file to the cache::
+Storing a file to the cache:
 
 .. code-block:: python
 

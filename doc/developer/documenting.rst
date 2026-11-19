@@ -4,11 +4,11 @@
 Documenting ARMI
 ****************
 
-ARMI uses the `Sphinx <https://www.sphinx-doc.org/en/master/>`_ documentation system to compile the 
+ARMI uses the `Sphinx <https://www.sphinx-doc.org/en/master/>`_ documentation system to compile the
 ARMI documentation into HTML and PDF from in-code docstrings and hand-created
 `ReStructedText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_.
 This provides several benefits:
- 
+
 * We can revise and track the documentation in lock-step with the code itself, in the same source
   code repository
 * We can make use of hyperlinked cross-references that stay up to date as the code is expanded or
@@ -35,6 +35,7 @@ You also need to have the following utilities available in your PATH:
 
 * `Graphviz <https://graphviz.org/>`_
 * `Pandoc <https://pandoc.org/>`_
+* `GitHub CLI <https://cli.github.com/>`_
 
 If you want to build the documentation into a PDF using the Sphinx LaTeX builder, you also need:
 
