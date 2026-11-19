@@ -289,32 +289,35 @@ class Case:
         Room for improvement: The coverage, profiling, etc. stuff can probably be moved out of here
         to a more elegant place (like a context manager?).
         """
-        # Start the log here so that the verbosities for the head and workers can be configured
-        # based on the user settings for the rest of the run.
-        runLog.LOG.startLog(self.cs.caseTitle)
-        if context.MPI_RANK == 0:
-            runLog.setVerbosity(self.cs["verbosity"])
-        else:
-            runLog.setVerbosity(self.cs["branchVerbosity"])
-
-        # if in the settings, start the coverage and profiling
-        cov = self._startCoverage()
-        profiler = self._startProfiling()
-
-        self.checkInputs()
-        o = self.initializeOperator()
-
-        with o:
-            if self.cs["trace"] and context.MPI_RANK == 0:
-                # only trace primary node.
-                tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
-                tracer.runctx("o.operate()", globals(), locals())
+        try:
+            # Start the log here so that the verbosities for the head and workers can be configured
+            # based on the user settings for the rest of the run.
+            runLog.LOG.startLog(self.cs.caseTitle)
+            if context.MPI_RANK == 0:
+                runLog.setVerbosity(self.cs["verbosity"])
             else:
-                o.operate()
+                runLog.setVerbosity(self.cs["branchVerbosity"])
 
-        # if in the settings, report the coverage and profiling
-        Case._endCoverage(self.cs["coverageConfigFile"], cov)
-        Case._endProfiling(profiler)
+            # if in the settings, start the coverage and profiling
+            cov = self._startCoverage()
+            profiler = self._startProfiling()
+
+            self.checkInputs()
+            o = self.initializeOperator()
+
+            with o:
+                if self.cs["trace"] and context.MPI_RANK == 0:
+                    # only trace primary node.
+                    tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
+                    tracer.runctx("o.operate()", globals(), locals())
+                else:
+                    o.operate()
+
+            # if in the settings, report the coverage and profiling
+            Case._endCoverage(self.cs["coverageConfigFile"], cov)
+            Case._endProfiling(profiler)
+        finally:
+            runLog.closeAndConcatenateMpiLogs()
 
     def _startCoverage(self):
         """Helper to the Case.run: spin up the code coverage tooling, if the Settings file says to.

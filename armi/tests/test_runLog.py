@@ -16,10 +16,12 @@
 import logging
 import os
 import unittest
+from contextlib import contextmanager
 from io import StringIO
 from logging import handlers
 from pathlib import Path
 from shutil import rmtree
+from unittest import mock
 
 from armi import context, runLog
 from armi.testing import mockRunLogs
@@ -548,3 +550,83 @@ class TestRunLogger(unittest.TestCase):
         # test what was logged
         streamVal = stream.getvalue()
         self.assertIn(testName, streamVal, msg=streamVal)
+
+
+class TestRunLogMpiLogConcat(unittest.TestCase):
+    """Test the closeAndConcatenateMpiLogs() functionality."""
+
+    @contextmanager
+    def patchedMpiContextandClose(self, rank, size, comm, events):
+        """Patches MPI context and runLog.close()."""
+        with (
+            mock.patch.object(runLog.context, "MPI_RANK", rank),
+            mock.patch.object(runLog.context, "MPI_SIZE", size),
+            mock.patch.object(runLog.context, "MPI_COMM", comm),
+            mock.patch.object(runLog, "close", side_effect=lambda: events.append("close")),
+        ):
+            yield
+
+    def test_logConcatPrimary(self):
+        """Base rank closes logs before concatenating MPI logs."""
+        events = []
+        comm = mock.Mock()
+        comm.barrier.side_effect = lambda: events.append("barrier")
+
+        with (
+            self.patchedMpiContextandClose(rank=0, size=2, comm=comm, events=events),
+            mock.patch.object(
+                runLog, "concatenateLogs", side_effect=lambda: events.append("concatenate")
+            ) as concatenateLogs,
+        ):
+            runLog.closeAndConcatenateMpiLogs()
+
+        self.assertEqual(events, ["close", "barrier", "concatenate", "barrier"])
+        concatenateLogs.assert_called_once()
+
+    def test_logConcatWorker(self):
+        """Worker ranks close logs but do not concatenate them."""
+        events = []
+        comm = mock.Mock()
+        comm.barrier.side_effect = lambda: events.append("barrier")
+        with (
+            self.patchedMpiContextandClose(rank=1, size=2, comm=comm, events=events),
+            mock.patch.object(
+                runLog, "concatenateLogs", side_effect=lambda: events.append("concatenate")
+            ) as concatenateLogs,
+        ):
+            runLog.closeAndConcatenateMpiLogs()
+
+        self.assertEqual(events, ["close", "barrier", "barrier"])
+        concatenateLogs.assert_not_called()
+
+    def test_logConcatPrimaryFinally(self):
+        """Ensure the last MPI barrier in the finally statement is reached for base rank."""
+        events = []
+        comm = mock.Mock()
+        comm.barrier.side_effect = lambda: events.append("barrier")
+        concatErr = OSError("Fake Error")
+        with (
+            self.patchedMpiContextandClose(rank=0, size=2, comm=comm, events=events),
+            mock.patch.object(runLog, "concatenateLogs", side_effect=concatErr) as concatenateLogs,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "Failed to concatenate MPI logs") as errorContext:
+                runLog.closeAndConcatenateMpiLogs()
+
+        self.assertEqual(events, ["close", "barrier", "barrier"])
+        concatenateLogs.assert_called_once()
+        self.assertIs(errorContext.exception.__cause__, concatErr)
+
+    def test_logConcatWorkerFinally(self):
+        """Ensure the last MPI barrier in the finally statement is reached for worker rank."""
+        events = []
+        comm = mock.Mock()
+        comm.barrier.side_effect = lambda: events.append("barrier")
+        concatErr = OSError("Fake Error")
+        with (
+            self.patchedMpiContextandClose(rank=1, size=2, comm=comm, events=events),
+            mock.patch.object(runLog, "concatenateLogs", side_effect=concatErr) as concatenateLogs,
+        ):
+            runLog.closeAndConcatenateMpiLogs()
+
+        self.assertEqual(events, ["close", "barrier", "barrier"])
+        concatenateLogs.assert_not_called()
