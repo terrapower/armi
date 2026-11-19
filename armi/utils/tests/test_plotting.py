@@ -27,8 +27,7 @@ from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import ISOAA_PATH, getEmptyHexReactor
+from armi.testing import ISOAA_PATH, TESTING_ROOT, getEmptyHexReactor, loadTestReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

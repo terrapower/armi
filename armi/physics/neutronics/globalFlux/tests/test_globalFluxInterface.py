@@ -28,8 +28,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.testing import TESTING_ROOT, applyDummyData, buildComplexHexBlock, loadTestReactor, mockRunLogs
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH, TESTING_ROOT, applyDummyData, buildComplexHexBlock, loadTestReactor, mockRunLogs
 
 
 class MockReactorParams:

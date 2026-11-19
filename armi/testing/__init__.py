@@ -59,6 +59,15 @@ ARMI_RUN_PATH = os.path.join(_ARMI_RUN_DIR, "armiRun.yaml")
 COMPXS_PATH = os.path.join(TESTING_ROOT, "resources", "COMPXS.ascii")
 ISOAA_PATH = os.path.join(TESTING_ROOT, "resources", "ISOAA")
 _TEST_REACTORS = {}  # dictionary of pickled string of test reactors (for fast caching)
+# These files are needed to run the data_model ipython notebook, which is done in test_historyTracker, and when building
+# the docs.
+TUTORIAL_FILES = [
+    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177-blueprints.yaml"),
+    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177-coreMap.yaml"),
+    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177-fuelManagement.py"),
+    os.path.join(TESTING_ROOT, "reactors", "anl-afci-177", "anl-afci-177.yaml"),
+    os.path.join(TEST_ROOT, "tutorials", "data_model.ipynb"),
+]
 
 
 def loadTestReactor(inputFilePath=_ARMI_RUN_DIR, customSettings=None, inputFileName="armiRun.yaml", useCache=True):
