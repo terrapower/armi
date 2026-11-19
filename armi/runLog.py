@@ -398,6 +398,38 @@ def concatenateLogs(logDir=None):
                     warning(f"Could not delete {stderrName}")
 
 
+def closeAndConcatenateMpiLogs():
+    """Close logs and concatenate them on the primary rank."""
+    # Check if there is any already propagating exception.
+    prevException = sys.exc_info()[1]
+
+    # Every rank must close its own handlers before rank 0 reads and concatenates the per-rank log files.
+    close()
+    # First barrier to wait for all logs to be written and closed.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
+
+    # Attempt to concat logs now that all logs are closed.
+    concatErr = None
+    if context.MPI_RANK == 0:
+        try:
+            concatenateLogs()
+        except OSError as ee:
+            # Save the error for printing. Do not do any error handling until the worker ranks are collected.
+            concatErr = ee
+
+    # Add another synchronization point so the worker ranks/logs wait on the primary rank to finish concatenation.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
+
+    # If needed: handle either the concatenation error or the already propagating exception
+    if concatErr:
+        if prevException:
+            prevException.add_note(f"Additionally, failed to concatenate MPI logs: {concatErr}")
+        else:
+            raise RuntimeError("Failed to concatenate MPI logs.") from concatErr
+
+
 # Here are all the module-level functions that should be used as the API. They use the Log object behind the scenes.
 def raw(msg):
     """Print raw text without any special functionality."""
