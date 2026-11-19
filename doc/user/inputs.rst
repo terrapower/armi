@@ -1168,13 +1168,13 @@ Please note that the ``standard`` run types allow for material modifications to 
 
 .. code-block:: yaml
 
-    ``U235_wt_frac = ['', '', '', 0.05, 0.075, 0.10, '', '', '']``
+    U235_wt_frac = ['', '', '', 0.05, 0.075, 0.10, '', '', '']
 
 However, loading a reactor from a Database, say using ``Database.load()`` or with  ``restart`` or ``snapshot`` run types, has a limitation in that material modifications must be homogeneous. The following is a valid modification for database loading:
 
 .. code-block:: yaml
 
-    ``U235_wt_frac = ['', '', '', 0.05, 0.05, 0.05, '', '', '']``
+    U235_wt_frac = ['', '', '', 0.05, 0.05, 0.05, '', '', '']
 
 This is due to mesh modifiers, as their use provides no guarantee that the number of blocks for a given assembly in a database match those in the blueprints. However, it is very easy to get around this limitation, just copy/paste your block in the blueprints so that if two blocks have different material modifications, they are given different names.
 
@@ -1224,7 +1224,7 @@ object is created. The default :class:`armi.reactor.ReactorPlugin` provides the 
 
 Plugins are able to provide a superset (e.g., ``core``, ``excore``, and ``sfp``) and new mappings of values to builders.
 
-.. include:: grids.rst
+.. include:: grids.rst.inc
 
 .. _custom-isotopics:
 

@@ -236,11 +236,16 @@ The software tested and date of testing are below:
 
 .. exec::
     import os
+    import subprocess
     import sys
     from datetime import datetime
     from armi import __version__ as armiVersion
 
-    armiCommit = str(os.environ["GIT_COMMIT"]).strip()
+    armiCommit = str(os.environ.get("GIT_COMMIT")).strip()
+    # GIT_COMMIT is only available on CI runs, so it may not exist if building locally.
+    # Instead, get the commit from git directly.
+    if not armiCommit:
+        armiCommit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 
     txt = [f"Date: {datetime.now().strftime('%Y-%m-%d')}"]
     txt.append(f"Python version: {sys.version}")

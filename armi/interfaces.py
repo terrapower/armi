@@ -16,7 +16,7 @@
 Interfaces are objects of code that interact with ARMI. They read information off the state, perform calculations (or\
 run external codes), and then store the results back in the state.
 
-Learn all about interfaces in :doc:`/developer/guide`
+Learn all about interfaces in :doc:`/user/guide`
 
 See Also
 --------
