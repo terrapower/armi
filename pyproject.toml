@@ -87,28 +87,28 @@ docs = [
 #                                                                                    #
 # Officially, we build our docs with Python 3.13.                                    #
 ######################################################################################
-    "docutils==0.21.2", # Needed by sphinx-rtd-them
+    "docutils", # Needed by sphinx-rtd-theme
     "ipykernel>=6.0.0", # iPython kernel to run Jupyter notebooks
-    "Jinja2==3.1.6", # Used in numpydoc and nbconvert
-    "nbsphinx-link==1.4.1", # Adds Jupyter NBs to Sphinx source root
-    "nbsphinx==0.9.6", # Parses Jupyter notebooks
+    "Jinja2", # Used in numpydoc and nbconvert
+    "nbsphinx-link", # Adds Jupyter NBs to Sphinx source root
+    "nbsphinx", # Parses Jupyter notebooks
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
     "pypdf", # Generating a single PDF file for the Sphinx documentation
     "setuptools",  # needed for conf.py tooling
-    "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
-    "sphinx-needs==4.2.0", # Requirements traceability matrices for QA
-    "sphinx-rtd-theme==3.0.2", # Read-The-Docs theme for Sphinx
-    "sphinx-test-reports==1.1.0", # sphinx-needs test reports in the STR
-    "Sphinx==7.4.7", # central library used to build our docs
-    "sphinxcontrib-apidoc==0.5.0", # More easily document our API
-    "sphinxcontrib-htmlhelp==2.1.0", # renders HTML help files
-    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
-    "sphinxcontrib-jsmath==1.0.1", # display math in HTML via JavaScript
-    "sphinxcontrib-plantuml==0.30", # UML support in sphinx-needs
-    "sphinxcontrib-serializinghtml==2.0.0", # outputs “serialized” HTML files (json and pickle)
-    "sphinxext-opengraph==0.9.1", # Generates OpenGraph metadata to make cards for social media
-    "unittest-xml-reporting==3.2.0", # Allows us to generate junit XML test reports
+    "sphinx-gallery", # Builds an HTML version of a Python script and puts it into a gallery
+    "sphinx-needs", # Requirements traceability matrices for QA
+    "sphinx-rtd-theme", # Read-The-Docs theme for Sphinx
+    "sphinx-test-reports", # sphinx-needs test reports in the STR
+    "Sphinx", # central library used to build our docs
+    "sphinxcontrib-apidoc", # More easily document our API
+    "sphinxcontrib-htmlhelp", # renders HTML help files
+    "sphinxcontrib-jquery", # Handle missing jquery errors
+    "sphinxcontrib-jsmath", # display math in HTML via JavaScript
+    "sphinxcontrib-plantuml", # UML support in sphinx-needs
+    "sphinxcontrib-serializinghtml", # outputs “serialized” HTML files (json and pickle)
+    "sphinxext-opengraph", # Generates OpenGraph metadata to make cards for social media
+    "unittest-xml-reporting", # Allows us to generate junit XML test reports
 ]
 
 [project.scripts]
