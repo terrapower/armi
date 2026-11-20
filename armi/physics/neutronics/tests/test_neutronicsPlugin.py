@@ -37,7 +37,7 @@ from armi.physics.neutronics.settings import (
 )
 from armi.settings import caseSettings, settingsValidation
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
-from armi.tests.test_plugins import TestPlugin
+from armi.testing import TestPlugin
 from armi.utils import directoryChangers
 
 XS_EXAMPLE = """AA:
