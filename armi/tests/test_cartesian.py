@@ -19,8 +19,7 @@ import unittest
 
 from armi.reactor import geometry
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor
-from armi.tests import TESTING_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor
 
 
 class TestCartesianReactor(unittest.TestCase):

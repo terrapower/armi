@@ -23,7 +23,7 @@ from scipy.sparse import csc_matrix
 from armi import nuclearDataIO
 from armi.nuclearDataIO.cccc import compxs
 from armi.nuclearDataIO.xsLibraries import CompxsLibrary
-from armi.tests import COMPXS_PATH
+from armi.testing import COMPXS_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
