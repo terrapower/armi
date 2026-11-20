@@ -28,6 +28,7 @@ These are mostly designed for hex geometry.
 
 import collections
 import copy
+import logging
 import math
 import operator
 from typing import TYPE_CHECKING, Union
@@ -61,6 +62,7 @@ if TYPE_CHECKING:
     from armi.reactor.assemblies import Assembly
     from armi.reactor.blocks import Block
 
+logger = logging.getLogger(__name__)
 BLOCK_AXIAL_MESH_SPACING = 20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
 STR_SPACE = " "
 
@@ -867,13 +869,7 @@ class HexToRZThetaConverter(GeometryConverter):
                     assignedMixtureBlockType = mixtureType
                     return assignedMixtureBlockType
 
-        assignedMixtureBlockType = "mixture structure"
-        runLog.debug(
-            f"The mixture type for this homogenized block {mostCommonHexBlockType} "
-            f"was not determined and is defaulting to {assignedMixtureBlockType}"
-        )
-
-        return assignedMixtureBlockType
+        return "mixture structure"
 
     def _createBlendedXSID(self, newBlock):
         """Generate the blended XS id using the most common XS id in the hexIdList."""
@@ -897,14 +893,15 @@ class HexToRZThetaConverter(GeometryConverter):
                 upperTheta * units.RAD_TO_REV,
             )
         )
-        runLog.debug(
-            "{} Axial Zone - Axial Height (cm) Block Number Block Type             XS ID : "
-            "Original Hex Block XS ID(s)".format(9 * STR_SPACE)
-        )
-        runLog.debug(
-            "{} ---------- - ----------------- ------------ ---------------------- ----- : "
-            "---------------------------".format(9 * STR_SPACE)
-        )
+        if logger.isEnabledFor(logging.DEBUG):
+            runLog.debug(
+                "{} Axial Zone - Axial Height (cm) Block Number Block Type             XS ID : "
+                "Original Hex Block XS ID(s)".format(9 * STR_SPACE)
+            )
+            runLog.debug(
+                "{} ---------- - ----------------- ------------ ---------------------- ----- : "
+                "---------------------------".format(9 * STR_SPACE)
+            )
 
     def _writeRadialThetaZoneInfo(self, axIdx, axialSegmentHeight, blockObj):
         """
@@ -916,17 +913,18 @@ class HexToRZThetaConverter(GeometryConverter):
         for hexBlock in self.blockMap[blockObj]:
             hexBlockXsIds.append(hexBlock.getMicroSuffix())
 
-        runLog.debug(
-            "{} {:<10} - {:<17.3f} {:<12} {:<22} {:<5} : {}".format(
-                9 * STR_SPACE,
-                axIdx,
-                axialSegmentHeight,
-                self._newBlockNum,
-                blockObj.getType(),
-                blockObj.getMicroSuffix(),
-                hexBlockXsIds,
+        if logger.isEnabledFor(logging.DEBUG):
+            runLog.debug(
+                "{} {:<10} - {:<17.3f} {:<12} {:<22} {:<5} : {}".format(
+                    9 * STR_SPACE,
+                    axIdx,
+                    axialSegmentHeight,
+                    self._newBlockNum,
+                    blockObj.getType(),
+                    blockObj.getMicroSuffix(),
+                    hexBlockXsIds,
+                )
             )
-        )
 
     def _expandSourceReactorGeometry(self):
         """Expansion of the reactor geometry to build the R-Z-Theta core model."""
@@ -1217,7 +1215,8 @@ class EdgeAssemblyChanger(GeometryChanger):
                     runLog.warning("Edge assembly already exists in {0}. Not adding.".format(locs[0]))
                     continue
                 # add the copied assembly to the reactor list
-                runLog.debug("Adding edge assembly {0} to {1} to the reactor".format(a, spatialLocator))
+                if logger.isEnabledFor(logging.DEBUG):
+                    runLog.debug(f"Adding edge assembly {a} to {spatialLocator} to the reactor")
                 core.add(a, spatialLocator)
                 self._newAssembliesAdded.append(a)
 
@@ -1250,11 +1249,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
 
         for a in edgeAssemblies:
-            runLog.debug(
-                "Removing edge assembly {} from {} from the reactor without discharging".format(
-                    a, a.spatialLocator.getRingPos()
-                )
-            )
+            if logger.isEnabledFor(logging.DEBUG):
+                runLog.debug(f"Removing edge assembly {a} from {a.spatialLocator.getRingPos()} without discharging")
             core.removeAssembly(a, discharge=False)
 
         if edgeAssemblies:
@@ -1266,7 +1262,8 @@ class EdgeAssemblyChanger(GeometryChanger):
             pDefs = parameters.ALL_DEFINITIONS.unchanged_since(NEVER)
             pDefs.setAssignmentFlag(SINCE_LAST_GEOMETRY_TRANSFORMATION)
         else:
-            runLog.debug("No edge assemblies to remove.")
+            if logger.isEnabledFor(logging.DEBUG):
+                runLog.debug("No edge assemblies to remove.")
 
         self.reset()
 
@@ -1317,10 +1314,8 @@ def _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale):
     """Scale volume-integrated params to include their identical symmetric assemblies."""
     listOfVolumeIntegratedParamsToScale, fluxParamsToScale = completeListOfParamsToScale
     for paramName in [pn for pn in listOfVolumeIntegratedParamsToScale if np.any(b.p[pn])]:
-        runLog.debug(
-            "Scaling {} in symmetric identical assemblies".format(paramName),
-            single=True,
-        )
+        if logger.isEnabledFor(logging.DEBUG):
+            runLog.debug(f"Scaling {paramName} in symmetric identical assemblies", single=True)
         if paramName in fluxParamsToScale:
             _scaleFluxValues(b, bSymmetric, paramName)  # updated volume weighted fluxes
         else:

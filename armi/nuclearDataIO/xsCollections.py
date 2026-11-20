@@ -392,7 +392,6 @@ class MacroscopicCrossSectionCreator:
         macros : xsCollection.XSCollection
             A new XSCollection full of macroscopic cross sections
         """
-        runLog.debug("Building macroscopic cross sections for {0}".format(block))
         if nucNames is None:
             nucNames = block.getNuclides()
 
@@ -849,12 +848,6 @@ def computeMacroscopicGroupConstants(
             f"The following nuclides are not in microscopic library {lib}: {skippedNuclides}",
             single=True,
             errType=ValueError,
-        )
-
-    if skippedMultNuclides:
-        runLog.debug(
-            f"The following nuclides are not in multiplier library {multLib}: {skippedMultNuclides}",
-            single=True,
         )
 
     return macroGroupConstants

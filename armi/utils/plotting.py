@@ -789,7 +789,6 @@ def plotAssemblyTypes(
     ax.plot()
     if fileName:
         fig.savefig(fileName)
-        runLog.debug(f"Writing assem layout {fileName} in {os.getcwd()}")
         plt.close(fig)
 
     return fig
@@ -1509,7 +1508,6 @@ def plotConvertedBlock(sourceBlock, convertedBlock, fName=None):
     for circleComp in convertedBlock:
         innerR = circleComp.getDimension("id") / 2.0
         outerR = circleComp.getDimension("od") / 2.0
-        runLog.debug("Plotting {:40s} with {:10.3f} {:10.3f} ".format(circleComp, innerR, outerR))
         circle = matplotlib.patches.Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
         patches.append(circle)
         colors.append(circleComp.density())

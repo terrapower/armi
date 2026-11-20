@@ -197,7 +197,6 @@ class ComponentBlueprint(yamlize.Object):
         inputHeightsConsideredHot : bool
             See the case setting of the same name.
         """
-        runLog.debug(f"Constructing component {self.name}")
         kwargs = self._conformKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
         if shape == COMPONENT_GROUP_SHAPE:

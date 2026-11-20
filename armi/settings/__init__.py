@@ -94,9 +94,6 @@ def recursivelyLoadSettingsFiles(
     csFiles = []
     runLog.info("Checking for valid settings files.")
     for possibleSettingsFile in possibleSettings:
-        if os.path.getsize(possibleSettingsFile) > 1e6:
-            runLog.debug(f"skipping {possibleSettingsFile} -- looks too big")
-            continue
         try:
             cs = Settings()
             cs.loadFromInputFile(possibleSettingsFile, handleInvalids=handleInvalids)

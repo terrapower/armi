@@ -363,11 +363,6 @@ class Core(composites.Composite):
             if paramDef.assigned & parameters.SINCE_ANYTHING:
                 paramDef.assigned = parameters.SINCE_ANYTHING
 
-        if discharge:
-            runLog.debug(f"Removing {a1} from {self}")
-        else:
-            runLog.debug(f"Purging  {a1} from {self}")
-
         self.childrenByLocator.pop(a1.spatialLocator)
         a1.p.dischargeTime = self.r.p.time
         self.remove(a1)
@@ -501,7 +496,6 @@ class Core(composites.Composite):
                 paramDef.assigned = parameters.SINCE_ANYTHING
 
         # could speed up output by passing format args as an arg and only process if verb good.
-        runLog.debug("Adding   {0} to {1}".format(a, self))
         composites.Composite.add(self, a)
         aName = a.getName()
 
@@ -1780,7 +1774,6 @@ class Core(composites.Composite):
         can produce mesh points that are the same up to the 9th or 10th digit, resulting in a repeated
         mesh point. This repetition results in problems in downstream methods, such as the uniform mesh converter.
         """
-        runLog.debug("Finding all mesh points.")
         if assems is None:
             assems = list(self)
 

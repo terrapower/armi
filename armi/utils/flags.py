@@ -26,8 +26,6 @@ not support extension of ``Flags``. So, we had to make our own. This is a much s
 import math
 from typing import Dict, List, Sequence, Tuple, Union
 
-from armi import runLog
-
 
 class auto:  # noqa: N801
     """
@@ -174,7 +172,6 @@ class Flag(metaclass=_FlagMeta):
         existing class with more fields.
         """
         if name in cls._nameToValue:
-            runLog.debug(f"The flag {name} already exists and does not need to be recreated.")
             return
 
         cls._valuesTaken.add(value)
