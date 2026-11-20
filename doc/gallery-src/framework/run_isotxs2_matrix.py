@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 from armi import configure
 from armi.nuclearDataIO import xsNuclides
 from armi.nuclearDataIO.cccc import isotxs
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH
 
 configure(permissive=True)
 

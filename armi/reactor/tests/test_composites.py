@@ -32,8 +32,7 @@ from armi.reactor import armiObject, assemblies, blocks, components, composites,
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags, TypeSpec
-from armi.testing import TESTING_ROOT, buildComplexHexBlock, loadTestReactor, mockRunLogs
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH, TESTING_ROOT, buildComplexHexBlock, loadTestReactor, mockRunLogs
 
 
 class MockBP:
