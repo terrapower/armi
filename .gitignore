@@ -28,7 +28,7 @@ doc/tutorials/case-suite
 doc/user/tutorials
 htmlcov/
 monkeytype.*
-test_results.*
+test_results*.*
 wheelhouse
 
 # No workspace crumbs

@@ -89,7 +89,7 @@ class HexBlock(Block):
             is created and added to the new Block. This Hexagon Component is given a default
             :py:class:`armi.materials.material.Material` material and a volume averaged temperature
             (``getAverageTempInC``). The number densities of the original Block are also stored on
-            this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original
+            this new Component (:need:`I_ARMI_CMP_GET_NDENS1`). Several parameters from the original
             block are copied onto the homogenized block (e.g., macros, lumped fission products,
             burnup group, number of pins, and spatial grid).
 

@@ -66,7 +66,7 @@ class OperatorMPI(Operator):
         """
         runLog.debug("OperatorMPI.operate")
         if context.MPI_RANK == 0:
-            # this is the primary
+            # This is the primary MPI process.
             try:
                 # run the regular old operate method
                 Operator.operate(self)
@@ -83,20 +83,17 @@ class OperatorMPI(Operator):
                     # wait until they're done cleaning up.
                     context.MPI_COMM.bcast("finished", root=0)
                     runLog.important("All worker nodes stopped.")
-                # even though we waited, still need more time to close stdout.
-                time.sleep(1)
                 runLog.debug("Main operate finished")
-                runLog.close()  # concatenate all logs.
         else:
+            # This is a worker MPI process.
             try:
                 self.workerOperate()
-            except:
+            except Exception:
                 # grab the final command
                 runLog.warning("An error has occurred in one of the worker nodes. See STDERR for traceback.")
                 # bcasting quit won't work if the main is sitting around waiting for a different bcast or gather.
                 traceback.print_exc()
                 runLog.debug("Worker failed")
-                runLog.close()
                 raise
 
     def workerOperate(self):

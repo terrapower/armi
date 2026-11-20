@@ -24,8 +24,12 @@ This will not be a catch-all for random unit test functions. Be very sparing her
 
 import os
 import pickle
+import unittest
+from typing import Optional
 
-from armi import getPluginManagerOrFail, materials, operators, runLog, settings
+import yamlize
+
+from armi import getPluginManagerOrFail, interfaces, materials, operators, plugins, runLog, settings
 from armi.materials import uZr
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
@@ -281,3 +285,53 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     o.r.core.add(a)
     o.r.sort()
     return o
+
+
+class TestPlugin(unittest.TestCase):
+    """Some sanity tests that can be used by implementing plugins."""
+
+    plugin: Optional[plugins.ArmiPlugin] = None
+
+    def test_defineBlueprintsSections(self):
+        """Make sure that the defineBlueprintsSections hook is properly implemented."""
+        if self.plugin is None:
+            return
+        if not hasattr(self.plugin, "defineBlueprintsSections"):
+            return
+
+        results = self.plugin.defineBlueprintsSections()
+        if results is None:
+            return
+
+        # each plugin should return a list
+        self.assertIsInstance(results, (list, type(None)))
+
+        for result in results:
+            self.assertIsInstance(result, tuple)
+            self.assertEqual(len(result), 3)
+            self.assertIsInstance(result[0], str)
+            self.assertIsInstance(result[1], yamlize.Attribute)
+            self.assertTrue(callable(result[2]))
+
+    def test_exposeInterfaces(self):
+        """Make sure that the exposeInterfaces hook is properly implemented."""
+        if self.plugin is None:
+            return
+
+        cs = settings.Settings()
+        results = self.plugin.exposeInterfaces(cs)
+        if results is None or not results:
+            return
+
+        # each plugin should return a list
+        self.assertIsInstance(results, list)
+        for result in results:
+            # Make sure all elements in the list satisfy the constraints of the hookspec
+            self.assertIsInstance(result, tuple)
+            self.assertEqual(len(result), 3)
+
+            order, interface, kwargs = result
+
+            self.assertIsInstance(order, (int, float))
+            self.assertTrue(issubclass(interface, interfaces.Interface))
+            self.assertIsInstance(kwargs, dict)

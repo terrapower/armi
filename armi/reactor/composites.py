@@ -575,7 +575,7 @@ class Composite(ArmiObject):
             The child types that should be included in the calculation. Restrict average
             to a certain child type with this parameter.
         weightingParam : None or str, optional
-             An optional block param that the average will be weighted against
+            An optional block param that the average will be weighted against
         volumeAveraged : bool, optional
             volume (or height, or area) average this param
         absolute : bool, optional
@@ -583,6 +583,8 @@ class Composite(ArmiObject):
         generationNum : int, optional
             Which generation to average over (1 for children, 2 for grandchildren)
 
+        Notes
+        -----
         The weighted sum is:
 
         .. math::

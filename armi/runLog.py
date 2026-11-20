@@ -297,21 +297,26 @@ def getLogDir():
         return os.path.join(os.getcwd(), "logs")
 
 
-def close(mpiRank=None):
-    """End use of the log. Concatenate if needed and restore defaults."""
-    mpiRank = context.MPI_RANK if mpiRank is None else mpiRank
+def close():
+    """
+    Close local log handlers and restore standard streams.
 
-    if mpiRank == 0:
-        try:
-            concatenateLogs()
-        except IOError as ee:
-            warning("Failed to concatenate logs due to IOError.")
-            error(ee)
-    else:
-        if LOG.stderrLogger:
-            _ = [h.close() for h in LOG.stderrLogger.handlers]
-        if LOG.logger:
-            _ = [h.close() for h in LOG.logger.handlers]
+    MPI synchronization of log concatenation is handled by OperatorMPI.
+    """
+    closedHandlers = set()
+    for logger in (LOG.stderrLogger, LOG.logger):
+        if logger is None:
+            continue
+        for handler in list(logger.handlers):
+            logger.removeHandler(handler)
+            handlerId = id(handler)
+            if handlerId in closedHandlers:
+                continue
+            try:
+                handler.flush()
+            finally:
+                handler.close()
+            closedHandlers.add(handlerId)
 
     LOG.setNullLoggers()
     LOG.restoreStandardStreams()
@@ -320,8 +325,6 @@ def close(mpiRank=None):
 def concatenateLogs(logDir=None):
     """
     Concatenate the armi run logs and delete them.
-
-    Should only ever be called by parent.
 
     .. impl:: Log files from different processes are combined.
         :id: I_ARMI_LOG_MPI
@@ -394,6 +397,38 @@ def concatenateLogs(logDir=None):
                     os.remove(stderrName)
                 except OSError:
                     warning(f"Could not delete {stderrName}")
+
+
+def closeAndConcatenateMpiLogs():
+    """Close logs and concatenate them on the primary rank."""
+    # Check if there is any already propagating exception.
+    prevException = sys.exc_info()[1]
+
+    # Every rank must close its own handlers before rank 0 reads and concatenates the per-rank log files.
+    close()
+    # First barrier to wait for all logs to be written and closed.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
+
+    # Attempt to concat logs now that all logs are closed.
+    concatErr = None
+    if context.MPI_RANK == 0:
+        try:
+            concatenateLogs()
+        except OSError as ee:
+            # Save the error for printing. Do not do any error handling until the worker ranks are collected.
+            concatErr = ee
+
+    # Add another synchronization point so the worker ranks/logs wait on the primary rank to finish concatenation.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
+
+    # If needed: handle either the concatenation error or the already propagating exception
+    if concatErr:
+        if prevException:
+            prevException.add_note(f"Additionally, failed to concatenate MPI logs: {concatErr}")
+        else:
+            raise RuntimeError("Failed to concatenate MPI logs.") from concatErr
 
 
 # Here are all the module-level functions that should be used as the API. They use the Log object behind the scenes.
