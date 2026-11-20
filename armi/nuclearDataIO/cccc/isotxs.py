@@ -235,6 +235,7 @@ class IsotxsIO(cccc.Stream):
         each file having a file label of `ISOTXS`.
         """
         if self._metadata["label"] != self._FILE_LABEL:
+            # File label is not the expected type. Updating the label from metadata label to self._FILE_LABEL
             self._metadata["label"] = self._FILE_LABEL
 
     def readWrite(self):

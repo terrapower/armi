@@ -392,6 +392,7 @@ class MacroscopicCrossSectionCreator:
         macros : xsCollection.XSCollection
             A new XSCollection full of macroscopic cross sections
         """
+        # Building macroscopic cross sections for block
         if nucNames is None:
             nucNames = block.getNuclides()
 

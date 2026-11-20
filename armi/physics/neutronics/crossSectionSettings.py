@@ -33,7 +33,7 @@ from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 
-logger = logging.getLogger(__name__)
+__logger = logging.getLogger(__name__)
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_MEMORY_REQUIREMENT = "requiredRAM"
 CONF_BLOCKTYPES = "validBlockTypes"
@@ -599,7 +599,7 @@ class XSModelingOptions:
                 if val is not None:
                     invalids.append((var, val))
 
-        if invalids and logger.isEnabledFor(logging.DEBUG):
+        if invalids and __logger.isEnabledFor(logging.DEBUG):
             runLog.debug(f"The following inputs in {self} are not valid when the file location is set:")
             for var, val in invalids:
                 runLog.debug(f"\tAttribute: {var}, Value: {val}")
@@ -612,7 +612,7 @@ class XSModelingOptions:
                 if var not in validOptions and val is not None:
                     invalids.append((var, val))
 
-        if invalids and logger.isEnabledFor(logging.DEBUG):
+        if invalids and __logger.isEnabledFor(logging.DEBUG):
             runLog.debug(f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:")
             for var, val in invalids:
                 runLog.debug(f"\tAttribute: {var}, Value: {val}")

@@ -172,6 +172,7 @@ class Flag(metaclass=_FlagMeta):
         existing class with more fields.
         """
         if name in cls._nameToValue:
+            # The flag already exists and does not need to be recreated.
             return
 
         cls._valuesTaken.add(value)

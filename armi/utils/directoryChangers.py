@@ -20,7 +20,7 @@ import shutil
 import string
 
 from armi import context, runLog
-from armi.utils import pathTools, safeCopy
+from armi.utils import pathTools, safeCopy, safeMove
 
 
 def _changeDirectory(destination):
@@ -212,7 +212,10 @@ class DirectoryChanger:
                     continue
 
                 toPath = os.path.join(destinationPath, destName)
-                safeCopy(fromPath, toPath)
+                if moveFiles:
+                    safeMove(fromPath, toPath)
+                else:
+                    safeCopy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):

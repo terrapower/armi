@@ -100,6 +100,8 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
         dummyKey = dummy.nucLabel + lib.xsIDs[0]
         if dummyKey in lib:
             continue
+
+        # Adding dummyKey nuclide data to lib
         newDummy = xsNuclides.XSNuclide(lib, dummyKey)
         newDummy.pmatrxMetadata["hasNeutronHeatingAndDamage"] = False
         newDummy.pmatrxMetadata["maxScatteringOrder"] = 0

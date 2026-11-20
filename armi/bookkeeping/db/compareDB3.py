@@ -453,6 +453,7 @@ def _compareComponentData(
     for paramName in paramNames:
         fullName = "/".join((refGroup.name, paramName))
         if any(pattern.match(fullName) for pattern in exclusions):
+            # Skipping comparison since it is being ignored.
             continue
         refDataset = refGroup[paramName]
         srcDataset = srcGroup[paramName]
