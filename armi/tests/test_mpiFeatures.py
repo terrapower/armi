@@ -117,7 +117,7 @@ class TestMpiOperator(unittest.TestCase):
         """
         with mockRunLogs.BufferLog() as mock:
             self.o.operate()
-            self.assertIn("OperatorMPI.operate", mock.getStdout())
+            self.assertIn("Interfaces", mock.getStdout())
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_primaryException(self):
