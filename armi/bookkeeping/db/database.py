@@ -1059,10 +1059,9 @@ class Database:
                     # it safely
                     continue
                 else:
-                    # If a parameter exists in the database but not in the application reading it, we can technically
-                    # keep going. Since this may lead to potential correctness issues, raise a warning
                     if allowMissing:
-                        runLog.warning(
+                        # If a Param exists in the DB but not in the Application it, we can technically keep going.
+                        runLog.info(
                             "Found `{}` parameter `{}` in the database, which is not defined. Ignoring it.".format(
                                 compTypeName, paramName
                             )

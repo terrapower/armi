@@ -57,7 +57,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     linked : bool
         status is componentA and componentB are axially linked to one another
     """
-    ## Cases 4
+    # Case 4
     linked = False
 
     if componentA.getDimension("mult") == componentB.getDimension("mult"):
@@ -65,7 +65,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
             componentA.containsSolidMaterial() and componentB.containsSolidMaterial()
         ):
             if isinstance(componentA, UnshapedComponent):
-                ## Case 1
+                # Case 1
                 runLog.warning(
                     f"Components {componentA} and {componentB} are UnshapedComponents "
                     "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
@@ -76,13 +76,13 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
             elif isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(
                 componentB.spatialLocator, MultiIndexLocation
             ):
-                ## Case 2
+                # Case 2
                 fromA = set(tuple(index) for index in componentA.spatialLocator.indices)
                 fromB = set(tuple(index) for index in componentB.spatialLocator.indices)
                 if fromA == fromB:
                     linked = _checkOverlap(componentA, componentB)
             else:
-                ## Case 3
+                # Case 3
                 linked = _checkOverlap(componentA, componentB)
 
     return linked
