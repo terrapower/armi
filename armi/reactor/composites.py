@@ -1385,7 +1385,6 @@ class Composite(ArmiObject):
         )
         allComps = [c for c in genItems if hasattr(c, "p")]
         sendBuf = [c.p.getSyncData() for c in allComps]
-        runLog.debug(f"syncMpiState has {len(allComps)} comps")
 
         try:
             context.MPI_COMM.barrier()  # sync up

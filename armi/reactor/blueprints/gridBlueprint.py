@@ -373,7 +373,6 @@ class GridBlueprint(yamlize.Object):
             isOffset = symmetry is not None and not symmetry.isThroughCenterAssembly
             spatialGrid = grids.CartesianGrid.fromRectangle(xw, yw, numRings=maxIndex + 1, isOffset=isOffset)
 
-        runLog.debug("Built grid: {}".format(spatialGrid))
         # set geometric metadata on spatialGrid. This information is needed in various parts of the
         # code and is best encapsulated on the grid itself rather than on the container state.
         spatialGrid._geomType: str = str(self.geom)

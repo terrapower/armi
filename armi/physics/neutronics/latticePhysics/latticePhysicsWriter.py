@@ -21,6 +21,7 @@ Seeks to provide access to common methods used by general lattice physics codes.
 """
 
 import collections
+import logging
 import math
 
 import numpy as np
@@ -283,7 +284,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             nucDensities = self._adjustPuFissileDensity(nucDensities)
         fissionProductDensities = self._getDetailedFissionProducts(dfpDensities)
 
-        if self._unusedNuclides:
+        if self._unusedNuclides and logging.getLogger(__name__).isEnabledFor(logging.DEBUG):
             runLog.debug(
                 "The following unused nuclides (defined in the loading file) are being added to {} at {} C: {}".format(
                     subjectObject,

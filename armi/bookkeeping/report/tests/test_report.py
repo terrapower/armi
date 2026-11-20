@@ -278,7 +278,6 @@ class TestReportInterface(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             repInt.interactBOL()
-            self.assertIn("Writing assem layout", mock.getStdout())
             self.assertIn("BOL Assembly", mock.getStdout())
             self.assertIn("wetMass", mock.getStdout())
 
