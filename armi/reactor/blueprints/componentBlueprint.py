@@ -249,13 +249,6 @@ class ComponentBlueprint(yamlize.Object):
                 f"{self.isotopics}.",
                 errType=ValueError,
             )
-        elif len(matMods):
-            runLog.warning(
-                f"Custom isotopics and material modifications have both been defined for {self.material} for component"
-                f"{comp}. Please consider carefully if these are in conflict.",
-                single=True,
-                label=f"custom iso + mat mods {self.material} {comp}",
-            )
 
         mat = materials.createMaterialByName(self.material)
         if not isinstance(mat, materials.Custom):
@@ -341,6 +334,14 @@ class ComponentBlueprint(yamlize.Object):
             # Apply custom isotopics before processing input mods so
             # the input mods have the final word
             blueprint.customIsotopics.apply(mat, self.isotopics)
+
+        if len(matMods) > 1 and len(matMods.get("customIsotopics", [])):
+            runLog.warning(
+                f"Custom isotopics and material modifications have both been defined for {self.material}. Please "
+                f"consider consider carefully if these are in conflict.",
+                single=True,
+                label=f"custom iso + mat mods {self.material}",
+            )
 
         # add mass fraction custom isotopics info, since some material modifications need to see them e.g. in the base
         # Material.applyInputParams
