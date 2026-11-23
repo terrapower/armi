@@ -22,7 +22,7 @@ from shutil import copyfile
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.directoryChangers import tmpDir
 
 
 class MockComposite:
@@ -578,26 +578,26 @@ class ParamCollectionWhere(unittest.TestCase):
 
 
 class TestMakeParametersReadOnly(unittest.TestCase):
+    @tmpDir
     def test_makeParametersReadOnly(self):
-        with TemporaryDirectoryChanger():
-            # copy test reactor to local
-            yamls = glob(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor", "*.yaml"))
-            for yamlFile in yamls:
-                copyfile(yamlFile, os.path.basename(yamlFile))
+        # copy test reactor to local
+        yamls = glob(os.path.join(TESTING_ROOT, "reactors", "smallestTestReactor", "*.yaml"))
+        for yamlFile in yamls:
+            copyfile(yamlFile, os.path.basename(yamlFile))
 
-            # load some random test reactor
-            _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
+        # load some random test reactor
+        _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
 
-            # prove we can edit various params at will
-            r.core.p.keff = 1.01
-            b = r.core.getFirstBlock()
-            b.p.power = 123.4
+        # prove we can edit various params at will
+        r.core.p.keff = 1.01
+        b = r.core.getFirstBlock()
+        b.p.power = 123.4
 
-            makeParametersReadOnly(r)
+        makeParametersReadOnly(r)
 
-            # now show we can no longer edit those parameters
-            with self.assertRaises(RuntimeError):
-                r.core.p.keff = 0.99
+        # now show we can no longer edit those parameters
+        with self.assertRaises(RuntimeError):
+            r.core.p.keff = 0.99
 
-            with self.assertRaises(RuntimeError):
-                b.p.power = 432.1
+        with self.assertRaises(RuntimeError):
+            b.p.power = 432.1
