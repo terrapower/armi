@@ -30,7 +30,7 @@ import matplotlib
 
 from armi import apps, configure, context
 from armi.settings import caseSettings
-from armi.tests import TESTING_ROOT
+from armi.testing import TESTING_ROOT
 
 
 def pytest_sessionstart(session):

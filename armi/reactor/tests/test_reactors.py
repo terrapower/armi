@@ -37,12 +37,12 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_SORT_REACTOR,
 )
 from armi.testing import (
+    TEST_ROOT,  # noqa: F401
     TESTING_ROOT,
     buildOperatorOfEmptyCartesianBlocks,
     loadTestReactor,
     mockRunLogs,
 )  # noqa: F401
-from armi.tests import TEST_ROOT  # noqa: F401
 from armi.utils import directoryChangers
 
 _THIS_DIR = os.path.dirname(__file__)

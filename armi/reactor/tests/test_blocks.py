@@ -38,6 +38,7 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.grids.cartesian import CartesianGrid
 from armi.testing import (
+    ISOAA_PATH,
     TESTING_ROOT,
     applyDummyData,
     buildComplexHexBlock,
@@ -48,7 +49,6 @@ from armi.testing import (
     loadTestReactor,
     mockRunLogs,
 )
-from armi.tests import ISOAA_PATH
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, MOLES_PER_CC_TO_ATOMS_PER_BARN_CM, ASCII_LETTER_a

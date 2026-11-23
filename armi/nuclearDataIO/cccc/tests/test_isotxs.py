@@ -19,7 +19,7 @@ from armi import nuclearDataIO
 from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import isotxs
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
