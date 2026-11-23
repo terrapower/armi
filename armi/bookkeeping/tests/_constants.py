@@ -21,8 +21,7 @@ can use it without having to import the rest of ARMI.
 
 import os
 
-from armi.testing import TESTING_ROOT
-from armi.tests import TEST_ROOT
+from armi.testing import TEST_ROOT, TESTING_ROOT
 
 # These files are needed to run the data_model ipython notebook, which is done in
 # test_historyTracker, and when building the docs.

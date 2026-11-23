@@ -22,8 +22,7 @@ from armi.physics.neutronics.macroXSGenerationInterface import (
     MacroXSGenerationInterface,
 )
 from armi.settings import Settings
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH, TESTING_ROOT, loadTestReactor
 
 
 class TestMacroXSGenerationInterface(unittest.TestCase):

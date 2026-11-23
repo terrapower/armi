@@ -20,7 +20,7 @@ Example of ``mockRunLogs``:
 
 .. code-block:: python
 
-    from armi.tests import mockRunLogs
+    from armi.testing import mockRunLogs
 
     class TestCompareDB3(unittest.TestCase):
         # ...

@@ -16,7 +16,7 @@
 
 import os
 
-from armi.tests import ArmiTestHelper
+from armi.testing import ArmiTestHelper
 
 THIS_DIR = os.path.dirname(__file__)
 
