@@ -331,11 +331,10 @@ class ComponentBlueprint(yamlize.Object):
         mat = materials.createMaterialByName(self.material)
 
         if self.isotopics is not None:
-            # Apply custom isotopics before processing input mods so
-            # the input mods have the final word
+            # Apply custom isotopics before processing material mods, so the material mods have the final word.
             blueprint.customIsotopics.apply(mat, self.isotopics)
 
-        if len(matMods) > 1 and len(matMods.get("customIsotopics", [])):
+        if len(matMods) > 1 and len(blueprint.customIsotopics):
             runLog.warning(
                 f"Custom isotopics and material modifications have both been defined for {self.material}. Please "
                 f"consider consider carefully if these are in conflict.",
@@ -343,24 +342,21 @@ class ComponentBlueprint(yamlize.Object):
                 label=f"custom iso + mat mods {self.material}",
             )
 
-        # add mass fraction custom isotopics info, since some material modifications need to see them e.g. in the base
-        # Material.applyInputParams
-        matMods.update({"customIsotopics": {k: v.massFracs for k, v in blueprint.customIsotopics.items()}})
-        if len(matMods) > 1:
-            # don't apply if only customIsotopics is in there
+        # Apply material modifications.
+        if len(matMods):
             try:
-                # update material with updated input params from blueprints file.
+                # Update material with material modifications.
                 mat.applyInputParams(**matMods)
             except TypeError as ee:
                 errorMessage = ee.args[0]
                 if "got an unexpected keyword argument" in errorMessage:
-                    # This component does not accept material modification inputs of the names passed in
-                    # Keep going since the modification could work for another component
+                    # This component does not accept material modification inputs of the names passed in.
+                    # Keep going since the modification could work for another Component.
                     pass
                 else:
                     raise ValueError(
-                        f"Something went wrong in applying the material modifications {matMods} "
-                        f"to component {self.name}.\nError message is: \n{errorMessage}."
+                        f"Something went wrong in applying the material modifications {matMods} to component "
+                        f"{self.name}.\nError message is: \n{errorMessage}."
                     )
 
         expandElementals(mat, blueprint)
