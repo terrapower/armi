@@ -18,7 +18,6 @@ import pathlib
 import random
 import shutil
 import string
-from functools import wraps
 
 from armi import context, runLog
 from armi.utils import pathTools, safeCopy, safeMove
@@ -343,23 +342,3 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         DirectoryChanger.__enter__(self)
 
         return self
-
-
-def directoryChangerFactory():
-    if context.MPI_SIZE > 1:
-        from armi.utils.directoryChangersMpi import MpiDirectoryChanger
-
-        return MpiDirectoryChanger
-    else:
-        return DirectoryChanger
-
-
-def tmpDir(func):
-    """A decorator to allow TEST code to run in a temporary directory."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        with TemporaryDirectoryChanger():
-            return func(*args, **kwargs)
-
-    return wrapper

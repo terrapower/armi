@@ -24,8 +24,7 @@ from shutil import rmtree
 from unittest import mock
 
 from armi import context, runLog
-from armi.testing import mockRunLogs
-from armi.utils.directoryChangers import tmpDir
+from armi.testing import mockRunLogs, tmpDir
 
 
 class TestRunLog(unittest.TestCase):

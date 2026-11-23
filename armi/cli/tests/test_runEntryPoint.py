@@ -33,8 +33,8 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.testing import ARMI_RUN_PATH, TESTING_ROOT, loadTestReactor, mockRunLogs
-from armi.utils.directoryChangers import TemporaryDirectoryChanger, tmpDir
+from armi.testing import ARMI_RUN_PATH, TESTING_ROOT, loadTestReactor, mockRunLogs, tmpDir
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
 
 

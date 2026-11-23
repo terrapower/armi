@@ -21,8 +21,7 @@ from shutil import copyfile
 
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
-from armi.testing import TESTING_ROOT, loadTestReactor
-from armi.utils.directoryChangers import tmpDir
+from armi.testing import TESTING_ROOT, loadTestReactor, tmpDir
 
 
 class MockComposite:
