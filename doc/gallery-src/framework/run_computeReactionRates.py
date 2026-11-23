@@ -30,7 +30,7 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Circle, DerivedShape, Hexagon
 from armi.reactor.flags import Flags
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH
 
 configure(permissive=True)
 

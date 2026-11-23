@@ -14,7 +14,7 @@
 """Tests some fuel handling tools, specific to hex-assembly reactors."""
 
 from armi.physics.fuelCycle import hexAssemblyFuelMgmtUtils as hexUtils
-from armi.tests import ArmiTestHelper
+from armi.testing import ArmiTestHelper
 from armi.utils import directoryChangers
 
 

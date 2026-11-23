@@ -27,8 +27,7 @@ import numpy as np
 from armi import init as armi_init
 from armi import settings, utils
 from armi.reactor.flags import Flags
-from armi.testing import TESTING_ROOT
-from armi.tests import ArmiTestHelper
+from armi.testing import TESTING_ROOT, ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)  # because tests do not run in this folder

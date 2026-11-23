@@ -22,6 +22,7 @@ Notes
 This will not be a catch-all for random unit test functions. Be very sparing here.
 """
 
+import itertools
 import os
 import pickle
 import unittest
@@ -285,6 +286,118 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     o.r.core.add(a)
     o.r.sort()
     return o
+
+
+class ArmiTestHelper(unittest.TestCase):
+    """Class containing common testing methods shared by many tests."""
+
+    def compareFilesLineByLine(self, expectedFilePath, actualFilePath, falseNegList=None, eps=None):
+        """
+        Compare the contents of two files line by line.
+
+        .. warning:: The file located at actualFilePath will be deleted if they do match.
+
+        Some tests write text files that should be compared line-by-line with reference files. This method performs the
+        comparison.
+
+        This class of test is not ideal but does cover a lot of functionality quickly. To assist in the maintenance
+        burden, the following standards are expected and enforced:
+
+        * The reference file compared against will be called either ``[name]-ref.[ext]`` or ``[name].expected``.
+        * The file that the test creates will be called ``[name]-test.[ext]`` or ``[name]``.
+
+        Parameters
+        ----------
+        expectedFilePath: str
+            Path to the reference or expected file
+        actualFilePath: str
+            Path to the file that will be compared to ``expectedFilePath``
+        falseNegList: None or Iterable
+            Optional argument. If two lines are not equal, then check if any values from ``falseNegList`` are in this
+            line. If so, do not fail the test.
+        eps: float, optional
+            If provided, try to determine if the only difference between compared lines is in the value of something
+            that can be parsed into a float, and the relative difference between the two floats is below the passed eps.
+        """
+        if falseNegList is None:
+            falseNegList = []
+        elif isinstance(falseNegList, str):
+            falseNegList = [falseNegList]
+
+        with open(expectedFilePath, "r") as expected, open(actualFilePath, "r") as actual:
+            for lineIndex, (expectedLine, actualLine) in enumerate(itertools.zip_longest(expected, actual)):
+                if expectedLine is None:
+                    raise AssertionError("The test-generated file is longer than expected file")
+                if actualLine is None:
+                    raise AssertionError("The test-generated file is shorter than expected file")
+
+                if not self.compareLines(actualLine, expectedLine, eps):
+                    if any(falseNeg in line for falseNeg in falseNegList for line in (actualLine, expectedLine)):
+                        pass
+                    else:
+                        raise AssertionError(
+                            "Error on line {}:\nE>{}\nA<{}".format(
+                                lineIndex, expectedLine.rstrip(), actualLine.rstrip()
+                            )
+                        )
+
+        os.remove(actualFilePath)
+
+    @staticmethod
+    def compareLines(actual: str, expected: str, eps: Optional[float] = None):
+        """
+        Impl of line comparison for compareFilesLineByLine.
+
+        If rstripped lines are equal -> Good. Otherwise, split on whitespace and try to parse element pairs as floats.
+        If they are both parsable, compare with relative eps, if provided. A side effect of the epsilon comparison is
+        that differing whitespace between words is treated as irrelevant.
+        """
+        actual = actual.rstrip()
+        expected = expected.rstrip()
+
+        if actual == expected:
+            return True
+
+        if eps is None:
+            # no more in-depth comparison is allowed
+            return False
+
+        actualWords = actual.split()
+        expectedWords = expected.split()
+
+        if len(actualWords) != len(expectedWords):
+            # different number of words can't possibly be the same enough
+            return False
+
+        for actualWord, expectedWord in zip(actualWords, expectedWords):
+            actualVal = ArmiTestHelper._tryFloat(actualWord)
+            expectedVal = ArmiTestHelper._tryFloat(expectedWord)
+
+            if (actualVal is None) ^ (expectedVal is None):
+                # could not coerce both words into a float, so they cannot possibly match
+                return False
+
+            if actualVal is not None:
+                # we have two floats and can compare them
+                if actualVal == expectedVal == 0:
+                    continue
+                elif abs(actualVal - expectedVal) / expectedVal > eps:
+                    return False
+            else:
+                # strings, compare directly
+                if actualWord != expectedWord:
+                    return False
+
+        # The lines should match.
+        return True
+
+    @staticmethod
+    def _tryFloat(val: str) -> Optional[float]:
+        try:
+            return float(val)
+
+        except ValueError:
+            return None
 
 
 class TestPlugin(unittest.TestCase):

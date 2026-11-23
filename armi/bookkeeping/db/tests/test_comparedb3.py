@@ -31,8 +31,7 @@ from armi.bookkeeping.db.compareDB3 import (
     compareDatabases,
 )
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.testing import loadTestReactor, mockRunLogs
-from armi.tests import TESTING_ROOT
+from armi.testing import TESTING_ROOT, loadTestReactor, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 

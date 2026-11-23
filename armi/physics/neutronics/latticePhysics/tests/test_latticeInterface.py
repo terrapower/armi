@@ -29,8 +29,7 @@ from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIV
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.reactors import Core, Reactor
-from armi.testing import buildSimpleFuelHexBlock, mockRunLogs
-from armi.tests import ISOAA_PATH
+from armi.testing import ISOAA_PATH, buildSimpleFuelHexBlock, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
