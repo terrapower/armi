@@ -679,10 +679,10 @@ def summarizePinDesign(core):
 
     try:
         for b in core.iterBlocks(Flags.FUEL):
-            fuel = b.getComponent(Flags.FUEL)
-            duct = b.getComponent(Flags.DUCT)
-            clad = b.getComponent(Flags.CLAD)
-            wire = b.getComponent(Flags.WIRE)
+            fuel = b.getFirstComponent(Flags.FUEL)
+            duct = b.getFirstComponent(Flags.DUCT)
+            clad = b.getFirstComponent(Flags.CLAD)
+            wire = b.getFirstComponent(Flags.WIRE)
             designInfo["hot sd"].append(b.getSmearDensity(cold=False))
             designInfo["sd"].append(b.getSmearDensity())
             designInfo["ductThick"].append(
@@ -737,7 +737,7 @@ def summarizePinDesign(core):
             runLog.info(component_.setDimensionReport())
 
     except Exception as error:
-        runLog.warning(f"Pin summarization failed to work: {error}")
+        runLog.info(f"Pin summarization failed to work: {error}")
 
 
 def makeCoreDesignReport(core, cs):

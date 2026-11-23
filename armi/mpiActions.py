@@ -568,8 +568,7 @@ class DistributeStateAction(MpiAction):
             self.r._markSynchronized()
 
         except (pickle.PicklingError, TypeError) as error:
-            runLog.warning("Failed to transmit on distribute state root MPI bcast")
-            runLog.warning(error)
+            runLog.warning(f"Failed to transmit on distribute state root MPI bcast\n{error}")
             # workers are still waiting for a reactor object
             if context.MPI_RANK == 0:
                 context.MPI_COMM.bcast("quit")  # try to get the workers to quit
@@ -695,7 +694,7 @@ class DistributeStateAction(MpiAction):
         else:
             # These run on the worker nodes.
             # verify identical interface stack
-            # This list is (interfaceName, distributable) tuples)
+            # This is a list of (interfaceName, distributable) tuples.
             interfaceList = self.broadcast(None)
             for iName, distributable in interfaceList:
                 iOld = self.o.getInterface(iName)
@@ -718,9 +717,8 @@ class DistributeStateAction(MpiAction):
                         for i in self.o.getInterfaces():
                             runLog.warning(i)
                         raise RuntimeError(
-                            "Non-distributable interface {0} exists on the primary MPI process "
-                            "but not on the workers. "
-                            "Cannot distribute state.".format(iName)
+                            f"Non-distributable interface {iName} exists on the primary MPI process but not on the "
+                            "workers. Cannot distribute state."
                         )
                     self.o.addInterface(iNew)
                     iNew.interactInit()

@@ -58,8 +58,8 @@ def adjustSmearDensity(obj, value, bolBlock=None):
         raise ValueError("Cannot modify smear density of {0} to {1}. Must be a positive fraction".format(obj, value))
     fuel = obj.getComponent(Flags.FUEL)
     if not fuel:
-        runLog.warning(
-            "Cannot modify smear density of {0} because it is not fuel".format(obj),
+        runLog.info(
+            f"Cannot modify smear density of {obj} because it is not fuel",
             single=True,
             label="adjust smear density",
         )

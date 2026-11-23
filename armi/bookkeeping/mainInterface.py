@@ -192,8 +192,9 @@ class MainInterface(interfaces.Interface):
                     if ".htos.out" in fileName:
                         continue
                     if re.search(r"mcc[A-Z0-9]+\.inp", fileName):
+                        # Do not remove mccIA1.inp stuff in case we go out of a burnup bound.
                         continue
-                    # don't remove mccIA1.inp stuff in case we go out of a burnup bound.
+
                     try:
                         os.remove(fileName)
                     except OSError:
