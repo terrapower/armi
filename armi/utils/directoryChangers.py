@@ -361,13 +361,5 @@ def tmpDir(func):
     def wrapper(*args, **kwargs):
         with TemporaryDirectoryChanger():
             return func(*args, **kwargs)
-            """
-            startDir = os.getcwd()
-            os.chdir(tDir)
-            try:
-                return func(*args, **kwargs)
-            finally:
-                os.chdir(startDir)
-            """
 
     return wrapper
