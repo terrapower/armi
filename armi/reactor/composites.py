@@ -575,7 +575,7 @@ class Composite(ArmiObject):
             The child types that should be included in the calculation. Restrict average
             to a certain child type with this parameter.
         weightingParam : None or str, optional
-             An optional block param that the average will be weighted against
+            An optional block param that the average will be weighted against
         volumeAveraged : bool, optional
             volume (or height, or area) average this param
         absolute : bool, optional
@@ -583,6 +583,8 @@ class Composite(ArmiObject):
         generationNum : int, optional
             Which generation to average over (1 for children, 2 for grandchildren)
 
+        Notes
+        -----
         The weighted sum is:
 
         .. math::
@@ -1390,13 +1392,12 @@ class Composite(ArmiObject):
             allGatherTime = -timeit.default_timer()
             allSyncData = context.MPI_COMM.allgather(sendBuf)
             allGatherTime += timeit.default_timer()
-        except:
+        except Exception:
             msg = ["Failure while trying to allgather."]
             for ci, compData in enumerate(sendBuf):
                 if compData is not None:
                     msg += [f"sendBuf[{ci}]: {compData}"]
             runLog.error("\n".join(msg))
-            raise
 
         # key is (comp, paramName) value is conflicting nodes
         errors = collections.defaultdict(list)

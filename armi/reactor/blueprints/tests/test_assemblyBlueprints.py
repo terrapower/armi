@@ -240,5 +240,5 @@ assemblies:
         design = blueprints.Blueprints.load(yamlString)
         a = design.assemDesigns["fuel a"]
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             a.checkMatModConsistency()

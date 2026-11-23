@@ -160,9 +160,9 @@ class HistoryTrackerInterface(interfaces.Interface):
                 except KeyError:
                     runLog.error(
                         f"Detail assembly in location {locLabel} (requested via `detailAssemLocationsBOL`) is not in "
-                        "the core. Update settings."
+                        "the core. Update settings.",
+                        errType=KeyError,
                     )
-                    raise
                 self.addDetailAssembly(a)
 
         if self.cs["detailAllAssems"]:
@@ -372,8 +372,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 data = dbi.database.getHistory(block, [paramName], [ts])
                 val = data[paramName][ts]
             except KeyError:
-                runLog.error(f"No value in DB. param name: {paramName} requested index: {ts}")
-                raise
+                runLog.error(f"No value in DB. param name: {paramName} requested index: {ts}", errType=KeyError)
 
         return val
 
@@ -421,9 +420,9 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Get a representative fuel block from a fuel assembly."""
         b = a.getFirstBlock(Flags.FUEL)
         if not b:
-            runLog.error(f"Assembly {a} does not contain fuel")
+            runLog.warning(f"Assembly {a} does not contain fuel")
             for b in a:
-                runLog.error(f"Block {b}")
+                runLog.warning(f"Block {b}")
             raise RuntimeError(
                 "A tracked assembly does not contain fuel and has caused this error, see the details in stdout."
             )

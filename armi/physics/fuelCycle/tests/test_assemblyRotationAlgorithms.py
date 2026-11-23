@@ -231,8 +231,7 @@ class TestFuelHandlerMgmtTools(ShuffleAndRotateTestHelper):
         }
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
-        # Grab two assemblies that were not moved. One of which will have the detailed information
-        # needed for rotation
+        # Grab two assemblies that were not moved. One of which will have the detailed information needed for rotation
         detailedAssem, coarseAssem = self.o.r.core.getChildrenWithFlags(Flags.FUEL)[:2]
         self.setAssemblyPinBurnups(detailedAssem, burnups=np.arange(self.N_PINS))
         self.setAssemblyPinPowers(detailedAssem, pinPowers=np.arange(self.N_PINS))

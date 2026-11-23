@@ -20,14 +20,14 @@ concurrency:
 jobs:
   build:
     if: github.repository == 'terrapower/armi'
-    runs-on: macos-14
+    runs-on: macos-26
 
     steps:
       - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.14'
       - name: Upgrade PIP
         run: python -m pip install --upgrade pip
       - name: Run Unit Tests on MacOS

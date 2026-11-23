@@ -88,8 +88,6 @@ def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
     """
     Convert a XSID label (e.g. 'AA') to an integer.
 
-    Useful for visualizing XS type in XTVIEW.
-
     2-digit labels are supported when there is only one burnup group.
     """
     return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
@@ -99,24 +97,42 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
     """
     Convert a XSID label (e.g. 65) to an XS label (e.g. 'A').
 
-    Useful for visualizing XS type in XTVIEW.
-
     2-digit labels are supported when there is only one burnup group.
     """
+    allowableXsTypes = _ALLOWABLE_XS_TYPE_LIST + list(string.digits)
+
     try:
-        if xsTypeNumber > ord("Z"):
-            # two digit. Parse
-            return chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
-        elif xsTypeNumber < ord("A"):
-            raise ValueError(
-                f"Cannot convert invalid xsTypeNumber `{xsTypeNumber}` to char. "
-                "The number must be >= 65 (corresponding to 'A')."
-            )
+        xsTypeStr = str(xsTypeNumber)
+
+        if len(xsTypeStr) < 4:
+            # single character
+            label = chr(xsTypeNumber)
+        elif len(xsTypeStr) == 4:
+            # two character, and easy to understand
+            label = chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+        elif len(xsTypeStr) > 6:
+            # This is invalid: three numbers, special characters, or just nonsense.
+            raise ValueError()
         else:
-            return chr(xsTypeNumber)
+            # two characters, but more complicated to figure out
+            firstTwo = chr(int(xsTypeStr[:2]))
+            if firstTwo in allowableXsTypes:
+                label = firstTwo + chr(int(str(xsTypeNumber)[2:]))
+            else:
+                firstThree = chr(int(xsTypeStr[:3]))
+                if firstThree in allowableXsTypes:
+                    label = firstThree + chr(int(str(xsTypeNumber)[3:]))
+                else:
+                    raise ValueError()
+
+        # do some error handling
+        for char in label:
+            if char not in allowableXsTypes:
+                raise ValueError()
+
+        return label
     except ValueError:
-        runLog.error("Error converting {} to label.".format(xsTypeNumber))
-        raise
+        runLog.error(f"Error converting {xsTypeNumber} to label.")
 
 
 def _checkConsistentNuclides(thisComp, repComp):
@@ -212,12 +228,7 @@ class BlockCollection(list):
             # we have at least one non-zero entry and at least one zero. This is bad.
             # find the non-zero ones for debugging
             zeros = [block for block in self if not block.p[self.weightingParam]]
-            runLog.error("Blocks with zero `{0}` include: {1}".format(self.weightingParam, zeros))
-            raise ValueError(
-                "{0} has a mixture of zero and non-zero weighting factors (`{1}`)\nSee stdout for details".format(
-                    self, self.weightingParam
-                )
-            )
+            runLog.error(f"Blocks with zero `{self.weightingParam}` include: {zeros}", errType=ValueError)
 
     def calcAvgNuclideTemperatures(self):
         r"""

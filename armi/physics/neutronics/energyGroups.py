@@ -101,13 +101,13 @@ def getGroupStructure(name):
     """
     try:
         return copy.copy(GROUP_STRUCTURE[name])
-    except KeyError as ke:
+    except KeyError:
         runLog.error(
             'Could not find groupStructure with the name "{}".\nChoose one of: {}'.format(
                 name, ", ".join(GROUP_STRUCTURE.keys())
-            )
+            ),
+            errType=KeyError,
         )
-        raise ke
 
 
 def getGroupStructureType(neutronEnergyBoundsInEv):

@@ -170,7 +170,6 @@ class MemoryProfiler(interfaces.Interface):
                     ", ".join(uniqueObjTypes),
                 )
             )
-            raise RuntimeError
 
     def _printFullMemoryBreakdown(self, reportSize=True, printReferrers=False):
         """

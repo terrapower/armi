@@ -559,6 +559,40 @@ def _makeTotalAssemblyMassSummary(massSum):
     return "\n".join(str_)
 
 
+def summarizeCoreStats(core):
+    """Writes a summary of the reactor core to check the mass and volume of all of the blocks."""
+    totalMass = 0.0
+    fissileMass = 0.0
+    heavyMetalMass = 0.0
+    totalVolume = 0.0
+    numBlocks = 0
+    for block in core.iterBlocks():
+        totalMass += block.getMass()
+        fissileMass += block.getFissileMass()
+        heavyMetalMass += block.getHMMass()
+        totalVolume += block.getVolume()
+        numBlocks += 1
+
+    totalMass = totalMass * core.powerMultiplier / 1000.0
+    fissileMass = fissileMass * core.powerMultiplier / 1000.0
+    heavyMetalMass = heavyMetalMass * core.powerMultiplier / 1000.0
+    totalVolume = totalVolume * core.powerMultiplier
+
+    runLog.extra(
+        f"Summary of {core}\n"
+        + tabulate.tabulate(
+            [
+                ("Number of Blocks", numBlocks),
+                ("Total Volume (cc)", totalVolume),
+                ("Total Mass (kg)", totalMass),
+                ("Fissile Mass (kg)", fissileMass),
+                ("Heavy Metal Mass (kg)", heavyMetalMass),
+            ],
+            tableFmt="armi",
+        )
+    )
+
+
 def writeCycleSummary(core):
     """Prints a cycle summary to the runLog.
 
@@ -645,10 +679,10 @@ def summarizePinDesign(core):
 
     try:
         for b in core.iterBlocks(Flags.FUEL):
-            fuel = b.getComponent(Flags.FUEL)
-            duct = b.getComponent(Flags.DUCT)
-            clad = b.getComponent(Flags.CLAD)
-            wire = b.getComponent(Flags.WIRE)
+            fuel = b.getFirstComponent(Flags.FUEL)
+            duct = b.getFirstComponent(Flags.DUCT)
+            clad = b.getFirstComponent(Flags.CLAD)
+            wire = b.getFirstComponent(Flags.WIRE)
             designInfo["hot sd"].append(b.getSmearDensity(cold=False))
             designInfo["sd"].append(b.getSmearDensity())
             designInfo["ductThick"].append(
@@ -703,7 +737,7 @@ def summarizePinDesign(core):
             runLog.info(component_.setDimensionReport())
 
     except Exception as error:
-        runLog.warning(f"Pin summarization failed to work: {error}")
+        runLog.info(f"Pin summarization failed to work: {error}")
 
 
 def makeCoreDesignReport(core, cs):

@@ -15,13 +15,9 @@
 """
 The data structures and schema of the cross section modeling options.
 
-These are advanced/compound settings that are carried along in the normal cs
-object but aren't simple key/value pairs.
-
-The cs object could either hold the base data (dicts) and create instances
-of these data structure objects as needed, or the settings system could actually
-hold instances of these data structures. It is most convenient to let the cs
-object hold actual instances of these data.
+The Settings object could either hold the base data (dicts) and create instances of these data structure objects as
+needed, or the settings system could actually hold instances of these data structures. It is most convenient to let the
+Settings object hold actual instances of these data.
 
 See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/latticePhysics/latticePhysics>`.
 """
@@ -64,10 +60,7 @@ CONF_XS_TEMP_ISOTOPE = "xsTempIsotope"
 
 
 class XSGeometryTypes(Enum):
-    """
-    Data structure for storing the available geometry options
-    within the framework.
-    """
+    """Data structure for storing the available geometry options within the framework."""
 
     ZERO_DIMENSIONAL = 1
     ONE_DIMENSIONAL_SLAB = 2
@@ -107,8 +100,7 @@ XS_GEOM_TYPES = {
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX),
 }
 
-# This dictionary defines the valid set of inputs based on
-# the geometry type within the ``XSModelingOptions``
+# This dictionary defines the valid set of inputs based on the geometry type within the ``XSModelingOptions``.
 _VALID_INPUTS_BY_GEOMETRY_TYPE = {
     XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL): {
         CONF_XSID,
@@ -220,18 +212,15 @@ class XSSettings(dict):
     """
     Container for holding multiple cross section settings based on their XSID.
 
-    This is intended to be stored as part of a case settings and to be
-    used for cross section modeling within a run.
+    This is intended to be stored as part of a case settings and to be used for cross section modeling within a run.
 
     Notes
     -----
-    This is a specialized dictionary that functions in a similar manner as a
-    defaultdict where if a key (i.e., XSID) is missing then a default will
-    be set. If a missing key is being added before the ``setDefaults`` method
-    is called then this will produce an error.
+    This is a specialized dictionary that functions in a similar manner as a defaultdict where if a key (i.e., XSID) is
+    missing then a default will be set. If a missing key is being added before the ``setDefaults`` method is called then
+    this will produce an error.
 
-    This cannot just be a defaultdict because the creation of new cross
-    section settings are dependent on user settings.
+    This cannot just be a defaultdict because the creation of new cross section settings are dependent on user settings.
     """
 
     def __init__(self, *args, **kwargs):
@@ -248,26 +237,24 @@ class XSSettings(dict):
 
         Notes
         -----
-        1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior
-           is that ``AC`` settings will be set to the settings in ``AA``.
+        1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior is that ``AC`` settings will be
+           set to the settings in ``AA``.
 
-        2. If only ``YZ`` exists and ``YA`` is created, then the intended behavior is that
-           ``YA`` settings will NOT be set to the settings in ``YZ``
+        2. If only ``YZ`` exists and ``YA`` is created, then the intended behavior is that ``YA`` settings will NOT be
+           set to the settings in ``YZ``
 
         3. Requirements for using the existing cross section settings:
 
-           a.  The existing XS ID must match the current XS ID.
-           b.  The current xs burnup group must be larger than the lowest burnup group for the
-               existing XS ID
-           c.  If 3a. and 3b. are not met, then the default cross section settings will be
-               set for the current XS ID
+           a. The existing XS ID must match the current XS ID.
+           b. The current xs burnup group must be larger than the lowest burnup group for the existing XS ID
+           c. If 3a. and 3b. are not met, then the default cross section settings will be set for the current XS ID
 
         """
         if xsID in self:
             return dict.__getitem__(self, xsID)
 
-        # exact key not present so give lowest env group key, eg AA or BA as the source for
-        # settings since users do not typically provide all combinations of second chars explicitly
+        # exact key not present so give lowest env group key, eg AA or BA as the source for settings since users do not
+        # typically provide all combinations of second chars explicitly
         xsType = xsID[0]
         envGroup = xsID[1]
         existingXsOpts = [xsOpt for xsOpt in self.values() if xsOpt.xsType == xsType and xsOpt.envGroup < envGroup]
@@ -289,7 +276,7 @@ class XSSettings(dict):
         ----------
         blockRepresentation : str
             Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
-        validBlockTypes : list of str or bool
+        validBlockTypes : list of str or bool or None
            This configures which blocks (by their type) the cross section group manager will merge together to create a
            representative block. If set to ``None`` or ``True`` then all block types in the XS ID will be considered. If
            set to ``False`` then a default of ["fuel"] will be used. If set to a list of strings then the specific list
@@ -320,8 +307,8 @@ class XSSettings(dict):
         if context.MPI_RANK == 0:
             if self._blockRepresentation is None:
                 raise ValueError(
-                    f"The defaults of {self} have not been set. Call ``setDefaults`` first "
-                    "before attempting to add a new XS ID."
+                    f"The defaults of {self} have not been set. Call ``setDefaults`` first before attempting to add a "
+                    "new XS ID."
                 )
 
         xsOpt = XSModelingOptions(xsID, geometry=XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL))
@@ -356,11 +343,11 @@ class XSModelingOptions:
         for this xsID can be copied from. The ``geometry`` attribute
         must be provided with this input.
 
-    validBlockTypes: str or None
-        This is a configuration option for how the cross section group manager
-        determines which blocks/regions to manage as part of the same collection
-        for the current xsID. If this is set to ``None`` then all blocks/regions
-        with the current xsID will be considered.
+    validBlockTypes: list of str or bool or None
+       This configures which blocks (by their type) the cross section group manager will merge together to create a
+       representative block. If set to ``None`` or ``True`` then all block types in the XS ID will be considered. If
+       set to ``False`` then a default of ["fuel"] will be used. If set to a list of strings then the specific list
+       will be used.
 
     blockRepresentation : str
         This is a configuration option for how the cross section group manager

@@ -66,14 +66,13 @@ class OperatorMPI(Operator):
         """
         runLog.debug("OperatorMPI.operate")
         if context.MPI_RANK == 0:
-            # this is the primary
+            # This is the primary MPI process.
             try:
                 # run the regular old operate method
                 Operator.operate(self)
                 runLog.important(time.ctime())
             except Exception as ee:
-                runLog.error("Error in Primary Node. Check STDERR for a traceback.\n{}".format(ee))
-                raise
+                runLog.error(f"Error in Primary Node. Check STDERR for a traceback.\n{ee}")
             finally:
                 # If there are other processes, tell them to stop
                 if context.MPI_SIZE > 1:
@@ -84,20 +83,17 @@ class OperatorMPI(Operator):
                     # wait until they're done cleaning up.
                     context.MPI_COMM.bcast("finished", root=0)
                     runLog.important("All worker nodes stopped.")
-                # even though we waited, still need more time to close stdout.
-                time.sleep(1)
                 runLog.debug("Main operate finished")
-                runLog.close()  # concatenate all logs.
         else:
+            # This is a worker MPI process.
             try:
                 self.workerOperate()
-            except:
+            except Exception:
                 # grab the final command
                 runLog.warning("An error has occurred in one of the worker nodes. See STDERR for traceback.")
                 # bcasting quit won't work if the main is sitting around waiting for a different bcast or gather.
                 traceback.print_exc()
                 runLog.debug("Worker failed")
-                runLog.close()
                 raise
 
     def workerOperate(self):
@@ -159,7 +155,7 @@ class OperatorMPI(Operator):
                         break
                 if not handled:
                     if context.MPI_RANK == 0:
-                        print("Interfaces" + str(self.interfaces))
+                        runLog.info("Interfaces" + str(self.interfaces))
                     runLog.error(
                         "No interface understood worker command {0}\n check stdout for err\n"
                         "available interfaces:\n  {1}".format(
@@ -167,7 +163,6 @@ class OperatorMPI(Operator):
                             "\n  ".join(f"name:{i.name} typeName:{i.purpose} {i}" for i in self.interfaces),
                         )
                     )
-                    raise RuntimeError(f"Failed to delegate worker command {cmd} to an interface.")
 
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)

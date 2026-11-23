@@ -72,7 +72,7 @@ class Operator:
 
     **Figure 1.** The computational flow of the interface hooks in a Standard Operator
 
-    .. note:: The :doc:`/developer/guide` has some additional narrative on this topic.
+    .. note:: The :doc:`/user/guide` has some additional narrative on this topic.
 
     .. impl:: An operator will have a reactor object to communicate between plugins.
         :id: I_ARMI_OPERATOR_COMM
@@ -337,8 +337,8 @@ class Operator:
 
     def __exit__(self, exception_type, exception_value, stacktrace):
         if any([exception_type, exception_value, stacktrace]):
-            runLog.error(r"{}\n{}\{}".format(exception_type, exception_value, stacktrace))
             self.interactAllError()
+            runLog.error(r"{}\n{}\{}".format(exception_type, exception_value, stacktrace))
 
     def operate(self):
         """

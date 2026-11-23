@@ -26,7 +26,7 @@ def info(func):
     """Decorator to write to current log, using the info method."""
 
     def decorated(*args, **kwargs):
-        r"""Decorated method."""
+        """Decorated method."""
         runLog.info(func(*args, **kwargs))
 
     return decorated

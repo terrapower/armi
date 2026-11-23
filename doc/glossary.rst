@@ -110,7 +110,3 @@ Here we define a few specialized terms used in this documentation.
         Validation and Verification. Validation is showing that code results match physical reality
         (comparisons with known answers or experiments), and verification is demonstrating that
         software is built in a way that satisfies its requirements.
-
-    XTVIEW
-        A TerraPower-developed visualization tool that graphically shows ARMI results that have been
-        added to a database.

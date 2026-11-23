@@ -122,14 +122,9 @@ but if installed enable extra functionality, like unit testing or building docum
 
 Third-Party Licensing
 ---------------------
-Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not to include
-anything with a license that supersedes our Apache license. For instance, any third-party Python
-library included in ARMI with a GPL license will make the whole project fall under the GPL license.
-But a lot of potential users of ARMI will want to keep some of their work private, so we can't allow
-any GPL tools.
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file), do not include anything with a license that supersedes our Apache license. For instance, any third-party Python library included in ARMI with a GPL license will make the whole project fall under the GPL license. But a lot of potential users of ARMI will want to keep their work private, so we can not allow any GPL dependencies.
 
-For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-
-party Python libraries that have MIT or BSD licenses.
+For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-party Python libraries that have MIT or BSD licenses.
 
 Versions of Python Supported
 ----------------------------
@@ -139,10 +134,11 @@ important. However, the exact versions of Python ARMI supports at any one moment
 release cycle. And we reserve the right to drop support for any version of Python if we have a special dependency-
 specific security concern.
 
+
 Releasing a New Version of ARMI
 ===============================
-We use the common ``major.minor.bump`` version scheme where a version string might look like
-``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specific meaning:
+We use the common ``major.minor.bump`` version scheme where a version string might look like ``0.1.7``, ``1.0.0``, or
+``12.3.123``. Each number has a specific meaning:
 
 * ``major`` - Revved for major milestones of the ARMI project.
 * ``minor`` - Revved for the usual release, real feature work completed.
@@ -152,9 +148,9 @@ We use the common ``major.minor.bump`` version scheme where a version string mig
 
 **Any change to a major or minor version is considered a release.**
 
-Only a core member of the ARMI team may release a new version, or add a tag of any kind to the
-repository. The rule is *the only tags in the ARMI repo are for official versions*. If you want to
-release a version of ARMI, you will need admin privileges to multiple TerraPower repos on GitHub.
+Only a core member of the ARMI team may release a new version, or add a tag of any kind to the repository. The rule is
+*the only tags in the ARMI repo are for official versions*. If you want to release a version of ARMI, you will need
+admin privileges to multiple TerraPower repos on GitHub.
 
 Every release should follow this process:
 
@@ -162,8 +158,8 @@ Every release should follow this process:
 2. Create a release PR:
 
     - Bump the ``version`` string in ``pyproject.toml``.
-    - Now that the release is done, hard-copy the SCR information into the last releases RST file, so we don't keep regenerating it: ``doc/qa_docs/scr/x.y.rst``.
-    - Update the commit in ``doc/qa_docs/scr/latest_scr.rst`` to the release commit.
+    - Now that the release is done, hard-copy the SCR information into the last release's RST file, so we don't keep regenerating it: ``doc/release/x.y.rst``.
+    - Update the commit in ``doc/qa_docs/scr.rst`` to the release commit.
 
 3. Tag the commit after it goes into the repo:
 
@@ -178,8 +174,8 @@ Every release should follow this process:
 
 Logging with runLog
 ===================
-ARMI provides a logging tool, ``runLog``, to be used in place of ``print`` for all logging during a
-simulation. It is very easy to use:
+ARMI provides a logging tool, ``runLog``, to be used in place of ``print`` for all logging during a simulation. It is
+very easy to use:
 
 .. code-block:: python
 
@@ -187,11 +183,13 @@ simulation. It is very easy to use:
 
     runLog.debug("This will only be seen if you run in debug mode.")
     runLog.info("Default log level.")
-    runLog.error("The run will die, or the results are invalid.")
+    runLog.error("The run will die or the results are invalid. Raises RuntimeError by default.")
+    runLog.error("The run will die, by raising FileNotFoundError.", errType=FileNotFoundError)
 
 .. note::
-    Calling ``runLog.error()`` is not the same as calling Python's ``raise error``; a log statement
-    does not kill a run, or raise an error, it just puts some text in the log.
+    Calling ``runLog.error(msg)`` will log the ``msg`` in question and then raise Python's ``RuntimeError`` by default;
+    which will kill the run unless the ``Error`` is caught and handled. You can also pass in an optional ``errType``
+    parameter and pass in the ``Exception`` subclass to be raised.
 
 When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
 at or above that log level will be seen during the simulation and in the final log files. To control
@@ -226,7 +224,7 @@ For reference, here are the log levels that ARMI supports:
       - RESERVED for the ARMI CLI.
     * - warning
       - 30
-      - Use ONLY for issues that may or may not invalidate the simulation results.
+      - Use ONLY for issues that may invalidate the simulation results.
     * - error
       - 40
       - Use ONLY for problems that halt the program or invalidate the simulation results.

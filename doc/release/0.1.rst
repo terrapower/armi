@@ -65,8 +65,8 @@ Deprecations
 #. Removed ``None`` option to XS ``"geometry"`` setting.
 #. Removed ``Location`` classes. These were made redundant with grids/spatial locators.
 #. Removed ``Block.isAnnular()``.
-#. Remove old "XTView" database format support. Migrating older databases will require
-   checking out an older version of the code.
+#. Remove old database format support. Migrating older databases will require checking out an older
+   version of the code.
 
 Bugfixes
 ^^^^^^^^

@@ -219,7 +219,7 @@ class CaseSuite:
                     case.run()
                 except Exception:
                     # allow all errors and continue to next run
-                    runLog.error(f"{case} failed during execution.")
+                    runLog.warning(f"{case} failed during execution.")
                     traceback.print_exc()
 
     def compare(

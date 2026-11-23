@@ -287,7 +287,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(cs["extendableOption"], "DEFAULT")
         self.assertEqual(cs["avocado"], 0)
         # We shouldn't have any settings from the other plugin, so this should be an error.
-        with self.assertRaises(vol.error.MultipleInvalid):
+        with self.assertRaises(vol.error.Invalid):
             newSettings = {"extendableOption": "PLUGIN"}
             cs = cs.modified(newSettings=newSettings)
 

@@ -60,10 +60,9 @@ class FlagSerializer(parameters.Serializer):
     """
     Serializer implementation for Flags.
 
-    This operates by converting each set of Flags (too large to fit in a uint64) into a
-    sequence of enough uint8 elements to represent all flags. These constitute a
-    dimension of a 2-D numpy array containing all Flags for all objects provided to the
-    ``pack()`` function.
+    This operates by converting each set of Flags (too large to fit in a uint64) into a sequence of enough uint8
+    elements to represent all flags. These constitute a dimension of a 2-D numpy array containing all Flags for all
+    objects provided to the ``pack()`` function.
     """
 
     version = "1"
@@ -121,12 +120,11 @@ class FlagSerializer(parameters.Serializer):
         """
         Reverse the pack operation.
 
-        This will allow for some degree of conversion from old flags to a new set of
-        flags, as long as all of the source flags still exist in the current set of
-        flags.
+        This will allow for some degree of conversion from old flags to a new set of flags, as long as all of the source
+        flags still exist in the current set of flags.
 
-        Under the hood, this calls the private implementation providing the
-        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        Under the hood, this calls the private implementation providing the :py:class:`armi.reactor.flags.Flags` class
+        as the target output class.
         """
         return cls._unpackImpl(data, version, attrs, Flags)
 
@@ -342,32 +340,31 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         """
         Implement the less-than operator.
 
-        Implementing this on the ArmiObject allows most objects, under most circumstances, to be
-        sorted. This is useful from the context of the Database classes, so that they can produce a
-        stable layout of the serialized composite structure.
+        Implementing this on the ArmiObject allows most objects, under most circumstances, to be sorted. This is useful
+        from the context of the Database classes, so that they can produce a stable layout of the serialized composite
+        structure.
 
-        By default, this sorts using the spatial locator in K, J, I order, which should give a
-        relatively intuitive order. It also makes sure that the objects being sorted live in the
-        same grid.
+        By default, this sorts using the spatial locator in K, J, I order, which should give a relatively intuitive
+        order. It also makes sure that the objects being sorted live in the same grid.
         """
         if self.spatialLocator is None or other.spatialLocator is None:
-            runLog.error(f"could not compare {self} and {other}")
-            raise ValueError("One or more of the compared objects have no spatialLocator")
+            runLog.error(
+                f"Could not compare {self} and {other}: One or more of the objects have no spatialLocator.",
+                errType=ValueError,
+            )
 
         if self.spatialLocator.grid is not other.spatialLocator.grid:
-            runLog.error(f"could not compare {self} and {other}")
-            raise ValueError(
-                "Composite grids must be the same to compare:\n"
-                f"This grid: {self.spatialGrid}\n"
-                f"Other grid: {other.spatialGrid}"
+            runLog.error(
+                f"Could not compare {self} and {other}: Composite grids must be the same to compare:\n"
+                f"This grid: {self.spatialGrid}\nOther grid: {other.spatialGrid}",
+                errType=ValueError,
             )
         try:
             t1 = tuple(reversed(self.spatialLocator.getCompleteIndices()))
             t2 = tuple(reversed(other.spatialLocator.getCompleteIndices()))
             return t1 < t2
         except ValueError:
-            runLog.error(f"failed to compare {self.spatialLocator} and {other.spatialLocator}")
-            raise
+            runLog.error(f"failed to compare {self.spatialLocator} and {other.spatialLocator}", errType=ValueError)
 
     def __getstate__(self):
         """
@@ -987,7 +984,6 @@ class ArmiObject(metaclass=ArmiObjectModelTypeABC):
         # error checking.
         if abs(newA - val) > 1e-10:
             runLog.error(f"Adjust Mass fraction did not adjust {adjustNuclides} from {A} to {val}. It got to {newA}")
-            raise RuntimeError("Failed to adjust mass fraction.")
 
         # determine the mass fraction of the nuclides that will be adjusted to
         # accommodate the requested change

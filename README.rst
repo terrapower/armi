@@ -1,41 +1,30 @@
 
 |Build Status| |Code Coverage| |Commit Activity| |Good First Issues|
 
-#################
-ARMI Introduction
-#################
+####
+ARMI
+####
 
 The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) is an open-source tool that streamlines your nuclear reactor
-design/analysis needs by providing a software *reactor at your fingertips* and a rich ecosystem of utilities working in
-concert. It is made for and by professional reactor analysis teams and is maintained by
-`TerraPower LLC <http://terrapower.com/>`_, a nuclear technology development company.
+design/analysis needs by providing a software reactor model and a rich ecosystem of tools to interogate that model. It
+is made by and for professional reactor analysis teams and is maintained by `TerraPower LLC <http://terrapower.com/>`_,
+a nuclear technology development company.
 
-ARMI:
+ARMI provides:
 
-* Provides a hub-and-spoke mechanism to standardize communication and coupling between physics kernels and the
-  specialist analysts who use them,
+- standardized communication between physics kernels
+- a flexible reactor data model
+- dependable input and output data formats
+- an ecosystem for multi-disciplinary simulation and analysis of a nuclear reactor
 
-* Facilitates the creation and execution of detailed models and complex analysis methodologies,
+Demos of ARMI can be seen in the `ARMI example gallery <https://terrapower.github.io/armi/gallery/index.html>`_.
 
-* Provides an ecosystem within which to rapidly and collaboratively build new analysis and physics simulation
-  capabilities, and
+Using ARMI, plus a collection of ARMI-aware physics plugins, and engineering team can perform a full analysis of a
+reactor with various input parameters. On larger compute clusters, thousands of perturbed cases are frequently run in
+parallel. Such studies are useful for both design decisions and senstivity analyses.
 
-* Provides useful utilities to assist in reactor development.
-
-A few demos of ARMI can be seen in the `ARMI example gallery <https://terrapower.github.io/armi/gallery/index.html>`_.
-
-Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can perform a full analysis of a reactor
-system and then repeat the same level of analysis with some changed input parameters for almost no additional cost. Even
-better, thousands of perturbed cases can be executed in parallel on large clusters, helping conceptual design teams home
-in on an optimal design. Or design teams can analyze sensitivities all the way from, for example, an impurity in a
-control material to the peak structural temperature in a design-basis transient.
-
-.. note:: ARMI does not come with a full selection of physics kernels. They will need to be acquired or developed for
-   your specific project in order to make full use of this tool. Many of the example use-cases discussed in this manual
-   require functionality that is not included in the open-source ARMI Framework.
-
-In general, ARMI aims to enhance the quality, ease, and rigor of computational nuclear reactor design and analysis.
-Additional high-level overview about this system can be found in [#touranarmi]_.
+ARMI aims to enhance the quality and rigor of computational nuclear reactor design and analysis. Additional high-level
+information about this system can be found in [#touranarmi]_.
 
 
 .. list-table:: Quick links
@@ -54,14 +43,40 @@ Additional high-level overview about this system can be found in [#touranarmi]_.
    * - Contact
      - armi-devs@terrapower.com
 
-Quick start
-***********
+
+Overview
+********
+
+High-Level Architecture
+=======================
+Figure 1 below is meant to represent the high-level goal of ARMI. At the center of the diagram is the ARMI Reactor Data
+Model, this is a central place in memory where the physical state of the reactor can be viewed and changed. The outer
+ring of the figure shows "external physics kernels", which have been written for different nuclear engineering disciplines
+around the world for decades now. The glue that connects these external software packages to ARMI are "ARMI Plugins"
+which you write, based on ARMI examples, to read and write data from the ARMI reactor data model. A collection of these
+plugins can be collected into an ARMI "Application" which orchestrates simulating or analyzing your reactor.
+
+.. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
+   :figclass: align-center
+
+   **Figure 1.** A high-level view of the ARMI architecture as a framework.
+
+Please note that ARMI does not come with a full selection of physics kernels. You will need to be acquire or develope
+these yourself for your specific needs. ARMI is just the framework for your modeling. Also, the examples shown in
+Figure 1 were chosen arbitrarily; ARMI is not limited to these physics kernels, nor should it limit you in what physics
+you want to model.
+
+
+Getting Started
+***************
+
+Quick Start
+===========
 Before starting, you need to install `Python <https://www.python.org/downloads/>`.
 
-Get the ARMI code, install the prerequisites, and fire up the launcher with the following commands. You probably want to
+Get the ARMI code, install the dependencies, and fire up the launcher with the following commands. You probably want to
 do this in a virtual environment as described in the
-`Installation documentation <https://terrapower.github.io/armi/installation.html>`_. Otherwise, the dependencies could
-conflict with your system dependencies.
+`Installation documentation <https://terrapower.github.io/armi/installation.html>`_.
 
 First, upgrade your version of pip::
 
@@ -81,257 +96,39 @@ The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0
 
 From here, we recommend going through a few of our
 `gallery examples <https://terrapower.github.io/armi/gallery/index.html>`_ and
-`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to start touring the features and capabilities and
+`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to start touring the features and capabilities, and
 then move on to the `User Manual <https://terrapower.github.io/armi/user/index.html>`_.
 
-
-Background
-**********
-Nuclear reactor design requires, among other things, answers to the following questions:
-
-* Where are the neutrons? How fast are they moving? In which direction?
-
-* How quickly are atomic nuclei splitting? How long until the fuel runs out? How many atoms in the structure are being
-  energetically displaced?
-
-* How much heat do these reactions produce? How quickly must coolant flow past the fuel to maintain appropriate
-  temperatures? What are the temperatures of the fuel, coolant, and structure?
-
-* Can the structural arrangement support itself given the temperatures and pressures induced by the flowing coolant? For
-  how long?
-
-* If a pump loses power or a control rod accidentally withdraws, how quickly will the chain reaction stop while keeping
-  radiation contained?
-
-* How much used nuclear fuel is generated per useful energy produced? How long until it decays to stability?
-
-* Where and when should we move the fuel to most economically maintain the chain reaction?
-
-* What's the dose and activation above the head and in the secondary loop?
-
-* How does containment handle various postulated accidents?
-
-* How does the building handle earthquakes?
-
-Digital computers have assisted in nuclear technology development since the days of the ENIAC in the 1940s. We now
-understand reactor physics well enough to build detailed simulations, which can answer many of these design questions in
-a cost-effective, and flexible manner. This allows us to simulate all kinds of different reactors with different fuels,
-coolants, moderators, power levels, safety systems, and power cycles. We can run our virtual reactors through the
-decades, toss miriad off-normal conditions at them, and see how they perform in terms of capability, economics, and
-safety.
-
-Perhaps surprisingly, some nuclear software written in the 1960s is still in use today. These codes are validated
-against physical experiments that no longer exist. Meanwhile, new cutting-edge nuclear software is being developed for
-todays powerful computers. Both old and new, these tools are often challenging to operate and coordinate to produce a
-full reactor analysis.
-
-The ARMI approach was born out of this situation: how can we best leverage an eclectic mix of legacy and modern tools
-to do full-scope analysis? We built a framework to help us automate the tedious, uncoupled, and error-prone parts of
-reactor engineering/analysis work. We can turn around a very meaningful and detailed core analysis given a major change
-(e.g. change power by 50%) in just a few weeks. We can dispatch hundreds of parameter sweeps to multiple machines and
-then perform multi-objective optimization on the resulting design space.
-
-The ARMI system is largely written in the Python programming language. Its high-level nature allows nuclear and
-mechanical engineers to rapidly automate their analysis tasks from their sub-specialties. This helps eliminate the
-translation step between computer-scientists and power plant design engineers. This allows good division of labor: the
-computer scientists can focus on the overall performance and maintainability of the framework, while the power plant
-engineers focus on power plant engineering.
-
-We have spent over 10 years developing this system. Because of ARMI's high-level nature, we believe we can collaborate
-effectively with all ongoing reactor software developments.
-
-Communication and coupling
-**************************
-As you can see below, the ARMI framework comes packaged with the ARMI Reactor Data Model. This is a central place where
-all your code, and any external physics kernels, can share information about the state of the reactor. ARMI also
-provides a number of helpful tools, like: input formats for reactor blueprints, tools for organizing the flow of a
-simulation, output databases, and visualization tools. To use the Reactor Data Model, you will build one (or probably
-more) "plugins". These plugins are often used to connect an external physics kernal to the run or simulation.
-
-ARMI provides tutorials and guides for building your own plugins,
-and some lightweight machinery to help get you started.
-
-.. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
-   :figclass: align-center
-
-   **Figure 1.** A high-level view of the ARMI architecture as a framework.
-
-Please note that you will be responsible for acquiring (or writing) physics kernels yourself, ARMI does not provide
-them. And the examples shown in Figure 1 were chosen arbitrarily, ARMI is not limited to these physics kernels, nor
-should it limit you in what physics you want to model.
-
-Automation
-**********
-ARMI can quickly and easily produce complex input files with high levels of detail in various approximations. This
-enables users to perform rapid high-fidelity analyses to make sure all important physics are captured. It also enables
-sensitivity studies of different modeling approximations (e.g. symmetries, transport vs. diffusion vs. Monte Carlo,
-subchannel vs. CFD, etc.).
-
-
-.. figure:: https://terrapower.github.io/armi/_static/armiGeometries.png
-   :figclass: align-center
-
-   **Figure 2.** A variety of approximations in hexagonal geometry (1/3-core, full core, pin detailed, etc.) are shown,
-   all derived from one consistent input file. ARMI supports Cartesian, Hex, RZ, and RZTheta geometric grids and
-   includes many geometric components. Additionally, users can provide custom geometric elements.
-
-
-New analysis and physics capabilities
-*************************************
-The ARMI reactor model is fully accessible via a Python-based API, meaning that users have full
-access to the details of the plant at all times. Developers adding new physics features can take advantage of the ARMI
-data management structure by simply reading and writing to the Reactor state. Leveraging the infrastructure of ARMI,
-progress can be made rapidly.
-
-A user can modify the plant in many ways. For instance, removing all sodium coolant is a one-liner::
-
-    core.setNumberDensity('NA23',0.0)
-
-and finding the peak power density is easy::
-
-    core.getMaxParam('pdens')
-
-Any ARMI state can be written out to whichever format the user desires, meaning that nominally identical cases can be
-produced for multiple similar codes in sensitivity studies. To read power densities, simply read them off the assembly
-objects. Instead of producing spreadsheets and making plots manually, analysts may write scripts to generate output
-reports that run automatically.
-
-Writing a module within ARMI automatically features access to the ARMI API, including:
-
-* Cross section processing
-* Material properties
-* Thermal expansion
-* Database persistence
-* Data visualization
-* A code testing, documentation, and version control system
-
-
-Use cases
-*********
-Given an input describing a reactor, a typical ARMI run loops over a set of plugins in a certain sequence. Some plugins
-trigger third-party simulation codes, producing input files for them, executing them, and translating the output back
-onto the reactor model. Other plugins perform physics simulations directly.
-
-For example, one ARMI sequence may involve the calculation of:
-
-* nuclear cross sections
-* global flux and power
-* subchannel temperatures
-* duct wall pressures
-* cladding strain and wastage
-* fission gas pressure
-* reactivity feedbacks
-* flow orificing
-* the equilibrium fuel cycle
-* control rod worth
-* shutdown margin
-* frequency stability margins
-* peak cladding temperature
-* transient analysis
-* total levelized cost of electricity for the run
-
-Another ARMI sequence may simply compute the cost of feed uranium and enrichment in an initial core and quit.
-
-Larger siumulations may also run through the multi-objective design optimization system, which runs many cases with
-input perturbations to help find the best overall system, considering all important physics at the same time.
-
-Other interest may come from the following:
-
-The Research Scientist
-======================
-A nuclear reactor research scientist, at a national lab or university, may benefit from ARMI. An ARMI workflow can
-reduce the time spent on data management. ARMI can handle the tedium so that researchers can better focus on designing
-and testing their research.
-
-For example, if an ARMI input file describing the Fast Flux Test Facility (FTFF) reactor is provided, the researcher can start running benchmark
-cases with their new code method very rapidly, rather than spending the time building their own FFTF model.
-
-If someone wants to try varying nuclear cross sections by a percent here and there to compute sensitivities, ARMI is a
-perfect platform upon which to operate.
-
-If a reactor designer wants to try out a new Machine Learning algorithm for fuel management, plugging it into ARMI and
-having it run on all the physics kernels of the ARMI ecosystem will be a great way to prove its true value (note that
-this requires a rich ARMI physics ecosystem).
-
-The Nuclear Startup Engineer
-============================
-As various companies evaluate their ideas, they need tools for analysis. They can pick up ARMI and save 10 years of
-development and hit the ground running by plugging in their design-specific physics kernels and proprietary design
-inputs. ARMI's parameter sweep features, reactor model, and parallel utilities will all come in handy immediately.
-
-
-Operating and Vendor Engineers
-==============================
-People at well-established utilities or vendors can hook ARMI into their legacy systems and increase their overall
-productivity.
-
-The Enthusiast
-==============
-If an enthusiast wants to try out a reactor idea they have, they can use ARMI (plus some physics kernels) to quickly get
-some performance metrics. They can see if their idea has wings, and if it does, they can then find a way to bring it to
-engineering and commercial reality.
-
-
-History of ARMI
-***************
-ARMI was originally created by TerraPower, LLC near Seattle WA starting in 2009. Its founding mission was to determine
-the optimal fuel management operations required to transition a fresh Traveling Wave Reactor core from startup into an
-equilibrium state. It started out automating the Argonne National Lab (ANL) fast reactor neutronics codes, MC2 and
-REBUS. The reactor model design was made with the intention of adding other physics capabilities later. Soon, simple
-thermal hydraulics were added and it's grown ever since. It has continuously evolved towards a general reactor analysis
-framework.
-
-Following requests by outside parties to use ARMI, we started working on a more modular architecture for ARMI, allowing
-some of the intertwined physics capabilities to be separated out as plugins from the standalone framework.
-
-The nuclear industry is small, and it faces many challenges. It also has a tradition of secrecy. As a result, there is
-risk of overlapping work being done by other entities.
-
-We hypothesize that collaborating on software systems can help align some efforts worldwide, increasing quality and
-efficiency. In reactor development, the idea is generally cheap. It's the shakedown, technology and supply chain
-development, engineering demo, and commercial demo that are the hard parts.
-
-Thus, ARMI was released under an open-source license in 2019 to facilitate mutually beneficial collaboration across the
-nuclear industry, where many teams are independently developing similar reactor analysis/automation frameworks.
-
-We also hope that if more people can rapidly analyze the performance of their reactor ideas, limited available funding
-can be spent more effectively.
-
-
 System Requirements
-*******************
+===================
 Being largely written in the Python programming language, the ARMI system works on most platforms.  It can perform
 meaningful analysis on a single laptop, but the full value of design optimization and large problems is realized with
-parallel runs over large clusters (using the optional ``mpi4py`` library).
+parallel runs over large clusters (using MPI via  ``mpi4py``).
+
+
+Misc
+****
 
 .. _getting-help:
 
 Getting Help
-************
+============
 You can get help with ARMI by either making issues on our `github page <https://github.com/terrapower/armi/issues>`_ or
 by e-mailing armi-devs@terrapower.com.
 
 Disclaimers
-***********
+===========
 Due to TerraPower goals and priorities, many ARMI modules were developed with the sodium-cooled fast reactors as a
-target, and are not necessarily yet optimized for other plants. This is a known issue with code organization and we are
-working on it. On the other hand, the framework is sufficiently general that people have modeled other reactor types
-with ARMI, including thermal reactors.
+target, and are not yet optimized for other plants. This is a known issue and we are working on it. On the other hand,
+the framework is sufficiently general that teams have modeled other reactor types with ARMI, including thermal reactors.
 
-ARMI was developed within a rapidly changing R&D environment. It evolved accordingly, and naturally carries some legacy.
-We continuously attempt to identify and update problematic parts of the code. Users should understand that ARMI is not a
-polished consumer software product, but rather a powerful and flexible engineering tool. It has the potential to
-accelerate work on many kinds of reactors.
-
-ARMI has been written to support specific engineering/design tasks. As such, polish in the GUIs and output is somewhat
-lacking.
-
-The ARMI framework uses the ``camelCase`` style, which is not the standard style for Python. As this is an issue of
-style, it is not considered worth the API-breaking cost to our downstream users to change it.
-
+ARMI is being developed and used within a rapidly-changing R&D environment. It has evolved a great deal, and naturally
+carries some legacy. We are constantly on the look out for technical debt, and pay it off regularly. If you find some,
+please make a ticket. Users should understand that ARMI is not a polished consumer product, but a flexible engineering
+tool.
 
 License
-*******
+=======
 TerraPower and ARMI are registered trademarks of TerraPower, LLC. Other trademarks and registered trademarks used in
 this Manual are the property of the respective trademark holders.
 
@@ -339,27 +136,20 @@ The ARMI system is licensed as follows:
 
 .. code-block:: none
 
-	Copyright 2009 TerraPower, LLC
+  Copyright 2009 TerraPower, LLC
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
-	    http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 
-Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not to include anything with a
-license that supersedes our Apache license. For instance, any third-party Python library included in ARMI with a GPL
-license will make the whole project fall under the GPL license. But a lot of potential users of ARMI will want to keep
-some of their work private, so we can't allow any GPL dependencies.
-
-For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-party Python libraries
-that have MIT or BSD licenses.
 
 .. [#touranarmi] Touran, Nicholas W., et al. "Computational tools for the integrated design of advanced nuclear reactors."
    Engineering 3.4 (2017): 518-526. https://doi.org/10.1016/J.ENG.2017.04.016

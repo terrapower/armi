@@ -1,0 +1,176 @@
+Release Notes for ARMI 0.7
+==========================
+
+Here you will find the release notes for previous ARMI releases.
+
+ARMI v0.7.0
+-----------
+Release Date: 2026-10-30
+
+This was the biggest ARMI release in years. The materials in ARMI were completely over-hauled; from the underlying code
+to cleaning up and validating all the material data. The team also resolved over 20 bugs, and ARMI was releasing with no
+open bug tickets. And the ``armi.testing`` package is now in stable place, with a full collection of testing modules and
+test reactors.
+
+
+Code Changes, Features
+^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2472 <https://github.com/terrapower/armi/pull/2472>`_) Adding Cinder 63 energy group structure
+#. (`PR#2494 <https://github.com/terrapower/armi/pull/2494>`_) Updating consistent nuclide treatment
+#. (`PR#2507 <https://github.com/terrapower/armi/pull/2507>`_) Refactoring the ARMI materials to be based on matProps
+#. (`PR#2515 <https://github.com/terrapower/armi/pull/2515>`_) Adding CircleHoledCircle shape
+#. (`PR#2517 <https://github.com/terrapower/armi/pull/2517>`_) Support FilletedHexagon in HexBlock.getWettedPerimeter
+#. (`PR#2521 <https://github.com/terrapower/armi/pull/2521>`_) Move material source summary table to Bookkeeping Plugin
+#. (`PR#2531 <https://github.com/terrapower/armi/pull/2531>`_) Remove callReactorConstructionHook argument from db.load and loadOperator
+#. (`PR#2532 <https://github.com/terrapower/armi/pull/2532>`_) Creating the armi.testing package
+#. (`PR#2536 <https://github.com/terrapower/armi/pull/2536>`_) Reducing reliance on global nuclides
+#. (`PR#2555 <https://github.com/terrapower/armi/pull/2555>`_) Improving setMaterialNamespaceOrder
+#. (`PR#2558 <https://github.com/terrapower/armi/pull/2558>`_) Increasing test coverage - matProps loadAll exception
+#. (`PR#2572 <https://github.com/terrapower/armi/pull/2572>`_) Adding a plugin hook for defining a material base class
+#. (`PR#2574 <https://github.com/terrapower/armi/pull/2574>`_) Replacing sys.platform calls with a context.PLATFORM global variable
+#. (`PR#2589 <https://github.com/terrapower/armi/pull/2589>`_) Updating default nuclide flags
+#. (`PR#2596 <https://github.com/terrapower/armi/pull/2596>`_) Moving shared test_assemblies.py machinery to armi.testing
+#. (`PR#2608 <https://github.com/terrapower/armi/pull/2608>`_) Moving downstream-imported test_blocks machinery to armi.testing
+#. (`PR#2615 <https://github.com/terrapower/armi/pull/2615>`_) Cleaning up test_reactors imports
+#. (`PR#2617 <https://github.com/terrapower/armi/pull/2617>`_) Removing _Mixture material from ARMI
+#. (`PR#2642 <https://github.com/terrapower/armi/pull/2642>`_) Removing inefficiencies in Assembly initialization
+#. (`PR#2646 <https://github.com/terrapower/armi/pull/2646>`_) Ignoring negative volume components in mass-weighted averaging
+#. (`PR#2648 <https://github.com/terrapower/armi/pull/2648>`_) Removing child-related machinery from ArmiObject
+#. (`PR#2654 <https://github.com/terrapower/armi/pull/2654>`_) Improving flexibility of CaseSuite.discover
+#. (`PR#2669 <https://github.com/terrapower/armi/pull/2669>`_) Using a WatchedFileHandler for logging outputs
+#. (`PR#2670 <https://github.com/terrapower/armi/pull/2670>`_) Describing standalone custom python materials
+#. (`PR#2671 <https://github.com/terrapower/armi/pull/2671>`_) Makes Component directly subclass ArmiObject
+#. (`PR#2699 <https://github.com/terrapower/armi/pull/2699>`_) Raising an error when an ISOTXS file is not found
+#. (`PR#2702 <https://github.com/terrapower/armi/pull/2702>`_) Dropping support for Python 3.9 and 3.10
+#. (`PR#2707 <https://github.com/terrapower/armi/pull/2707>`_) Move ArmiObject to its own file and make it an abstract class
+#. (`PR#2714 <https://github.com/terrapower/armi/pull/2714>`_) Allowing for edge case where no new XS files are generated
+
+
+Code Changes, Bugs and Fixes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2514 <https://github.com/terrapower/armi/pull/2514>`_) Fixing issue with CartesianBlock.getPinCenterFlatToFlat
+#. (`PR#2544 <https://github.com/terrapower/armi/pull/2544>`_) Reverting previous global nuclides change
+#. (`PR#2575 <https://github.com/terrapower/armi/pull/2575>`_) Ensuring density and pseudoDensity match for custom materials
+#. (`PR#2578 <https://github.com/terrapower/armi/pull/2578>`_) Removing unused check-inputs entrypoint
+#. (`PR#2584 <https://github.com/terrapower/armi/pull/2584>`_) Fixing missing r+ DB mode
+#. (`PR#2592 <https://github.com/terrapower/armi/pull/2592>`_) Fixing test smallHexReactor BP lattice
+#. (`PR#2599 <https://github.com/terrapower/armi/pull/2599>`_) Fixing MultiIndexLocation.getGlobalCoordinates
+#. (`PR#2604 <https://github.com/terrapower/armi/pull/2604>`_) Covering up a ruamel.yaml bug with zero values
+#. (`PR#2607 <https://github.com/terrapower/armi/pull/2607>`_) Fixing Database.genTimeSteps for EOL time steps
+#. (`PR#2610 <https://github.com/terrapower/armi/pull/2610>`_) Supporting Blueprint.dump without streams
+#. (`PR#2612 <https://github.com/terrapower/armi/pull/2612>`_) Ensuring migrations are not applied when they are not needed
+#. (`PR#2613 <https://github.com/terrapower/armi/pull/2613>`_) Redistribute pinNDens and detailedNDens through axial expansion
+#. (`PR#2618 <https://github.com/terrapower/armi/pull/2618>`_) Fixing Database.mergeHistory for EOL and error time steps
+#. (`PR#2623 <https://github.com/terrapower/armi/pull/2623>`_) Updating test function imports and names in our testing docs
+#. (`PR#2625 <https://github.com/terrapower/armi/pull/2625>`_) Fixing Block.getNumPins when there are multiple clads around a pin
+#. (`PR#2644 <https://github.com/terrapower/armi/pull/2644>`_) Fixing Material.getProperty for matProps properties
+#. (`PR#2645 <https://github.com/terrapower/armi/pull/2645>`_) Documenting that expandTo conserves mass not number of atoms
+#. (`PR#2647 <https://github.com/terrapower/armi/pull/2647>`_) Updating Assembly detailed number density when Core pitch changes
+#. (`PR#2650 <https://github.com/terrapower/armi/pull/2650>`_) Removing numMoves parameter
+#. (`PR#2653 <https://github.com/terrapower/armi/pull/2653>`_) Removing incorrect summarizePowerPeaking report
+#. (`PR#2655 <https://github.com/terrapower/armi/pull/2655>`_) Ensuring nuclides and numberDensities are numpy arrays
+#. (`PR#2661 <https://github.com/terrapower/armi/pull/2661>`_) Preserving full-core Cartesian block volumes on Core symmetry axes
+#. (`PR#2665 <https://github.com/terrapower/armi/pull/2665>`_) Applying the ruamel max_depth shim to every yamlize class, not just Blueprints
+#. (`PR#2679 <https://github.com/terrapower/armi/pull/2679>`_) Adding material modifications to Database.load
+#. (`PR#2688 <https://github.com/terrapower/armi/pull/2688>`_) Fix bug in axial expander that allowed two YAML materials to appear the same
+#. (`PR#2715 <https://github.com/terrapower/armi/pull/2715>`_) Avoiding writing block kgHM and kgFis params during DBload
+#. (`PR#2716 <https://github.com/terrapower/armi/pull/2716>`_) Reading existing ISOTXS file if core.lib does not exist
+
+
+Code Changes, Maintenance, or Trivial
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2485 <https://github.com/terrapower/armi/pull/2485>`_) Adding an author to the project
+#. (`PR#2486 <https://github.com/terrapower/armi/pull/2486>`_) Speeding up unit tests
+#. (`PR#2489 <https://github.com/terrapower/armi/pull/2489>`_) Speeding up unit tests again
+#. (`PR#2490 <https://github.com/terrapower/armi/pull/2490>`_) Changing the order of the named parameters in armi.init
+#. (`PR#2491 <https://github.com/terrapower/armi/pull/2491>`_) Adding MeV unit
+#. (`PR#2493 <https://github.com/terrapower/armi/pull/2493>`_) Supporting Python 3.14
+#. (`PR#2498 <https://github.com/terrapower/armi/pull/2498>`_) Stopping forked repos from running MacOS CI
+#. (`PR#2499 <https://github.com/terrapower/armi/pull/2499>`_) Removing matProps dataSchema
+#. (`PR#2500 <https://github.com/terrapower/armi/pull/2500>`_) Speeding up the slowest unit tests
+#. (`PR#2502 <https://github.com/terrapower/armi/pull/2502>`_) Removing unnecessary warning
+#. (`PR#2503 <https://github.com/terrapower/armi/pull/2503>`_) Reducing warnings from settings version and Composite.getComponent
+#. (`PR#2506 <https://github.com/terrapower/armi/pull/2506>`_) Improving error handling in HexComponentsToCylConverter
+#. (`PR#2508 <https://github.com/terrapower/armi/pull/2508>`_) Stop codecov.io from incorrectly failing the build
+#. (`PR#2510 <https://github.com/terrapower/armi/pull/2510>`_) Improving error message in settings validation
+#. (`PR#2516 <https://github.com/terrapower/armi/pull/2516>`_) Bump pypdf from 5.3.1 to 6.10.2
+#. (`PR#2518 <https://github.com/terrapower/armi/pull/2518>`_) Bump jinja2 from 3.1.5 to 3.1.6
+#. (`PR#2522 <https://github.com/terrapower/armi/pull/2522>`_) Moving 15 parameters out of ARMI
+#. (`PR#2523 <https://github.com/terrapower/armi/pull/2523>`_) Clean up runtime warnings
+#. (`PR#2524 <https://github.com/terrapower/armi/pull/2524>`_) Trying to stop codecov.io from failing the build
+#. (`PR#2527 <https://github.com/terrapower/armi/pull/2527>`_) Cleanup reports
+#. (`PR#2528 <https://github.com/terrapower/armi/pull/2528>`_) Renaming matProps.Material to MatPropsMaterial
+#. (`PR#2529 <https://github.com/terrapower/armi/pull/2529>`_) Removing deprecated API endpoints
+#. (`PR#2530 <https://github.com/terrapower/armi/pull/2530>`_) Removing classN_custom_isotopics
+#. (`PR#2537 <https://github.com/terrapower/armi/pull/2537>`_) Trying to stop codecov.io from failing the build
+#. (`PR#2540 <https://github.com/terrapower/armi/pull/2540>`_) Upgrading GH Actions dependencies to newer versions
+#. (`PR#2546 <https://github.com/terrapower/armi/pull/2546>`_) Adding ArgumentDefaultsHelpFormatter to EntryPoint.parser
+#. (`PR#2547 <https://github.com/terrapower/armi/pull/2547>`_) Lowering the priority of some settings-related log messages
+#. (`PR#2548 <https://github.com/terrapower/armi/pull/2548>`_) Reducing warnings from B10 Block calculation
+#. (`PR#2549 <https://github.com/terrapower/armi/pull/2549>`_) Removing pinned wxpython dependency for grids
+#. (`PR#2552 <https://github.com/terrapower/armi/pull/2552>`_) Bump pypdf from 6.10.2 to 6.12.0
+#. (`PR#2564 <https://github.com/terrapower/armi/pull/2564>`_) Removing exception logging on HexBlock.verifyBlockDims
+#. (`PR#2567 <https://github.com/terrapower/armi/pull/2567>`_) Bump pypdf from 6.12.0 to 6.13.3
+#. (`PR#2569 <https://github.com/terrapower/armi/pull/2569>`_) Adding unit tests for HexBlocks.setPinPowers()
+#. (`PR#2579 <https://github.com/terrapower/armi/pull/2579>`_) Adding missing test case for matProps.loadAll()
+#. (`PR#2585 <https://github.com/terrapower/armi/pull/2585>`_) Moving buildOperatorOfEmptyHexBlocks to armi.testing
+#. (`PR#2586 <https://github.com/terrapower/armi/pull/2586>`_) Redesigning our codecov.io config
+#. (`PR#2601 <https://github.com/terrapower/armi/pull/2601>`_) Adding in ruff setting D404
+#. (`PR#2605 <https://github.com/terrapower/armi/pull/2605>`_) Making _geomOptions None by default
+#. (`PR#2606 <https://github.com/terrapower/armi/pull/2606>`_) Bump pypdf from 6.13.3 to 6.14.2
+#. (`PR#2626 <https://github.com/terrapower/armi/pull/2626>`_) Banning AM242 from nuclide flags
+#. (`PR#2630 <https://github.com/terrapower/armi/pull/2630>`_) Improving warnings on negative DPA calculations
+#. (`PR#2631 <https://github.com/terrapower/armi/pull/2631>`_) Bumping pypdf from 6.14.2 to 6.15.0
+#. (`PR#2636 <https://github.com/terrapower/armi/pull/2636>`_) Making Composite.changeNDensByFactor safe for Components
+#. (`PR#2637 <https://github.com/terrapower/armi/pull/2637>`_) Unpinning PyPDF
+#. (`PR#2649 <https://github.com/terrapower/armi/pull/2649>`_) Removing unnecessary r-strings
+#. (`PR#2652 <https://github.com/terrapower/armi/pull/2652>`_) Removing Composite.containsHeavyMetal()
+#. (`PR#2663 <https://github.com/terrapower/armi/pull/2663>`_) Ensuring all CI workflows from forked repos run
+#. (`PR#2672 <https://github.com/terrapower/armi/pull/2672>`_) Removing reference to very old shuffle file format
+#. (`PR#2675 <https://github.com/terrapower/armi/pull/2675>`_) Adding code coverage to cacheCall
+#. (`PR#2681 <https://github.com/terrapower/armi/pull/2681>`_) Cleaning up unused nucDir functions
+#. (`PR#2682 <https://github.com/terrapower/armi/pull/2682>`_) Cleaning up unused function applyIsotopicsMix
+#. (`PR#2683 <https://github.com/terrapower/armi/pull/2683>`_) Removing duplicate code in applyMaterialMassFracsToNumberDensities
+#. (`PR#2690 <https://github.com/terrapower/armi/pull/2690>`_) Adding code coverage to the LatticePhysicsInterface
+#. (`PR#2691 <https://github.com/terrapower/armi/pull/2691>`_) Cleaning up materials modification validation
+#. (`PR#2694 <https://github.com/terrapower/armi/pull/2694>`_) Move recursive settings file search logs from extra to debug
+#. (`PR#2695 <https://github.com/terrapower/armi/pull/2695>`_) Removing unused arg for DB compare CLI
+#. (`PR#2698 <https://github.com/terrapower/armi/pull/2698>`_) Renaming Block Parameter puFrac to puHMFrac
+#. (`PR#2704 <https://github.com/terrapower/armi/pull/2704>`_) Removing cluster-specific code from ARMI
+
+
+Documentation-Only Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. (`PR#2487 <https://github.com/terrapower/armi/pull/2487>`_) Starting version 0.7.0 release cycle
+#. (`PR#2492 <https://github.com/terrapower/armi/pull/2492>`_) Updating license section of the pyproject.toml
+#. (`PR#2519 <https://github.com/terrapower/armi/pull/2519>`_) Adding documentation for matProps
+#. (`PR#2541 <https://github.com/terrapower/armi/pull/2541>`_) Attempting to fix GH Pages docs deploy
+#. (`PR#2545 <https://github.com/terrapower/armi/pull/2545>`_) Fixing material doc header levels
+#. (`PR#2554 <https://github.com/terrapower/armi/pull/2554>`_) Cleaning up simple typos in documentation
+#. (`PR#2556 <https://github.com/terrapower/armi/pull/2556>`_) Adding context to depletion cycle settings
+#. (`PR#2559 <https://github.com/terrapower/armi/pull/2559>`_) Cleaning up matProps test docstring
+#. (`PR#2563 <https://github.com/terrapower/armi/pull/2563>`_) Removing “power user” langauge from docs
+#. (`PR#2571 <https://github.com/terrapower/armi/pull/2571>`_) Unifying and improving multiple Entry Point documentation sections
+#. (`PR#2588 <https://github.com/terrapower/armi/pull/2588>`_) Documenting lattice map format
+#. (`PR#2595 <https://github.com/terrapower/armi/pull/2595>`_) Validating the PR correctly fills the SCR
+#. (`PR#2598 <https://github.com/terrapower/armi/pull/2598>`_) Documenting physics parameters retained on shuffling
+#. (`PR#2616 <https://github.com/terrapower/armi/pull/2616>`_) Adding responsible LLM guidelines to Docs
+#. (`PR#2622 <https://github.com/terrapower/armi/pull/2622>`_) Getting ARMI docs building correctly
+#. (`PR#2624 <https://github.com/terrapower/armi/pull/2624>`_) Attempting to speed up the docs build on GitHub
+#. (`PR#2632 <https://github.com/terrapower/armi/pull/2632>`_) Increasing ARMI HTML and PDF documentation TOC depth
+#. (`PR#2635 <https://github.com/terrapower/armi/pull/2635>`_) Adding and enforcing test function and class naming standards
+#. (`PR#2639 <https://github.com/terrapower/armi/pull/2639>`_) Fixing hung GitHub Docs CI build
+#. (`PR#2659 <https://github.com/terrapower/armi/pull/2659>`_) Fix incorrectly labeled implementations for R_ARMI_CMP_NUC and R_ARMI_CMP_GET_NDENS
+#. (`PR#2666 <https://github.com/terrapower/armi/pull/2666>`_) Documenting the materialNamespaceOrder input setting
+#. (`PR#2668 <https://github.com/terrapower/armi/pull/2668>`_) Fixing apt-get errors on CI that are killing the doc build
+#. (`PR#2685 <https://github.com/terrapower/armi/pull/2685>`_) Adding new req R_ARMI_MAT_CUSTOM and clean up duplicate namespace reqs
+#. (`PR#2696 <https://github.com/terrapower/armi/pull/2696>`_) Clarifying validBlockTypes setting in docstrings
+#. (`PR#2701 <https://github.com/terrapower/armi/pull/2701>`_) Fixing code block formatting in inputs.rst
+#. (`PR#2705 <https://github.com/terrapower/armi/pull/2705>`_) Improving highest-level ARMI architecture diagram
+#. (`PR#2712 <https://github.com/terrapower/armi/pull/2712>`_) Cleaning up the top-level README
+#. (`PR#2713 <https://github.com/terrapower/armi/pull/2713>`_) Improving User Documentation
+#. (`PR#2718 <https://github.com/terrapower/armi/pull/2718>`_) Improving language for docs of Assembly “xs type”

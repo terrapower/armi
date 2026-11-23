@@ -286,12 +286,11 @@ class AssemblyBlueprint(yamlize.Object):
         # perform the check
         for paramName, blockVals in paramsToCheck.items():
             if len(self.blocks) != len(blockVals):
-                msg = (
-                    f"Assembly {self.name} had {len(self.blocks)} block(s), but {len(blockVals)} "
-                    f"'{paramName}'. These numbers should be equal. Check input for errors."
+                runLog.error(
+                    f"Assembly {self.name} had {len(self.blocks)} block(s), but {len(blockVals)} '{paramName}'. These "
+                    "numbers should be equal. Check input for errors.",
+                    errType=ValueError,
                 )
-                runLog.error(msg)
-                raise ValueError(msg)
 
     def checkMatModConsistency(self):
         """Because an assembly in a database is not guaranteed to match the blueprints.
@@ -333,12 +332,11 @@ class AssemblyBlueprint(yamlize.Object):
 
                     sameAsFirst = [m == mods[0] for m in mods]
                     if not all(sameAsFirst):
-                        errorMsg = (
+                        runLog.error(
                             f"The material modifications provided in the blueprints for Assembly `{self.name}` for "
                             f"block type `{byWhat}` and `{modWhat}` are not uniform: {mods} .Performing a database "
                             "load for this scenario is not supported."
                         )
-                        runLog.error(errorMsg)
 
         # If errors were found, raise the last one; they were all logged.
         if errorMsg:

@@ -15,7 +15,6 @@ into their workflow and/or enhance ARMI for the community.
    :numbered:
    :glob:
 
-   guide
    making_armi_based_apps
    entrypoints
    parallel_coding

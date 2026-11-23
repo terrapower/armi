@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """
-Change a reactor from one geometry to another.
+Change a pin-type or assembly-based reactor from one geometry to another.
 
-Examples may include going from Hex to R-Z or from Third-core to full core.  This module contains
+Examples may include going from Hex to R-Z or from Third-core to full core. This module contains
 **converters** (which create new reactor objects with different geometry), and **changers** (which
 modify a given reactor in place) in this module.
 
@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 
 from armi import materials, runLog
+from armi.bookkeeping.report.reportingUtils import summarizeCoreStats
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
 from armi.reactor import (
     assemblies,
@@ -481,7 +482,7 @@ class HexToRZThetaConverter(GeometryConverter):
         )
 
         self.convReactor.core.updateAxialMesh()
-        self.convReactor.core.summarizeReactorStats()
+        summarizeCoreStats(self.convReactor.core)
 
         # Track the new assemblies that were created when the converted reactor was
         # initialized so that the global assembly counter can be reset later.
@@ -528,7 +529,7 @@ class HexToRZThetaConverter(GeometryConverter):
         return ringAssems
 
     def _setupSourceReactorForConversion(self):
-        self._sourceReactor.core.summarizeReactorStats()
+        summarizeCoreStats(self._sourceReactor.core)
         if self._expandSourceReactor:
             self._expandSourceReactorGeometry()
 
@@ -932,7 +933,7 @@ class HexToRZThetaConverter(GeometryConverter):
         runLog.info("Expanding source reactor core to a full core model")
         reactorExpander = ThirdCoreHexToFullCoreChanger(self._cs)
         reactorExpander.convert(self._sourceReactor)
-        self._sourceReactor.core.summarizeReactorStats()
+        summarizeCoreStats(self._sourceReactor.core)
 
     def plotConvertedReactor(self, fNameBase=None):
         """

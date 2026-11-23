@@ -47,8 +47,7 @@ sends it to the workers, and then both the primary and the workers
      - **primary**: :code:`distributeState.invoke(self.o, self.r, self.cs)`
 
        **worker**: :code:`action.invoke(self.o, self.r, self.cs)`
-     - Both invoke the action, and are in sync. Any broadcast or receive within the action should
-       also be synced up.
+     - Both invoke the action, and are in sync. Any broadcast or receive within the action should also be synced up.
 
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
@@ -134,9 +133,7 @@ class MpiAction:
         try:
             return mpiFunction(obj, root=0)
         except pickle.PicklingError as error:
-            runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
-            runLog.error(error)
-            raise
+            runLog.error(f"Failed to {mpiFunction.__name__} {obj}.\n{error}", errType=pickle.PicklingError)
         finally:
             if obj is self:
                 self.o, self.r, self.cs = o, r, cs
@@ -357,12 +354,11 @@ def runBatchedActions(o, r, cs, actionsByNode, serial=False):
     # check that we do not request more tasks than processors on a node
     for nodeName in nodes:
         if numToRunOnThisNode[nodeName] > numAssigned[nodeName]:
-            msg = (
+            runLog.error(
                 f"There are more actions ({numToRunOnThisNode[nodeName]}) than ranks available "
-                f"({numAssigned[nodeName]}) on {nodeName}!"
+                f"({numAssigned[nodeName]}) on {nodeName}!",
+                errType=ValueError,
             )
-            runLog.error(msg)
-            raise ValueError(msg)
 
     totalActions = sum(len(actions) for node, actions in actionsByNode.items())
     runLog.extra(f"Running {totalActions} MPI actions in parallel over {len(actionsByNode)} nodes.")
@@ -572,8 +568,7 @@ class DistributeStateAction(MpiAction):
             self.r._markSynchronized()
 
         except (pickle.PicklingError, TypeError) as error:
-            runLog.error("Failed to transmit on distribute state root MPI bcast")
-            runLog.error(error)
+            runLog.warning(f"Failed to transmit on distribute state root MPI bcast\n{error}")
             # workers are still waiting for a reactor object
             if context.MPI_RANK == 0:
                 context.MPI_COMM.bcast("quit")  # try to get the workers to quit
@@ -699,7 +694,7 @@ class DistributeStateAction(MpiAction):
         else:
             # These run on the worker nodes.
             # verify identical interface stack
-            # This list is (interfaceName, distributable) tuples)
+            # This is a list of (interfaceName, distributable) tuples.
             interfaceList = self.broadcast(None)
             for iName, distributable in interfaceList:
                 iOld = self.o.getInterface(iName)
@@ -722,9 +717,8 @@ class DistributeStateAction(MpiAction):
                         for i in self.o.getInterfaces():
                             runLog.warning(i)
                         raise RuntimeError(
-                            "Non-distributable interface {0} exists on the primary MPI process "
-                            "but not on the workers. "
-                            "Cannot distribute state.".format(iName)
+                            f"Non-distributable interface {iName} exists on the primary MPI process but not on the "
+                            "workers. Cannot distribute state."
                         )
                     self.o.addInterface(iNew)
                     iNew.interactInit()

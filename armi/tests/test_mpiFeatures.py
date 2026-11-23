@@ -13,16 +13,17 @@
 # limitations under the License.
 
 """
-Tests for featurest that need MPI, and thus require special testing.
+Tests for features that need MPI, and thus require special testing.
 
-These tests will be generally ignored by pytest if you are trying to run
-them in an environment without MPI installed.
+These tests will be generally ignored by pytest if you are trying to run them in an environment without MPI installed.
 
 To run these tests from the commandline, install MPI, mpi4py, and do:
 
-mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
-or
-mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
+``mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py``
+
+or:
+
+``mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py``
 """
 
 import os

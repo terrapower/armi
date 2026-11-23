@@ -125,7 +125,7 @@ the plugin shortly.
     collections of plugins intended to perform analysis on a certain type of reactor.
     Plugins are independent and mixable collections of relatively arbitrary code that
     might bring in special materials, contain certain engineering methodologies, and/or
-    Interfaces with one or more physics kernels. See :doc:`/developer/guide` for more
+    Interfaces with one or more physics kernels. See :doc:`/user/guide` for more
     info on architecture.
 
 .. literalinclude:: armi-example-app/myapp/app.py
@@ -174,7 +174,7 @@ settings that can go in the settings file, and help the user define how the simu
 runs.
 
 The following example boiler plate code defines three settings. We define two simple
-number settings (inlet and outlet temperatures), and we use :py:class:`Query 
+number settings (inlet and outlet temperatures), and we use :py:class:`Query
 <armi.settings.settingsValidation .Query>` to define validation on those settings. Here,
 the validation isn't very exciting, we just make sure the temperatures are above zero.
 That's not particularly physically meaningful, but serves as a simple example. The next
@@ -396,7 +396,7 @@ Bonus: Ad-hoc UserPlugins
 It will often be the case that you are not building an ARMI application from scratch, but
 you are using a pre-existing ARMI application. And while working with this (potentially
 quite large) ARMI application, you want to add a one-off change. Maybe you want to make a
-special plot during the run, or do a quick "what-if" modification of the 
+special plot during the run, or do a quick "what-if" modification of the
 :py:class:`Reactor <armi.reactor.reactors.Reactor>`. These things come up for scientific
 or engineering work: a quick one-off idea you want to test out and probably only use once.
 
@@ -427,7 +427,7 @@ This can be done by subclassing :py:class:`armi.plugins.UserPlugin`:
 
 In most ways, ``UserPluginExample`` above is just a normal
 :py:class:`ArmiPlugin <armi.plugins.ArmiPlugin>`. You can implement any of the normal
-:py:class:`ArmiPlugin <armi.plugins.ArmiPlugin>` hooks, like: 
+:py:class:`ArmiPlugin <armi.plugins.ArmiPlugin>` hooks, like:
 :py:meth:`exposeInterfaces() <armi.plugins.ArmiPlugin.exposeInterfaces>`,
 :py:meth:`defineParameters() <armi.plugins.ArmiPlugin.defineParameters>`, and so on. The
 :py:class:`UserPlugin <armi.plugins.UserPlugin>` class is more limited than a

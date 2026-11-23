@@ -31,7 +31,7 @@ In practice, the top of the data model is the
 ``ExcoreStructure`` might be a :py:class:`SpentFuelPool <armi.reactor.spentFuelPool.SpentFuelPool>`.
 
 The ``Core`` object in contains :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects, which are in turn
-made up as a collection of :py:class:`Block <armi.reactor.blocks.Block>` objects. ``Block`` objects contain 
+made up as a collection of :py:class:`Block <armi.reactor.blocks.Block>` objects. ``Block`` objects contain
 :py:class:`Component <armi.reactor.components.component.Component>` to represent fuel, cladding, coolant, etc.
 
 .. figure:: /.static/armi_reactor_objects.png
@@ -63,7 +63,7 @@ enforces a couple of constraints that can be very useful:
 In many scenarios, one wants to access specific assemblies or blocks from a core. There
 are a few ways to get the objects that you're interested in:
 
-* The `r.core.childrenByLocator` dictionary maps
+* The ``r.core.childrenByLocator`` dictionary maps
   :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
   that location. For example ::
 
@@ -74,7 +74,7 @@ are a few ways to get the objects that you're interested in:
 
       >>> b = a[k]
 
-* `r.core.getAssemblies()` loops through all assemblies in the core for when you
+* ``r.core.getAssemblies()`` loops through all assemblies in the core for when you
   need to do something to all assemblies.
 
 
@@ -89,7 +89,26 @@ Most data is stored in ARMI as :py:mod:`~armi.reactor.parameters`. Most paramete
 become persistent, meaning they will be saved to the database during database
 interactions, and therefore it will also be loaded when a database is loaded.
 
-Details of the use and design can be found at :py:mod:`~armi.reactor.parameters`.
+These parameters can be accessed as an instance attribute or like a dictionary via ``<object>.p.<parameter>`` or
+``<object>.p["parameter"]``, respectively. This is supported for the reactor data model by level.
+
+.. code-block:: python
+
+    # User has loaded a reactor using ARMI naming conventions (e.g., b for a block)
+
+    # Reactor Parameter
+    r.p.cycleLength
+    # Core Parameter
+    r.core.p.powerDensity
+    # Assembly Parameter
+    a.p.maxPercentBu
+    # Block Parameter
+    b.p.molesHmBOL
+    # Component Parameter
+    c.p.pinPercentBu
+
+All parameters implemented by ARMI are listed in :ref:`params-report`. More details of the use and design can be found
+at :py:mod:`~armi.reactor.parameters`.
 
 Converters
 ----------
@@ -111,6 +130,8 @@ Blueprints
 As seen in the User Guide, :py:mod:`~armi.reactor.blueprints` are how reactor models are
 defined. During a run, they can be used to create new instances of reactor model pieces,
 such as when a new assembly is fabricated during a fuel management operation in a later cycle.
+
+For more detail, refer to :ref:`bp-input-file`.
 
 Operators
 =========

@@ -131,7 +131,8 @@ class LatticePhysicsInterface(interfaces.Interface):
                 self.clearXS()
             self.computeCrossSections(blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle))
             self._renameExistingLibrariesForStatepoint(cycle, node)
-        else:
+        elif not self.r.core.hasLib():
+            # if core.lib does not already exist, try to read it from existing library
             self.readExistingXSLibraries(cycle, node)
 
         self._checkInputs()
@@ -162,9 +163,9 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _copyLibraryFilesForCycle(cycle, libFiles):
         for baseName, cycleName in libFiles.items():
             if not os.path.exists(cycleName):
-                msg = f"Existing library {cycleName} for cycle {cycle} does not exist."
-                runLog.error(msg)
-                raise FileNotFoundError(msg)
+                runLog.error(
+                    f"Existing library {cycleName} for cycle {cycle} does not exist.", errType=FileNotFoundError
+                )
             else:
                 runLog.info(f"Using {baseName} as an active library")
                 if cycleName != baseName:

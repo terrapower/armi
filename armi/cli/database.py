@@ -61,13 +61,9 @@ class ExtractInputs(EntryPoint):
         settingsPath = self.args.output_base + "_settings.yaml"
         bpPath = self.args.output_base + "_blueprints.yaml"
 
-        bail = False
         for path in [settingsPath, bpPath]:
             if os.path.exists(settingsPath):
-                runLog.error("`{}` already exists. Aborting.".format(path))
-                bail = True
-        if bail:
-            return
+                runLog.error(f"`{path}` already exists. Aborting.")
 
         for path, data, inp in [
             (settingsPath, settings, "settings"),

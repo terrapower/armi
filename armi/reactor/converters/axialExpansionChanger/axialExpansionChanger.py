@@ -328,7 +328,7 @@ class AxialExpansionChanger:
         -----
         - If true, then axial expansion will be physical for all blocks.
         - If false, the top most block in the assembly is artificially chopped to preserve the assembly height. A
-        runLog.Warning also issued.
+        runLog.warning is also issued.
         """
         self.topMostBlock = self.linked.a[-1]
         if not self.topMostBlock.hasFlags(Flags.DUMMY):
@@ -337,9 +337,7 @@ class AxialExpansionChanger:
                 "preserve assembly height"
             )
             if self._detailedAxialExpansion:
-                msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
-                runLog.error(msg)
-                raise RuntimeError(msg)
+                runLog.error("Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!")
 
     def axiallyExpandAssembly(self, recalculateBurnup: bool = True):
         """Utilizes assembly linkage to do axial expansion.

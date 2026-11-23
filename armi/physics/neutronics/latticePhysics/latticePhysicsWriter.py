@@ -429,9 +429,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         xsgm = self.getInterface("xsGroups")
         driverBlock = xsgm.representativeBlocks.get(self.driverXsID, None)
         if self.driverXsID != "" and driverBlock is None:
-            msg = f"No representativeBlock found for driver XS ID {self.driverXsID} to use in {self}!"
-            runLog.error(msg)
-            raise ValueError(msg)
+            runLog.error(
+                f"No representativeBlock found for driver XS ID {self.driverXsID} to use in {self}!", errType=ValueError
+            )
         return driverBlock
 
 
@@ -447,7 +447,6 @@ def _groupNuclidesByTemperature(nuclides):
     The temperature will be rounded to a number of digits according to ``_NUM_DIGITS_ROUND_TEMPERATURE``,
     because the average temperature for each nuclide can vary down to numerical precision,
     i.e. 873.15 and 873.15000000001
-
     """
     tempDict = {}
     for nuclide, values in nuclides.items():

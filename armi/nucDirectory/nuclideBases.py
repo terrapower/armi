@@ -1389,7 +1389,7 @@ class NuclideBases:
         if self.burnChainImposed:
             # The only time this should happen is if in a unit test that has already processed conftest.py and is now
             # building a Case that also imposes this.
-            runLog.warning("Burn chain already imposed. Skipping reimposition.")
+            runLog.info("Burn chain already imposed. Skipping reimposition.")
             return
 
         self.burnChainImposed = True

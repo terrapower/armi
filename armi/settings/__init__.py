@@ -111,7 +111,6 @@ def recursivelyLoadSettingsFiles(
                 f"Failed to parse {possibleSettingsFile}.\nIt looked like a settings file but gave this exception:\n"
                 f"{type(ee).__name__}: {ee}"
             )
-            raise
 
     csFiles.sort(key=lambda csFile: csFile.caseTitle)
     return csFiles

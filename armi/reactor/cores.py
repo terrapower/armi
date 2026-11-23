@@ -300,37 +300,6 @@ class Core(composites.Composite):
         for child in self:
             self.childrenByLocator[child.spatialLocator] = child
 
-    def summarizeReactorStats(self):
-        """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
-        totalMass = 0.0
-        fissileMass = 0.0
-        heavyMetalMass = 0.0
-        totalVolume = 0.0
-        numBlocks = 0
-        for block in self.iterBlocks():
-            totalMass += block.getMass()
-            fissileMass += block.getFissileMass()
-            heavyMetalMass += block.getHMMass()
-            totalVolume += block.getVolume()
-            numBlocks += 1
-        totalMass = totalMass * self.powerMultiplier / 1000.0
-        fissileMass = fissileMass * self.powerMultiplier / 1000.0
-        heavyMetalMass = heavyMetalMass * self.powerMultiplier / 1000.0
-        totalVolume = totalVolume * self.powerMultiplier
-        runLog.extra(
-            "Summary of {}\n".format(self)
-            + tabulate.tabulate(
-                [
-                    ("Number of Blocks", numBlocks),
-                    ("Total Volume (cc)", totalVolume),
-                    ("Total Mass (kg)", totalMass),
-                    ("Fissile Mass (kg)", fissileMass),
-                    ("Heavy Metal Mass (kg)", heavyMetalMass),
-                ],
-                tableFmt="armi",
-            )
-        )
-
     def setPowerFromDensity(self):
         """Set the power from the powerDensity."""
         self.p.power = self.p.powerDensity * self.getHMMass()
@@ -561,11 +530,9 @@ class Core(composites.Composite):
         if aName in self.assembliesByName and self.assembliesByName[aName] != a:
             # try to keep assem numbering correct
             runLog.error(
-                "The assembly {1} in the reactor already has the name {0}.\nCannot add {2}. "
-                "Current assemNum is {3}"
-                "".format(aName, self.assembliesByName[aName], a, self.r.p.maxAssemNum)
+                f"The assembly {self.assembliesByName[aName]} in the reactor already has the name {aName}.\nCannot add "
+                f"{a}. Current assemNum is {self.r.p.maxAssemNum}"
             )
-            raise RuntimeError("Core already contains an assembly with the same name.")
 
         self.assembliesByName[aName] = a
         for b in a:
@@ -909,10 +876,7 @@ class Core(composites.Composite):
         return circularRingDict
 
     def _getAssembliesByName(self):
-        """
-        If the assembly name-to-assembly object map is deleted or out of date, then this will
-        regenerate it.
-        """
+        """If the assembly name-to-assembly object map is deleted or out of date, then this will regenerate it."""
         runLog.extra("Generating assemblies-by-name map.")
 
         # NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
@@ -921,14 +885,13 @@ class Core(composites.Composite):
         for assem in self.getAssemblies(includeBolAssems=True, includeSFP=True):
             aName = assem.getName()
             if aName in assymap and assymap[aName] != assem:
-                # dangerous situation that can occur in restart runs where the global assemNum isn't
-                # updated. !=assem clause added because sometimes an assem is in one of the
-                # includeAll lists that is also in the core and that's ok.
+                # dangerous situation that can occur in restart runs where the global assemNum isn't updated. !=assem
+                # clause added because sometimes an assem is in one of the includeAll lists that is also in the core and
+                # that's ok.
                 runLog.error(
-                    "Two (or more) assemblies in the reactor (and associated lists) have the name "
-                    "{0},\nincluding {1} and {2}.".format(aName, assem, assymap[aName])
+                    f"Two (or more) assemblies in the reactor (and associated lists) have the name {aName},\nincluding "
+                    f"{assem} and {assymap[aName]}."
                 )
-                raise RuntimeError("Assembly name collision.")
 
             assymap[aName] = assem
 
@@ -2203,8 +2166,6 @@ class Core(composites.Composite):
                 applySubMesh=True,
             )
 
-        self.getNuclideCategories()
-
         # Generate list of flags that are to be stationary during assembly shuffling
         stationaryBlockFlags = []
 
@@ -2212,8 +2173,9 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
-        self.setBlockMassParams()
-        self.p.maxAssemNum = self.getMaxParam("assemNum")
+        if not dbLoad:
+            self.setBlockMassParams()
+            self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs, dbLoad=dbLoad)
 
