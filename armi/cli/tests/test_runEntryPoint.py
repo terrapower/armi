@@ -34,7 +34,7 @@ from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
 from armi.testing import ARMI_RUN_PATH, TESTING_ROOT, loadTestReactor, mockRunLogs
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.directoryChangers import TemporaryDirectoryChanger, tmpDir
 from armi.utils.dynamicImporter import getEntireFamilyTree
 
 
@@ -133,23 +133,24 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
         self.assertEqual(ca.args.additional_files, ["test"])
         self.assertEqual(ca.args.settingsWriteStyle, "full")
 
+    @tmpDir
     def test_cloneArmiRunCommandBatchInvokeShort(self):
         # Test short write style
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
         ca.parse_args([ARMI_RUN_PATH])
 
-        with TemporaryDirectoryChanger():
-            ca.invoke()
+        ca.invoke()
 
-            self.assertEqual(ca.settingsArgument, "required")
-            self.assertEqual(ca.args.settingsWriteStyle, "short")
-            clonedYaml = "armiRun.yaml"
-            self.assertTrue(os.path.exists(clonedYaml))
-            # validate a setting that has a default value was removed
-            txt = open(clonedYaml, "r").read()
-            self.assertNotIn("availabilityFactor", txt)
+        self.assertEqual(ca.settingsArgument, "required")
+        self.assertEqual(ca.args.settingsWriteStyle, "short")
+        clonedYaml = "armiRun.yaml"
+        self.assertTrue(os.path.exists(clonedYaml))
+        # validate a setting that has a default value was removed
+        txt = open(clonedYaml, "r").read()
+        self.assertNotIn("availabilityFactor", txt)
 
+    @tmpDir
     def test_cloneArmiRunCommandBatchInvokeMedium(self):
         """Test the "clone armi run" batch entry point, on medium detail.
 
@@ -162,16 +163,15 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
         ca.addOptions()
         ca.parse_args([ARMI_RUN_PATH, "--settingsWriteStyle", "medium"])
 
-        with TemporaryDirectoryChanger():
-            ca.invoke()
+        ca.invoke()
 
-            self.assertEqual(ca.settingsArgument, "required")
-            self.assertEqual(ca.args.settingsWriteStyle, "medium")
-            clonedYaml = "armiRun.yaml"
-            self.assertTrue(os.path.exists(clonedYaml))
-            # validate a setting that has a  default value is still there
-            txt = open(clonedYaml, "r").read()
-            self.assertIn("availabilityFactor", txt)
+        self.assertEqual(ca.settingsArgument, "required")
+        self.assertEqual(ca.args.settingsWriteStyle, "medium")
+        clonedYaml = "armiRun.yaml"
+        self.assertTrue(os.path.exists(clonedYaml))
+        # validate a setting that has a  default value is still there
+        txt = open(clonedYaml, "r").read()
+        self.assertIn("availabilityFactor", txt)
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
@@ -186,32 +186,32 @@ class TestCloneSuiteCommand(unittest.TestCase):
 
 
 class TestCompareCases(unittest.TestCase):
+    @tmpDir
     def test_compareCasesBasics(self):
-        with TemporaryDirectoryChanger():
-            cc = CompareCases()
-            cc.addOptions()
-            cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+        cc = CompareCases()
+        cc.addOptions()
+        cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
 
-            self.assertEqual(cc.name, "compare")
-            self.assertIsNone(cc.args.timestepCompare)
-            self.assertIsNone(cc.args.weights)
+        self.assertEqual(cc.name, "compare")
+        self.assertIsNone(cc.args.timestepCompare)
+        self.assertIsNone(cc.args.weights)
 
-            with self.assertRaises(ValueError):
-                # The "fake" files do exist, so this should fail.
-                cc.invoke()
+        with self.assertRaises(ValueError):
+            # The "fake" files do exist, so this should fail.
+            cc.invoke()
 
 
 class TestCompareSuites(unittest.TestCase):
+    @tmpDir
     def test_compareSuitesBasics(self):
-        with TemporaryDirectoryChanger():
-            cs = CompareSuites()
-            cs.addOptions()
-            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5", "-I"])
+        cs = CompareSuites()
+        cs.addOptions()
+        cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5", "-I"])
 
-            self.assertEqual(cs.name, "compare-suites")
-            self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
-            self.assertTrue(cs.args.skip_inspection)
-            self.assertIsNone(cs.args.weights)
+        self.assertEqual(cs.name, "compare-suites")
+        self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
+        self.assertTrue(cs.args.skip_inspection)
+        self.assertIsNone(cs.args.weights)
 
 
 class TestExtractInputs(unittest.TestCase):
@@ -268,20 +268,20 @@ class TestInjectInputs(unittest.TestCase):
                 ii.invoke()
             self.assertIn("No settings", mock.getStdout())
 
+    @tmpDir
     def test_injectInputsInvokeNoData(self):
-        with TemporaryDirectoryChanger():
-            # init CLI
-            ii = InjectInputs()
-            ii.addOptions()
+        # init CLI
+        ii = InjectInputs()
+        ii.addOptions()
 
-            root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
-            bp = os.path.join(root, "refSmallReactor.yaml")
-            ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
+        root = os.path.join(TESTING_ROOT, "reactors", "sodiumHexReactor")
+        bp = os.path.join(root, "refSmallReactor.yaml")
+        ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
 
-            # invoke and check log
-            with self.assertRaises(FileNotFoundError):
-                # The "fake.h5" doesn't exist, so this should fail.
-                ii.invoke()
+        # invoke and check log
+        with self.assertRaises(FileNotFoundError):
+            # The "fake.h5" doesn't exist, so this should fail.
+            ii.invoke()
 
 
 class TestMigrateInputs(unittest.TestCase):
@@ -305,28 +305,28 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
         self.assertEqual(mcs.args.settingsWriteStyle, "medium")
         self.assertEqual(mcs.args.patterns, ["fake.yaml"])
 
+    @tmpDir
     def test_modifyCaseSettingsCommandInvoke(self):
         mcs = ModifyCaseSettingsCommand()
         mcs.addOptions()
 
-        with TemporaryDirectoryChanger():
-            # copy over settings files
-            for fileName in [
-                "armiRun.yaml",
-                "refSmallReactor.yaml",
-                "refSmallReactorShuffleLogic.py",
-            ]:
-                copyfile(ARMI_RUN_PATH, fileName)
+        # copy over settings files
+        for fileName in [
+            "armiRun.yaml",
+            "refSmallReactor.yaml",
+            "refSmallReactorShuffleLogic.py",
+        ]:
+            copyfile(ARMI_RUN_PATH, fileName)
 
-            # pass in --nTasks=333
-            mcs.parse_args(["--nTasks=333", "--rootDir", ".", "armiRun.yaml"])
+        # pass in --nTasks=333
+        mcs.parse_args(["--nTasks=333", "--rootDir", ".", "armiRun.yaml"])
 
-            # invoke the CLI
-            mcs.invoke()
+        # invoke the CLI
+        mcs.invoke()
 
-            # validate the change to nTasks was made
-            txt = open("armiRun.yaml", "r").read()
-            self.assertIn("nTasks: 333", txt)
+        # validate the change to nTasks was made
+        txt = open("armiRun.yaml", "r").read()
+        self.assertIn("nTasks: 333", txt)
 
 
 class MockFakeReportsEntryPoint(ReportsEntryPoint):
