@@ -26,6 +26,7 @@ import itertools
 import os
 import pickle
 import unittest
+from functools import wraps
 from typing import Optional
 
 import yamlize
@@ -286,6 +287,18 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     o.r.core.add(a)
     o.r.sort()
     return o
+
+
+def tmpDir(func):
+    """A decorator to allow test code to run in a temporary directory."""
+    from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with TemporaryDirectoryChanger():
+            return func(*args, **kwargs)
+
+    return wrapper
 
 
 class ArmiTestHelper(unittest.TestCase):
