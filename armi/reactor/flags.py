@@ -114,9 +114,8 @@ from typing import Optional, Sequence, Union
 
 from armi.utils.flags import Flag, FlagType, auto
 
-# Type alias used for passing type specifications to many of the composite methods. See
-# Composite::hasFlags() to understand the semantics for how TypeSpecs are interpreted.
-# Anything that interprets a TypeSpec should apply the same semantics.
+# Type alias used for passing type specifications to many of the Composite methods. See Composite::hasFlags() for
+# details. Anything that interprets a TypeSpec should apply the same semantics.
 TypeSpec = Optional[Union[FlagType, Sequence[FlagType]]]
 
 
@@ -189,7 +188,7 @@ def _toString(cls, typeSpec):
 
     Notes
     -----
-    This converts a flag from ``Flags.A|B`` to ``'A B'``
+    This converts a flag from ``Flags.A|B`` to ``'A B'``.
     """
     strings = str(typeSpec).split("{}.".format(cls.__name__))[1]
     return " ".join(sorted(strings.split("|")))
@@ -254,7 +253,7 @@ class Flags(Flag):
     BOND = auto()  # not empty
     LINER = auto()  # Use PRIMARY or SECONDARY to get multiple liners
     CLAD = auto()
-    PIN = auto()  # the "meat" inside the clad
+    PIN = auto()
     GAP = auto()  # generally empty
     WIRE = auto()
     COOLANT = auto()
@@ -328,21 +327,17 @@ class InvalidFlagsError(KeyError):
     pass
 
 
-# string conversions for multiple-word flags
-# Beware of how these may interact with the standard flag names! E.g., make sure NOZZLE
-# doesn't eat the NOZZLE in INLET_NOZZLE. Make sure that words that would otherwise be a
-# substring of a valid flag are wrapped in word-boundary `\b`s
+# String conversions for multiple-word flags.
+# Beware of how these interact with the standard flag names! E.g., make sure GRID doesn't eat the GRID in GRID_PLATE.
+# Make sure that words that would otherwise be a substring of a valid flag are wrapped in word-boundary ``\b``s.
 _CONVERSIONS = {
     re.compile(r"\bGRID\s+PLATE\b"): Flags.GRID_PLATE,
     re.compile(r"\bGRID\b"): Flags.GRID_PLATE,
     re.compile(r"\bINLET\s+NOZZLE\b"): Flags.INLET_NOZZLE,
-    re.compile(r"\bNOZZLE\b"): Flags.INLET_NOZZLE,
     re.compile(r"\bLOAD\s+PAD\b"): Flags.LOAD_PAD,
     re.compile(r"\bHANDLING\s+SOCKET\b"): Flags.HANDLING_SOCKET,
     re.compile(r"\bGUIDE\s+TUBE\b"): Flags.GUIDE_TUBE,
     re.compile(r"\bFISSION\s+CHAMBER\b"): Flags.FISSION_CHAMBER,
-    re.compile(r"\bSOCKET\b"): Flags.HANDLING_SOCKET,
     re.compile(r"\bSHIELD\s+BLOCK\b"): Flags.SHIELD_BLOCK,
-    re.compile(r"\bSHIELDBLOCK\b"): Flags.SHIELD_BLOCK,
     re.compile(r"\bCORE\s+BARREL\b"): Flags.CORE_BARREL,
 }
