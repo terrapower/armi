@@ -346,11 +346,4 @@ _CONVERSIONS = {
     re.compile(r"\bSHIELDBLOCK\b"): Flags.SHIELD_BLOCK,
     re.compile(r"\bCORE\s+BARREL\b"): Flags.CORE_BARREL,
     re.compile(r"\bINNERDUCT\b"): Flags.INNER | Flags.DUCT,
-    re.compile(r"\bGAP1\b"): Flags.GAP | Flags.A,
-    re.compile(r"\bGAP2\b"): Flags.GAP | Flags.B,
-    re.compile(r"\bGAP3\b"): Flags.GAP | Flags.C,
-    re.compile(r"\bGAP4\b"): Flags.GAP | Flags.D,
-    re.compile(r"\bGAP5\b"): Flags.GAP | Flags.E,
-    re.compile(r"\bLINER1\b"): Flags.LINER | Flags.A,
-    re.compile(r"\bLINER2\b"): Flags.LINER | Flags.B,
 }

@@ -104,7 +104,6 @@ class TestFlags(unittest.TestCase):
 
     def test_lookup(self):
         """Make sure lookup table is working."""
-        self.assertEqual(flags.Flags.fromString("GAP1"), flags.Flags.GAP | flags.Flags.A)
         self.assertEqual(flags.Flags.fromString("handLing sOcket"), flags.Flags.HANDLING_SOCKET)
         # order in CONVERSIONS can matter for multi word flags.
         # tests that order is good.
