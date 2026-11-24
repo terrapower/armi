@@ -345,5 +345,4 @@ _CONVERSIONS = {
     re.compile(r"\bSHIELD\s+BLOCK\b"): Flags.SHIELD_BLOCK,
     re.compile(r"\bSHIELDBLOCK\b"): Flags.SHIELD_BLOCK,
     re.compile(r"\bCORE\s+BARREL\b"): Flags.CORE_BARREL,
-    re.compile(r"\bINNERDUCT\b"): Flags.INNER | Flags.DUCT,
 }
