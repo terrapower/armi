@@ -342,3 +342,13 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         DirectoryChanger.__enter__(self)
 
         return self
+
+
+def directoryChangerFactory():
+    """Return the correct Directory Changer for the current run: automatically handling the MPI case."""
+    if context.MPI_SIZE > 1:
+        from armi.utils.directoryChangersMpi import MpiDirectoryChanger
+
+        return MpiDirectoryChanger
+    else:
+        return DirectoryChanger
