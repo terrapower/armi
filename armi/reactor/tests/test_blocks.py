@@ -2637,7 +2637,14 @@ class TestHexBlock(unittest.TestCase):
 
         # Case: wire wrap has effecively no gap
         noGapWire = components.Helix(
-            "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5, helixDiameter=0.11, mult=169.0
+            "wire",
+            "HT9",
+            Tinput=wireComp.inputTemperatureInC,
+            Thot=wireComp.temperatureInC,
+            od=wireComp.p.od,
+            axialPitch=wireComp.p.axialPitch,
+            helixDiameter=0.11,
+            mult=wireComp.p.mult,
         )
         self.hexBlock.add(noGapWire)
         self.hexBlock.remove(wireComp)
@@ -2649,7 +2656,13 @@ class TestHexBlock(unittest.TestCase):
         # Case: exit conditions
         # For this case, we need to add a Hexagon component to ensure we still have a pitch-defining
         # component. Effectively we just remove the "DUCT" flag
-        fakeHexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
+        fakeHexDims = {
+            "Tinput": ductComp.inputTemperatureInC,
+            "Thot": ductComp.temperatureInC,
+            "op": ductComp.p.op,
+            "ip": ductComp.p.ip,
+            "mult": ductComp.p.mult,
+        }
         fakeHex = components.Hexagon("fake", "UZr", **fakeHexDims)
         self.hexBlock.add(fakeHex)
         self.hexBlock.remove(ductComp)
