@@ -136,7 +136,7 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("gUiDe_TUbE"), flags.Flags.GUIDE_TUBE)
 
     def test_nonSpaceSeparators(self):
-        """Show that flag names can only be space separated, not anything else."""
+        """Show that flag names can only be space-separated, not anything else."""
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("fuel test"), flags.Flags.FUEL | flags.Flags.TEST)
 
         # dashes do not work
