@@ -15,8 +15,7 @@
 """
 Test the MpiDirectoryChanger.
 
-These tests will be generally ignored by pytest if you are trying to run
-them in an environment without MPI installed.
+These tests will be generally ignored by pytest if you are trying to run them in an environment without MPI installed.
 
 To run these tests from the command line, install MPI and mpi4py, and do:
 
@@ -28,8 +27,11 @@ mpiexec.exe -n 2 python -m pytest test_parallel.py
 import os
 import shutil
 import unittest
+from contextlib import contextmanager
+from unittest import mock
 
 from armi import context, mpiActions
+from armi.utils import directoryChangers
 from armi.utils.directoryChangersMpi import MpiDirectoryChanger
 
 # determine if this is a parallel run, and MPI is installed
@@ -68,13 +70,11 @@ class TestMPI(unittest.TestCase):
         if context.MPI_RANK != 0:
             while True:
                 cmd = context.MPI_COMM.bcast(None, root=0)
-                print(cmd)
                 if cmd == "quit":
                     break
                 cmd.invoke(None, None, None)
 
-        # from main, send commands to the workers to move into the targetDir
-        # and then create folders within there
+        # from main, send commands to the workers to move into the targetDir and then create folders within there
         if context.MPI_RANK == 0:
             with MpiDirectoryChanger(self.targetDir):
                 RevealYourDirectory.invokeAsMaster(None, None, None)
@@ -92,3 +92,26 @@ class TestMPI(unittest.TestCase):
         self.assertNotIn(self.targetDir, os.getcwd())
 
         context.MPI_COMM.barrier()
+
+
+class TestDirectoryChangerFactory(unittest.TestCase):
+    """Special testing tools for directoryChangerFactory."""
+
+    @contextmanager
+    def patchedMpiContextandClose(self, size):
+        """Patches MPI context and directoryChangers.directoryChangerFactory()."""
+        with mock.patch.object(directoryChangers.context, "MPI_SIZE", size):
+            yield
+
+    def test_directoryChangerFactory(self):
+        # if MPI_SIZE <= 1, we should get the non-MPI DirectoryChanger
+        for mpiSize in range(2):
+            with self.patchedMpiContextandClose(size=mpiSize):
+                result = directoryChangers.directoryChangerFactory()
+                self.assertEqual(result, directoryChangers.DirectoryChanger)
+
+        # if MPI_SIZE > 1, we should get MpiDirectoryChanger
+        for mpiSize in range(2, 6):
+            with self.patchedMpiContextandClose(size=mpiSize):
+                result = directoryChangers.directoryChangerFactory()
+                self.assertEqual(result, MpiDirectoryChanger)
