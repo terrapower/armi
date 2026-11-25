@@ -102,11 +102,10 @@ class TestFlags(unittest.TestCase):
         """Make sure lookup table is working."""
         self.assertEqual(flags.Flags.fromString("handLing sOcket"), flags.Flags.HANDLING_SOCKET)
         # Order in CONVERSIONS can matter for multi word flags. Testing that order is necessary.
-        for conv, flag in flags._CONVERSIONS.items():
+        for conv, flag in flags._UNDERSCORE_CONVERSIONS.items():
             # The conversions are specified as RE patterns, so we need to do a little work to get them into something
             # that can serve as candidate input (i.e. a string that the pattern would match). Since we are only using \b
-            # and \s+, this is pretty straightforward. If any more complicated patterns work their way in there, this
-            # will need to become more sophisticated.
+            # and \s+, this is pretty straightforward.
             exampleInput = conv.pattern.replace(r"\b", "")
             exampleInput = exampleInput.replace(r"\s+", " ")
             self.assertEqual(flags.Flags.fromString(exampleInput), flag)
@@ -127,7 +126,23 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(flag, flags.Flags.BOND | flags.Flags.A)
 
     def test_flagsMitUnderscores(self):
-        """Test flags with underscores in their names, in different forms."""
+        """Prove that flag strings can have underscores in them."""
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("grid plate"), flags.Flags.GRID_PLATE)
-        self.assertEqual(flags.Flags.fromStringIgnoreErrors("grid_plate"), flags.Flags.GRID_PLATE)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("gRId_pLAte"), flags.Flags.GRID_PLATE)
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("GRID_PLATE"), flags.Flags.GRID_PLATE)
+
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("guide tube"), flags.Flags.GUIDE_TUBE)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("Guide_tube"), flags.Flags.GUIDE_TUBE)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("gUiDe_TUbE"), flags.Flags.GUIDE_TUBE)
+
+    def test_nonSpaceSeparators(self):
+        """Show that flag names can only be space separated, not anything else."""
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("fuel test"), flags.Flags.FUEL | flags.Flags.TEST)
+
+        # dashes do not work
+        with self.assertRaises(flags.InvalidFlagsError):
+            flags.Flags.fromString("fuel-test")
+
+        # commas do not work
+        with self.assertRaises(flags.InvalidFlagsError):
+            flags.Flags.fromString("fuel,test")
