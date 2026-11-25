@@ -99,7 +99,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
         if dummyKey in lib:
             continue
 
-        runLog.debug("Adding {} nuclide data to {}".format(dummyKey, lib))
+        # Adding dummyKey nuclide data to lib
         newDummy = xsNuclides.XSNuclide(lib, dummyKey)
         # Copy gamiso metadata from the isotxs metadata of the given dummy nuclide
         for kk, vv in dummyNuclide.isotxsMetadata.items():

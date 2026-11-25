@@ -356,10 +356,6 @@ class AxialExpansionChanger:
             Optional parameter to skip the recalculate burnup step.
         """
         mesh = [0.0]
-        runLog.debug(
-            "Printing component expansion information (growth percentage and 'target component') for each block in "
-            f"assembly {self.linked.a}."
-        )
         # expand all of the components
         for b in self.linked.a:
             for c in iterSolidComponents(b):

@@ -244,7 +244,6 @@ class FissionProductModel(interfaces.Interface):
         This considers all LFP collections, whether they are global, block-level,
         or a mix of these.
         """
-        runLog.debug("Gathering all possible fission products that are modeled.")
         fissionProductNames = []
         lfpCollections = []
         # get all possible lfp collections (global + block-level)

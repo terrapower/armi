@@ -81,14 +81,12 @@ class DirectoryChanger:
 
     def __enter__(self):
         """At the inception of a with command, navigate to a new directory if one is supplied."""
-        runLog.debug("Changing directory to {}".format(self.destination))
         self.moveFiles()
         self.open()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """At the termination of a with command, navigate back to the original directory."""
-        runLog.debug("Returning to directory {}".format(self.initial))
         self._createOutputDirectory()
         if exc_type is not None and self._dumpOnException:
             runLog.info("An exception was raised within a DirectoryChanger. Retrieving entire folder for debugging.")
@@ -215,10 +213,8 @@ class DirectoryChanger:
 
                 toPath = os.path.join(destinationPath, destName)
                 if moveFiles:
-                    runLog.debug(f"Moving {fromPath} to {toPath}")
                     safeMove(fromPath, toPath)
                 else:
-                    runLog.debug(f"Copying {fromPath} to {toPath}")
                     safeCopy(fromPath, toPath)
 
 

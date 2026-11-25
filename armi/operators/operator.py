@@ -780,7 +780,6 @@ class Operator:
                     "purpose is not supported.".format(interface, iFunc, interface.purpose)
                 )
 
-        runLog.debug("Adding {0}".format(interface))
         if index is None:
             self.interfaces.append(interface)
         else:
@@ -1062,7 +1061,6 @@ class Operator:
                             factorList = [float(item) for item in match.group(3).split(",")]
                         except ValueError:
                             factorList = match.group(3).split(",")
-                    runLog.debug("loaded restart data for cycle %d" % float(match.group(1)))
 
                     self.restartData.append((float(match.group(1)), float(match.group(2)), factorList))
         runLog.info("loaded restart data for {0} cycles".format(len(self.restartData)))

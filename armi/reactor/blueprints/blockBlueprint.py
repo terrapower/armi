@@ -127,7 +127,6 @@ class BlockBlueprint(yamlize.KeyedList):
             and the by-component material modifications under the component's name.
             The inner dict under each key contains material modification names and values.
         """
-        runLog.debug("Constructing block {}".format(self.name))
         components = collections.OrderedDict()
         # build grid before components so you can load
         # the components into the grid.

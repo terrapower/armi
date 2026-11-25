@@ -81,7 +81,6 @@ class BlockConverter:
         # the area about to be added by the dimension change can be different than the simple area of the
         # merged component due to void gaps between components
         oldArea = solvent.getArea()
-        runLog.debug("removing {}".format(solute))
         # skip recomputation of area fractions because the blocks still have 0 height at this stage and derived
         # shape volume computations will fail
         soluteArea = solute.getArea()
@@ -99,23 +98,18 @@ class BlockConverter:
             )
             if soluteArea >= 0.0:
                 if solvent.getDimension("id", cold=False) > soluteID:
-                    runLog.debug(f"Decreasing ID of {solvent} to accommodate {solute}.")
                     solvent.setDimension("id", soluteID, cold=False)
                 if solvent.getDimension("od", cold=False) < soluteOD:
-                    runLog.debug(f"Increasing OD of {solvent} to accommodate {solute}.")
                     solvent.setDimension("od", soluteOD, cold=False)
                 if solvent.getDimension("id", cold=False) < minID:
-                    runLog.debug(f"Updating the ID of {solvent} the the specified min ID: {minID}.")
                     solvent.setDimension("id", minID, cold=False)
             else:
                 # can only merge a negative-area component if one of the dimensions is linked
                 matchedDimension = False
                 if solvent.getDimension("id", cold=False) == soluteOD:
-                    runLog.debug(f"Increasing ID of {solvent} to accommodate {solute}.")
                     solvent.setDimension("id", soluteID, cold=False)
                     matchedDimension = True
                 if solvent.getDimension("od", cold=False) == soluteID:
-                    runLog.debug(f"Decreasing OD of {solvent} to accommodate {solute}.")
                     solvent.setDimension("od", soluteOD, cold=False)
                     matchedDimension = True
                 if not matchedDimension:

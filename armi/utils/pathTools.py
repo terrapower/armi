@@ -46,7 +46,6 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
             shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
         else:
             safeCopy(sourcePath, destinationPath)
-        runLog.debug("Copied {}: {} -> {}".format(filepathDescription, sourcePath, destinationPath))
     except shutil.SameFileError:
         pass
     except Exception as e:

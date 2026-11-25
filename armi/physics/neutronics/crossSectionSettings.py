@@ -22,6 +22,7 @@ Settings object hold actual instances of these data.
 See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/latticePhysics/latticePhysics>`.
 """
 
+import logging
 from enum import Enum
 from typing import Dict, Union
 
@@ -32,6 +33,7 @@ from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 
+logger = logging.getLogger(__name__)
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_MEMORY_REQUIREMENT = "requiredRAM"
 CONF_BLOCKTYPES = "validBlockTypes"
@@ -597,7 +599,7 @@ class XSModelingOptions:
                 if val is not None:
                     invalids.append((var, val))
 
-        if invalids:
+        if invalids and logger.isEnabledFor(logging.DEBUG):
             runLog.debug(f"The following inputs in {self} are not valid when the file location is set:")
             for var, val in invalids:
                 runLog.debug(f"\tAttribute: {var}, Value: {val}")
@@ -610,7 +612,7 @@ class XSModelingOptions:
                 if var not in validOptions and val is not None:
                     invalids.append((var, val))
 
-        if invalids:
+        if invalids and logger.isEnabledFor(logging.DEBUG):
             runLog.debug(f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:")
             for var, val in invalids:
                 runLog.debug(f"\tAttribute: {var}, Value: {val}")

@@ -677,7 +677,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
         newAssem.p.assemNum = sourceAssem.p.assemNum
         newBlockStack = []
-        runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
         def checkPriorityFlags(b):
@@ -726,17 +725,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     if b.p.xsType == xsType:
                         sourceBlock = b
                         break
-
-            if len(typeHeight) > 1:
-                if sourceBlock:
-                    totalHeight = sum(typeHeight.values())
-                    runLog.debug(
-                        f"Multiple XS types exist between {bottom} and {topMeshPoint}. "
-                        f"Using the XS type from the largest region, {xsType}"
-                    )
-                    for xs, h in typeHeight.items():
-                        heightFrac = h / totalHeight
-                        runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
             block = sourceBlock.createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
@@ -969,9 +957,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         avoid unnecessarily diffusing small blocks into huge ones (e.g. control blocks
         into plenum).
         """
-        runLog.debug(
-            f"Creating new assemblies from {self._sourceReactor.core} with a uniform mesh of {self._uniformMesh}"
-        )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(
                 sourceAssem,
@@ -989,7 +974,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         The summations should start at zero but will happen for all overlaps.
         """
-        runLog.debug("Clearing params from source reactor that will be converted.")
         for rp in self.paramMapper.reactorParamNames:
             if cache:
                 self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
