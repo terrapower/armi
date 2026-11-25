@@ -2137,7 +2137,8 @@ class TestHexBlock(unittest.TestCase):
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
         self.hexBlock.add(self.hexComponent)
         self.hexBlock.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0))
-        self.hexBlock.add(components.Circle("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0))
+        self.hexBlock.add(components.Helix("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5,
+                                           helixDiameter=0.21, mult=169.0))
         self.hexBlock.add(components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0))
         self.r = tests.getEmptyHexReactor()
         self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
@@ -2227,9 +2228,9 @@ class TestHexBlock(unittest.TestCase):
 
         self.assertAlmostEqual(34.273, self.hexBlock.getPinToDuctGap(), 3)
         self.assertEqual(0.11, self.hexBlock.getPinPitch())
-        self.assertAlmostEqual(300.889, self.hexBlock.getWettedPerimeter(), 3)
+        self.assertAlmostEqual(300.935, self.hexBlock.getWettedPerimeter(), 3)
         self.assertAlmostEqual(4242.184, self.hexBlock.getFlowArea(), 3)
-        self.assertAlmostEqual(56.395, self.hexBlock.getHydraulicDiameter(), 3)
+        self.assertAlmostEqual(56.387, self.hexBlock.getHydraulicDiameter(), 3)
 
     def test_symmetryFactor(self):
         # full hex
@@ -2617,6 +2618,57 @@ class TestHexBlock(unittest.TestCase):
         self.assertEqual(self.hexBlock.getRotationNum(), 1.0)
         self.hexBlock.setRotationNum(2)
         self.assertEqual(self.hexBlock.getRotationNum(), 2.0)
+
+    def test_verifyBlockDims(self):
+        wireComp = self.hexBlock.getComponent(Flags.WIRE)
+        ductComp = self.hexBlock.getComponent(Flags.DUCT)
+        cladComp = self.hexBlock.getComponent(Flags.CLAD)
+
+        with mockRunLogs.BufferLog() as mockLog:
+            self.assertEqual("", mockLog.getStdout())
+            runLog.LOG.startLog("test_verifyBockDims")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            # Base case: wire wrap is not in contact with clad and pin is not in contact with duct
+            self.hexBlock.verifyBlockDims()
+            self.assertIn("The gap between wire wrap and clad in block", mockLog.getStdout())
+
+        # Case: wire wrap has effecively no gap
+        noGapWire = components.Helix("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5,
+                                           helixDiameter=0.11, mult=169.0)
+        self.hexBlock.add(noGapWire)
+        self.hexBlock.remove(wireComp)
+        self.hexBlock.verifyBlockDims() # should run without issue
+        # Reset wire
+        self.hexBlock.remove(noGapWire)
+        self.hexBlock.add(wireComp)
+
+        # Case: exit conditions
+        # For this case, we need to add a Hexagon component to ensure we still have a pitch-defining
+        # component. Effectively we just remove the "DUCT" flag
+        fakeHexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
+        fakeHex = components.Hexagon("fake", "UZr", **fakeHexDims)
+        self.hexBlock.add(fakeHex)
+        self.hexBlock.remove(ductComp)
+        with mockRunLogs.BufferLog() as mockLog:
+            self.assertEqual("", mockLog.getStdout())
+            runLog.LOG.startLog("test_verifyBockDims_exit_condutions")
+            runLog.LOG.setVerbosity(logging.INFO)
+            self.hexBlock.verifyBlockDims()
+            self.assertIn("Some component was missing in", mockLog.getStdout())
+
+        # Case: pin overlaps duct more than 0.005
+        overlappingDims = {"Tinput": 273.0, "Thot": 273.0, "op": 2.044, "ip": 1.443, "mult": 1.0}
+        overlappingDuct = components.Hexagon("duct", "UZr", **overlappingDims)
+        self.hexBlock.add(overlappingDuct)
+        self.hexBlock.remove(fakeHex) # remove fakeHex since overlappingDuct is a hex component
+        with self.assertRaisesRegex(ValueError, "Gap between pins and duct is"):
+            self.hexBlock.verifyBlockDims()
+
+        # Reset duct
+        self.hexBlock.add(ductComp)
+        self.hexBlock.remove(overlappingDuct)
+
 
 
 class TestMultiPinIndices(unittest.TestCase):
