@@ -97,6 +97,7 @@ class TestMPI(unittest.TestCase):
 class TestDirectoryChangerFactory(unittest.TestCase):
     """Special testing tools for directoryChangerFactory."""
 
+    @staticmethod
     @contextmanager
     def patchedMpiContext(size):
         """Patches MPI context and directoryChangers.directoryChangerFactory()."""
