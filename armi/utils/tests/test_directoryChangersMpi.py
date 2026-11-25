@@ -98,7 +98,7 @@ class TestDirectoryChangerFactory(unittest.TestCase):
     """Special testing tools for directoryChangerFactory."""
 
     @contextmanager
-    def patchedMpiContextandClose(self, size):
+    def patchedMpiContext(size):
         """Patches MPI context and directoryChangers.directoryChangerFactory()."""
         with mock.patch.object(directoryChangers.context, "MPI_SIZE", size):
             yield
@@ -106,12 +106,12 @@ class TestDirectoryChangerFactory(unittest.TestCase):
     def test_directoryChangerFactory(self):
         # if MPI_SIZE <= 1, we should get the non-MPI DirectoryChanger
         for mpiSize in range(2):
-            with self.patchedMpiContextandClose(size=mpiSize):
+            with TestDirectoryChangerFactory.patchedMpiContext(size=mpiSize):
                 result = directoryChangers.directoryChangerFactory()
                 self.assertEqual(result, directoryChangers.DirectoryChanger)
 
         # if MPI_SIZE > 1, we should get MpiDirectoryChanger
         for mpiSize in range(2, 6):
-            with self.patchedMpiContextandClose(size=mpiSize):
+            with TestDirectoryChangerFactory.patchedMpiContext(size=mpiSize):
                 result = directoryChangers.directoryChangerFactory()
                 self.assertEqual(result, MpiDirectoryChanger)
