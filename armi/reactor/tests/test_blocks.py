@@ -2137,8 +2137,11 @@ class TestHexBlock(unittest.TestCase):
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
         self.hexBlock.add(self.hexComponent)
         self.hexBlock.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0))
-        self.hexBlock.add(components.Helix("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5,
-                                           helixDiameter=0.21, mult=169.0))
+        self.hexBlock.add(
+            components.Helix(
+                "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5, helixDiameter=0.21, mult=169.0
+            )
+        )
         self.hexBlock.add(components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0))
         self.r = tests.getEmptyHexReactor()
         self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
@@ -2622,7 +2625,6 @@ class TestHexBlock(unittest.TestCase):
     def test_verifyBlockDims(self):
         wireComp = self.hexBlock.getComponent(Flags.WIRE)
         ductComp = self.hexBlock.getComponent(Flags.DUCT)
-        cladComp = self.hexBlock.getComponent(Flags.CLAD)
 
         with mockRunLogs.BufferLog() as mockLog:
             self.assertEqual("", mockLog.getStdout())
@@ -2634,11 +2636,12 @@ class TestHexBlock(unittest.TestCase):
             self.assertIn("The gap between wire wrap and clad in block", mockLog.getStdout())
 
         # Case: wire wrap has effecively no gap
-        noGapWire = components.Helix("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5,
-                                           helixDiameter=0.11, mult=169.0)
+        noGapWire = components.Helix(
+            "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, axialPitch=5, helixDiameter=0.11, mult=169.0
+        )
         self.hexBlock.add(noGapWire)
         self.hexBlock.remove(wireComp)
-        self.hexBlock.verifyBlockDims() # should run without issue
+        self.hexBlock.verifyBlockDims()  # should run without issue
         # Reset wire
         self.hexBlock.remove(noGapWire)
         self.hexBlock.add(wireComp)
@@ -2661,14 +2664,13 @@ class TestHexBlock(unittest.TestCase):
         overlappingDims = {"Tinput": 273.0, "Thot": 273.0, "op": 2.044, "ip": 1.443, "mult": 1.0}
         overlappingDuct = components.Hexagon("duct", "UZr", **overlappingDims)
         self.hexBlock.add(overlappingDuct)
-        self.hexBlock.remove(fakeHex) # remove fakeHex since overlappingDuct is a hex component
+        self.hexBlock.remove(fakeHex)  # remove fakeHex since overlappingDuct is a hex component
         with self.assertRaisesRegex(ValueError, "Gap between pins and duct is"):
             self.hexBlock.verifyBlockDims()
 
         # Reset duct
         self.hexBlock.add(ductComp)
         self.hexBlock.remove(overlappingDuct)
-
 
 
 class TestMultiPinIndices(unittest.TestCase):
