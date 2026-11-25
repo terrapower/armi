@@ -64,7 +64,6 @@ class OperatorMPI(Operator):
         Calls _mainOperate or workerOperate depending on which MPI rank we are, and
         handles errors.
         """
-        runLog.debug("OperatorMPI.operate")
         if context.MPI_RANK == 0:
             # This is the primary MPI process.
             try:
@@ -139,7 +138,6 @@ class OperatorMPI(Operator):
                 break
             elif cmd == "sync":
                 # wait around for a sync
-                runLog.debug("Worker syncing")
                 note = context.MPI_COMM.bcast("wait", root=0)
                 if note != "wait":
                     raise RuntimeError(f'did not get "wait". Got {note}')
@@ -225,7 +223,6 @@ class OperatorMPI(Operator):
 
     @staticmethod
     def workerQuit():
-        runLog.debug("Worker ending")
         runLog.close()  # no more messages.
         # wait until all workers are closed so we can delete them.
         context.MPI_COMM.bcast("finished", root=0)

@@ -182,8 +182,6 @@ def factory(cs, bp) -> Reactor:
         for structure in bp.systemDesigns:
             structure.construct(cs, bp, r)
 
-    runLog.debug(f"Reactor: {r}")
-
     # return a Reactor object
     if cs[CONF_SORT_REACTOR]:
         r.sort()

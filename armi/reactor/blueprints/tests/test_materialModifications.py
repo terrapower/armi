@@ -13,13 +13,15 @@
 # limitations under the License.
 """Tests for material modifications."""
 
+import logging
 import unittest
 
 from numpy.testing import assert_allclose
 
-from armi import materials, settings
+from armi import materials, runLog, settings
 from armi.reactor import blueprints
 from armi.reactor.blueprints.blockBlueprint import BlockBlueprint
+from armi.testing import mockRunLogs
 
 
 class TestMaterialModifications(unittest.TestCase):
@@ -324,6 +326,29 @@ assemblies:
                 "Something went wrong in applying the material modifications",
                 ee.args[0],
             )
+
+    def test_matModsIsoWarn(self):
+        """Make sure that mixing material modifications are isotopics raises a warning."""
+        runLog.LOG.setVerbosity(logging.WARNING)
+        with mockRunLogs.BufferLog() as mock:
+            _a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [1]
+            class1_wt_frac: [1]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+                    class1_wt_frac: [1]
+custom isotopics:
+    Sodium:
+        input format: mass fractions
+        density: 1
+        H: 1
+"""
+            )
+            self.assertIn("are in conflict", mock.getStdout())
+        runLog.LOG.setVerbosity(logging.INFO)
 
     def test_matModsUpTheMRO(self):
         """Make sure that valid/invalid material modifications are searched up the MRO for a material class."""

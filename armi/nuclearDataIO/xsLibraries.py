@@ -489,7 +489,6 @@ class IsotxsLibrary(_XSLibrary):
 
     def merge(self, other):
         """Merge two XSLibraries."""
-        runLog.debug("Merging XS library {} into XS library {}".format(other, self))
         self._mergeProperties(other)
         # merging meta data may raise an exception before knowing anything about the contained nuclides
         # if it raises an exception, nothing has been modified in two objects

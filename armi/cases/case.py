@@ -789,7 +789,7 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
                     label = key.name
                     isSetting = True
                 except NonexistentSetting(key):
-                    runLog.debug(f"{key} is not a valid setting; continuing on anyway.")
+                    # key is not a valid setting; continuing on anyway
                     label = key
                     isSetting = False
             else:
@@ -833,12 +833,6 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
                     # treat as a relative path
                     destFilePath = _copyInputsHelper(label, srcFullPath, destination, f)
                     newFiles.append(str(destFilePath))
-
-                if destFilePath == f:
-                    runLog.debug(
-                        f"No input files for `{label}` could be resolved with the following path: "
-                        f"`{srcFullPath}`. Will not update `{label}`."
-                    )
 
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects

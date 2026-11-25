@@ -184,10 +184,7 @@ class Inspector:
         # the following attribute changes will alter what the queries investigate when resolved
         correctionsMade = False
         self.cs = cs or self.cs
-        runLog.debug(f"{self.__class__.__name__} executing queries.")
-        if not any(self.queries):
-            runLog.debug(f"{self.__class__.__name__} found no problems with the current state.")
-        else:
+        if any(self.queries):
             for query in self.queries:
                 query.resolve()
                 if query.corrected:
@@ -198,7 +195,6 @@ class Inspector:
                 raise RuntimeError(
                     f"The input inspection did not resolve all queries, some are creating cyclic resolutions: {issues}"
                 )
-            runLog.debug(f"{self.__class__.__name__} has finished querying.")
 
         if correctionsMade:
             # find unused file path to store original settings as to avoid overwrite

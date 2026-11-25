@@ -1106,9 +1106,9 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         numBuGroups = len(self._buGroupBounds)
         if numBuGroups == 1 and len(self._tempGroupBounds) == 1:
-            # dont set block.p.envGroupNum since all 1 group and we want to support 2 char xsGroup
+            # don't set block.p.envGroupNum since all 1 group and we want to support 2 char xsGroup
             return
-        runLog.debug("Updating env groups of {0} blocks".format(len(blockList)))
+
         for block in blockList:
             bu = block.p.percentBu
             for buIndex, upperBu in enumerate(self._buGroupBounds):

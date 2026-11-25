@@ -218,7 +218,6 @@ class DefaultExecuter(Executer):
                 and other utilities.
         """
         self.options.resolveDerivedOptions()
-        runLog.debug(self.options.describe())
         if self.options.executablePath and not os.path.exists(self.options.executablePath):
             raise IOError(f"Required executable `{self.options.executablePath}` not found for {self}")
         self._performGeometryTransformations()
