@@ -25,8 +25,9 @@ will be assigned to the object. However, specific Flags may be specified within
 blueprints, in which case the name is ignored and only the explicitly-requested Flags
 are applied (see :ref:`bp-input-file` for more details).
 
-Note that only whitespace may be used to seprate words in a name string. The name string will
-not be split correctly if special characters such as '-' or '_' are used to separate keywords.
+Note that flag names are separated by spaces. No other separaters will work. In a few
+special cases, flag names can have the special character `_` in them, but typically
+only letters are allowed in flag names, which we will convert to ALL CAPS.
 
 Individual Flags tend to be various nouns and adjectives that describe common objects
 that go into a reactor (e.g. "fuel", "shield", "control", "duct", "plenum", etc.). In
@@ -114,9 +115,8 @@ from typing import Optional, Sequence, Union
 
 from armi.utils.flags import Flag, FlagType, auto
 
-# Type alias used for passing type specifications to many of the composite methods. See
-# Composite::hasFlags() to understand the semantics for how TypeSpecs are interpreted.
-# Anything that interprets a TypeSpec should apply the same semantics.
+# Type alias used for passing type specifications to many of the Composite methods. See Composite::hasFlags() for
+# details. Anything that interprets a TypeSpec should apply the same semantics.
 TypeSpec = Optional[Union[FlagType, Sequence[FlagType]]]
 
 
@@ -124,11 +124,11 @@ def __fromStringGeneral(cls, typeSpec, updateMethod):
     """Helper method to minimize code repeat in other fromString methods."""
     result = cls(0)
     typeSpec = typeSpec.upper()
-    for conversion in _CONVERSIONS:
+    for conversion in _UNDERSCORE_CONVERSIONS:
         m = conversion.search(typeSpec)
         if m:
             typeSpec = re.sub(conversion, "", typeSpec)
-            result |= _CONVERSIONS[conversion]
+            result |= _UNDERSCORE_CONVERSIONS[conversion]
 
     for name in typeSpec.split():
         try:
@@ -189,7 +189,7 @@ def _toString(cls, typeSpec):
 
     Notes
     -----
-    This converts a flag from ``Flags.A|B`` to ``'A B'``
+    This converts a flag from ``Flags.A|B`` to ``'A B'``.
     """
     strings = str(typeSpec).split("{}.".format(cls.__name__))[1]
     return " ".join(sorted(strings.split("|")))
@@ -254,7 +254,7 @@ class Flags(Flag):
     BOND = auto()  # not empty
     LINER = auto()  # Use PRIMARY or SECONDARY to get multiple liners
     CLAD = auto()
-    PIN = auto()  # the "meat" inside the clad
+    PIN = auto()
     GAP = auto()  # generally empty
     WIRE = auto()
     COOLANT = auto()
@@ -297,7 +297,7 @@ class Flags(Flag):
 
             For a string passed as ``typeSpec``, first converts the whole string to uppercase. Then
             tries to parse the string for any special phrases, as defined in the module dictionary
-            ``_CONVERSIONS``, and converts those phrases to flags directly.
+            ``_UNDERSCORE_CONVERSIONS``, and converts those phrases to flags directly.
 
             Then it splits the remaining string into words based on spaces. Looping over each of the
             words, if any word exactly matches a flag name. Otherwise, any numbers are stripped out
@@ -328,29 +328,15 @@ class InvalidFlagsError(KeyError):
     pass
 
 
-# string conversions for multiple-word flags
-# Beware of how these may interact with the standard flag names! E.g., make sure NOZZLE
-# doesn't eat the NOZZLE in INLET_NOZZLE. Make sure that words that would otherwise be a
-# substring of a valid flag are wrapped in word-boundary `\b`s
-_CONVERSIONS = {
+# These conversions allow people to define a flag "grid plate" and we will convert it for them to "GRID_PLATE".
+# Beware of how these interact with the standard flag names! Do NOT try to get fancy here.
+_UNDERSCORE_CONVERSIONS = {
     re.compile(r"\bGRID\s+PLATE\b"): Flags.GRID_PLATE,
-    re.compile(r"\bGRID\b"): Flags.GRID_PLATE,
     re.compile(r"\bINLET\s+NOZZLE\b"): Flags.INLET_NOZZLE,
-    re.compile(r"\bNOZZLE\b"): Flags.INLET_NOZZLE,
     re.compile(r"\bLOAD\s+PAD\b"): Flags.LOAD_PAD,
     re.compile(r"\bHANDLING\s+SOCKET\b"): Flags.HANDLING_SOCKET,
     re.compile(r"\bGUIDE\s+TUBE\b"): Flags.GUIDE_TUBE,
     re.compile(r"\bFISSION\s+CHAMBER\b"): Flags.FISSION_CHAMBER,
-    re.compile(r"\bSOCKET\b"): Flags.HANDLING_SOCKET,
     re.compile(r"\bSHIELD\s+BLOCK\b"): Flags.SHIELD_BLOCK,
-    re.compile(r"\bSHIELDBLOCK\b"): Flags.SHIELD_BLOCK,
     re.compile(r"\bCORE\s+BARREL\b"): Flags.CORE_BARREL,
-    re.compile(r"\bINNERDUCT\b"): Flags.INNER | Flags.DUCT,
-    re.compile(r"\bGAP1\b"): Flags.GAP | Flags.A,
-    re.compile(r"\bGAP2\b"): Flags.GAP | Flags.B,
-    re.compile(r"\bGAP3\b"): Flags.GAP | Flags.C,
-    re.compile(r"\bGAP4\b"): Flags.GAP | Flags.D,
-    re.compile(r"\bGAP5\b"): Flags.GAP | Flags.E,
-    re.compile(r"\bLINER1\b"): Flags.LINER | Flags.A,
-    re.compile(r"\bLINER2\b"): Flags.LINER | Flags.B,
 }
